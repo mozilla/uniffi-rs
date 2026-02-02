@@ -50,6 +50,7 @@ For more details:
 * [Records](./records.md)
 * [Enums](./enumerations.md)
 * [Interfaces](./interfaces.md)
+* [Traits](./traits.md)
 * [Functions, constructors, methods](./functions.md)
 * [Errors](./errors.md)
 * [Renaming](./renaming.md)
@@ -98,26 +99,6 @@ impl Foo {
 ## The `uniffi::custom_type` and `uniffi::custom_newtype` macros
 
 See the general [documentation for Custom Types](../types/custom_types.md), which apply equally to proc-macros as to UDL.
-
-
-## The `#[uniffi::export(callback_interface)]` attribute
-
-`#[uniffi::export(callback_interface)]` can be used to export a [callback interface](../types/callback_interfaces.md) definition.
-This allows the foreign bindings to implement the interface and pass an instance to the Rust code.
-
-```rust
-#[uniffi::export(callback_interface)]
-pub trait Person {
-    fn name() -> String;
-    fn age() -> u32;
-}
-
-// Corresponding UDL:
-// callback interface Person {
-//     string name();
-//     u32 age();
-// }
-```
 
 ## Conditional compilation
 
