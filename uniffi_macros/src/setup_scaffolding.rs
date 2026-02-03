@@ -34,6 +34,7 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
         // for details.
         //
         // This is pub, since we need to access it to support external types
+        #[allow(clippy::exhaustive_structs)]
         #[doc(hidden)]
         pub struct UniFfiTag;
 
