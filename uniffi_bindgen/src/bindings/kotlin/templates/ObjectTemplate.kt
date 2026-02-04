@@ -175,7 +175,9 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         this.destroy()
     }
 
-    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+    // Run a block, ensuring the underlying handle will not be freed, even if `destroy()` is called
+    // from another thread.
+    internal inline fun <R> preventHandleFree(block: () -> R): R {
         // Check and increment the call counter, to keep the object alive.
         // This needs a compare-and-set retry loop in case of concurrent updates.
         do {
@@ -189,7 +191,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the handle being freed concurrently.
         try {
-            return block(this.uniffiCloneHandle())
+            return block()
         } finally {
             // This decrement always matches the increment we performed above.
             if (this.callCounter.decrementAndGet() == 0L) {
@@ -206,9 +208,10 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
                 // Fake object created with `NoHandle`, don't try to free.
                 return;
             }
-            uniffiRustCall { status ->
-                UniffiLib.{{ obj.ffi_object_free().name() }}(handle, status)
-            }
+            val ffiBuffer = Memory(8)
+            val argCursor = UniffiBufferCursor(ffiBuffer)
+            UniffiFfiSerializerHandle.write(argCursor, handle)
+            UniffiLib.{{ obj.ffi_object_free().pointer_ffi_name() }}(ffiBuffer)
         }
     }
 
@@ -219,9 +222,12 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         if (handle == 0.toLong()) {
             throw InternalException("uniffiCloneHandle() called on NoHandle object");
         }
-        return uniffiRustCall() { status ->
-            UniffiLib.{{ obj.ffi_object_clone().name() }}(handle, status)
-        }
+        val ffiBuffer = Memory(8)
+        val argCursor = UniffiBufferCursor(ffiBuffer)
+        UniffiFfiSerializerHandle.write(argCursor, handle)
+        UniffiLib.{{ obj.ffi_object_clone().pointer_ffi_name() }}(ffiBuffer)
+        val returnCursor = UniffiBufferCursor(ffiBuffer)
+        return UniffiFfiSerializerHandle.read(returnCursor)
     }
 
     {% for meth in methods -%}
@@ -239,7 +245,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
     }
     {% else if is_error %}
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<{{ impl_class_name }}> {
-        override fun lift(error_buf: RustBuffer.ByValue): {{ impl_class_name }} {
+        override fun lift(error_buf: RustBuffer): {{ impl_class_name }} {
             // Due to some mismatches in the ffi converter mechanisms, errors are a RustBuffer.
             val bb = error_buf.asByteBuffer()
             if (bb == null) {

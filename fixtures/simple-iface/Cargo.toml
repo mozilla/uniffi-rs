@@ -10,12 +10,12 @@ name = "uniffi_simple_iface"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-uniffi = { workspace = true }
+uniffi = { workspace = true, features = ["pointer-ffi"] }
 thiserror = "2"
 lazy_static = "1.4"
 
 [build-dependencies]
-uniffi = { workspace = true, features = ["build"] }
+uniffi = { workspace = true, features = ["build", "pointer-ffi"] }
 
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }

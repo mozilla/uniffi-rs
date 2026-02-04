@@ -29,7 +29,7 @@ ffi-trace = []
 tokio = ["dep:async-compat"]
 
 # Enable support for the ffi buffer scaffolding functions
-scaffolding-ffi-buffer-fns = []
+pointer-ffi = []
 
 # Support for WebAssembly targets in a single-threaded environment.
 # This feature is unstable and may change in the future.

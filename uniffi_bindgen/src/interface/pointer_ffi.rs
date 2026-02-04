@@ -1,0 +1,130 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+//! FFI definitions for the pointer FFI
+//!
+//! These exist in parallel with the normal/legacy FFI.  If the user enables the `pointer-ffi`
+//! feature, then both versions of the FFI will be generated.  The pointer FFI symbols are prefixed
+//! with `uniffi_ptr_` to avoid any conflicts.
+
+use super::{ComponentInterface, UniffiTrait};
+
+impl ComponentInterface {
+    pub fn pointer_ffi_function_names(&self) -> impl Iterator<Item = String> + '_ {
+        let namespace = self.ffi_namespace();
+        // Builtin FFI methods
+        [
+            format!("uniffi_ptr_{namespace}_rustbuffer_alloc"),
+            format!("uniffi_ptr_{namespace}_rustbuffer_free"),
+            format!("uniffi_ptr_{namespace}_rust_future_poll"),
+            format!("uniffi_ptr_{namespace}_rust_future_cancel"),
+            format!("uniffi_ptr_{namespace}_rust_future_complete"),
+            format!("uniffi_ptr_{namespace}_rust_future_free"),
+        ]
+        .into_iter()
+        // Functions
+        .chain(
+            self.function_definitions()
+                .iter()
+                .map(|f| f.ffi_func().pointer_ffi_name()),
+        )
+        // Constructors / free / clone
+        .chain(self.object_definitions().iter().flat_map(|o| {
+            [
+                o.ffi_object_clone().pointer_ffi_name(),
+                o.ffi_object_free().pointer_ffi_name(),
+            ]
+            .into_iter()
+            .chain(
+                o.constructors()
+                    .into_iter()
+                    .map(|c| c.ffi_func().pointer_ffi_name()),
+            )
+        }))
+        // Methods
+        .chain(
+            self.enum_definitions()
+                .iter()
+                .flat_map(|e| e.methods())
+                .chain(self.record_definitions().iter().flat_map(|r| r.methods()))
+                .chain(self.object_definitions().iter().flat_map(|o| o.methods()))
+                .map(|m| m.ffi_func().pointer_ffi_name()),
+        )
+        // UniFFI trait methods
+        .chain(
+            self.enum_definitions()
+                .iter()
+                .flat_map(|e| e.uniffi_traits())
+                .chain(
+                    self.record_definitions()
+                        .iter()
+                        .flat_map(|r| r.uniffi_traits()),
+                )
+                .chain(
+                    self.object_definitions()
+                        .iter()
+                        .flat_map(|o| o.uniffi_traits()),
+                )
+                .flat_map(|ut| match ut {
+                    UniffiTrait::Display { fmt: m }
+                    | UniffiTrait::Debug { fmt: m }
+                    | UniffiTrait::Hash { hash: m }
+                    | UniffiTrait::Ord { cmp: m } => vec![m],
+                    UniffiTrait::Eq { eq, ne } => vec![eq, ne],
+                })
+                .map(|m| m.ffi_func().pointer_ffi_name()),
+        )
+        // VTable init functions
+        .chain(
+            self.callback_interface_definitions()
+                .iter()
+                .map(|cbi| cbi.ffi_init_callback().pointer_ffi_name()),
+        )
+        .chain(
+            self.object_definitions()
+                .iter()
+                .filter(|o| o.has_callback_interface())
+                .map(move |o| o.ffi_init_callback().pointer_ffi_name()),
+        )
+    }
+
+    pub fn pointer_ffi_integrity_function_names(&self) -> impl Iterator<Item = String> + '_ {
+        let namespace = self.ffi_namespace();
+        [format!("uniffi_ptr_{namespace}_uniffi_contract_version")]
+            .into_iter()
+            .chain(
+                self.iter_checksums()
+                    .map(|(name, _)| uniffi_meta::pointer_ffi_symbol_name(&name)),
+            )
+    }
+
+    pub fn pointer_ffi_rustbuffer_alloc(&self) -> String {
+        format!("uniffi_ptr_{}_rustbuffer_alloc", self.ffi_namespace())
+    }
+
+    pub fn pointer_ffi_rustbuffer_free(&self) -> String {
+        format!("uniffi_ptr_{}_rustbuffer_free", self.ffi_namespace())
+    }
+
+    pub fn pointer_ffi_rust_future_poll(&self) -> String {
+        format!("uniffi_ptr_{}_rust_future_poll", self.ffi_namespace())
+    }
+
+    pub fn pointer_ffi_rust_future_complete(&self) -> String {
+        format!("uniffi_ptr_{}_rust_future_complete", self.ffi_namespace())
+    }
+
+    pub fn pointer_ffi_rust_future_cancel(&self) -> String {
+        format!("uniffi_ptr_{}_rust_future_cancel", self.ffi_namespace())
+    }
+
+    pub fn pointer_ffi_rust_future_free(&self) -> String {
+        format!("uniffi_ptr_{}_rust_future_free", self.ffi_namespace())
+    }
+
+    pub fn pointer_ffi_iter_checksums(&self) -> impl Iterator<Item = (String, u16)> + '_ {
+        self.iter_checksums()
+            .map(|(name, checksum)| (uniffi_meta::pointer_ffi_symbol_name(&name), checksum))
+    }
+}

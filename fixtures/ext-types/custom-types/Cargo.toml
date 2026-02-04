@@ -13,10 +13,10 @@ name = "ext_types_custom"
 anyhow = "1"
 bytes = "1.11"
 thiserror = "2"
-uniffi = { workspace = true }
+uniffi = { workspace = true, features=["pointer-ffi"] }
 
 [build-dependencies]
-uniffi = { workspace = true, features = ["build"] }
+uniffi = { workspace = true, features = ["build", "pointer-ffi"] }
 
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }

@@ -10,7 +10,7 @@ crate-type = ["lib", "cdylib"]
 name = "arithmeticpm"
 
 [dependencies]
-uniffi = { workspace = true }
+uniffi = { workspace = true, features = ["pointer-ffi"] }
 thiserror = "2"
 
 [dev-dependencies]

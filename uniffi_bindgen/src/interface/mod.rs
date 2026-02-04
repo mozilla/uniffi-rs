@@ -75,6 +75,7 @@ mod visit_mut;
 pub use ffi::{
     FfiArgument, FfiCallbackFunction, FfiDefinition, FfiField, FfiFunction, FfiStruct, FfiType,
 };
+pub mod pointer_ffi;
 pub use uniffi_meta::Radix;
 use uniffi_meta::{
     ConstructorMetadata, DefaultValueMetadata, LiteralMetadata, MethodMetadata, NamespaceMetadata,

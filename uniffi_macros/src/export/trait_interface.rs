@@ -29,12 +29,46 @@ pub(super) fn gen_trait_scaffolding(
     if let Some(rt) = args.async_runtime {
         return Err(syn::Error::new_spanned(rt, "not supported for traits"));
     }
-    let trait_name = ident_to_string(&self_ident);
     let trait_impl = with_foreign.then(|| {
         callback_interface::trait_impl(mod_path, &self_ident, &items, true)
             .unwrap_or_else(|e| e.into_compile_error())
     });
 
+    let mut helper_fn_tokens = TokenStream::default();
+    helper_fn_tokens.extend(helper_fns(mod_path, &self_ident));
+    #[cfg(feature = "pointer-ffi")]
+    helper_fn_tokens.extend(helper_fns_pointer_ffi(mod_path, &self_ident));
+
+    let impl_tokens: TokenStream = items
+        .into_iter()
+        .map(|item| match item {
+            ImplItem::Method(sig) => gen_method_scaffolding(sig, None, udl_mode, None),
+            _ => unreachable!("traits have no constructors"),
+        })
+        .collect::<syn::Result<_>>()?;
+
+    let meta_static_var = (!udl_mode).then(|| {
+        let imp = if with_foreign {
+            ObjectImpl::CallbackTrait
+        } else {
+            ObjectImpl::Trait
+        };
+        interface_meta_static_var(&ident_to_string(&self_ident), imp, docstring.as_str())
+            .unwrap_or_else(syn::Error::into_compile_error)
+    });
+    let ffi_converter_tokens = ffi_converter(&self_ident, with_foreign);
+
+    Ok(quote_spanned! { self_ident.span() =>
+        #meta_static_var
+        #helper_fn_tokens
+        #trait_impl
+        #impl_tokens
+        #ffi_converter_tokens
+    })
+}
+
+fn helper_fns(mod_path: &str, self_ident: &Ident) -> TokenStream {
+    let trait_name = ident_to_string(self_ident);
     let clone_fn_ident = Ident::new(
         &uniffi_meta::clone_fn_symbol_name(mod_path, &trait_name),
         Span::call_site(),
@@ -43,8 +77,7 @@ pub(super) fn gen_trait_scaffolding(
         &uniffi_meta::free_fn_symbol_name(mod_path, &trait_name),
         Span::call_site(),
     );
-
-    let helper_fn_tokens = quote! {
+    quote! {
         #[doc(hidden)]
         #[unsafe(no_mangle)]
         /// Clone a pointer to this object type
@@ -86,34 +119,61 @@ pub(super) fn gen_trait_scaffolding(
                 ::std::result::Result::Ok(())
             });
         }
-    };
+    }
+}
 
-    let impl_tokens: TokenStream = items
-        .into_iter()
-        .map(|item| match item {
-            ImplItem::Method(sig) => gen_method_scaffolding(sig, None, udl_mode, None),
-            _ => unreachable!("traits have no constructors"),
-        })
-        .collect::<syn::Result<_>>()?;
+#[cfg(feature = "pointer-ffi")]
+fn helper_fns_pointer_ffi(mod_path: &str, self_ident: &Ident) -> TokenStream {
+    let trait_name = ident_to_string(self_ident);
+    let clone_fn_ident = Ident::new(
+        &uniffi_meta::pointer_ffi_symbol_name(&uniffi_meta::clone_fn_symbol_name(
+            mod_path,
+            &trait_name,
+        )),
+        Span::call_site(),
+    );
+    let free_fn_ident = Ident::new(
+        &uniffi_meta::pointer_ffi_symbol_name(&uniffi_meta::free_fn_symbol_name(
+            mod_path,
+            &trait_name,
+        )),
+        Span::call_site(),
+    );
+    quote! {
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        /// Clone a pointer to this object type
+        ///
+        /// Safety: Only pass pointers returned by a UniFFI call.  Do not pass pointers that were
+        /// passed to the free function.
+        pub unsafe extern "C" fn #clone_fn_ident(ffi_buffer: *mut u8) {
+            let mut args_buf = ::std::slice::from_raw_parts(ffi_buffer, ::uniffi::ffi_buffer_size!((::uniffi::Handle)));
+            let handle = <::uniffi::Handle as ::uniffi::FfiSerialize>::read(&mut args_buf);
+            ::uniffi::deps::trace!("{}.clone ({:?})", #trait_name, handle);
+            let cloned = handle.clone_arc_handle::<::std::sync::Arc<dyn #self_ident>>();
 
-    let meta_static_var = (!udl_mode).then(|| {
-        let imp = if with_foreign {
-            ObjectImpl::CallbackTrait
-        } else {
-            ObjectImpl::Trait
-        };
-        interface_meta_static_var(&ident_to_string(&self_ident), imp, docstring.as_str())
-            .unwrap_or_else(syn::Error::into_compile_error)
-    });
-    let ffi_converter_tokens = ffi_converter(&self_ident, with_foreign);
+            let mut return_buf = ::std::slice::from_raw_parts_mut(ffi_buffer, ::uniffi::ffi_buffer_size!((::uniffi::Handle)));
+            <::uniffi::Handle as ::uniffi::FfiSerialize>::write(&mut return_buf, cloned);
+        }
 
-    Ok(quote_spanned! { self_ident.span() =>
-        #meta_static_var
-        #helper_fn_tokens
-        #trait_impl
-        #impl_tokens
-        #ffi_converter_tokens
-    })
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        /// Free a pointer to this object type
+        ///
+        /// Safety: Only pass pointers returned by a UniFFI call.  Do not pass pointers that were
+        /// passed to the free function.
+        ///
+        /// Note: clippy doesn't complain about this being unsafe, but it definitely is since it
+        /// calls `Box::from_raw`.
+        pub unsafe extern "C" fn #free_fn_ident(ffi_buffer: *mut u8) {
+            let mut args_buf = ::std::slice::from_raw_parts(ffi_buffer, ::uniffi::ffi_buffer_size!((::uniffi::Handle)));
+            let handle = <::uniffi::Handle as ::uniffi::FfiSerialize>::read(&mut args_buf);
+            ::uniffi::deps::trace!("{}.free ({:?})", #trait_name, handle);
+            ::std::mem::drop(unsafe {
+                handle.into_arc::<::std::sync::Arc<dyn #self_ident>>()
+            });
+        }
+    }
 }
 
 pub(crate) fn ffi_converter(trait_ident: &Ident, with_foreign: bool) -> TokenStream {
@@ -128,13 +188,17 @@ pub(crate) fn ffi_converter(trait_ident: &Ident, with_foreign: bool) -> TokenStr
     let try_lift = if with_foreign {
         // The trait can be implemented by both Rust and the foreign side.
         // `try_lift` needs to handle both cases
-        let trait_impl_ident = callback_interface::trait_impl_ident(&trait_name);
+        let construct_dyn_trait = callback_interface::construct_dyn_trait(
+            &trait_name,
+            quote! { ::std::sync::Arc },
+            quote! { handle.as_raw() },
+        );
         quote! {
             fn try_lift(handle: Self::FfiType) -> ::uniffi::deps::anyhow::Result<::std::sync::Arc<Self>> {
                 if handle.is_foreign() {
                     // Handle was generated by the foreign side.
                     // Construct a new instance of our struct that implements the trait using the handle and the registered vtable.
-                    ::std::result::Result::Ok(::std::sync::Arc::new(<#trait_impl_ident>::new(handle.as_raw())))
+                    ::std::result::Result::Ok(#construct_dyn_trait)
                 } else {
                     // Handle was generated by the Rust side.
                     // Reconstruct the double-wrapped arc that we lowered.

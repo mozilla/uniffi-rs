@@ -11,12 +11,12 @@ name = "custom_types"
 
 [dependencies]
 anyhow = "1"
-bytes = "1.11"
-uniffi = { workspace = true }
+bytes = "1.3"
+uniffi = { workspace = true, features = ["pointer-ffi"] }
 url = "2.2"
 
 [build-dependencies]
-uniffi = { workspace = true, features = ["build"] }
+uniffi = { workspace = true, features = ["build", "pointer-ffi"] }
 
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }
