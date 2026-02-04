@@ -20,7 +20,7 @@ name = "uniffi_ext_types_lib"
 
 [dependencies]
 anyhow = "1"
-bytes = "1.3"
+bytes = "1.11"
 # Add the "scaffolding-ffi-buffer-fns" feature to make sure things can build correctly
 uniffi = { workspace = true }
 
