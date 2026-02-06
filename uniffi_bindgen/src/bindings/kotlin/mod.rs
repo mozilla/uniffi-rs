@@ -6,6 +6,7 @@ use crate::{
     bindings::GenerateOptions, interface::rename, BindgenLoader, Component, ComponentInterface,
     Result,
 };
+use anyhow::bail;
 use camino::{Utf8Path, Utf8PathBuf};
 use fs_err as fs;
 use std::collections::HashMap;
@@ -19,6 +20,12 @@ pub mod test;
 /// Generate Kotlin bindings
 pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> {
     let metadata = loader.load_metadata(&options.source)?;
+    if let Some(crate_filter) = &options.crate_filter {
+        if !metadata.contains_key(crate_filter) {
+            bail!("No UniFFI metadata found for crate {crate_filter}");
+        }
+    }
+
     let cis = loader.load_cis(metadata)?;
     let cdylib = loader.library_name(&options.source).map(|l| l.to_string());
     let mut components =

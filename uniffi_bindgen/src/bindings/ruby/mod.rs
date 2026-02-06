@@ -5,7 +5,7 @@
 use std::process::Command;
 
 use crate::{bindings::GenerateOptions, BindgenLoader, Component, ComponentInterface};
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use fs_err as fs;
 
 mod gen_ruby;
@@ -15,6 +15,11 @@ use gen_ruby::{Config, RubyWrapper};
 
 pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> {
     let metadata = loader.load_metadata(&options.source)?;
+    if let Some(crate_filter) = &options.crate_filter {
+        if !metadata.contains_key(crate_filter) {
+            bail!("No UniFFI metadata found for crate {crate_filter}");
+        }
+    }
     let cis = loader.load_cis(metadata)?;
     let cdylib = loader.library_name(&options.source).map(|l| l.to_string());
     let mut components =
