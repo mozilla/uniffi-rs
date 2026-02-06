@@ -33,7 +33,7 @@ use crate::{
     bindings::GenerateOptions, interface::rename, BindgenLoader, BindgenPaths, Component,
     ComponentInterface,
 };
-use anyhow::Result;
+use anyhow::{bail, Result};
 use camino::Utf8PathBuf;
 use fs_err as fs;
 use std::collections::HashMap;
@@ -64,6 +64,11 @@ pub fn generate(
     options: GenerateOptions,
 ) -> Result<Vec<Component<Config>>> {
     let metadata = loader.load_metadata(&options.source)?;
+    if let Some(crate_filter) = &options.crate_filter {
+        if !metadata.contains_key(crate_filter) {
+            bail!("No UniFFI metadata found for crate {crate_filter}");
+        }
+    }
     let cis = loader.load_cis(metadata)?;
     let mut components = loader.load_components(cis, parse_config)?;
     apply_renames(&mut components);

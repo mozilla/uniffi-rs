@@ -69,6 +69,9 @@ impl BindgenLoader {
                 Some(items) => items,
                 None => macro_metadata::extract_from_bytes(&data)?,
             };
+            if items.is_empty() {
+                bail!("No UniFFI metadata found in {source_path}");
+            }
             let mut metadata_groups = create_metadata_groups(&items);
             group_metadata(&mut metadata_groups, items)?;
 

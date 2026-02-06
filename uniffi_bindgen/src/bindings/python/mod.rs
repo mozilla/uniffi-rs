@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use askama::Template;
 use camino::Utf8Path;
 use fs_err as fs;
@@ -19,6 +19,11 @@ pub mod test;
 /// Generate Python bindings
 pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> {
     let metadata = loader.load_metadata(&options.source)?;
+    if let Some(crate_filter) = &options.crate_filter {
+        if !metadata.contains_key(crate_filter) {
+            bail!("No UniFFI metadata found for crate {crate_filter}");
+        }
+    }
     let root = loader.load_pipeline_initial_root(&options.source, metadata)?;
     run_pipeline(root, &options.out_dir, options.crate_filter.as_deref())?;
 
