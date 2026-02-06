@@ -6,6 +6,11 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### ⚠️ Breaking Changes ⚠️
+- Kotlin and Python now fail to generate bindings when there are async primary constructors.
+  Previously these languages skipped the constructor in this case or generated a constructor that always threw.
+  You can get similar behavior by adding the primary constructor to the uniffi.toml excludes list in uniffi.toml (e.g. `excludes = ["MyObject.new"])
+
 ### What's Fixed
 
 - Fixed bug that sometimes prevented renaming items inside a submodule [#2792](https://github.com/mozilla/uniffi-rs/pull/2792)

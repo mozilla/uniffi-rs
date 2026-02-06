@@ -8,10 +8,7 @@ class {{ int.name }}({{ int.base_classes|join(", ") }}):
 
 {%- for cons in int.constructors %}
 {%-     let callable = cons.callable %}
-{%-     if callable.is_primary_constructor() && callable.is_async() %}
-    def __init__(self, *args, **kw):
-        raise ValueError("async constructors not supported.")
-{%-     elif callable.is_primary_constructor() %}
+{%-     if callable.is_primary_constructor() %}
     def __init__(self, {% include "CallableArgs.py" %}):
         {{ cons.docstring|docstring(8) -}}
         {%- filter indent(8) %}

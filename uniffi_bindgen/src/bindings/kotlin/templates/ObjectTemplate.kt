@@ -141,17 +141,11 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         this.cleanable = null
     }
 
-    {%- match obj.primary_constructor() %}
-    {%- when Some(cons) %}
-    {%-     if cons.is_async() %}
-    // Note no constructor generated for this object as it is async.
-    {%-     else %}
+    {%- if let Some(cons) = obj.primary_constructor() %}
     {%- call kt::docstring(cons, 4) %}
     constructor({% call kt::arg_list(cons, true) -%}) :
         this(UniffiWithHandle, {% call kt::to_ffi_call(cons) %})
-    {%-     endif %}
-    {%- when None %}
-    {%- endmatch %}
+    {%- endif %}
 
     protected val handle: Long
     protected val cleanable: UniffiCleaner.Cleanable?

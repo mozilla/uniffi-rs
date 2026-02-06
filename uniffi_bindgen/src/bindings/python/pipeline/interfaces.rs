@@ -82,3 +82,19 @@ pub fn base_classes(int: &general::Interface, context: &Context) -> Result<Vec<S
     }
     Ok(base_classes)
 }
+
+pub fn map_constructors(
+    interface_name: &str,
+    constructors: Vec<general::Constructor>,
+    context: &Context,
+) -> Result<Vec<Constructor>> {
+    constructors
+        .into_iter()
+        .map(|c| {
+            if c.callable.is_primary_constructor() && c.callable.is_async() {
+                bail!("Async primary constructors not supported but {interface_name} has one");
+            }
+            c.map_node(context)
+        })
+        .collect()
+}

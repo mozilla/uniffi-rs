@@ -239,6 +239,7 @@ pub struct Record {
     pub fields: Vec<Field>,
     pub docstring: Option<String>,
     pub self_type: TypeNode,
+    #[map_node(interfaces::map_constructors(&self.name, self.constructors, context)?)]
     pub constructors: Vec<Constructor>,
     pub methods: Vec<Method>,
     pub uniffi_trait_methods: UniffiTraitMethods,
@@ -267,6 +268,7 @@ pub struct Enum {
     pub discr_type: TypeNode,
     pub docstring: Option<String>,
     pub self_type: TypeNode,
+    #[map_node(interfaces::map_constructors(&self.name, self.constructors, context)?)]
     pub constructors: Vec<Constructor>,
     pub methods: Vec<Method>,
     pub uniffi_trait_methods: UniffiTraitMethods,
@@ -291,6 +293,7 @@ pub struct Interface {
     #[map_node(interfaces::protocol(&self, context)?)]
     pub protocol: Protocol,
     pub docstring: Option<String>,
+    #[map_node(interfaces::map_constructors(&self.name, self.constructors, context)?)]
     pub constructors: Vec<Constructor>,
     pub methods: Vec<Method>,
     pub uniffi_trait_methods: UniffiTraitMethods,
