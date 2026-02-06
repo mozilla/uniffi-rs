@@ -1,2 +1,8 @@
+[bindings.python]
+# Python doesn't support async constructors
+exclude = ["Megaphone.new", "FallibleMegaphone.new", "TestObject.new", "UdlMegaphone.new"]
+
 [bindings.kotlin]
 package_name = "uniffi.fixture.futures"
+# Kotlin doesn't support async constructors
+exclude = ["Megaphone.new", "FallibleMegaphone.new", "TestObject.new", "UdlMegaphone.new"]

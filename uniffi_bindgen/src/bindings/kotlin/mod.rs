@@ -33,6 +33,19 @@ pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> 
         loader.load_components(cis, |ci, toml| parse_config(ci, toml, cdylib.clone()))?;
     apply_renames(&mut components);
 
+    // Check for primary constructors after `apply_renames` is called, so that we honor exclusions.
+    for c in components.iter() {
+        for o in c.ci.object_definitions() {
+            for cons in o.constructors() {
+                if cons.is_async() && cons.is_primary_constructor() {
+                    bail!(
+                        "Async primary constructors not supported but {} has one",
+                        o.name()
+                    );
+                }
+            }
+        }
+    }
     for c in components.iter_mut() {
         // Call derive_ffi_functions after `apply_renames`
         c.ci.derive_ffi_funcs()?;
