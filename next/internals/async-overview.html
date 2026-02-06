@@ -2447,12 +2447,14 @@ and providing scaffolding functions so that the foreign bindings can drive the f
   Rust--&gt;&gt;-Foreign: return result
   Foreign-&gt;&gt;Rust: call RustFuture free fn
   Foreign--&gt;&gt;-User: return from async function</code></pre>
-<p>For each async function, UniFFI generates 4 scaffolding functions:
-* A scaffolding function that returns a <code>RustFuture</code> handle
-* <code>rust_future_poll</code> to poll the future
-* <code>rust_future_complete</code> to receive the completed result of a future
-* <code>rust_future_free</code> to destroy a future freeing any underlying memory
-* Technically, the function names are more like <code>uniffi_[module_prefix]_rust_future_poll</code>, but this document uses above names make for shorthand.</p>
+<p>For each async function, UniFFI generates 4 scaffolding functions:</p>
+<ul>
+<li>A scaffolding function that returns a <code>RustFuture</code> handle</li>
+<li><code>rust_future_poll</code> to poll the future</li>
+<li><code>rust_future_complete</code> to receive the completed result of a future</li>
+<li><code>rust_future_free</code> to destroy a future freeing any underlying memory</li>
+</ul>
+<p>Technically, the function names are more like <code>uniffi_[module_prefix]_rust_future_poll</code>, but this document uses above names make for shorthand.</p>
 <p>The UniFFI generated code for an async function performs these steps:</p>
 <ol>
 <li>Call the Rust scaffolding function, receiving a <code>RustFuture</code> handle</li>
