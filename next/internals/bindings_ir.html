@@ -2524,56 +2524,26 @@ See <code>uniffi_bingen::macro_metadata</code> and <code>uniffi_meta::reader</co
 <p>This phase transforms inputs the metadata and creates an IR from it.
 The Initial IR contains the metadata items with a couple changes.
 The main change is the flat list is converted into a tree structure.</p>
-<div class="highlight"><pre><span></span><code><span class="sd">/// Root node of the Initial IR</span>
-<span class="sd">///</span>
-<span class="sd">/// Note: The `Node` derive also implements `Default` and `Default` should not be listed in the</span>
-<span class="sd">/// #[derive] list.</span>
-<span class="cp">#[derive(Debug, Clone, Node)]</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Root</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">modules</span><span class="p">:</span><span class="w"> </span><span class="nc">IndexMap</span><span class="o">&lt;</span><span class="nb">String</span><span class="p">,</span><span class="w"> </span><span class="n">Module</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="w">    </span><span class="sd">/// The library path the user passed to us, if we&#39;re in library mode</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">cdylib</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="p">}</span>
-
-<span class="cp">#[derive(Debug, Clone, Node)]</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Module</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">crate_name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">docstring</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">functions</span><span class="p">:</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Function</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">type_definitions</span><span class="p">:</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">TypeDefinition</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="p">}</span>
-
-<span class="cp">#[derive(Debug, Clone, Node)]</span>
-<span class="c1">// This is just FnMetadata with a new struct name</span>
-<span class="cp">#[node(from(FnMetadata))]</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Function</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">is_async</span><span class="p">:</span><span class="w"> </span><span class="kt">bool</span><span class="p">,</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">inputs</span><span class="p">:</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Argument</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">return_type</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="n">Type</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">throws</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="n">Type</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">checksum</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="kt">u16</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">docstring</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="p">}</span>
-
-<span class="cp">#[derive(Debug, Clone, Node)]</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="nc">TypeDefinition</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="sd">/// RecordMetadata with a new struct name</span>
-<span class="w">    </span><span class="sd">/// This has `FieldMetadata` as child nodes</span>
-<span class="w">    </span><span class="n">Record</span><span class="p">(</span><span class="n">Record</span><span class="p">),</span>
-<span class="w">    </span><span class="sd">/// RecordMetadata with a new struct name</span>
-<span class="w">    </span><span class="sd">/// This has `VariantMetadata` as child nodes and `FieldMetadata` as grand children.</span>
-<span class="w">    </span><span class="n">Enum</span><span class="p">(</span><span class="n">Enum</span><span class="p">),</span>
-<span class="w">    </span><span class="sd">/// ObjectMetadata with a new struct name</span>
-<span class="w">    </span><span class="sd">/// This has child nodes for ConstructorMetadata, MethodMetadata, and several other metadata</span>
-<span class="w">    </span><span class="sd">/// items.</span>
-<span class="w">    </span><span class="n">Interface</span><span class="p">(</span><span class="n">Interface</span><span class="p">),</span>
-<span class="w">    </span><span class="sd">/// ...etc</span>
-<span class="w">    </span><span class="n">CallbackInterface</span><span class="p">(</span><span class="n">CallbackInterface</span><span class="p">),</span>
-<span class="w">    </span><span class="n">Custom</span><span class="p">(</span><span class="n">CustomType</span><span class="p">),</span>
-<span class="p">}</span>
-</code></pre></div>
+<p>The initial IR might look something like:
+<div class="highlight"><pre><span></span><code>Root {
+    namespaces: [
+        Namespace {
+            name: &quot;arithmetic&quot;,
+            functions: [
+                FnMetadata {
+                    module_path: &quot;arithmetic&quot;,
+                    name: &quot;add&quot;,
+                    ...
+                },
+                ...
+            ],
+            ...
+        },
+        ...
+    ],
+    cdylib: Some(&quot;arithmetical&quot;),
+}
+</code></pre></div></p>
 <h2 id="initial-ir-general-ir">Initial IR -&gt; General IR</h2>
 <p>This phase adds derived information about the FFI.
 Some examples are:</p>

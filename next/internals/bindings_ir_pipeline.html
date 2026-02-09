@@ -2223,26 +2223,20 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#node-conversions" class="md-nav__link">
+  <a href="#mapnode" class="md-nav__link">
     <span class="md-ellipsis">
-      Node conversions
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Node conversions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#field-conversion-order" class="md-nav__link">
-    <span class="md-ellipsis">
-      Field Conversion order
+      MapNode
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#context-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Context types
+    </span>
+  </a>
   
 </li>
       
@@ -2256,18 +2250,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#defining-irs" class="md-nav__link">
+  <a href="#assembling-a-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
-      Defining IRs
+      Assembling a pipeline
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#constructing-nodes-with-partial-field-data" class="md-nav__link">
+  <a href="#starting-a-ir-for-binding-generation" class="md-nav__link">
     <span class="md-ellipsis">
-      Constructing nodes with partial field data
+      Starting a IR for binding generation
     </span>
   </a>
   
@@ -2356,26 +2350,20 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#node-conversions" class="md-nav__link">
+  <a href="#mapnode" class="md-nav__link">
     <span class="md-ellipsis">
-      Node conversions
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Node conversions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#field-conversion-order" class="md-nav__link">
-    <span class="md-ellipsis">
-      Field Conversion order
+      MapNode
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#context-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Context types
+    </span>
+  </a>
   
 </li>
       
@@ -2389,18 +2377,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#defining-irs" class="md-nav__link">
+  <a href="#assembling-a-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
-      Defining IRs
+      Assembling a pipeline
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#constructing-nodes-with-partial-field-data" class="md-nav__link">
+  <a href="#starting-a-ir-for-binding-generation" class="md-nav__link">
     <span class="md-ellipsis">
-      Constructing nodes with partial field data
+      Starting a IR for binding generation
     </span>
   </a>
   
@@ -2441,9 +2429,9 @@ Our current recommendation for other external bindings authors is to avoid using
 <p>The Bindings IR pipeline is used to transform different <a href="bindings_ir.html">intermediate representations of the generated bindings</a>.</p>
 <ul>
 <li>The foundational code lives in the <code>uniffi_pipeline</code> crate.
-  This defines things like the <code>Node</code> trait.</li>
+  This defines things like the <code>Node</code> and <code>MapNode</code> traits.</li>
 <li>The macro code lives in the <code>uniffi_internal_macros</code> crate.
-  This defines things like the <code>Node</code> derive macro.</li>
+  This defines derive macros for <code>Node</code> and <code>MapNode</code>.</li>
 <li><code>uniffi_bindgen</code> defines the general pipeline.
   This converts <code>uniffi_meta</code> metadata to the initial IR then converts that to the general IR.</li>
 <li>Finally, each language defines their own pipeline, which extends the general pipeline and outputs a language-specific IR.</li>
@@ -2452,143 +2440,201 @@ Our current recommendation for other external bindings authors is to avoid using
 <p>Types inside an IR are called "nodes" and they must derive a <code>Node</code> trait impl.
 The top-level node is always named <code>Root</code>.
 When this document talks about converting between two IRs, this means converting between the root nodes of those IRs.</p>
-<p><code>Node</code> trait provides functionality to:</p>
+<p><code>Node</code> trait provides functionality for walking the IR tree.</p>
 <ul>
-<li>Traverse the node tree.  <code>Node::visit()</code> and <code>Node::visit_mut()</code> allows you to visit all
-  descendants with a given type.</li>
-<li>Convert between any two nodes using <code>Node::try_from_node</code>.  This conversion is described in the
-  next section.</li>
+<li><code>Node::visit()</code> and <code>Node::try_visit()</code> allows you to visit all descendants with a given type.</li>
+<li><code>Node::has_descendant()</code> tests if a predicate is true for any descendant.</li>
 </ul>
-<h2 id="node-conversions">Node conversions</h2>
-<p><code>Node::try_from_node</code> attempts to convert a node from one IR to the corresponding node from another IR.
-For example, <code>from_ir::Node</code> will be converted to <code>into_ir::Node</code> using the following rules:</p>
-<ul>
-<li>Any fields in <code>into_ir::Node</code>, but not <code>from_ir::Node</code> are added using <code>Default::default</code>, which the <code>Node</code> derive macro also derives.</li>
-<li>Any fields in <code>from_ir::Node</code>, but not <code>into_ir::Node</code> are ignored</li>
-<li>Any fields in both are recursively converted using <code>Node::try_from_node</code>.</li>
-<li><code>try_from_node</code> is automatically derived using the <code>Node</code> derive macro.
-  The conversion can be customized using macro attributes.</li>
-</ul>
-<p>Renamed node types, variants, and fields can be handled by adding the <code>#[node(from([name]))]</code> attribute:</p>
-<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Node)]</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Node</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="sd">/// `from_ir::Node::prev_name` fields become `into_ir::Node::new_name` fields.</span>
-<span class="w">    </span><span class="cp">#[node(from(prev_name))]</span>
-<span class="w">    </span><span class="n">new_name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<p>These are useful when you want to populate a node field using it's descendants.  For example,
+building up the FFI definitions by visiting all functions/methods inside a namespace.</p>
+<p>Node methods input a closure that inputs a node type, for example <code>root_node.visit(|func: Function| ...)</code>.
+<code>visit()</code> will walk the node tree and call that closure with all matching nodes.  The methods panic
+if there are no descendant types with the input node type.  This checks the types involved, not the
+values.  If there is a <code>Vec&lt;Function&gt;</code> field then <code>visit()</code> will not panic, even if the vec is empty.</p>
+<h2 id="mapnode">MapNode</h2>
+<p>The <code>MapNode</code> trait is used to convert from one node to another and is defined like this:</p>
+<div class="highlight"><pre><span></span><code><span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">MapNode</span><span class="o">&lt;</span><span class="n">Output</span><span class="p">,</span><span class="w"> </span><span class="n">Context</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">map_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">Context</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Output</span><span class="o">&gt;</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Also, nodes can be "wrapped" in the new IR using the <code>#[node(wraps([type]))]</code> attribute:</p>
-<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Node)]</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Node</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="sd">/// `into_ir::Node` wraps `from_ir::WrappedNode`.</span>
-<span class="w">    </span><span class="sd">/// All `from_ir::WrappedNode` values will be replaced with `Node { wrapped: wrapped_node }` values.</span>
-<span class="w">    </span><span class="sd">/// Any other fields will be initialized to their default values.</span>
-<span class="w">    </span><span class="sd">///</span>
-<span class="w">    </span><span class="sd">/// This is mostly used as a way to add fields to enum types.</span>
-<span class="w">    </span><span class="sd">/// Wrap the enum with a struct, then add fields to that struct.</span>
-<span class="w">    </span><span class="sd">/// For example, `TypeNode` wraps the `Type` enum from `uniffi_meta`.</span>
-<span class="w">    </span><span class="cp">#[node(wraps)]</span>
-<span class="w">    </span><span class="n">wrapped</span><span class="p">:</span><span class="w"> </span><span class="nc">WrappedNode</span><span class="p">,</span>
+<ul>
+<li><code>Self</code> is a node type from the previous IR</li>
+<li><code>Output</code> is a node type from current IR</li>
+<li><code>Context</code> is a generic context type which can be used to pass data to descendant nodes.</li>
+</ul>
+<p>Here's an example of how a <code>MapNode</code> implementation might look:</p>
+<div class="highlight"><pre><span></span><code><span class="k">impl</span><span class="w"> </span><span class="n">MapNode</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">,</span><span class="w"> </span><span class="n">Context</span><span class="o">&gt;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">prev_ir</span><span class="p">::</span><span class="n">Namespace</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">map_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">Context</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// Create a new context for our descendants</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">child_context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="n">clone</span><span class="p">();</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">context</span><span class="p">;</span>
+<span class="w">        </span><span class="n">context</span><span class="p">.</span><span class="n">set_namespace_name</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">.</span><span class="n">name</span><span class="p">);</span>
+<span class="w">        </span><span class="c1">// Map the previous `Namespace` node into the current version</span>
+<span class="w">        </span><span class="nb">Ok</span><span class="p">(</span><span class="n">Namespace</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// New fields are usually populated by calling a function</span>
+<span class="w">            </span><span class="n">ffi_definitions</span><span class="p">:</span><span class="w"> </span><span class="nc">generate_ffi_definitions</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">)</span><span class="o">?</span><span class="p">,</span>
+<span class="w">            </span><span class="c1">// Existing fields are usually converted using recursive `map_node` calls.</span>
+<span class="w">            </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nc">self</span><span class="p">.</span><span class="n">name</span><span class="p">,</span>
+<span class="w">            </span><span class="n">functions</span><span class="p">:</span><span class="w"> </span><span class="nc">self</span><span class="p">.</span><span class="n">functions</span><span class="p">.</span><span class="n">map_node</span><span class="p">(</span><span class="n">context</span><span class="p">)</span><span class="o">?</span><span class="p">,</span>
+<span class="w">            </span><span class="n">type_definitions</span><span class="p">:</span><span class="w"> </span><span class="nc">self</span><span class="p">.</span><span class="n">type_definitions</span><span class="p">.</span><span class="n">map_node</span><span class="p">(</span><span class="n">context</span><span class="p">)</span><span class="o">?</span><span class="p">,</span>
+<span class="w">            </span><span class="c1">// ...</span>
+<span class="w">        </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<h3 id="field-conversion-order">Field Conversion order</h3>
-<p>Fields are converted in declaration order.
-This matters when a field is listed twice with one of them using <code>#[node(from(&lt;name_of_the_other_field&gt;)]</code>.
-In this case the first field declared will be initialized with the data from the previous pass and the second field will be initialized to the default value.</p>
-<p>You can take advantage of this to convert an optional value into a non-optional value.
-For example:</p>
-<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Node)]</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">SourceNode</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span>
+<p><code>MapNode</code> can be derived automatically.  For the previous impl that would look like:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Node, MapNode)]</span>
+<span class="c1">// Use `#[map_node(from([type_name]))]` to declare the type we&#39;re mapping from</span>
+<span class="cp">#[map_node(from(prev_ir::Namespace))]</span>
+<span class="c1">// Use `#[map_node(update_context([expr]))]` update the context for descendant `map_node()` calls.</span>
+<span class="cp">#[map_node(update_context(context.set_namespace_name(&amp;self.name)))]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Namespace</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Use `#[map_node(expr)]` to manually define the expression to populate a field.</span>
+<span class="w">    </span><span class="cp">#[map_node(generate_ffi_definitions(&amp;self, context)?)]</span>
+<span class="w">    </span><span class="n">ffi_definitions</span><span class="p">:</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">FfiDefinition</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="c1">// If no `#[map_node]` attribute is present, then fields will be mapped using recursive</span>
+<span class="w">    </span><span class="c1">// `map_node()` calls.</span>
+<span class="w">    </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="w">    </span><span class="n">functions</span><span class="p">:</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Function</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">type_definitions</span><span class="p">:</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">TypeDefinition</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="c1">// Note: The derived impl will convert fields in the order they&#39;re defined in.  This means we</span>
+<span class="w">    </span><span class="c1">// need to put `ffi_definitions` first, so that we can take a reference to `self` before `self`</span>
+<span class="w">    </span><span class="c1">// is deconstructed for the `map_node` calls.</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The <code>MapNode</code> derive macro supports a few other attributes:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Node, MapNode)]</span>
+<span class="cp">#[map_node(from(prev_ir::TypeNode))]</span>
+<span class="c1">// When the type itself has the `#[map_node([path-to-function])]` attribute, then that function will</span>
+<span class="c1">// be used for the entire mapping logic. In this case `MapNode::map_node` will forward the call</span>
+<span class="c1">// `types::map_type_node`.</span>
+<span class="c1">//</span>
+<span class="c1">// Use this as an escape hatch for mappings that can&#39;t be auto-generated.</span>
+<span class="cp">#[map_node(types::map_type_node)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">TypeNode</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">//...</span>
 <span class="p">}</span>
 
-<span class="cp">#[derive(Node)]</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">DestNode</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="sd">/// This field will be set to `SourceNode::name`</span>
-<span class="w">    </span><span class="cp">#[node(from(name))]</span>
-<span class="w">    </span><span class="n">name_from_previous_pass</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span>
-<span class="w">    </span><span class="sd">/// This field will be a non-optional version of `SourceNode::name`.</span>
-<span class="w">    </span><span class="sd">/// It will be initialized to an empty string, then a pipeline pass will populate it using</span>
-<span class="w">    </span><span class="sd">/// `name_from_previous_pass` combined with logic to handle the `None` case.</span>
-<span class="w">    </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="cp">#[derive(Node, MapNode)]</span>
+<span class="cp">#[map_node(from(uniffi_meta::Type))]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="nc">Type</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Use `#[map_node(from)]` on variants/fields when they&#39;ve been renamed from the previous IR</span>
+<span class="w">    </span><span class="cp">#[map_node(from(Object))]</span>
+<span class="w">    </span><span class="n">Interface</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cp">#[map_node(from(prev_name_field))]</span>
+<span class="w">        </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="w">        </span><span class="c1">// ...</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="c1">// Use `#[map_node(added)]` for variants that have been added in this IR.  The generated code</span>
+<span class="w">    </span><span class="c1">// will not try to map these variants since they didn&#39;t exist in the previous IR</span>
+<span class="w">    </span><span class="cp">#[map_node(added)]</span>
+<span class="w">    </span><span class="n">External</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// ...</span>
+<span class="w">    </span><span class="p">},</span>
 <span class="p">}</span>
 </code></pre></div>
+<p>A common pattern is wanting mapping an enum to a struct so that we can add fields that apply to all
+variants.  This can be achieved like this:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Node, MapNode)]</span>
+<span class="cp">#[map_node(from(uniffi_meta::Type))]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">TypeNode</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cp">#[map_node(ffi_types::ffi_type(&amp;self, context)?)]</span>
+<span class="w">    </span><span class="n">ffi_type</span><span class="p">:</span><span class="w"> </span><span class="nc">FfiType</span><span class="p">,</span>
+<span class="w">    </span><span class="cp">#[map_node(self)]</span>
+<span class="w">    </span><span class="n">ty</span><span class="p">:</span><span class="w"> </span><span class="nc">Type</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Finally, if a type hasn't changed at all between IRs, then it can be re-used using the
+<code>use_prev_node!</code> macro.  Note this only works if none of the fields have been changed either.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Radix is a very simple Enum and doesn&#39;t change between IRs</span>
+<span class="n">use_prev_node</span><span class="o">!</span><span class="p">(</span><span class="n">uniffi_meta</span><span class="p">::</span><span class="n">Radix</span><span class="p">);</span>
+<span class="c1">// Sometimes we want to map unchanged types using a function.  For example, applying rename</span>
+<span class="c1">// logic to certain `Type` variants.  This can be achieved by specifying the map function as the</span>
+<span class="c1">// second argument.</span>
+<span class="n">use_prev_node</span><span class="o">!</span><span class="p">(</span><span class="n">uniffi_meta</span><span class="p">::</span><span class="n">Type</span><span class="p">,</span><span class="w"> </span><span class="n">types</span><span class="p">::</span><span class="n">map_type</span><span class="p">);</span>
+</code></pre></div>
+<h2 id="context-types">Context types</h2>
+<p>The <code>Context</code> type provides a way for nodes to pass data from one node down to the <code>map_node()</code>
+methods of descendant nodes. Here are some examples of how it's used:</p>
+<ul>
+<li>Passing the crate name down so it can be used to derive FFI function names.</li>
+<li>Passing the namespace name down so it can be used to determine which types are external.</li>
+<li>Passing the current type down so it can be used to populate <code>CallableKind::Method.self_type</code>.</li>
+</ul>
+<p><code>Context</code> can also be used to store data from outside the pass.  For example, to implement the
+renaming logic in the general pass, it needs to know the key in the TOML file that contains the
+rename map (<code>python</code>, <code>kotlin</code>, <code>swift</code> etc).  To handle this, the <code>general::Context</code> struct is
+constructed with that key stored inside it.</p>
+<p>Finally, <code>Context</code> types also act as marker types for the <code>MapNode</code> trait.  For example, the above
+code wants to call <code>types::map_type</code> when mapping <code>Type</code> for one pass, but it shouldn't be called
+for the next pass. This works because the <code>MapNode</code> impl is specific to the <code>Context</code> type for the
+pass.</p>
 <h2 id="module-structure">Module structure</h2>
-<p>Each IRs will typically have a module dedicated to them with the following structure:</p>
+<p>Each IR will typically have a module dedicated to them with the following structure:</p>
 <ul>
-<li><code>mod.rs</code> -- Top-level module.  This is where the pipeline for the IR is defined.</li>
-<li><code>nodes.rs</code> -- Node definitions.</li>
-<li><em>other submodules</em> -- Define pipeline pass functions.  These are named <code>pass()</code> by convention.</li>
+<li><code>mod.rs</code> -- Top-level module.</li>
+<li><code>nodes.rs</code> -- Node definitions with <code>MapNode</code> derives.</li>
+<li><code>context.rs</code> -- Defines the <code>Context</code> struct</li>
+<li><em>other submodules</em> -- Define functions to implement the IR pass</li>
 </ul>
-<h2 id="defining-irs">Defining IRs</h2>
-<ul>
-<li>Start with an existing IR, let's assume it lives in the <code>from_ir</code> module.</li>
-<li>Define a new module for your IR, let's call it <code>into_ir</code></li>
-<li>Copy the <code>from_ir/nodes.rs</code> to <code>into_ir/nodes.rs</code></li>
-<li>Add new fields to the structs in <code>into_ir::nodes</code></li>
-<li>Define pipeline passes to populate the new fields, using the existing fields.  For example, <code>into_ir/mod.rs</code> might define a pipeline like this:</li>
-</ul>
-<div class="highlight"><pre><span></span><code><span class="c1">// The output type is a pipeline that converts from `initial::Root` to the `Root` node from this IR.</span>
+<h2 id="assembling-a-pipeline">Assembling a pipeline</h2>
+<p>Pipelines are assembled by adding a series of passes that map one root node to another.</p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Pipeline defined `uniffi_bindgen::pipeline::general`</span>
+<span class="c1">//</span>
+<span class="c1">// This is the shared start for all bindings pipelines.</span>
+<span class="c1">// It maps `uniffi_bindgen::pipeline::initial::Root` to</span>
+<span class="c1">// `uniffi_bindgen::pipeline::general::Root`</span>
+<span class="c1">//</span>
+<span class="c1">// Note that the context is constructed with `bindings_toml_key`.  This is how you can pass data</span>
+<span class="c1">// from outside the pass into the `map_node` methods.</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">pipeline</span><span class="p">(</span><span class="n">bindings_toml_key</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="kt">str</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Pipeline</span><span class="o">&lt;</span><span class="n">initial</span><span class="p">::</span><span class="n">Root</span><span class="p">,</span><span class="w"> </span><span class="n">Root</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">new_pipeline</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="n">pass</span><span class="p">::</span><span class="o">&lt;</span><span class="n">Root</span><span class="p">,</span><span class="w"> </span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Context</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">bindings_toml_key</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// Pipeline defined `uniffi_bindgen::python::pipeline`</span>
+<span class="c1">//</span>
+<span class="c1">// This extends the general pipeline to map to</span>
+<span class="c1">// `uniffi_bindgen::python::pipeline::Root`</span>
 <span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">pipeline</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Pipeline</span><span class="o">&lt;</span><span class="n">initial</span><span class="p">::</span><span class="n">Root</span><span class="p">,</span><span class="w"> </span><span class="n">Root</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="c1">// Start with `from_ir&#39;s` pipeline.  This converts `initial::root` to `from_ir::Root`.</span>
-<span class="w">    </span><span class="n">from_ir</span><span class="p">::</span><span class="n">pipeline</span><span class="p">()</span>
-<span class="w">        </span><span class="c1">// Convert to `into_ir::Root`.</span>
-<span class="w">        </span><span class="c1">// This will use the logic from the Node conversions section above.</span>
-<span class="w">        </span><span class="p">.</span><span class="n">convert_ir_pass</span><span class="p">::</span><span class="o">&lt;</span><span class="n">Root</span><span class="o">&gt;</span><span class="p">()</span>
-<span class="w">        </span><span class="c1">// Add passes to populate the new fields, mutate existing fields, etc.</span>
-<span class="w">        </span><span class="p">.</span><span class="n">pass</span><span class="p">(</span><span class="n">foo</span><span class="p">::</span><span class="n">pass</span><span class="p">)</span>
-<span class="w">        </span><span class="p">.</span><span class="n">pass</span><span class="p">(</span><span class="n">bar</span><span class="p">::</span><span class="n">pass</span><span class="p">)</span>
-<span class="w">        </span><span class="p">.</span><span class="n">pass</span><span class="p">(</span><span class="n">baz</span><span class="p">::</span><span class="n">pass</span><span class="p">)</span>
+<span class="w">    </span><span class="n">general</span><span class="p">::</span><span class="n">pipeline</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="n">pass</span><span class="p">::</span><span class="o">&lt;</span><span class="n">Root</span><span class="p">,</span><span class="w"> </span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Context</span><span class="p">::</span><span class="n">default</span><span class="p">())</span>
 <span class="p">}</span>
 </code></pre></div>
+<h2 id="starting-a-ir-for-binding-generation">Starting a IR for binding generation</h2>
+<p>The first step is creating a skeleton for your IR:</p>
 <ul>
-<li>Define the pipeline passes.
-  These input a node type in the IR and mutate all instances of that node.
-  <code>visit()</code> and <code>visit_mut()</code> are extremely helpful here.
-  For example, the general IR pass that adds FFI types to types looks like this:</li>
+<li>Define <code>pipeline</code> module in your crate.</li>
+<li>Define a <code>Context</code> type in <code>pipeline/context.rs</code>.  To start with, this can be an empty struct that
+  derives <code>Default</code>.</li>
+<li>Define the IR nodes in <code>pipeline/node.rs</code>.  To start, this can just be <code>use_prev_node!</code> macros for
+  each node from the general IR.</li>
+<li>Setup imports (optional).</li>
+<li><code>pipeline/mod.rs</code> file will normally import <code>nodes::*</code>, <code>anyhow::{anyhow, bail, Result}</code> and
+     other items that are commonly used in the IR.</li>
+<li>The other mods will normally import <code>super::*</code>.</li>
+<li>This step is definitely not necessary, it's just how pipeline modules are typically setup.</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="c1">// Visiting all `Module` nodes</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">pass</span><span class="p">(</span><span class="n">module</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">Module</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="c1">// Save a copy of the module name, then visit all `TypeNode` nodes.</span>
-<span class="w">    </span><span class="c1">// Note: TypeNode wraps the `Type` enum from the initial IR</span>
-<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">module_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">module</span><span class="p">.</span><span class="n">name</span><span class="p">.</span><span class="n">clone</span><span class="p">();</span>
-<span class="w">    </span><span class="c1">// Visit all `TypeNode` instances that are descendants of `Module`.</span>
-<span class="w">    </span><span class="n">module</span><span class="p">.</span><span class="n">visit_mut</span><span class="p">(</span><span class="o">|</span><span class="n">node</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">TypeNode</span><span class="o">|</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="c1">// Derive the FfiType from the type and module name</span>
-<span class="w">        </span><span class="n">node</span><span class="p">.</span><span class="n">ffi_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">generate_ffi_type</span><span class="p">(</span><span class="o">&amp;</span><span class="n">node</span><span class="p">.</span><span class="n">ty</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">module_name</span><span class="p">);</span>
-<span class="w">    </span><span class="p">});</span>
-<span class="w">    </span><span class="nb">Ok</span><span class="p">(())</span>
-<span class="p">}</span>
-</code></pre></div>
-<p>See <code>uniffi_bindgen::pipeline::general</code> for examples.</p>
-<h2 id="constructing-nodes-with-partial-field-data">Constructing nodes with partial field data</h2>
-<p>Passes that construct new nodes often only want to specify partial field data and let a later pass populate the rest of the fields.
-Use the <code>Default::default()</code> to handle this case, which the <code>Node</code> derive also implements.
-Here's how this works in the <code>callables</code> pass:</p>
-<div class="highlight"><pre><span></span><code><span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">pass</span><span class="p">(</span><span class="n">root</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">Root</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">root</span><span class="p">.</span><span class="n">visit_mut</span><span class="p">(</span><span class="o">|</span><span class="n">func</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">Function</span><span class="o">|</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">func</span><span class="p">.</span><span class="n">callable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Callable</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="c1">// Most of the fields are simply copied from `Function`</span>
-<span class="w">            </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nc">func</span><span class="p">.</span><span class="n">name</span><span class="p">.</span><span class="n">clone</span><span class="p">(),</span>
-<span class="w">            </span><span class="n">is_async</span><span class="p">:</span><span class="w"> </span><span class="nc">func</span><span class="p">.</span><span class="n">is_async</span><span class="p">,</span>
-<span class="w">            </span><span class="n">kind</span><span class="p">:</span><span class="w"> </span><span class="nc">CallableKind</span><span class="p">::</span><span class="n">Function</span><span class="p">,</span>
-<span class="w">            </span><span class="n">arguments</span><span class="p">:</span><span class="w"> </span><span class="nc">func</span><span class="p">.</span><span class="n">inputs</span><span class="p">.</span><span class="n">clone</span><span class="p">(),</span>
-<span class="w">            </span><span class="n">return_type</span><span class="p">:</span><span class="w"> </span><span class="nc">ReturnType</span><span class="o">!</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="n">ty</span><span class="p">:</span><span class="w"> </span><span class="nc">func</span><span class="p">.</span><span class="n">return_type</span><span class="p">.</span><span class="n">clone</span><span class="p">().</span><span class="n">map</span><span class="p">(</span><span class="o">|</span><span class="n">ty</span><span class="o">|</span><span class="w"> </span><span class="n">TypeNode</span><span class="o">!</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ty</span><span class="w"> </span><span class="p">}),</span>
-<span class="w">            </span><span class="p">},</span>
-<span class="w">            </span><span class="n">throws_type</span><span class="p">:</span><span class="w"> </span><span class="nc">ThrowsType</span><span class="o">!</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="n">ty</span><span class="p">:</span><span class="w"> </span><span class="nc">func</span><span class="p">.</span><span class="n">throws</span><span class="p">.</span><span class="n">clone</span><span class="p">().</span><span class="n">map</span><span class="p">(</span><span class="o">|</span><span class="n">ty</span><span class="o">|</span><span class="w"> </span><span class="n">TypeNode</span><span class="o">!</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ty</span><span class="w"> </span><span class="p">}),</span>
-<span class="w">            </span><span class="p">},</span>
-<span class="w">            </span><span class="n">checksum</span><span class="p">:</span><span class="w"> </span><span class="nc">func</span><span class="p">.</span><span class="n">checksum</span><span class="p">,</span>
-<span class="w">            </span><span class="c1">// However, `async_data` and `ffi_func` are derived in a later pass.</span>
-<span class="w">            </span><span class="c1">// Use `default()` to create placeholder values for now</span>
-<span class="w">            </span><span class="o">..</span><span class="n">Callable</span><span class="p">::</span><span class="n">default</span><span class="p">()</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">    </span><span class="p">});</span>
-<span class="w">    </span><span class="c1">// ... repeat for methods and constructors</span>
-<span class="w">    </span><span class="nb">Ok</span><span class="p">(())</span>
-<span class="p">}</span>
-</code></pre></div>
+<p>From there you can evolve the code to match your needs.  For example:</p>
+<ul>
+<li><strong>Adding a new field</strong><ol>
+<li>Copy and paste the type definition from the general IR into your <code>nodes.rs</code> file.</li>
+<li>Remove any <code>#[map_node]</code> attributes.</li>
+<li>Add <code>#[map_node(from(general::[NodeType]))</code> to the type itself.</li>
+<li>Add the new field with a <code>#[map_node([expression_to_generate_field])</code> attribute.</li>
+<li>Find any types that reference the changed type and repeat steps 1-3.</li>
+</ol>
+</li>
+<li><strong>Mapping an enum to a struct</strong><ol>
+<li>Define a new struct type.
+   If your enum is named <code>Foo</code>, this will typically be named <code>FooNode</code>.</li>
+<li>Add a field that stores the original enum.  Wrap this with a <code>#[map_node(self)]</code> attribute.</li>
+<li>Add a new field, with a <code>#[map_node(expr)]</code> attribute</li>
+<li>Find any types that reference the changed type and repeat steps 1-3 from adding a new field.</li>
+</ol>
+</li>
+</ul>
 <h2 id="peeking-behind-the-curtains-with-the-pipeline-cli">Peeking behind the curtains with the <code>pipeline</code> CLI</h2>
 <p>Use the <code>pipeline</code> subcommand from any UniFFI CLI to inspect IR data at various stages of the pipeline.</p>
 <ul>
