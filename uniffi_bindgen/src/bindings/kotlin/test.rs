@@ -90,8 +90,14 @@ fn build_jar(
         bail!("No kotlin sources found in {out_dir}")
     }
 
+    let installation = find_kotlinc_installation()?;
+    // kotlin-serialization-compiler-plugin.jar (no x after kotlin!) was not present until Kotlin 1.9.
+    let kotlinx_serialization_plugin =
+        installation.join("lib/kotlinx-serialization-compiler-plugin.jar");
+
     let mut command = kotlinc_command(options);
     command
+        .arg(format!("-Xplugin={kotlinx_serialization_plugin}"))
         // Our generated bindings should not produce any warnings; fail tests if they do.
         .arg("-Werror")
         .arg("-d")
@@ -117,6 +123,57 @@ fn kotlinc_command(options: &RunScriptOptions) -> Command {
         command.arg("-nowarn");
     }
     command
+}
+
+fn find_kotlinc_installation() -> Result<Utf8PathBuf> {
+    let Some(path_var) = env::var_os("PATH") else {
+        bail!("Environment variable PATH not present")
+    };
+    let kotlinc_executable_name = if cfg!(target_os = "windows") {
+        "kotlinc.bat"
+    } else {
+        "kotlinc"
+    };
+    if let Some(installation) = env::split_paths(&path_var)
+        .flat_map(|path| {
+            // If we find <path>/kotlinc or <path>/kotlinc.bat,
+            let compiler_path = path.join(kotlinc_executable_name);
+            compiler_path
+                .try_exists()
+                .is_ok_and(|e| e)
+                .then_some((path, compiler_path))
+        })
+        .flat_map(|(path, compiler_path)| {
+            // Scan <path> and the parent of the symbolic link target of <path>/kotlinc,
+            let link_resolved_path = compiler_path
+                .canonicalize()
+                .ok()
+                .and_then(|p| p.parent().map(ToOwned::to_owned));
+            std::iter::once(path).chain(link_resolved_path)
+        })
+        .filter(|path| {
+            // Make sure <path> is <installation>/bin,
+            path.file_name()
+                .and_then(|f| f.to_str())
+                .is_some_and(|s| s == "bin")
+        })
+        .flat_map(|path| {
+            // Collect <installation>,
+            path.parent().map(ToOwned::to_owned)
+        })
+        .filter(|installation| {
+            // And if <installation>/lib exists,
+            installation.join("lib").try_exists().is_ok_and(|e| e)
+        })
+        // Try converting it into Utf8PathBuf and,
+        .flat_map(Utf8PathBuf::from_path_buf)
+        .next()
+    {
+        // Return the first occurrence of such <installation>.
+        return Ok(installation);
+    }
+
+    bail!("Could not find a directory containing the kotlinc executable and the required JAR files")
 }
 
 fn calc_classpath(extra_paths: Vec<&Utf8Path>) -> String {

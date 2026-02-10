@@ -5,11 +5,15 @@
 // and `sealed class` for the general case.
 #}
 
+{%- let should_generate_serializable = config.generate_serializable_types && e|serializable_enum(ci) %}
 {%- if e.is_flat() %}
 
 {%- call kt::docstring(e, 0) %}
 {% match e.variant_discr_type() %}
 {% when None %}
+{%- if should_generate_serializable -%}
+@kotlinx.serialization.Serializable
+{%- endif %}
 enum class {{ type_name }} {
     {% for variant in e.variants() -%}
     {%- call kt::docstring(variant, 4) %}
@@ -26,6 +30,9 @@ enum class {{ type_name }} {
     companion object
 }
 {% when Some(variant_discr_type) %}
+{%- if should_generate_serializable -%}
+@kotlinx.serialization.Serializable
+{%- endif %}
 enum class {{ type_name }}(val value: {{ variant_discr_type|type_name(ci) }}) {
     {% for variant in e.variants() -%}
     {%- call kt::docstring(variant, 4) %}
@@ -67,13 +74,20 @@ public object {{ e|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}
 {% else %}
 
 {%- call kt::docstring(e, 0) %}
+{%- if should_generate_serializable -%}
+@kotlinx.serialization.Serializable
+{%- endif %}
 sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% endif %}
 {%- let uniffi_trait_methods = e.uniffi_trait_methods() -%}
 {%- if uniffi_trait_methods.ord_cmp.is_some() -%}
 {% if contains_object_references %}, {% else %} : {% endif %}Comparable<{{ type_name }}>
 {%- endif %} {
     {% for variant in e.variants() -%}
+    {%- let should_generate_variant_serializable = config.generate_serializable_types && variant|serializable_enum_variant(ci) -%}
     {%- call kt::docstring(variant, 4) %}
+    {%- if should_generate_variant_serializable %}
+    @kotlinx.serialization.Serializable
+    {%- endif %}
     {% if !variant.has_fields() -%}
     object {{ variant|type_name(ci) }} : {{ type_name }}()
     {% else -%}

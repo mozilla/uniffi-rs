@@ -77,10 +77,18 @@ RUN mkdir -p /tmp/setup-jna \
 RUN mkdir -p /tmp/setup-kotlinx \
     && cd /tmp/setup-kotlinx \
     && curl -o kotlinx-coroutines-core-jvm.jar https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.6.4/kotlinx-coroutines-core-jvm-1.6.4.jar \
+    && curl -o kotlinx-serialization-core.jar https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core-jvm/1.6.3/kotlinx-serialization-core-jvm-1.6.3.jar \
+    && curl -o kotlinx-serialization-json.jar https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json-jvm/1.6.3/kotlinx-serialization-json-jvm-1.6.3.jar \
     # XXX TODO: should check a sha256sum or something here...
     && sudo mv kotlinx-coroutines-core-jvm.jar /opt \
     && echo "export CLASSPATH=\"\$CLASSPATH:/opt/kotlinx-coroutines-core-jvm.jar\"" >> /home/circleci/.bashrc \
     && echo "export CLASSPATH=\"\$CLASSPATH:/opt/kotlinx-coroutines-core-jvm.jar\"" >> /home/circleci/.profile \
+    && sudo mv kotlinx-serialization-core.jar /opt \
+    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/kotlinx-serialization-core.jar\"" >> /home/circleci/.bashrc \
+    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/kotlinx-serialization-core.jar\"" >> /home/circleci/.profile \
+    && sudo mv kotlinx-serialization-json.jar /opt \
+    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/kotlinx-serialization-json.jar\"" >> /home/circleci/.bashrc \
+    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/kotlinx-serialization-json.jar\"" >> /home/circleci/.profile \
     && cd ../ \
     && rm -rf ./setup-kotlinx
 
