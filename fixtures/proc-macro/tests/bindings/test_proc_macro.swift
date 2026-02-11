@@ -183,6 +183,8 @@ assert(getMixedEnum(v: MixedEnum.vec(["hello"])) == .vec(["hello"]))
 
 // Record implementing a trait interface — methods are available on the struct
 let recordWithTrait = RecordWithTrait(label: "test")
+assert(recordWithTrait is TraitProtocol)
+assert(recordWithTrait is TraitWithForeign)
 assert(recordWithTrait.concatStrings(a: "foo", b: "bar") == "test: foobar")
 assert(recordWithTrait.name() == "RecordWithTrait(test)")
 

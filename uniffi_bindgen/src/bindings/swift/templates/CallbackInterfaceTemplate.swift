@@ -7,6 +7,7 @@
 {%- let vtable = cbi.vtable() %}
 {%- let vtable_methods = cbi.vtable_methods() %}
 {%- let ffi_init_callback = cbi.ffi_init_callback() %}
+{%- let protocol_class_only = !ci.trait_has_record_impl(name) %}
 
 {% include "Protocol.swift" %}
 {% include "CallbackInterfaceImpl.swift" %}

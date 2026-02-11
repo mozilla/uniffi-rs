@@ -4,6 +4,7 @@
 {%- let protocol_docstring = obj.docstring() %}
 
 {%- let is_error = ci.is_name_used_as_error(name) %}
+{%- let protocol_class_only = !ci.trait_has_record_impl(obj.name()) %}
 
 {% include "Protocol.swift" %}
 
