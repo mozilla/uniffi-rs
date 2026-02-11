@@ -243,13 +243,6 @@ impl ComponentInterface {
         self.objects.iter().find(|o| o.name == name)
     }
 
-    /// Check if any record implements a given trait interface.
-    pub fn trait_has_record_impl(&self, trait_name: &str) -> bool {
-        self.records
-            .iter()
-            .any(|r| r.trait_impls.iter().any(|t| t.trait_ty.name() == Some(trait_name)))
-    }
-
     fn callback_interface_callback_definitions(
         &self,
     ) -> impl IntoIterator<Item = FfiCallbackFunction> + '_ {
