@@ -11,16 +11,17 @@ data class {{ type_name }} (
     {%- endfor %}
     {%- let uniffi_trait_methods = rec.uniffi_trait_methods() %}
     {%- let comparable = uniffi_trait_methods.ord_cmp.is_some() %}
+    {%- let trait_impls = rec.trait_impls() %}
 )
 {%- if comparable && contains_object_references %}: Disposable, Comparable<{{ type_name }}>
 {%- elif contains_object_references  %}: Disposable
 {%- elif comparable  %}: Comparable<{{ type_name }}>
-{%- elif !rec.trait_impls().is_empty() %}:
+{%- elif !trait_impls.is_empty() %}:
 {%- endif %}
 {%- if comparable || contains_object_references %}
-{%- for t in rec.trait_impls() %}, {{ self::trait_interface_name(ci, t.trait_ty)? }}{% endfor %}
+{%- for t in trait_impls %}, {{ self::trait_interface_name(ci, t.trait_ty)? }}{% endfor %}
 {%- else %}
-{%- for t in rec.trait_impls() %}{% if loop.first %} {% else %}, {% endif %}{{ self::trait_interface_name(ci, t.trait_ty)? }}{% endfor %}
+{%- for t in trait_impls %}{% if loop.first %} {% else %}, {% endif %}{{ self::trait_interface_name(ci, t.trait_ty)? }}{% endfor %}
 {%- endif %}
 {
     {% for meth in rec.methods() -%}
