@@ -15,7 +15,13 @@ data class {{ type_name }} (
 {%- if comparable && contains_object_references %}: Disposable, Comparable<{{ type_name }}>
 {%- elif contains_object_references  %}: Disposable
 {%- elif comparable  %}: Comparable<{{ type_name }}>
-{% endif -%}
+{%- elif !rec.trait_impls().is_empty() %}:
+{%- endif %}
+{%- if comparable || contains_object_references %}
+{%- for t in rec.trait_impls() %}, {{ self::trait_interface_name(ci, t.trait_ty)? }}{% endfor %}
+{%- else %}
+{%- for t in rec.trait_impls() %}{% if loop.first %} {% else %}, {% endif %}{{ self::trait_interface_name(ci, t.trait_ty)? }}{% endfor %}
+{%- endif %}
 {
     {% for meth in rec.methods() -%}
     {%- call kt::func_decl("", meth, 4) %}

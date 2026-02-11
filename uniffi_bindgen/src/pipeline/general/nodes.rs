@@ -200,6 +200,7 @@ pub struct Record {
     pub fields: Vec<Field>,
     pub constructors: Vec<Constructor>,
     pub methods: Vec<Method>,
+    pub trait_impls: Vec<ObjectTraitImpl>,
     pub docstring: Option<String>,
 }
 

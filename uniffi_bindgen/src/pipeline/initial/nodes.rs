@@ -137,6 +137,8 @@ pub struct Record {
     pub methods: Vec<Method>,
     #[map_node(context.uniffi_traits_for_type(&self.module_path, &self.name)?)]
     pub uniffi_traits: Vec<UniffiTrait>,
+    #[map_node(context.trait_impls_for_type(&self.module_path, &self.name)?)]
+    pub trait_impls: Vec<ObjectTraitImpl>,
     pub name: String,
     pub fields: Vec<Field>,
     pub docstring: Option<String>,

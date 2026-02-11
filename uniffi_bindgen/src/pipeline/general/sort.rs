@@ -164,6 +164,7 @@ impl DependencyLogic for TypeDefinitionDependencyLogic {
                 .fields
                 .iter()
                 .map(|f| f.ty.canonical_name.clone())
+                .chain(r.trait_impls.iter().map(|i| i.trait_ty.canonical_name.clone()))
                 .collect(),
             TypeDefinition::Enum(e) => e
                 .variants

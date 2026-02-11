@@ -153,3 +153,10 @@ assert(s == "hi")
 assert(i == 2L)
 
 assert(getMixedEnum(MixedEnum.Vec(listOf("hello"))) == MixedEnum.Vec(listOf("hello")))
+
+// Record implementing a trait interface
+val recordWithTrait = RecordWithTrait("test")
+assert(recordWithTrait is TraitInterface)
+assert(recordWithTrait is TraitWithForeign)
+assert(recordWithTrait.concatStrings("foo", "bar") == "test: foobar")
+assert(recordWithTrait.name() == "RecordWithTrait(test)")
