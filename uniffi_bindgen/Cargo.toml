@@ -11,7 +11,7 @@ keywords = ["ffi", "bindgen"]
 readme = "../README.md"
 
 [features]
-default = ["cargo-metadata"]
+default = ["cargo-metadata", "pointer-ffi"]
 cargo-metadata = ["dep:cargo_metadata"]
 bindgen-tests = ["cargo-metadata", "dep:uniffi_testing"]
 ffi-trace = ["uniffi_testing?/ffi-trace"]
