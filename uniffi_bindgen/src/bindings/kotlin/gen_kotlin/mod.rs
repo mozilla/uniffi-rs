@@ -419,6 +419,33 @@ fn trait_interface_name(ci: &ComponentInterface, trait_ty: &Type) -> Result<Stri
     }
 }
 
+/// Build the Kotlin interface list for a record's class declaration.
+///
+/// Returns a string like ": Disposable, Comparable<Foo>, MyInterface" or an empty string if there
+/// are no interfaces to implement.
+fn record_interface_list(
+    ci: &ComponentInterface,
+    rec: &Record,
+    type_name: &str,
+    contains_object_references: &bool,
+) -> Result<String> {
+    let mut interfaces = Vec::new();
+    if *contains_object_references {
+        interfaces.push("Disposable".to_string());
+    }
+    if rec.uniffi_trait_methods().ord_cmp.is_some() {
+        interfaces.push(format!("Comparable<{type_name}>"));
+    }
+    for t in rec.trait_impls() {
+        interfaces.push(trait_interface_name(ci, &t.trait_ty)?);
+    }
+    if interfaces.is_empty() {
+        Ok(String::new())
+    } else {
+        Ok(format!(": {}", interfaces.join(", ")))
+    }
+}
+
 // The name of the object exposing a Rust implementation.
 fn object_impl_name(ci: &ComponentInterface, obj: &Object) -> String {
     let class_name = KotlinCodeOracle.class_name(ci, obj.name());

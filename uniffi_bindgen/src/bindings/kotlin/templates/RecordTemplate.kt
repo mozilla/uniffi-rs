@@ -10,19 +10,8 @@ data class {{ type_name }} (
     {% if !loop.last %}, {% endif %}
     {%- endfor %}
     {%- let uniffi_trait_methods = rec.uniffi_trait_methods() %}
-    {%- let comparable = uniffi_trait_methods.ord_cmp.is_some() %}
-    {%- let trait_impls = rec.trait_impls() %}
 )
-{%- if comparable && contains_object_references %}: Disposable, Comparable<{{ type_name }}>
-{%- elif contains_object_references  %}: Disposable
-{%- elif comparable  %}: Comparable<{{ type_name }}>
-{%- elif !trait_impls.is_empty() %}:
-{%- endif %}
-{%- if comparable || contains_object_references %}
-{%- for t in trait_impls %}, {{ self::trait_interface_name(ci, t.trait_ty)? }}{% endfor %}
-{%- else %}
-{%- for t in trait_impls %}{% if loop.first %} {% else %}, {% endif %}{{ self::trait_interface_name(ci, t.trait_ty)? }}{% endfor %}
-{%- endif %}
+{{- self::record_interface_list(ci, rec, type_name, contains_object_references)? }}
 {
     {% for meth in rec.methods() -%}
     {%- call kt::func_decl("", meth, 4) %}
