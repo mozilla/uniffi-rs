@@ -198,7 +198,9 @@ pub struct Record {
     #[map_node(from(uniffi_traits))]
     pub uniffi_trait_methods: UniffiTraitMethods,
     pub fields: Vec<Field>,
+    #[map_node(objects::constructors(self.constructors, context)?)]
     pub constructors: Vec<Constructor>,
+    #[map_node(objects::methods(self.methods, context)?)]
     pub methods: Vec<Method>,
     pub docstring: Option<String>,
 }
@@ -225,6 +227,7 @@ pub struct Field {
 #[map_node(from(initial::Enum))]
 #[map_node(update_context(context.update_from_enum(&self)?))]
 pub struct Enum {
+    /// Is this a "flat" enum -- one with no associated data
     #[map_node(enums::is_flat(&self))]
     pub is_flat: bool,
     #[map_node(context.self_type()?)]
@@ -240,10 +243,11 @@ pub struct Enum {
     pub name: String,
     #[map_node(from(uniffi_traits))]
     pub uniffi_trait_methods: UniffiTraitMethods,
-    /// Is this a "flat" enum -- one with no associated data
-    pub shape: EnumShape,
     /// Enum discriminant type to use in generated code.  If the source code doesn't specify a
+    pub shape: EnumShape,
+    #[map_node(objects::constructors(self.constructors, context)?)]
     pub constructors: Vec<Constructor>,
+    #[map_node(objects::methods(self.methods, context)?)]
     pub methods: Vec<Method>,
     pub docstring: Option<String>,
 }
@@ -278,7 +282,9 @@ pub struct Interface {
     #[map_node(from(uniffi_traits))]
     pub uniffi_trait_methods: UniffiTraitMethods,
     pub docstring: Option<String>,
+    #[map_node(objects::constructors(self.constructors, context)?)]
     pub constructors: Vec<Constructor>,
+    #[map_node(objects::methods(self.methods, context)?)]
     pub methods: Vec<Method>,
     pub trait_impls: Vec<ObjectTraitImpl>,
     pub imp: ObjectImpl,
@@ -295,6 +301,7 @@ pub struct CallbackInterface {
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
     pub docstring: Option<String>,
+    #[map_node(objects::methods(self.methods, context)?)]
     pub methods: Vec<Method>,
 }
 

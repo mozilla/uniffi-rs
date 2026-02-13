@@ -49,8 +49,14 @@ mod submodule {
 
     #[uniffi::export(name = "RenamedObject")]
     impl Object {
-        #[uniffi::constructor(name = "renamed_constructor")]
+        // The primary constructor is excluded by the toml configuration
+        #[uniffi::constructor]
         pub fn new(value: i32) -> Self {
+            Object { value }
+        }
+
+        #[uniffi::constructor(name = "renamed_constructor")]
+        pub fn new_secondary(value: i32) -> Self {
             Object { value }
         }
 
@@ -58,6 +64,8 @@ mod submodule {
         pub fn method(&self) -> i32 {
             self.value
         }
+
+        pub fn method_to_exclude(&self) {}
     }
 
     // Can't rename traits yet, should be possible though, just trickier.
@@ -99,6 +107,11 @@ mod submodule {
     #[derive(uniffi::Record)]
     pub struct BindingRecord {
         item: i32,
+    }
+
+    #[derive(uniffi::Record)]
+    pub struct RecordToExclude {
+        field: bool,
     }
 
     #[derive(uniffi::Enum)]
@@ -160,6 +173,9 @@ mod submodule {
     pub fn create_binding_trait_impl(multiplier: i32) -> std::sync::Arc<dyn BindingTrait> {
         std::sync::Arc::new(BindingTraitImpl { multiplier })
     }
+
+    #[uniffi::export]
+    pub fn function_to_exclude() {}
 }
 
 pub use submodule::*;

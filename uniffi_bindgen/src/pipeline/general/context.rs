@@ -18,6 +18,8 @@ pub struct Context {
     pub names_used_as_error: HashSet<String>,
     // Maps namespaces to rename tables from the TOML config
     pub rename_tables: HashMap<String, toml::Table>,
+    // Maps namespaces to exclude tables from the TOML config
+    pub exclude_sets: HashMap<String, HashSet<String>>,
 }
 
 impl Context {
@@ -31,6 +33,7 @@ impl Context {
             current_arg_or_field_type: None,
             names_used_as_error: HashSet::default(),
             rename_tables: HashMap::default(),
+            exclude_sets: HashMap::default(),
         }
     }
 
@@ -93,8 +96,12 @@ impl Context {
 
     pub fn update_from_root(&mut self, root: &initial::Root) -> Result<()> {
         for namespace in root.namespaces.values() {
-            let table = rename::extract_rename_table(namespace, &self.bindings_toml_key)?;
-            self.rename_tables.insert(namespace.name.clone(), table);
+            let rename_table = rename::extract_rename_table(namespace, &self.bindings_toml_key)?;
+            let exclude_set = exclude::extract_exclude_set(namespace, &self.bindings_toml_key)?;
+            self.rename_tables
+                .insert(namespace.name.clone(), rename_table);
+            self.exclude_sets
+                .insert(namespace.name.clone(), exclude_set);
         }
         Ok(())
     }

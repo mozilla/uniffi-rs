@@ -76,3 +76,7 @@ do {
 // Test renamed trait with renamed method via TOML
 let swiftTraitImpl = createBindingTraitImpl(multiplier: 3)
 assert(swiftTraitImpl.swiftTraitMethod(value: 7) == 21) // 7 * 3
+
+
+// We can't test excluded items directly, however the tests will fail if the code is not working
+// since that will result in items generated with "" as their name

@@ -10,6 +10,7 @@ mod checksums;
 mod context;
 mod default;
 mod enums;
+mod exclude;
 mod ffi_async_data;
 mod ffi_functions;
 mod ffi_types;
