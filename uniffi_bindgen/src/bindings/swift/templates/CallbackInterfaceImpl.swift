@@ -6,9 +6,8 @@ fileprivate struct {{ trait_impl }} {
     // Create the VTable using a series of closures.
     // Swift automatically converts these into C callback functions.
     //
-    // This creates 1-element array, since this seems to be the only way to construct a const
-    // pointer that we can pass to the Rust code.
-    static let vtable: [{{ vtable|ffi_type_name }}] = [{{ vtable|ffi_type_name }}(
+    // Store the vtable directly.
+    static let vtable: {{ vtable|ffi_type_name }} = {{ vtable|ffi_type_name }}(
         uniffiFree: { (uniffiHandle: UInt64) -> () in
             do {
                 try {{ ffi_converter_name }}.handleMap.remove(handle: uniffiHandle)
@@ -112,9 +111,17 @@ fileprivate struct {{ trait_impl }} {
             {%- endif %}
         }{% if !loop.last %},{% endif %}
         {%- endfor %}
-    )]
+    )
+
+    // Rust stores this pointer for future callback invocations, so it must live
+    // for the process lifetime (not just for the init function call).
+    static let vtablePtr: UnsafePointer<{{ vtable|ffi_type_name }}> = {
+        let ptr = UnsafeMutablePointer<{{ vtable|ffi_type_name }}>.allocate(capacity: 1)
+        ptr.initialize(to: vtable)
+        return UnsafePointer(ptr)
+    }()
 }
 
 private func {{ callback_init }}() {
-    {{ ffi_init_callback.name() }}({{ trait_impl }}.vtable)
+    {{ ffi_init_callback.name() }}({{ trait_impl }}.vtablePtr)
 }
