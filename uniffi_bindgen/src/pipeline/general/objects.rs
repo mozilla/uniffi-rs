@@ -83,3 +83,32 @@ pub fn ffi_definitions(
     })?;
     Ok(ffi_defs)
 }
+
+pub fn constructors(
+    constructors: Vec<initial::Constructor>,
+    context: &Context,
+) -> Result<Vec<Constructor>> {
+    constructors
+        .into_iter()
+        .filter_map(
+            |cons| match exclude::should_exclude_method(&cons.name, context) {
+                Err(e) => Some(Err(e)),
+                Ok(true) => None,
+                Ok(false) => Some(cons.map_node(context)),
+            },
+        )
+        .collect()
+}
+
+pub fn methods(methods: Vec<initial::Method>, context: &Context) -> Result<Vec<Method>> {
+    methods
+        .into_iter()
+        .filter_map(
+            |meth| match exclude::should_exclude_method(&meth.name, context) {
+                Err(e) => Some(Err(e)),
+                Ok(true) => None,
+                Ok(false) => Some(meth.map_node(context)),
+            },
+        )
+        .collect()
+}

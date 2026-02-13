@@ -62,3 +62,6 @@ assert(ktEnum2 is KtEnum.KotlinRecord)
 // Test callback interface (trait) renaming.
 val ktTraitImpl = createBindingTraitImpl(3)
 assert(ktTraitImpl.kotlinTraitMethod(4) == 12)
+
+// We can't test excluded items directly, however the tests will fail if the code is not working
+// since that will result in items generated with "" as their name

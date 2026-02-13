@@ -283,6 +283,18 @@ pub enum Type {
     },
 }
 
+impl TypeDefinition {
+    pub fn name(&self) -> &str {
+        match &self {
+            Self::Record(rec) => &rec.name,
+            Self::Enum(en) => &en.name,
+            Self::Interface(int) => &int.name,
+            Self::CallbackInterface(cbi) => &cbi.name,
+            Self::Custom(custom) => &custom.name,
+        }
+    }
+}
+
 impl Type {
     pub fn name(&self) -> Option<&str> {
         match &self {
