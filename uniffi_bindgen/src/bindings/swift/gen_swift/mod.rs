@@ -181,6 +181,8 @@ pub struct Config {
     #[serde(default)]
     link_frameworks: Vec<String>,
     #[serde(default)]
+    pub(super) exclude: Vec<String>,
+    #[serde(default)]
     pub(super) rename: toml::Table,
 }
 

@@ -1,4 +1,4 @@
-# Renaming
+# Renaming and excluding items
 
 UniFFI provides two ways to customize names in generated bindings:
 
@@ -31,6 +31,25 @@ MyRecord = "PythonRecord"
 ```
 
 The same pattern applies to all renameable items: records, record fields, enums, enum variants, enum variant fields, objects/callback interfaces/traits, and all "callables" and arguments.
+
+### Excluding items
+
+Items can be excluded altogether using the `exclude` value.
+For example:
+
+```toml
+[bindings.python]
+
+exclude = [
+    # Exclude types
+    "MyRecord",
+    # Exclude functions
+    "my_function",
+    # Exclude constructors and methods
+    "MyObject.new",
+    "MyObject.method",
+]
+```
 
 ### Notes
 

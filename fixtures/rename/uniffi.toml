@@ -34,6 +34,25 @@ BindingObject = "KtObject"
 "BindingObject.method" = "kotlin_method"
 "BindingObject.method.arg" = "kotlinArg"
 
+# Item exclusions.
+#
+# Rename to an empty string and include an exclude entry.
+# This way if item isn't excluded we'll get a syntax error because the item will have an invalid
+# name.
+
+function_to_exclude = ""
+"RenamedObject.new" = ""
+"RenamedObject.method_to_exclude" = ""
+RecordToExclude = ""
+
+[bindings.kotlin]
+exclude = [
+    "function_to_exclude",
+    "RenamedObject.new",
+    "RenamedObject.method_to_exclude",
+    "RecordToExclude",
+]
+
 #
 # Python
 #
@@ -67,6 +86,25 @@ BindingObject = "PyObject"
 "BindingObject.method" = "python_method"
 "BindingObject.method.arg" = "python_arg"
 
+# Item exclusions.
+#
+# Rename to an empty string and include an exclude entry.
+# This way if item isn't excluded we'll get a syntax error because the item will have an invalid
+# name.
+
+function_to_exclude = ""
+"RenamedObject.new" = ""
+"RenamedObject.method_to_exclude" = ""
+RecordToExclude = ""
+
+[bindings.python]
+exclude = [
+    "function_to_exclude",
+    "RenamedObject.new",
+    "RenamedObject.method_to_exclude",
+    "RecordToExclude",
+]
+
 #
 # Swift
 #
@@ -99,3 +137,22 @@ BindingObject = "SwiftObject"
 # Swift method and arg renaming
 "BindingObject.method" = "swift_method"
 "BindingObject.method.arg" = "swiftArg"
+
+# Item exclusions.
+#
+# Rename to an empty string and include an exclude entry.
+# This way if item isn't excluded we'll get a syntax error because the item will have an invalid
+# name.
+
+function_to_exclude = ""
+"RenamedObject.new" = ""
+"RenamedObject.method_to_exclude" = ""
+RecordToExclude = ""
+
+[bindings.swift]
+exclude = [
+    "function_to_exclude",
+    "RenamedObject.new",
+    "RenamedObject.method_to_exclude",
+    "RecordToExclude",
+]

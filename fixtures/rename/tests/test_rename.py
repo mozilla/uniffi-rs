@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import unittest
+import uniffi_fixture_rename
 from uniffi_fixture_rename import *
 
 class TestRename(unittest.TestCase):
@@ -63,6 +64,12 @@ class TestRename(unittest.TestCase):
         # Test trait method renaming
         trait = create_binding_trait_impl(5)
         self.assertEqual(trait.python_trait_method(10), 50)
+
+    def test_binding_excludes(self):
+        self.assertFalse(hasattr(uniffi_fixture_rename, 'function_to_exclude'))
+        self.assertFalse(hasattr(uniffi_fixture_rename, 'RecordToExclude'))
+        obj = RenamedObject.renamed_constructor(123)
+        self.assertFalse(hasattr(obj, 'method_to_exclude'))
 
 if __name__ == '__main__':
     unittest.main()
