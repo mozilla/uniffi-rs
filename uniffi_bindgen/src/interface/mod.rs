@@ -67,6 +67,8 @@ pub use object::{Constructor, Method, Object, UniffiTrait, UniffiTraitMethods};
 mod record;
 pub use record::{Field, Record};
 
+mod exclude;
+pub use exclude::apply_exclusions;
 mod rename;
 pub use rename::rename;
 

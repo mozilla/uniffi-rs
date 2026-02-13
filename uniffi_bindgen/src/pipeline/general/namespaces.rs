@@ -29,7 +29,18 @@ pub fn map_namespace(namespace: initial::Namespace, context: &Context) -> Result
             [
                 // Map existing type definitions from the initial IR (record/enum/interface
                 // definitions, etc).
-                namespace.type_definitions.clone().map_node(context)?,
+                namespace
+                    .type_definitions
+                    .clone()
+                    .into_iter()
+                    .filter_map(|type_def| {
+                        match exclude::should_exclude_toplevel_item(type_def.name(), context) {
+                            Err(e) => Some(Err(e)),
+                            Ok(true) => None,
+                            Ok(false) => Some(type_def.map_node(context)),
+                        }
+                    })
+                    .collect::<Result<Vec<_>>>()?,
                 // Add new type definitions for types found by walking the IR and finding all types
                 // used.  This adds type definitions for:
                 // * Simple types used in function signatures (`u8`, `bool`, etc).
@@ -47,10 +58,20 @@ pub fn map_namespace(namespace: initial::Namespace, context: &Context) -> Result
         ffi_uniffi_contract_version: checksums::ffi_uniffi_contract_version(&namespace),
         correct_contract_version: uniffi_meta::UNIFFI_CONTRACT_VERSION.to_string(),
         string_type_node: Type::String.map_node(context)?,
-        name: namespace.name,
         crate_name: namespace.crate_name,
         config_toml: namespace.config_toml,
         docstring: namespace.docstring,
-        functions: namespace.functions.map_node(context)?,
+        functions: namespace
+            .functions
+            .into_iter()
+            .filter_map(
+                |f| match exclude::should_exclude_toplevel_item(&f.name, context) {
+                    Err(e) => Some(Err(e)),
+                    Ok(true) => None,
+                    Ok(false) => Some(f.map_node(context)),
+                },
+            )
+            .collect::<Result<Vec<_>>>()?,
+        name: namespace.name,
     })
 }

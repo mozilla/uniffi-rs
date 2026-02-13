@@ -86,6 +86,8 @@ pub struct Config {
     disable_java_cleaner: bool,
     #[serde(default)]
     pub(super) rename: toml::Table,
+    #[serde(default)]
+    pub(super) exclude: Vec<String>,
 }
 
 impl Config {

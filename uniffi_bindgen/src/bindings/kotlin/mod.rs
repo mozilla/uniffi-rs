@@ -3,8 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::{
-    bindings::GenerateOptions, interface::rename, BindgenLoader, Component, ComponentInterface,
-    Result,
+    bindings::GenerateOptions,
+    interface::{apply_exclusions, rename},
+    BindgenLoader, Component, ComponentInterface, Result,
 };
 use anyhow::bail;
 use camino::{Utf8Path, Utf8PathBuf};
@@ -91,6 +92,11 @@ fn parse_config(
 
 // A helper for renaming items.
 fn apply_renames(components: &mut Vec<Component<Config>>) {
+    // Remove excluded items, this happens before renaming
+    for c in components.iter_mut() {
+        apply_exclusions(&mut c.ci, &c.config.exclude);
+    }
+
     // Collect all rename configurations from all components, keyed by module_path
     let mut module_renames = HashMap::new();
     for c in components.iter() {
