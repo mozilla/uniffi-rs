@@ -52,6 +52,7 @@ use super::{
     AsType, Constructor, DefaultValue, FfiFunction, Method, Type, TypeIterator, UniffiTrait,
     UniffiTraitMethods,
 };
+use uniffi_meta::ObjectTraitImplMetadata;
 
 /// Represents a "data class" style object, for passing around complex values.
 ///
@@ -67,6 +68,7 @@ pub struct Record {
     pub(super) constructors: Vec<Constructor>,
     pub(super) methods: Vec<Method>,
     pub uniffi_traits: Vec<UniffiTrait>,
+    pub(super) trait_impls: Vec<ObjectTraitImplMetadata>,
     #[checksum_ignore]
     pub(super) docstring: Option<String>,
 }
@@ -120,6 +122,14 @@ impl Record {
 
     pub fn add_uniffi_trait(&mut self, t: UniffiTrait) {
         self.uniffi_traits.push(t);
+    }
+
+    pub fn trait_impls(&self) -> Vec<&ObjectTraitImplMetadata> {
+        self.trait_impls.iter().collect()
+    }
+
+    pub fn trait_impls_mut(&mut self) -> &mut Vec<ObjectTraitImplMetadata> {
+        &mut self.trait_impls
     }
 
     pub fn derive_ffi_funcs(&mut self) -> Result<()> {
@@ -180,6 +190,7 @@ impl TryFrom<uniffi_meta::RecordMetadata> for Record {
             constructors: vec![],
             methods: vec![],
             uniffi_traits: vec![],
+            trait_impls: vec![],
             docstring: meta.docstring.clone(),
         })
     }
