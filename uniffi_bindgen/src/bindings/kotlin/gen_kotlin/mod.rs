@@ -634,6 +634,7 @@ mod filters {
     use super::*;
     use uniffi_meta::LiteralMetadata;
 
+    #[askama::filter_fn]
     pub(super) fn type_name(
         as_ct: &impl AsCodeType,
         _: &dyn askama::Values,
@@ -642,6 +643,7 @@ mod filters {
         Ok(as_ct.as_codetype().type_label(ci))
     }
 
+    #[askama::filter_fn]
     pub(super) fn canonical_name(
         as_ct: &impl AsCodeType,
         _: &dyn askama::Values,
@@ -649,6 +651,7 @@ mod filters {
         Ok(as_ct.as_codetype().canonical_name())
     }
 
+    #[askama::filter_fn]
     pub(super) fn qualified_type_name<T>(
         as_type: &T,
         _: &dyn askama::Values,
@@ -662,6 +665,7 @@ mod filters {
             .map_err(|err| to_askama_error(&err))
     }
 
+    #[askama::filter_fn]
     pub(super) fn ffi_converter_name(
         as_ct: &impl AsCodeType,
         _: &dyn askama::Values,
@@ -669,6 +673,7 @@ mod filters {
         Ok(as_ct.as_codetype().ffi_converter_name())
     }
 
+    #[askama::filter_fn]
     pub(super) fn ffi_type(
         type_: &impl AsType,
         _: &dyn askama::Values,
@@ -676,6 +681,7 @@ mod filters {
         Ok(type_.as_type().into())
     }
 
+    #[askama::filter_fn]
     pub(super) fn lower_fn(
         as_ct: &impl AsCodeType,
         _: &dyn askama::Values,
@@ -686,6 +692,7 @@ mod filters {
         ))
     }
 
+    #[askama::filter_fn]
     pub(super) fn allocation_size_fn(
         as_ct: &impl AsCodeType,
         _: &dyn askama::Values,
@@ -696,6 +703,7 @@ mod filters {
         ))
     }
 
+    #[askama::filter_fn]
     pub(super) fn write_fn(
         as_ct: &impl AsCodeType,
         _: &dyn askama::Values,
@@ -706,6 +714,7 @@ mod filters {
         ))
     }
 
+    #[askama::filter_fn]
     pub(super) fn lift_fn(
         as_ct: &impl AsCodeType,
         _: &dyn askama::Values,
@@ -713,6 +722,7 @@ mod filters {
         Ok(format!("{}.lift", as_ct.as_codetype().ffi_converter_name()))
     }
 
+    #[askama::filter_fn]
     pub(super) fn read_fn(
         as_ct: &impl AsCodeType,
         _: &dyn askama::Values,
@@ -770,10 +780,11 @@ mod filters {
         }
     }
 
-    pub fn render_default(
+    #[askama::filter_fn]
+    pub fn render_default<T: AsType>(
         default: &DefaultValue,
         _: &dyn askama::Values,
-        as_ct: &impl AsType,
+        as_ct: &T,
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
         as_ct
@@ -800,6 +811,7 @@ mod filters {
     }
 
     // Get the idiomatic Kotlin rendering of an individual enum variant's discriminant
+    #[askama::filter_fn]
     pub fn variant_discr_literal(
         e: &Enum,
         _: &dyn askama::Values,
@@ -817,6 +829,7 @@ mod filters {
         }
     }
 
+    #[askama::filter_fn]
     pub fn ffi_type_name_by_value(
         type_: &FfiType,
         _: &dyn askama::Values,
@@ -825,6 +838,7 @@ mod filters {
         Ok(KotlinCodeOracle.ffi_type_label_by_value(type_, ci))
     }
 
+    #[askama::filter_fn]
     pub fn ffi_type_name_for_ffi_struct(
         type_: &FfiType,
         _: &dyn askama::Values,
@@ -833,6 +847,7 @@ mod filters {
         Ok(KotlinCodeOracle.ffi_type_label_for_ffi_struct(type_, ci))
     }
 
+    #[askama::filter_fn]
     pub fn ffi_default_value(
         type_: FfiType,
         _: &dyn askama::Values,
@@ -841,6 +856,7 @@ mod filters {
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.
+    #[askama::filter_fn]
     pub fn class_name<S: AsRef<str>>(
         nm: S,
         _: &dyn askama::Values,
@@ -850,16 +866,19 @@ mod filters {
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.
+    #[askama::filter_fn]
     pub fn fn_name<S: AsRef<str>>(nm: S, _: &dyn askama::Values) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.fn_name(nm.as_ref()))
     }
 
     /// Get the idiomatic Kotlin rendering of a variable name.
+    #[askama::filter_fn]
     pub fn var_name<S: AsRef<str>>(nm: S, _: &dyn askama::Values) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.var_name(nm.as_ref()))
     }
 
     /// Get the idiomatic Kotlin rendering of a variable name.
+    #[askama::filter_fn]
     pub fn var_name_raw<S: AsRef<str>>(
         nm: S,
         _: &dyn askama::Values,
@@ -868,10 +887,12 @@ mod filters {
     }
 
     /// Get a String representing the name used for an individual enum variant.
+    #[askama::filter_fn]
     pub fn variant_name(v: &Variant, _: &dyn askama::Values) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.enum_variant_name(v.name()))
     }
 
+    #[askama::filter_fn]
     pub fn error_variant_name(
         v: &Variant,
         _: &dyn askama::Values,
@@ -881,6 +902,7 @@ mod filters {
     }
 
     /// Get the idiomatic Kotlin rendering of an FFI callback function name
+    #[askama::filter_fn]
     pub fn ffi_callback_name<S: AsRef<str>>(
         nm: S,
         _: &dyn askama::Values,
@@ -889,6 +911,7 @@ mod filters {
     }
 
     /// Get the idiomatic Kotlin rendering of an FFI struct name
+    #[askama::filter_fn]
     pub fn ffi_struct_name<S: AsRef<str>>(
         nm: S,
         _: &dyn askama::Values,
@@ -896,6 +919,7 @@ mod filters {
         Ok(KotlinCodeOracle.ffi_struct_name(nm.as_ref()))
     }
 
+    #[askama::filter_fn]
     pub fn async_poll(
         callable: impl Callable,
         _: &dyn askama::Values,
@@ -907,6 +931,7 @@ mod filters {
         ))
     }
 
+    #[askama::filter_fn]
     pub fn async_complete(
         callable: impl Callable,
         _: &dyn askama::Values,
@@ -931,6 +956,7 @@ mod filters {
         Ok(format!("{{ future, continuation -> {call} }}"))
     }
 
+    #[askama::filter_fn]
     pub fn async_free(
         callable: impl Callable,
         _: &dyn askama::Values,
@@ -945,11 +971,13 @@ mod filters {
     /// These are used to avoid name clashes with kotlin identifiers, but sometimes you want to
     /// render the name unquoted.  One example is the message property for errors where we want to
     /// display the name for the user.
+    #[askama::filter_fn]
     pub fn unquote<S: AsRef<str>>(nm: S, _: &dyn askama::Values) -> Result<String, askama::Error> {
         Ok(nm.as_ref().trim_matches('`').to_string())
     }
 
     /// Get the idiomatic Kotlin rendering of docstring
+    #[askama::filter_fn]
     pub fn docstring<S: AsRef<str>>(
         docstring: S,
         _: &dyn askama::Values,

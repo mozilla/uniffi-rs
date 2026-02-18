@@ -3,7 +3,7 @@
 
 // swiftlint:disable all
 
-{%- call swift::docstring_value(ci.namespace_docstring(), 0) %}
+{%- call swift::docstring_value(ci.namespace_docstring(), 0) %}{% endcall %}
 
 {%- import "macros.swift" as swift %}
 import Foundation

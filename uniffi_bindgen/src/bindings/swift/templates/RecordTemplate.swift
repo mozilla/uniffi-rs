@@ -1,29 +1,29 @@
 {%- let rec = ci.get_record_definition(name).unwrap() %}
 {%- let uniffi_trait_methods = rec.uniffi_trait_methods() %}
-{%- call swift::docstring(rec, 0) %}
+{%- call swift::docstring(rec, 0) %}{% endcall %}
 {%- if config.record_has_conformances(rec, contains_object_references) %}
 public struct {{ type_name }}: {{ config.conformance_list_for_record(rec, contains_object_references) }} {
 {%- else %}
 public struct {{ type_name }} {
 {%- endif %}
     {%- for field in rec.fields() %}
-    {%- call swift::docstring(field, 4) %}
+    {%- call swift::docstring(field, 4) %}{% endcall %}
     public {% if config.generate_immutable_records() %}let{% else %}var{% endif %} {{ field.name()|var_name }}: {{ field|type_name }}
     {%- endfor %}
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init({% call swift::field_list_decl(rec, false) %}) {
+    public init({% call swift::field_list_decl(rec, false) %}{% endcall %}) {
         {%- for field in rec.fields() %}
         self.{{ field.name()|var_name }} = {{ field.name()|var_name }}
         {%- endfor %}
     }
 
     {% for meth in rec.methods() -%}
-    {%- call swift::func_decl("public func", meth, 4) %}
+    {%- call swift::func_decl("public func", meth, 4) %}{% endcall %}
     {% endfor %}
 
-    {% call swift::uniffi_trait_impls(uniffi_trait_methods) %}
+    {% call swift::uniffi_trait_impls(uniffi_trait_methods) %}{% endcall %}
 }
 
 #if compiler(>=6)
