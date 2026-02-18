@@ -1,3 +1,5 @@
+import ctypes
+import struct
 
 class _UniffiRustBuffer(ctypes.Structure):
     _fields_ = [
@@ -169,14 +171,15 @@ class _UniffiRustBufferBuilder:
 
     def _pack_into(self, size, format, value):
         with self._reserve(size):
-            # XXX TODO: I feel like I should be able to use `struct.pack_into` here but can't figure it out.
-            for i, byte in enumerate(struct.pack(format, value)):
-                self.rbuf.data[self.rbuf.len + i] = byte
-
+            packed = struct.pack(format, value)
+            if size > 0:
+                ctypes.memmove(ctypes.addressof(self.rbuf.data.contents) + self.rbuf.len, packed, size)
+    
     def write(self, value):
-        with self._reserve(len(value)):
-            for i, byte in enumerate(value):
-                self.rbuf.data[self.rbuf.len + i] = byte
+        length = len(value)
+        with self._reserve(length):
+            if length > 0:
+                ctypes.memmove(ctypes.addressof(self.rbuf.data.contents) + self.rbuf.len, value, length)
 
     def write_i8(self, v):
         self._pack_into(1, ">b", v)
