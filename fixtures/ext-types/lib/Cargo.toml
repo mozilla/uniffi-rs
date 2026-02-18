@@ -15,7 +15,7 @@ external-crates = [
 ]
 
 [lib]
-crate-type = ["lib", "cdylib"]
+crate-type = ["lib", "cdylib", "staticlib"]
 name = "uniffi_ext_types_lib"
 
 [dependencies]
