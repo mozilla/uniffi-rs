@@ -168,7 +168,7 @@ class _UniffiRustBufferBuilder:
             self.rbuf = _UniffiRustBuffer.reserve(self.rbuf, num_bytes)
         yield None
         self.rbuf.len += num_bytes
-    
+
     def _pack_into(self, size, format, value):
         with self._reserve(size):
             packed = struct.pack(format, value)
