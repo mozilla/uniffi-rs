@@ -49,8 +49,10 @@ test suite you will need:
 * Kotlin:
   * `kotlinc`, the [Kotlin command-line compiler](https://kotlinlang.org/docs/command-line.html).
   * `ktlint`, the [Kotlin linter used to format the generated bindings](https://ktlint.github.io/).
-  * The [Java Native Access](https://github.com/java-native-access/jna#download) JAR downloaded and its path
-    added to your `$CLASSPATH` environment variable.
+  * Several JARs downloaded and their path added to your `$CLASSPATH` environment variable:
+    * [Java Native Access](https://github.com/java-native-access/jna#download)
+    * [KotlinX Serialization Core runtime](https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core-jvm/1.6.3/kotlinx-serialization-core-jvm-1.6.3.jar)
+    * [KotlinX Serialization JSON runtime](https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json-jvm/1.6.3/kotlinx-serialization-json-jvm-1.6.3.jar)
 * Swift:
   * `swift` and `swiftc`, the [Swift command-line tools](https://swift.org/download/).
   * The Swift `Foundation` package.
