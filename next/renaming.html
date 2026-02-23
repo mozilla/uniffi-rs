@@ -20,7 +20,7 @@
     
     
       
-        <title>Renaming - The UniFFI user guide</title>
+        <title>Renaming and excluding items - The UniFFI user guide</title>
       
     
     
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#renaming" class="md-skip">
+        <a href="#renaming-and-excluding-items" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Renaming
+              Renaming and excluding items
             
           </span>
         </div>
@@ -1353,7 +1353,7 @@
   
   
   <span class="md-ellipsis">
-    Renaming
+    Renaming and excluding items
     
   </span>
   
@@ -1366,7 +1366,7 @@
   
   
   <span class="md-ellipsis">
-    Renaming
+    Renaming and excluding items
     
   </span>
   
@@ -1397,6 +1397,15 @@
   
     <nav class="md-nav" aria-label="TOML-based Renaming">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#excluding-items" class="md-nav__link">
+    <span class="md-ellipsis">
+      Excluding items
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#notes" class="md-nav__link">
@@ -2312,6 +2321,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#excluding-items" class="md-nav__link">
+    <span class="md-ellipsis">
+      Excluding items
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#notes" class="md-nav__link">
     <span class="md-ellipsis">
       Notes
@@ -2344,7 +2362,7 @@
   
 
 
-<h1 id="renaming">Renaming</h1>
+<h1 id="renaming-and-excluding-items">Renaming and excluding items</h1>
 <p>UniFFI provides two ways to customize names in generated bindings:</p>
 <ol>
 <li><strong>Proc-macro attributes</strong> - Use variants of <code>#[uniffi(name = "...")]</code> to rename items directly in Rust code. See <a href="proc_macro/renaming.html">proc-macro renaming</a>.</li>
@@ -2372,6 +2390,21 @@ The intended use-case here is for when a name could be made more idiomatic in on
 <span class="s2">&quot;MyObject.method.foo&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python_foo&quot;</span>
 </code></pre></div></p>
 <p>The same pattern applies to all renameable items: records, record fields, enums, enum variants, enum variant fields, objects/callback interfaces/traits, and all "callables" and arguments.</p>
+<h3 id="excluding-items">Excluding items</h3>
+<p>Items can be excluded altogether using the <code>exclude</code> value.
+For example:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[bindings.python]</span>
+
+<span class="n">exclude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="c1"># Exclude types</span>
+<span class="w">    </span><span class="s2">&quot;MyRecord&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="c1"># Exclude functions</span>
+<span class="w">    </span><span class="s2">&quot;my_function&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="c1"># Exclude constructors and methods</span>
+<span class="w">    </span><span class="s2">&quot;MyObject.new&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;MyObject.method&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+</code></pre></div>
 <h3 id="notes">Notes</h3>
 <ul>
 <li>Each crate defines its own rename configuration, you cannot rename types from external crates</li>
