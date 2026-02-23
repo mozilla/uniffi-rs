@@ -19,6 +19,7 @@ use askama::Result;
 ///
 /// This makes it so the template code can use something like
 /// `{{ item.docstring|docstring(4) -}}` to render the correct docstring in both cases.
+#[askama::filter_fn]
 pub fn docstring(
     docstring: &Option<String>,
     _: &dyn askama::Values,
@@ -36,6 +37,7 @@ pub fn docstring(
 }
 
 /// Get the idiomatic Python import statement for a module
+#[askama::filter_fn]
 pub fn import_statement(module: &str, _: &dyn askama::Values) -> Result<String> {
     Ok(if module.starts_with('.') {
         let Some((from, name)) = module.rsplit_once('.') else {

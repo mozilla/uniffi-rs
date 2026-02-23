@@ -52,7 +52,7 @@ internal open class {{ ffi_struct.name()|ffi_struct_name }}(
 {%- macro decl_kotlin_functions(func_list) -%}
 {% for func in func_list -%}
 external fun {{ func.name() }}(
-    {%- call kt::arg_list_ffi_decl(func) %}
+    {%- call kt::arg_list_ffi_decl(func) %}{% endcall %}
 ): {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type.borrow()|ffi_type_name_by_value(ci) }}{% when None %}Unit{% endmatch %}
 {% endfor %}
 {%- endmacro %}
@@ -82,7 +82,7 @@ internal object IntegrityCheckingUniffiLib {
 {%- endif %}
     }
     {% filter indent(4) %}
-    {%- call decl_kotlin_functions(ci.iter_ffi_function_integrity_checks()) %}
+    {%- call decl_kotlin_functions(ci.iter_ffi_function_integrity_checks()) %}{% endcall %}
     {% endfilter %}
 }
 
@@ -102,7 +102,7 @@ internal object UniffiLib {
     }
     {#- XXX - this `filter indent` doesn't seem to work, even though the one above does? #}
     {% filter indent(4) %}
-    {%- call decl_kotlin_functions(ci.iter_ffi_function_definitions_excluding_integrity_checks()) %}
+    {%- call decl_kotlin_functions(ci.iter_ffi_function_definitions_excluding_integrity_checks()) %}{% endcall %}
     {% endfilter %}
 }
 

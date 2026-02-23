@@ -12,7 +12,7 @@
       {{ ci.namespace()|class_name_rb }}.rust_call(
     {%- endmatch -%}
     :{{ func.ffi_func().name() }},
-    {%- call _arg_list_ffi_call(func) -%}
+    {%- call _arg_list_ffi_call(func) %}{% endcall -%}
 )
 {%- endmacro -%}
 
@@ -25,7 +25,7 @@
     {%- endmatch -%}
     :{{ func.ffi_func().name() }},
     {{- prefix }},
-    {%- call _arg_list_ffi_call(func) -%}
+    {%- call _arg_list_ffi_call(func) %}{% endcall -%}
 )
 {%- endmacro -%}
 
