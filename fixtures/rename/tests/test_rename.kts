@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import java.net.URL
 import uniffi.uniffi_fixture_rename.*;
 
 // Test renamed types - should be accessible by their custom names
@@ -62,6 +63,10 @@ assert(ktEnum2 is KtEnum.KotlinRecord)
 // Test callback interface (trait) renaming.
 val ktTraitImpl = createBindingTraitImpl(3)
 assert(ktTraitImpl.kotlinTraitMethod(4) == 12)
+
+// Test renamed custom type that also has binding configuration
+val url = URL("https://example.com/test")
+assert(roundtripUrl(url) == url)
 
 // We can't test excluded items directly, however the tests will fail if the code is not working
 // since that will result in items generated with "" as their name

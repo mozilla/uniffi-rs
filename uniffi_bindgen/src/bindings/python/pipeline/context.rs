@@ -65,6 +65,6 @@ impl Context {
         &self,
         custom: &general::CustomType,
     ) -> Result<Option<CustomTypeConfig>> {
-        Ok(self.config()?.custom_types.get(&custom.name).cloned())
+        Ok(self.config()?.custom_types.get(&custom.orig_name).cloned())
     }
 }
