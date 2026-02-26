@@ -34,6 +34,8 @@ BindingObject = "KtObject"
 "BindingObject.method" = "kotlin_method"
 "BindingObject.method.arg" = "kotlinArg"
 
+Url = "RenamedUrl"
+
 # Item exclusions.
 #
 # Rename to an empty string and include an exclude entry.
@@ -85,6 +87,8 @@ BindingObject = "PyObject"
 
 "BindingObject.method" = "python_method"
 "BindingObject.method.arg" = "python_arg"
+
+Url = "RenamedUrl"
 
 # Item exclusions.
 #
@@ -138,6 +142,8 @@ BindingObject = "SwiftObject"
 "BindingObject.method" = "swift_method"
 "BindingObject.method.arg" = "swiftArg"
 
+Url = "RenamedUrl"
+
 # Item exclusions.
 #
 # Rename to an empty string and include an exclude entry.
@@ -156,3 +162,26 @@ exclude = [
     "RenamedObject.method_to_exclude",
     "RecordToExclude",
 ]
+
+# Custom type config for a renamed item
+#
+# Python uses the original name.  This is what we prefer and the pipeline makes it work like that.
+#
+# Swift and Kotlin uses the renamed name.  This is not ideal, but it's not so easy to fix either.
+
+[bindings.python.custom_types.Url]
+type_name = "urllib.parse.SplitResult"
+imports = [ "urllib.parse" ]
+lift = "urllib.parse.urlsplit({})"
+lower = "urllib.parse.urlunsplit({})"
+
+[bindings.kotlin.custom_types.RenamedUrl]
+type_name = "URL"
+imports = [ "java.net.URL" ]
+lift = "URL({})"
+lower = "{}.toString()"
+
+[bindings.swift.custom_types.RenamedUrl]
+type_name = "URL"
+lift = "URL(string: {})!"
+lower = "{}.absoluteString"
