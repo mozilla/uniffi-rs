@@ -173,6 +173,8 @@ pub struct Config {
     omit_checksums: bool,
     omit_argument_labels: Option<bool>,
     generate_immutable_records: Option<bool>,
+    #[serde(default)]
+    mutable_records: HashSet<String>,
     omit_localized_error_conformance: Option<bool>,
     generate_case_iterable_conformance: Option<bool>,
     generate_codable_conformance: Option<bool>,
@@ -264,8 +266,15 @@ impl Config {
     }
 
     /// Whether to generate immutable records (`let` instead of `var`)
-    pub fn generate_immutable_records(&self) -> bool {
+    fn generate_immutable_records(&self) -> bool {
         self.generate_immutable_records.unwrap_or(false)
+    }
+
+    /// Whether a specific record should be generated with immutable fields.
+    /// A record is immutable only if `generate_immutable_records` is enabled
+    /// and the record is not listed in `mutable_records`.
+    pub fn is_record_immutable(&self, name: &str) -> bool {
+        self.generate_immutable_records() && !self.mutable_records.contains(name)
     }
 
     /// Whether to make generated error types conform to `LocalizedError`. Default: false.

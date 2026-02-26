@@ -8,7 +8,7 @@ public struct {{ type_name }} {
 {%- endif %}
     {%- for field in rec.fields() %}
     {%- call swift::docstring(field, 4) %}
-    public {% if config.generate_immutable_records() %}let{% else %}var{% endif %} {{ field.name()|var_name }}: {{ field|type_name }}
+    public {% if config.is_record_immutable(name) %}let{% else %}var{% endif %} {{ field.name()|var_name }}: {{ field|type_name }}
     {%- endfor %}
 
     // Default memberwise initializers are never public by default, so we

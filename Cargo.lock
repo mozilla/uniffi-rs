@@ -1876,6 +1876,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-fixture-mutable-records"
+version = "0.22.0"
+dependencies = [
+ "uniffi",
+]
+
+[[package]]
 name = "uniffi-fixture-proc-macro"
 version = "0.22.0"
 dependencies = [

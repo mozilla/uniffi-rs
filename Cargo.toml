@@ -78,6 +78,7 @@ members = [
   "fixtures/enum-types",
   "fixtures/wasm-unstable-single-threaded",
   "fixtures/multi-arch-extract",
+  "fixtures/mutable-records",
 ]
 
 resolver = "2"
