@@ -4,7 +4,7 @@
 
 use std::borrow::Borrow;
 use std::cell::RefCell;
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
 
 use askama::Template;
@@ -70,6 +70,8 @@ pub struct Config {
     pub(super) package_name: Option<String>,
     pub(super) cdylib_name: Option<String>,
     generate_immutable_records: Option<bool>,
+    #[serde(default)]
+    mutable_records: HashSet<String>,
     #[serde(default)]
     omit_checksums: bool,
     #[serde(default)]
@@ -202,8 +204,15 @@ impl Config {
     }
 
     /// Whether to generate immutable records (`val` instead of `var`)
-    pub fn generate_immutable_records(&self) -> bool {
+    fn generate_immutable_records(&self) -> bool {
         self.generate_immutable_records.unwrap_or(false)
+    }
+
+    /// Whether a specific record should be generated with immutable fields.
+    /// A record is immutable only if `generate_immutable_records` is enabled
+    /// and the record is not listed in `mutable_records`.
+    pub fn is_record_immutable(&self, name: &str) -> bool {
+        self.generate_immutable_records() && !self.mutable_records.contains(name)
     }
 
     pub fn disable_java_cleaner(&self) -> bool {

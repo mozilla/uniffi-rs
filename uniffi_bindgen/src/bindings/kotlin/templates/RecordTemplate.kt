@@ -5,7 +5,7 @@
 data class {{ type_name }} (
     {%- for field in rec.fields() %}
     {%- call kt::docstring(field, 4) %}
-    {% if config.generate_immutable_records() %}val{% else %}var{% endif %} {{ field.name()|var_name }}: {{ field|type_name(ci) -}}
+    {% if config.is_record_immutable(name) %}val{% else %}var{% endif %} {{ field.name()|var_name }}: {{ field|type_name(ci) -}}
     {%- if let Some(default) = field.default_value() %} = {{ default|render_default(field, ci) }} {% endif %}
     {% if !loop.last %}, {% endif %}
     {%- endfor %}
