@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import unittest
+from urllib.parse import urlsplit, urlunsplit
 import uniffi_fixture_rename
 from uniffi_fixture_rename import *
 
@@ -64,6 +65,10 @@ class TestRename(unittest.TestCase):
         # Test trait method renaming
         trait = create_binding_trait_impl(5)
         self.assertEqual(trait.python_trait_method(10), 50)
+
+    def test_custom_type(self):
+        url = urlsplit("https://example.com/test")
+        self.assertEqual(roundtrip_url(url), url)
 
     def test_binding_excludes(self):
         self.assertFalse(hasattr(uniffi_fixture_rename, 'function_to_exclude'))

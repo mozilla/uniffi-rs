@@ -58,3 +58,6 @@ exclude = [
   For example, renaming `my_func` to `renamed_func` would cause the final name to be `renamedFunc` in those languages.
 - All builtin bindings support this but external bindings may not.
 - Renaming the primary constructor "works", but will have no impact in bindings as the name isn't used.
+- Renaming interacts inconsistently with other configuration options that use type names like the [custom types](./types/custom_types.md) configuration.
+  - On Python, use the original Rust name
+  - On Swift and Kotlin, use the renamed name

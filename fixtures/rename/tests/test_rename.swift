@@ -77,6 +77,9 @@ do {
 let swiftTraitImpl = createBindingTraitImpl(multiplier: 3)
 assert(swiftTraitImpl.swiftTraitMethod(value: 7) == 21) // 7 * 3
 
+// Test renamed custom type that also has binding configuration
+let url = URL(string: "https://example.com/test")!
+assert(roundtripUrl(url: url) == url)
 
 // We can't test excluded items directly, however the tests will fail if the code is not working
 // since that will result in items generated with "" as their name
