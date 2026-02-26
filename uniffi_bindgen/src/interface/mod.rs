@@ -1123,17 +1123,25 @@ impl ComponentInterface {
         &mut self,
         trait_impl: ObjectTraitImplMetadata,
     ) -> Result<()> {
-        let object = trait_impl
+        let name = trait_impl
             .ty
             .name()
-            .and_then(|n| get_object(&mut self.objects, n))
             .ok_or_else(|| {
                 anyhow!(
-                    "add_object_trait_impl: object {:?} not found",
+                    "add_object_trait_impl: type {:?} has no name",
                     &trait_impl.ty
                 )
             })?;
-        object.trait_impls.push(trait_impl);
+        if let Some(object) = get_object(&mut self.objects, name) {
+            object.trait_impls.push(trait_impl);
+        } else if let Some(record) = self.records.iter_mut().find(|r| r.name == name) {
+            record.trait_impls.push(trait_impl);
+        } else {
+            bail!(
+                "add_object_trait_impl: type {:?} not found",
+                &trait_impl.ty
+            );
+        }
         Ok(())
     }
 

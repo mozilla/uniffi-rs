@@ -30,6 +30,10 @@ public struct {{ type_name }} {
 extension {{ type_name }}: Sendable {}
 #endif
 
+{%- for t in rec.trait_impls() %}
+extension {{ type_name }}: Any{{ self::trait_protocol_name(ci, t.trait_ty)? }} {}
+{% endfor %}
+
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
