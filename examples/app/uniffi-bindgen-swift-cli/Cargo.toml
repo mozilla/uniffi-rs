@@ -1,0 +1,15 @@
+[package]
+name = "uniffi-bindgen-swift-cli"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "uniffi-bindgen-swift"
+path = "uniffi-bindgen-swift.rs"
+
+[dependencies]
+uniffi = { workspace = true, features = ["cli"] }
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]
