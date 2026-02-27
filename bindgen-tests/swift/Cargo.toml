@@ -1,0 +1,10 @@
+[package]
+name = "uniffi-bindgen-tests-swift"
+version = "0.31.0"
+edition = "2021"
+
+[dev-dependencies]
+camino = "1"
+glob = "0.3"
+uniffi = { path = "../../uniffi", features = ["bindgen"] }
+uniffi-bindgen-tests = { path = "../lib" }
