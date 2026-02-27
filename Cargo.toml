@@ -12,6 +12,7 @@ members = [
   "weedle2",
 
   "examples/app/uniffi-bindgen-cli",
+  "examples/app/uniffi-bindgen-swift-package-cli",
   "examples/arithmetic",
   "examples/arithmetic-procmacro",
   "examples/async-api-client",
