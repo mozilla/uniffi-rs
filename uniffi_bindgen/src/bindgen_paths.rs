@@ -37,6 +37,14 @@ impl BindgenPaths {
         self.add_layer(ConfigOverrideLayer { path })
     }
 
+    /// Add a layer that uses a "crate metadata", a kind of "meta toml" file to lookup path locations for crate names.
+    ///
+    /// Used to implement the `--crate-metadata` CLI flag.
+    pub fn add_crate_metadata_layer(&mut self, path: &Utf8PathBuf) -> Result<()> {
+        self.add_layer(crate::crate_metadata::TomlCrateConfigSupplier::new(path)?);
+        Ok(())
+    }
+
     /// Add a layer using a [BindgenPathsLayer]
     ///
     /// This can be used to add custom path finding logic.

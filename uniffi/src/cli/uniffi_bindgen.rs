@@ -75,6 +75,10 @@ enum Commands {
         #[clap(long, short)]
         config: Option<Utf8PathBuf>,
 
+        /// Path to optional crate config file
+        #[clap(long)]
+        crate_metadata: Option<Utf8PathBuf>,
+
         /// Deprecated
         ///
         /// This used to signal that a source file is a library rather than a UDL file.
@@ -171,6 +175,7 @@ pub fn run_main() -> anyhow::Result<()> {
             out_dir,
             no_format,
             config,
+            crate_metadata,
             source,
             crate_name,
             metadata_no_deps,
@@ -186,6 +191,7 @@ pub fn run_main() -> anyhow::Result<()> {
                     .expect("--out-dir is required when generating {language} bindings"),
                 source,
                 config_override: config,
+                crate_metadata,
                 crate_filter: crate_name,
                 metadata_no_deps,
                 format: !no_format,

@@ -139,11 +139,15 @@ pub fn generate(
 /// In the future, we may want to replace the generalized `uniffi-bindgen` with a set of
 /// specialized `uniffi-bindgen-[language]` commands.
 pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
-    #[cfg(not(feature = "cargo-metadata"))]
-    let paths = BindgenPaths::default();
-
-    #[cfg(feature = "cargo-metadata")]
     let mut paths = BindgenPaths::default();
+
+    if let Some(path) = &options.config_override {
+        paths.add_config_override_layer(path.clone());
+    }
+
+    if let Some(path) = &options.crate_metadata {
+        paths.add_crate_metadata_layer(path)?;
+    }
 
     #[cfg(feature = "cargo-metadata")]
     paths.add_cargo_metadata_layer(options.metadata_no_deps)?;
@@ -226,6 +230,8 @@ pub struct SwiftBindingsOptions {
     pub modulemap_filename: Option<String>,
     pub metadata_no_deps: bool,
     pub link_frameworks: Vec<String>,
+    pub config_override: Option<Utf8PathBuf>,
+    pub crate_metadata: Option<Utf8PathBuf>,
 }
 
 // A helper for renaming items.
