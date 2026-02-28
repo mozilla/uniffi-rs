@@ -1,3 +1,9 @@
+[bindings.kotlin]
+omit_checksums = true
+[bindings.python]
+omit_checksums = true
+[bindings.swift]
+omit_checksums = true
 #
 # Custom type configuration
 #

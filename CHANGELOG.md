@@ -16,6 +16,10 @@
   See [#2866](https://github.com/mozilla/uniffi-rs/issues/2866)
 - `[ByRef] bytes` UDL arguments now map to `&[u8]` on the Rust side instead of `&Vec<u8>`. UDL-defined functions whose Rust implementations take `&Vec<u8>` must change to `&[u8]`. Proc-macro signatures (`fn foo(x: &[u8])`) are unchanged. On the Kotlin side, call sites must now pass a *direct* `java.nio.ByteBuffer` rather than `ByteArray`; migrate with `ByteBuffer.allocateDirect(arr.size).put(arr).flip()`. Swift (`Data`) and Python (`bytes`) call sites are unchanged. ([#2878](https://github.com/mozilla/uniffi-rs/pull/2878))
 
+### ⚠️ Breaking Changes for external bindings authors ⚠️
+- The signature for `CrateConfigSupplier::from_cargo_metadata_command` has changed.
+  It now inputs a `MetadataCommand` instance and a `CargoMetadataOptions` rather than just a `no_deps` flag.
+
 ### What's Fixed
 
 - Kotlin: Fixed JNA direct-mapped `u8`/`u16` return values by widening the internal return carrier to `Int`, which avoids signedness mismatches during checksum validation and other direct-return paths on Android ARM32. ([#2897](https://github.com/mozilla/uniffi-rs/pull/2897))
