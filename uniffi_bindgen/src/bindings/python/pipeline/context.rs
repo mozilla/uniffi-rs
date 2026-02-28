@@ -13,11 +13,13 @@ pub struct Context {
     pub module_namespace: Option<String>,
     pub recursive_type_names: HashSet<String>,
     pub builtin_types: Option<BuiltinTypes>,
+    pub checksum_mode: Option<ChecksumMode>,
 }
 
 impl Context {
     pub fn update_from_root(&mut self, root: &general::Root) -> Result<()> {
         self.cdylib = root.cdylib.clone();
+        self.checksum_mode = Some(root.checksum_mode.clone());
         self.builtin_types = Some(root.builtin_types.clone().map_node(self)?);
         Ok(())
     }
@@ -72,6 +74,12 @@ impl Context {
             Some(cdylib) => cdylib.clone(),
             None => default_cdylib.to_string(),
         })
+    }
+
+    pub fn checksum_mode(&self) -> Result<&ChecksumMode> {
+        self.checksum_mode
+            .as_ref()
+            .ok_or_else(|| anyhow!("Context.checksum_mode not set"))
     }
 
     pub fn external_package_name(&self, namespace: &str) -> Result<Option<String>> {

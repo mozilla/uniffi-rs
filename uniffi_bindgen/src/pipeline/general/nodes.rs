@@ -4,6 +4,7 @@
 
 use super::*;
 
+use_prev_node!(initial::ChecksumMode);
 use_prev_node!(initial::EnumShape);
 use_prev_node!(initial::ObjectImpl);
 use_prev_node!(initial::Radix);
@@ -19,6 +20,7 @@ pub struct Root {
     pub cdylib: Option<String>,
     pub namespaces: IndexMap<String, Namespace>,
     pub builtin_types: BuiltinTypes,
+    pub checksum_mode: ChecksumMode,
 }
 
 /// Type nodes for builtin types
