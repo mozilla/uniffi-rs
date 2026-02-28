@@ -58,7 +58,13 @@ pub fn generate_with_bindgen_paths(
     }
 
     #[cfg(feature = "cargo-metadata")]
-    paths.add_cargo_metadata_layer(options.metadata_no_deps)?;
+    paths.add_cargo_metadata_layer(crate::CargoMetadataOptions {
+        no_deps: options.metadata_no_deps,
+        target: options.target.clone(),
+        all_features: options.all_features,
+        no_default_features: options.no_default_features,
+        features: options.features.clone(),
+    })?;
 
     fs::create_dir_all(&options.out_dir)?;
 
@@ -86,8 +92,16 @@ pub fn generate_with_bindgen_paths(
 pub struct GenerateOptions {
     /// Languages to generate bindings for
     pub languages: Vec<TargetLanguage>,
-    /// Path to the UDL or library file
+    /// Path to the UDL, library file, or "src" to generate using Rust sources
     pub source: Utf8PathBuf,
+    /// Features to enable when generating from Rust sources
+    pub features: Vec<String>,
+    /// Enable all features
+    pub all_features: bool,
+    /// Don't auto-enable default features
+    pub no_default_features: bool,
+    /// Target triple to use when generating from Rust sources
+    pub target: Option<String>,
     /// Directory to write generated files.
     pub out_dir: Utf8PathBuf,
     /// Path to the config file to use, if None bindings generators will load
@@ -105,7 +119,7 @@ pub struct GenerateOptions {
     pub metadata_no_deps: bool,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum TargetLanguage {
     Kotlin,
     Python,

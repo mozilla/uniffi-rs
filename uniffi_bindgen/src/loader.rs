@@ -7,7 +7,7 @@ use std::{
     fs,
 };
 
-use anyhow::bail;
+use anyhow::{bail, Context};
 use camino::Utf8Path;
 use uniffi_meta::{
     create_metadata_groups, group_metadata, Metadata, MetadataGroup, MetadataGroupMap,
@@ -38,6 +38,8 @@ impl BindgenLoader {
     /// `source_path` can be:
     ///   - A library file (.so, .dylib, .a, etc).  Metadata will be loaded from the symbol table.
     ///   - A UDL file.  The UDL will be parsed and converted into metadata.
+    ///   - The string "src".
+    ///     In this case, metadata will be parsed from Rust source files.
     pub fn load_metadata(&self, source_path: &Utf8Path) -> Result<MetadataGroupMap> {
         self.load_metadata_specialized(source_path, |_, _| Ok(None))
     }
@@ -58,7 +60,28 @@ impl BindgenLoader {
     where
         P: FnOnce(&Utf8Path, &[u8]) -> Result<Option<Vec<Metadata>>>,
     {
-        if self.is_udl(source_path) {
+        if let Some(source_crate) = source_path.as_str().strip_prefix("src:") {
+            let mut parser = match self.bindgen_paths.get_target() {
+                Some(target) => uniffi_parse_rs::Parser::new(&target)?,
+                None => uniffi_parse_rs::Parser::new_for_host_target(),
+            };
+            let source_crates = self
+                .bindgen_paths
+                .get_source_crates(source_crate)
+                .context("Failed to find Rust crates, was the `cargo_metadata` feature enabled?")?;
+
+            for source in source_crates {
+                let m = parser.add_crate_root(&source.name, &source.src_path, source.features)?;
+                if let Some(udl_name) = &m.udl_name {
+                    let udl_content = self.bindgen_paths.get_udl(&source.name, udl_name)?;
+                    let group = uniffi_udl::parse_udl(&udl_content, &source.name)?;
+                    parser.add_udl_metadata(&source.name, group.items)?;
+                }
+            }
+            parser.into_uniffi_meta()
+        } else if source_path == "src" {
+            bail!("Specify crate sources using `src:[crate-name]`")
+        } else if self.is_udl(source_path) {
             let crate_name = crate_name_from_cargo_toml(source_path)?;
             let mut group = uniffi_udl::parse_udl(&fs::read_to_string(source_path)?, &crate_name)?;
             Self::add_checksums_to_udl_group(&mut group);
@@ -230,7 +253,7 @@ impl BindgenLoader {
             }
         }
         let mut root = metadata_converter.try_into_initial_ir()?;
-        root.cdylib = self.library_name(source_path).map(str::to_string);
+        root.cdylib = self.library_name(source_path);
         Ok(root)
     }
 
@@ -260,8 +283,13 @@ impl BindgenLoader {
     }
 
     /// This is the filename, without the extension and leading `lib`.
-    pub fn library_name<'a>(&self, source_path: &'a Utf8Path) -> Option<&'a str> {
-        let is_library = !self.is_udl(source_path);
-        is_library.then(|| self.source_basename(source_path))
+    pub fn library_name(&self, source_path: &Utf8Path) -> Option<String> {
+        if self.is_udl(source_path) {
+            None // We can't do this for UDL sources
+        } else if let Some(source_crate) = source_path.as_str().strip_prefix("src:") {
+            self.bindgen_paths.get_cdylib_name(source_crate)
+        } else {
+            Some(self.source_basename(source_path).to_string())
+        }
     }
 }

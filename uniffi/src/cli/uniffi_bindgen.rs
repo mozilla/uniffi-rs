@@ -88,7 +88,13 @@ enum Commands {
         #[clap(long = "crate")]
         crate_name: Option<String>,
 
-        /// Path to the UDL file, or cdylib if `library-mode` is specified
+        /// Source to generate bindings from.
+        ///
+        /// Possible values:
+        ///
+        /// * Path to a UDL file
+        /// * Path to a library file
+        /// * `src:[crate-name]` to generate from Rust sources
         source: Utf8PathBuf,
 
         /// Whether we should exclude dependencies when running "cargo metadata".
@@ -98,6 +104,22 @@ enum Commands {
         /// all sub-dependencies causes obscure platform specific problems.
         #[clap(long)]
         metadata_no_deps: bool,
+
+        /// Features to enable when generating from Rust sources
+        #[clap(short, long)]
+        features: Vec<String>,
+
+        /// Enable all features
+        #[clap(long)]
+        all_features: bool,
+
+        /// Don't auto-enable default features
+        #[clap(long)]
+        no_default_features: bool,
+
+        /// Target triple to use when generating from Rust sources
+        #[clap(long)]
+        target: Option<String>,
     },
 
     /// Generate Rust scaffolding code
@@ -174,6 +196,10 @@ pub fn run_main() -> anyhow::Result<()> {
             source,
             crate_name,
             metadata_no_deps,
+            features,
+            no_default_features,
+            all_features,
+            target,
             ..
         } => {
             if language.is_empty() {
@@ -189,6 +215,10 @@ pub fn run_main() -> anyhow::Result<()> {
                 crate_filter: crate_name,
                 metadata_no_deps,
                 format: !no_format,
+                features,
+                all_features,
+                no_default_features,
+                target,
             })?;
         }
         Commands::Scaffolding {
@@ -205,8 +235,10 @@ pub fn run_main() -> anyhow::Result<()> {
         Commands::Pipeline(args) => {
             let mut paths = uniffi_bindgen::BindgenPaths::default();
             #[cfg(feature = "cargo-metadata")]
-            paths.add_cargo_metadata_layer(args.metadata_no_deps)?;
-
+            paths.add_cargo_metadata_layer(uniffi_bindgen::CargoMetadataOptions {
+                no_deps: args.metadata_no_deps,
+                ..uniffi_bindgen::CargoMetadataOptions::default()
+            })?;
             let initial_root = if args.library_mode {
                 initial::Root::from_library(paths, &args.source, args.crate_name)?
             } else {

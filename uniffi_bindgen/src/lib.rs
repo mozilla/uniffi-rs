@@ -118,6 +118,8 @@ use crate::interface::{
     Argument, Constructor, Enum, FfiArgument, FfiField, Field, Function, Method, Object, Record,
     Variant,
 };
+#[cfg(feature = "cargo-metadata")]
+pub use bindgen_paths::CargoMetadataOptions;
 pub use bindgen_paths::{BindgenPaths, BindgenPathsLayer};
 pub use interface::ComponentInterface;
 pub use library_mode::find_components;

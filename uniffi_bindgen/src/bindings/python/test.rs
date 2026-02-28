@@ -41,7 +41,10 @@ pub fn run_script(
 
     // Generate bindings
     let mut paths = crate::BindgenPaths::default();
-    paths.add_layer(CrateConfigSupplier::from(test_helper.cargo_metadata()));
+    paths.add_layer(CrateConfigSupplier::from_cargo_metadata(
+        test_helper.cargo_metadata(),
+        crate::CargoMetadataOptions::default(),
+    ));
     let root = initial::Root::from_library(paths, &cdylib_path, None)?;
     run_pipeline(root, &out_dir, None)?;
 
