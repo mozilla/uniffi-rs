@@ -1,0 +1,88 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+use syn::{ext::IdentExt, Ident, ItemStruct};
+
+use crate::{
+    attrs::{FieldAttributes, RecordAttributes},
+    Result,
+};
+
+#[derive(Clone)]
+pub struct Record {
+    pub attrs: RecordAttributes,
+    pub ident: Ident,
+    pub fields: Vec<Field>,
+}
+
+#[derive(Clone)]
+pub struct Field {
+    pub attrs: FieldAttributes,
+    pub ident: Option<Ident>,
+    pub ty: syn::Type,
+}
+
+impl Record {
+    pub fn parse(attrs: RecordAttributes, st: ItemStruct) -> syn::Result<Self> {
+        let mut fields = vec![];
+        for f in st.fields {
+            if let Some(field_attrs) = FieldAttributes::parse(&f.attrs)? {
+                fields.push(Field::parse(field_attrs, f)?);
+            }
+        }
+        Ok(Self {
+            attrs,
+            ident: st.ident,
+            fields,
+        })
+    }
+
+    pub fn name(&self) -> String {
+        self.ident.unraw().to_string()
+    }
+
+    pub fn record_metadata(&self) -> Result<uniffi_meta::RecordMetadata> {
+        Ok(uniffi_meta::RecordMetadata {
+            module_path: "".into(), // TODO
+            name: self.name(),
+            orig_name: None, // TODO
+            remote: false,
+            docstring: self.attrs.docstring.clone(),
+            fields: self
+                .fields
+                .iter()
+                .map(|f| f.create_field_metadata())
+                .collect::<Result<Vec<_>>>()?,
+        })
+    }
+}
+
+impl Field {
+    pub fn parse(attrs: FieldAttributes, f: syn::Field) -> syn::Result<Self> {
+        Ok(Self {
+            attrs,
+            ident: f.ident,
+            ty: f.ty,
+        })
+    }
+
+    pub fn name(&self) -> String {
+        match &self.ident {
+            Some(i) => i.unraw().to_string(),
+            None => "".to_string(),
+        }
+    }
+
+    pub fn create_field_metadata<'ir>(&self) -> Result<uniffi_meta::FieldMetadata> {
+        let name = self.name();
+
+        Ok(uniffi_meta::FieldMetadata {
+            name,
+            orig_name: None,             // TODO
+            ty: uniffi_meta::Type::Int8, // TODO
+            default: None,
+            docstring: self.attrs.docstring.clone(),
+        })
+    }
+}
