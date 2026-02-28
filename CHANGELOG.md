@@ -19,6 +19,10 @@
   need to be reworked as well.  See [#2787](https://github.com/mozilla/uniffi-rs/pull/2787) for
   examples of how this can be done.
 
+### ⚠️ Breaking Changes for external bindings authors ⚠️
+- The signature for `CrateConfigSupplier::from_cargo_metadata_command` has changed.
+  It now inputs a `MetadataCommand` instance and a `CargoMetadataOptions` rather than just a `no_deps` flag.
+
 ### What's Fixed
 
 - Kotlin: Fixed JNA direct-mapped `u8`/`u16` return values by widening the internal return carrier to `Int`, which avoids signedness mismatches during checksum validation and other direct-return paths on Android ARM32. ([#2897](https://github.com/mozilla/uniffi-rs/pull/2897))

@@ -31,9 +31,15 @@ pub struct Context {
 
 impl Context {
     pub fn get_namespace_name(&self, module_path: &str) -> Result<String> {
-        let crate_name = module_path.split("::").next().unwrap();
+        let crate_name = module_path
+            .split("::")
+            .next()
+            .unwrap()
+            // fixup module paths from uniffi_udl;
+            .replace("-", "_");
+
         self.module_path_map
-            .get(crate_name)
+            .get(&crate_name)
             .cloned()
             .ok_or_else(|| anyhow!("module lookup failed: {module_path:?}"))
     }
