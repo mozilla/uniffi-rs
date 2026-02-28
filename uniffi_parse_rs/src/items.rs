@@ -1,0 +1,123 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+use std::fmt;
+
+use syn::{ext::IdentExt, Ident, ItemType, ItemUse, LitStr};
+
+use crate::{Enum, Function, Impl, Module, Object, Record, Trait};
+
+/// Item enum
+///
+/// This is a `syn::Item` that we've partially parsed.
+/// The metadata module converts these into `uniffi::Metadata` items.
+pub enum Item {
+    Module(Module),
+    Record(Record),
+    Enum(Enum),
+    Object(Object),
+    Fn(Function),
+    Impl(Impl),
+    Trait(Trait),
+    Type(ItemType),
+    Use(ItemUse),
+    IncludeScaffolding(LitStr),
+    /// Builtin items that we know about.
+    Builtin(BuiltinItem),
+}
+
+/// Builtin item that we know about without needing to parse the source
+///
+/// We normally identify these by seeing a `use` statement that imports them from a crate that
+/// we're not parsing the source of.
+#[derive(Debug, Clone, Copy)]
+pub enum BuiltinItem {
+    UnitType,
+    Boolean,
+    String,
+    Str,
+    UInt8,
+    Int8,
+    UInt16,
+    Int16,
+    UInt32,
+    Int32,
+    UInt64,
+    Int64,
+    Float32,
+    Float64,
+    SystemTime,
+    Duration,
+    Vec,
+    HashMap,
+    Option,
+    Result,
+    Arc,
+    Box,
+    UniffiMacro(&'static str),
+}
+
+impl BuiltinItem {
+    pub fn has_generic_args(&self) -> bool {
+        matches!(
+            self,
+            Self::Vec | Self::HashMap | Self::Option | Self::Arc | Self::Box | Self::Result
+        )
+    }
+}
+
+impl Item {
+    pub fn ident(&self) -> Option<Ident> {
+        match &self {
+            Item::Module(m) => Some(m.ident.unraw()),
+            Item::Record(rec) => Some(rec.ident.unraw()),
+            Item::Enum(en) => Some(en.ident.unraw()),
+            Item::Object(o) => Some(o.ident.unraw()),
+            Item::Fn(func) => Some(func.ident.unraw()),
+            Item::Trait(tr) => Some(tr.ident.unraw()),
+            Item::Type(ty) => Some(ty.ident.unraw()),
+            _ => None,
+        }
+    }
+
+    pub fn name(&self) -> String {
+        match self.ident() {
+            Some(i) => i.to_string(),
+            None => "<unnamed>".to_string(),
+        }
+    }
+}
+
+impl fmt::Debug for Item {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Module(m) => f.debug_tuple("Module").field(&m).finish(),
+            Self::Record(rec) => f
+                .debug_tuple("Record")
+                .field(&rec.ident.to_string())
+                .finish(),
+            Self::Enum(en) => f.debug_tuple("Enum").field(&en.ident.to_string()).finish(),
+            Self::Object(o) => f
+                .debug_tuple("Interface")
+                .field(&o.ident.to_string())
+                .finish(),
+            Self::Fn(func) => f.debug_tuple("Fn").field(&func.ident.to_string()).finish(),
+            Self::Trait(tr) => f
+                .debug_struct("Trait")
+                .field("name", &tr.ident.to_string())
+                .finish(),
+            Self::Impl(imp) => f
+                .debug_tuple("Impl")
+                .field(&format!(
+                    "<{} items>",
+                    imp.constructors.len() + imp.methods.len()
+                ))
+                .finish(),
+            Self::Type(ty) => f.debug_tuple("Type").field(&ty.ident.to_string()).finish(),
+            Self::Use(_) => f.debug_tuple("Use").finish(),
+            Self::IncludeScaffolding(_) => f.debug_tuple("IncludeScaffolding").finish(),
+            Self::Builtin(builtin) => f.debug_tuple("Builtin").field(&builtin).finish(),
+        }
+    }
+}
