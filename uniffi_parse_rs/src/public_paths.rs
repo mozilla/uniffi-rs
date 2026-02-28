@@ -226,16 +226,16 @@ mod test {
 
     pub fn run_public_path_to_item(ir: &Ir, item_path: &str) -> ItemNames {
         let mut cache = LookupCache::default();
-        let crate_path = path_for_module(&ir, item_path.split("::").next().unwrap());
+        let crate_path = path_for_module(ir, item_path.split("::").next().unwrap());
         let item = crate_path
             .resolve(
-                &ir,
+                ir,
                 &mut cache,
                 &syn::parse_str(item_path).unwrap(),
                 Namespace::Type,
             )
             .unwrap();
-        item.public_path_to_item(&ir, &mut cache)
+        item.public_path_to_item(ir, &mut cache)
             .unwrap_or_else(|e| panic!("{e}"))
     }
 

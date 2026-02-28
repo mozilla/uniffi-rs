@@ -126,13 +126,19 @@ pub mod test_util {
         .unwrap();
     }
 
-    pub fn generate_sources(library_dir: &Utf8Path, language: uniffi::TargetLanguage) {
-        let library_filename = library_filename();
+    pub fn generate_sources(tempdir: &Utf8Path, language: uniffi::TargetLanguage) {
+        let source = match language {
+            uniffi::TargetLanguage::Kotlin => "src:uniffi-bindgen-tests-kotlin",
+            uniffi::TargetLanguage::Python => "src:uniffi-bindgen-tests-python",
+            uniffi::TargetLanguage::Swift => "src:uniffi-bindgen-tests-swift",
+            uniffi::TargetLanguage::Ruby => unimplemented!("Ruby tests"),
+        };
+
         uniffi::generate(uniffi::GenerateOptions {
             languages: vec![language],
-            source: library_dir.join(library_filename),
+            source: source.into(),
             format: false,
-            out_dir: library_dir.to_path_buf(),
+            out_dir: tempdir.to_path_buf(),
             ..uniffi::GenerateOptions::default()
         })
         .unwrap();

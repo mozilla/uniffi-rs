@@ -2316,6 +2316,7 @@ dependencies = [
  "toml",
  "uniffi_internal_macros",
  "uniffi_meta",
+ "uniffi_parse_rs",
  "uniffi_pipeline",
  "uniffi_testing",
  "uniffi_udl",

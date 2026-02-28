@@ -45,7 +45,7 @@ impl LogSink {
     }
 
     /// Log a message to our file
-    pub fn log(&self, _level: log::Level, _msg: String) {
+    pub fn log(&self, _level: LogLevel, _msg: String) {
         // Pretend this code actually writes something out
     }
 }

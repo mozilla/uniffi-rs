@@ -11,6 +11,10 @@
   Previously these languages skipped the constructor in this case or generated a constructor that always threw.
   You can get similar behavior by adding the primary constructor to the uniffi.toml excludes list in uniffi.toml (e.g. `excludes = ["MyObject.new"])
 
+### ⚠️ Breaking Changes for external bindings authors ⚠️
+- The signature for `CrateConfigSupplier::from_cargo_metadata_command` has changed.
+  It now inputs a `MetadataCommand` instance and a `CargoMetadataOptions` rather than just a `no_deps` flag.
+
 ### What's Fixed
 
 - Fixed bug that sometimes prevented renaming items inside a submodule [#2792](https://github.com/mozilla/uniffi-rs/pull/2792)

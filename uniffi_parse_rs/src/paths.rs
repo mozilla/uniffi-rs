@@ -592,31 +592,22 @@ pub enum Namespace {
 impl Namespace {
     pub fn matches(&self, item: &Item) -> bool {
         match self {
-            Self::Type => match item {
+            Self::Type => matches!(
+                item,
                 Item::Module(_)
-                | Item::Record(_)
-                | Item::Enum(_)
-                | Item::Object(_)
-                | Item::Trait(_)
-                | Item::CustomType(_)
-                | Item::Udl(_)
-                | Item::Type(_)
-                | Item::Builtin(_)
-                | Item::UseRemoteType(_) => true,
-                _ => false,
-            },
-            Self::Value => match item {
-                Item::Fn(_) => true,
-                _ => false,
-            },
-            Self::Macro => match item {
-                Item::Builtin(BuiltinItem::UniffiMacro(_)) => true,
-                _ => false,
-            },
-            Self::NonUniffiType => match item {
-                Item::NonUniffi(_, _) => true,
-                _ => false,
-            },
+                    | Item::Record(_)
+                    | Item::Enum(_)
+                    | Item::Object(_)
+                    | Item::Trait(_)
+                    | Item::CustomType(_)
+                    | Item::Udl(_)
+                    | Item::Type(_)
+                    | Item::Builtin(_)
+                    | Item::UseRemoteType(_)
+            ),
+            Self::Value => matches!(item, Item::Fn(_),),
+            Self::Macro => matches!(item, Item::Builtin(BuiltinItem::UniffiMacro(_)),),
+            Self::NonUniffiType => matches!(item, Item::NonUniffi(_, _),),
         }
     }
 }

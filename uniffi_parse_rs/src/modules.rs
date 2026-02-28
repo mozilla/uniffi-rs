@@ -51,6 +51,7 @@ impl Module {
         Ok(module)
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn new_child(
         &self,
         source: FileId,
@@ -247,7 +248,7 @@ impl Module {
                         rec.attrs
                             .utraits
                             .uniffi_trait_method_metadata(
-                                &module_path,
+                                module_path,
                                 uniffi_meta::Type::Record {
                                     module_path: meta.module_path.clone(),
                                     name: meta.name.clone(),
@@ -264,7 +265,7 @@ impl Module {
                         en.attrs
                             .utraits
                             .uniffi_trait_method_metadata(
-                                &module_path,
+                                module_path,
                                 uniffi_meta::Type::Enum {
                                     module_path: meta.module_path.clone(),
                                     name: meta.name.clone(),
@@ -281,7 +282,7 @@ impl Module {
                         o.attrs
                             .utraits
                             .uniffi_trait_method_metadata(
-                                &module_path,
+                                module_path,
                                 uniffi_meta::Type::Object {
                                     module_path: meta.module_path.clone(),
                                     name: meta.name.clone(),
