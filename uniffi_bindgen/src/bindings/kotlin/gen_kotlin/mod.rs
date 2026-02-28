@@ -348,31 +348,33 @@ impl<'a> KotlinWrapper<'a> {
     }
 
     pub fn initialization_fns(&self, ci: &ComponentInterface) -> Vec<String> {
-        let init_fns = self
-            .ci
-            .iter_local_types()
-            .map(|t| KotlinCodeOracle.find(t))
-            .filter_map(|ct| ct.initialization_fn())
-            .map(|fn_name| format!("{fn_name}(this)"));
+        let mut init_fns = vec!["uniffiEnsureInitialized()".to_string()];
+        init_fns.extend(
+            self.ci
+                .iter_local_types()
+                .map(|t| KotlinCodeOracle.find(t))
+                .filter_map(|ct| ct.initialization_fn())
+                .map(|fn_name| format!("{fn_name}(this)")),
+        );
 
         // Also call global initialization function for any external type we use.
         // For example, we need to make sure that all callback interface vtables are registered
         // (#2343).
-        let extern_module_init_fns = self
-            .ci
-            .iter_external_types()
-            .filter_map(|ty| ty.crate_name())
-            .map(|crate_name| {
-                let namespace = ci.namespace_for_module_path(crate_name).unwrap();
-                let package_name = self
-                    .config
-                    .external_package_name(crate_name, Some(namespace));
-                format!("{package_name}.uniffiEnsureInitialized()")
-            })
-            // Collect into a btree set to de-dup and order
-            .collect::<BTreeSet<_>>();
-
-        init_fns.chain(extern_module_init_fns).collect()
+        init_fns.extend(
+            self.ci
+                .iter_external_types()
+                .filter_map(|ty| ty.crate_name())
+                .map(|crate_name| {
+                    let namespace = ci.namespace_for_module_path(crate_name).unwrap();
+                    let package_name = self
+                        .config
+                        .external_package_name(crate_name, Some(namespace));
+                    format!("{package_name}.uniffiEnsureInitialized()")
+                })
+                // Collect into a btree set to de-dup and order
+                .collect::<BTreeSet<_>>(),
+        );
+        init_fns
     }
 
     pub fn imports(&self) -> Vec<ImportRequirement> {

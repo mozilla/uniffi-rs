@@ -27,7 +27,7 @@ pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> 
         }
     }
 
-    let cis = loader.load_cis(metadata)?;
+    let cis = loader.load_cis(&options.source, metadata)?;
     let cdylib = loader.library_name(&options.source).map(|l| l.to_string());
     let mut components =
         loader.load_components(cis, |ci, toml| parse_config(ci, toml, cdylib.clone()))?;

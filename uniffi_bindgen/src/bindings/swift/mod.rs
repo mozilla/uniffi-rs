@@ -70,7 +70,7 @@ pub fn generate(
             bail!("No UniFFI metadata found for crate {crate_filter}");
         }
     }
-    let cis = loader.load_cis(metadata)?;
+    let cis = loader.load_cis(&options.source, metadata)?;
     let mut components = loader.load_components(cis, parse_config)?;
     apply_renames(&mut components);
     for c in components.iter_mut() {
@@ -155,14 +155,19 @@ pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
         GlobalConfig::default()
     };
 
+    // TODO: input cargo features and the target from the CLI and use that to build
+    // `CargoMetadataOptions`
     #[cfg(feature = "cargo-metadata")]
-    paths.add_cargo_metadata_layer(options.metadata_no_deps)?;
+    paths.add_cargo_metadata_layer(crate::CargoMetadataOptions {
+        no_deps: options.metadata_no_deps,
+        ..crate::CargoMetadataOptions::default()
+    })?;
 
     fs::create_dir_all(&options.out_dir)?;
 
     let loader = BindgenLoader::new(paths, global_config);
     let metadata = loader.load_metadata(&options.source)?;
-    let cis = loader.load_cis(metadata)?;
+    let cis = loader.load_cis(&options.source, metadata)?;
     let mut components = loader.load_components(cis, parse_config)?;
     apply_renames(&mut components);
     // Call derive_ffi_funcs after apply_renames()

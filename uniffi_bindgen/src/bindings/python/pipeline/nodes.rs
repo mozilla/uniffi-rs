@@ -13,6 +13,7 @@ use super::*;
 
 use_prev_node!(general::AsyncData);
 use_prev_node!(general::Checksum);
+use_prev_node!(general::ChecksumMode);
 use_prev_node!(general::EnumShape);
 use_prev_node!(general::FieldsKind);
 use_prev_node!(general::FfiFunctionKind);
@@ -39,6 +40,7 @@ pub struct Root {
     #[map_node(from(namespaces))]
     pub modules: IndexMap<String, Module>,
     pub builtin_types: BuiltinTypes,
+    pub checksum_mode: ChecksumMode,
 }
 
 #[derive(Debug, Clone, MapNode, Node)]
@@ -84,6 +86,7 @@ pub struct Module {
     pub correct_contract_version: String,
     // Copy builtin types so that we can use in from the `Module.py` template
     pub builtin_types: BuiltinTypes,
+    pub checksum_mode: ChecksumMode,
 }
 
 // These structs exist so that we can easily deserialize the entire `uniffi.toml` file.

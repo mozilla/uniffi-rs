@@ -12,13 +12,14 @@ use_prev_node!(uniffi_meta::Radix);
 use_prev_node!(uniffi_meta::TraitKind);
 
 /// Root node of the Initial IR
-#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
+#[derive(Debug, Clone, Node, MapNode)]
 pub struct Root {
     pub namespaces: IndexMap<String, Namespace>,
     /// The library path the user passed to us, if we're in library mode
     pub cdylib: Option<String>,
     // Types that implement `From<uniffi::UnexpectedUniFFICallbackError>`
     pub from_unexpected_callback_error_impls: Vec<Type>,
+    pub checksum_mode: ChecksumMode,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
@@ -30,6 +31,25 @@ pub struct Namespace {
     pub docstring: Option<String>,
     pub functions: Vec<Function>,
     pub type_definitions: Vec<TypeDefinition>,
+}
+#[derive(Debug, Clone, Node, MapNode)]
+pub enum ChecksumMode {
+    /// Legacy checksum mode
+    ///
+    /// A Rust checksum function will be generated for each exported function.
+    /// The generated bindings will check the outputs of those functions against
+    /// the expected checksums.
+    ///
+    /// This is used when generating bindings from UDL or a library file.
+    Legacy,
+    // Skip checksum checks
+    //
+    // This is currently used when parsing Rust source.
+    //
+    // Eventually, we can re-implement checksums once we enabling using `uniffi_parse_rs`
+    // to generate both the scaffolding and bindings
+    // (https://github.com/mozilla/uniffi-rs/issues/2932).
+    Skip,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
