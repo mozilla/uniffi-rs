@@ -273,12 +273,13 @@ impl UniffiMetaConverter {
 
         let mut root = Root {
             namespaces: self.namespaces.into_iter().collect(),
-            cdylib: None,
             from_unexpected_callback_error_impls: self
                 .from_unexpected_callback_error_impls
                 .into_iter()
                 .map(|ty| ty.map_node(&context))
                 .collect::<Result<Vec<_>>>()?,
+            cdylib: None,
+            checksum_mode: ChecksumMode::Legacy,
         };
 
         // Move child items into their parents
@@ -358,9 +359,14 @@ fn get_namespace<'a>(
     root: &'a mut Root,
     module_path: &str,
 ) -> Result<&'a mut Namespace> {
-    let crate_name = module_path.split("::").next().unwrap();
+    let crate_name = module_path
+        .split("::")
+        .next()
+        .unwrap()
+        // fixup module paths from uniffi_udl;
+        .replace("-", "_");
     let namespace_name = module_path_map
-        .get(crate_name)
+        .get(&crate_name)
         .map(String::as_str)
         .ok_or_else(|| anyhow!("module lookup failed: {module_path:?}"))?;
     root.namespaces

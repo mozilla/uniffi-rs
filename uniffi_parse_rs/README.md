@@ -19,6 +19,7 @@ This crate is experimental and not supported by any existing bindings.
 * macros or build scripts (other than the specific macros listed above).
 * Parsing inside function bodies.  All items must be top-level items in their modules.
 * `use` statements or Type aliases that go through crates that aren't parsed.
+* Checksum checks are currently disabled (https://github.com/mozilla/uniffi-rs/issues/2932)
 
 # Extra requirements
 * Types and functions used in the API must be `pub` and reachable from outside crates.

@@ -77,7 +77,7 @@ internal object IntegrityCheckingUniffiLib {
     init {
         Native.register(IntegrityCheckingUniffiLib::class.java, findLibraryName(componentName = "{{ ci.namespace() }}"))
         uniffiCheckContractApiVersion(this)
-{%- if !config.omit_checksums %}
+{%- if !(config.omit_checksums || ci.skip_checksum_checks) %}
         uniffiCheckApiChecksums(this)
 {%- endif %}
     }
@@ -116,7 +116,7 @@ private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
     }
 }
 
-{%- if !config.omit_checksums %}
+{%- if !(config.omit_checksums || ci.skip_checksum_checks) %}
 @Suppress("UNUSED_PARAMETER")
 private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     {%- for (name, expected_checksum) in ci.iter_checksums() %}

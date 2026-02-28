@@ -10,6 +10,7 @@ pub fn map_root(input: initial::Root, context: &Context) -> Result<Root> {
 
     Ok(Root {
         cdylib: input.cdylib,
+        checksum_mode: input.checksum_mode,
         namespaces: input.namespaces.map_node(&context)?,
         builtin_types: builtin_types(&context)?,
     })
