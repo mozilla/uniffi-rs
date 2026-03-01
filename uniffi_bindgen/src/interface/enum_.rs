@@ -189,6 +189,10 @@ pub struct Enum {
     uniffi_traits: Vec<UniffiTrait>,
     #[checksum_ignore]
     pub(super) docstring: Option<String>,
+    /// Whether this enum participates in a recursive type cycle.
+    /// Set by `ComponentInterface::infer_recursive_enums()`.
+    #[checksum_ignore]
+    pub(super) recursive: bool,
 }
 
 impl Enum {
@@ -266,6 +270,10 @@ impl Enum {
             EnumShape::Error { flat } => flat,
             EnumShape::Enum => self.variants.iter().all(|v| v.fields.is_empty()),
         }
+    }
+
+    pub fn recursive(&self) -> bool {
+        self.recursive
     }
 
     pub fn is_non_exhaustive(&self) -> bool {
@@ -351,6 +359,7 @@ impl TryFrom<uniffi_meta::EnumMetadata> for Enum {
             methods: vec![],
             uniffi_traits: vec![],
             docstring: meta.docstring.clone(),
+            recursive: false,
         })
     }
 }
@@ -753,6 +762,7 @@ mod test {
             methods: vec![],
             uniffi_traits: vec![],
             docstring: None,
+            recursive: false,
         };
 
         assert!(e.variant_discr(0).is_err());

@@ -4,5 +4,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 uniffi::build_foreign_language_testcases!(
-    "tests/bindings/test_recursive_enums.kts"
+    "tests/bindings/test_recursive_enums.kts",
+    "tests/bindings/test_recursive_enums.swift"
 );
