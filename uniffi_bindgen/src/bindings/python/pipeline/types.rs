@@ -88,6 +88,39 @@ pub fn type_name(ty: &Type, context: &Context) -> Result<String> {
     })
 }
 
+/// Like `type_name`, but wraps recursive enum type names in Python string
+/// quotes so they work as forward-reference annotations inside the enum's
+/// own class body (needed for Python < 3.10 which evaluates annotations eagerly).
+pub fn forward_ref_type_name(ty: &Type, context: &Context) -> Result<String> {
+    match ty {
+        Type::Enum { name, .. } => {
+            let base = type_name(ty, context)?;
+            if context.is_recursive_enum(name) {
+                Ok(format!("\"{}\"", base))
+            } else {
+                Ok(base)
+            }
+        }
+        Type::Optional { inner_type } => Ok(format!(
+            "typing.Optional[{}]",
+            forward_ref_type_name(inner_type, context)?
+        )),
+        Type::Sequence { inner_type } => Ok(format!(
+            "typing.List[{}]",
+            forward_ref_type_name(inner_type, context)?
+        )),
+        Type::Map {
+            key_type,
+            value_type,
+        } => Ok(format!(
+            "dict[{}, {}]",
+            forward_ref_type_name(key_type, context)?,
+            forward_ref_type_name(value_type, context)?
+        )),
+        _ => type_name(ty, context),
+    }
+}
+
 pub fn ffi_converter_name(ty: &general::TypeNode, context: &Context) -> Result<String> {
     let ext_package = match ty.ty.namespace() {
         Some(namespace) => context.external_package_name(namespace)?,

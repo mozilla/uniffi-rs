@@ -5,5 +5,6 @@
  */
 uniffi::build_foreign_language_testcases!(
     "tests/bindings/test_recursive_enums.kts",
-    "tests/bindings/test_recursive_enums.swift"
+    "tests/bindings/test_recursive_enums.swift",
+    "tests/bindings/test_recursive_enums.py",
 );

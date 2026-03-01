@@ -270,6 +270,7 @@ pub struct Enum {
     pub constructors: Vec<Constructor>,
     pub methods: Vec<Method>,
     pub uniffi_trait_methods: UniffiTraitMethods,
+    pub recursive: bool,
 }
 
 #[derive(Debug, Clone, Node)]
@@ -405,6 +406,8 @@ pub struct ExternalType {
 pub struct TypeNode {
     #[map_node(types::type_name(&self.ty, context)?)]
     pub type_name: String,
+    #[map_node(types::forward_ref_type_name(&self.ty, context)?)]
+    pub forward_ref_type_name: String,
     #[map_node(types::ffi_converter_name(&self, context)?)]
     pub ffi_converter_name: String,
     pub ty: Type,
