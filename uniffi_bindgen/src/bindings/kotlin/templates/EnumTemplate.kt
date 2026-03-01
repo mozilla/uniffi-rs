@@ -142,7 +142,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
         }
     }
 
-    override fun allocationSize(value: {{ type_name }}) = when(value) {
+    override fun allocationSize(value: {{ type_name }}): ULong = when(value) {
         {%- for variant in e.variants() %}
         is {{ type_name }}.{{ variant|type_name(ci) }} -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields

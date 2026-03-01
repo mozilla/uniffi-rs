@@ -14,6 +14,7 @@ mod exclude;
 mod ffi_async_data;
 mod ffi_functions;
 mod ffi_types;
+pub(crate) mod infer_recursive_enums;
 mod namespaces;
 mod nodes;
 mod objects;

@@ -25,8 +25,8 @@ pub fn map_namespace(namespace: initial::Namespace, context: &Context) -> Result
             .flatten(),
         )),
         checksums: checksums::checksums(&namespace)?,
-        type_definitions: sort::sort_type_definitions(
-            [
+        type_definitions: {
+            let mut type_defs: Vec<TypeDefinition> = [
                 // Map existing type definitions from the initial IR (record/enum/interface
                 // definitions, etc).
                 namespace
@@ -49,8 +49,11 @@ pub fn map_namespace(namespace: initial::Namespace, context: &Context) -> Result
                 type_definitions_from_api::type_definitions(&namespace, context)?,
             ]
             .into_iter()
-            .flatten(),
-        ),
+            .flatten()
+            .collect();
+            infer_recursive_enums::infer_recursive_enums(&mut type_defs);
+            sort::sort_type_definitions(type_defs)
+        },
         ffi_rustbuffer_alloc: rust_buffer::rustbuffer_alloc_fn_name(context)?,
         ffi_rustbuffer_from_bytes: rust_buffer::rustbuffer_from_bytes_fn_name(context)?,
         ffi_rustbuffer_free: rust_buffer::rustbuffer_free_fn_name(context)?,
