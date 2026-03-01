@@ -84,6 +84,18 @@ public enum MyEnum : UInt8 {
 }
 ```
 
+## Recursive enums
+
+Enums that reference themselves are supported. UniFFI automatically detects the cycle and generates appropriate bindings. Use `Box<T>` in variant fields to satisfy Rust's ownership rules:
+
+```rust
+#[derive(uniffi::Enum)]
+pub enum Tree {
+    Leaf,
+    Branch { left: Box<Tree>, right: Box<Tree> },
+}
+```
+
 ## Renaming enums
 
 Enums can be renamed in foreign language bindings using the `name` parameter:
