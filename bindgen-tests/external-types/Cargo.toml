@@ -7,5 +7,5 @@ edition = "2021"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [dependencies]
-thiserror = "1"
+thiserror = "2"
 uniffi = { workspace = true }

@@ -374,7 +374,7 @@ dependencies = [
  "semver",
  "serde",
  "serde_json",
- "thiserror 2.0.12",
+ "thiserror",
 ]
 
 [[package]]
@@ -997,7 +997,7 @@ dependencies = [
 name = "large-enum"
 version = "0.22.0"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -1005,7 +1005,7 @@ dependencies = [
 name = "large-error"
 version = "0.26.1"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -1525,31 +1525,11 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "1.0.69"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
-dependencies = [
- "thiserror-impl 1.0.69",
-]
-
-[[package]]
-name = "thiserror"
 version = "2.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "567b8a2dae586314f7be2a752ec7474332959c6460e02bde30d702a66d488708"
 dependencies = [
- "thiserror-impl 2.0.12",
-]
-
-[[package]]
-name = "thiserror-impl"
-version = "1.0.69"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "thiserror-impl",
 ]
 
 [[package]]
@@ -1669,7 +1649,7 @@ dependencies = [
 name = "unary-result-alias"
 version = "0.1.0"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -1709,7 +1689,7 @@ dependencies = [
  "async-trait",
  "camino",
  "glob",
- "thiserror 1.0.69",
+ "thiserror",
  "uniffi",
  "uniffi-bindgen-tests-external-types-source",
  "url",
@@ -1719,7 +1699,7 @@ dependencies = [
 name = "uniffi-bindgen-tests-external-types-source"
 version = "0.31.0"
 dependencies = [
- "thiserror 1.0.69",
+ "thiserror",
  "uniffi",
 ]
 
@@ -1737,7 +1717,7 @@ dependencies = [
 name = "uniffi-example-arithmetic"
 version = "0.22.0"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -1745,7 +1725,7 @@ dependencies = [
 name = "uniffi-example-arithmetic-procmacro"
 version = "0.22.0"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -1756,7 +1736,7 @@ dependencies = [
  "async-trait",
  "serde",
  "serde_json",
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -1764,7 +1744,7 @@ dependencies = [
 name = "uniffi-example-callbacks"
 version = "0.22.0"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -1783,7 +1763,7 @@ name = "uniffi-example-futures"
 version = "0.22.0"
 dependencies = [
  "async-std",
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -1822,7 +1802,7 @@ name = "uniffi-example-todolist"
 version = "0.22.0"
 dependencies = [
  "once_cell",
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -1830,7 +1810,7 @@ dependencies = [
 name = "uniffi-example-traits"
 version = "0.22.0"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -1841,7 +1821,7 @@ dependencies = [
  "clap",
  "criterion",
  "regex",
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
  "uniffi_bindgen",
 ]
@@ -1850,7 +1830,7 @@ dependencies = [
 name = "uniffi-fixture-callbacks"
 version = "0.22.0"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -1859,7 +1839,7 @@ name = "uniffi-fixture-coverall"
 version = "0.22.0"
 dependencies = [
  "once_cell",
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
  "uniffi_meta",
 ]
@@ -1870,7 +1850,7 @@ version = "0.22.0"
 dependencies = [
  "camino",
  "glob",
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
  "uniffi_bindgen",
  "uniffi_testing",
@@ -1882,7 +1862,7 @@ version = "0.22.0"
 dependencies = [
  "cargo_metadata",
  "glob",
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
  "uniffi_bindgen",
  "uniffi_testing",
@@ -1892,7 +1872,7 @@ dependencies = [
 name = "uniffi-fixture-enum-types"
 version = "0.22.0"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -1901,7 +1881,7 @@ name = "uniffi-fixture-error-types"
 version = "0.22.0"
 dependencies = [
  "anyhow",
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -1926,7 +1906,7 @@ version = "0.22.0"
 dependencies = [
  "anyhow",
  "bytes",
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -1941,7 +1921,7 @@ dependencies = [
  "anyhow",
  "bytes",
  "http",
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -1951,7 +1931,7 @@ version = "0.22.0"
 dependencies = [
  "anyhow",
  "bytes",
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -1984,7 +1964,7 @@ dependencies = [
  "async-trait",
  "futures",
  "once_cell",
- "thiserror 2.0.12",
+ "thiserror",
  "tokio",
  "uniffi",
 ]
@@ -2000,7 +1980,7 @@ dependencies = [
 name = "uniffi-fixture-keywords-kotlin"
 version = "0.22.0"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -2008,7 +1988,7 @@ dependencies = [
 name = "uniffi-fixture-keywords-rust"
 version = "0.22.0"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -2016,7 +1996,7 @@ dependencies = [
 name = "uniffi-fixture-keywords-swift"
 version = "0.22.0"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -2032,7 +2012,7 @@ dependencies = [
 name = "uniffi-fixture-metadata"
 version = "0.1.0"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
  "uniffi_core",
  "uniffi_meta",
@@ -2059,7 +2039,7 @@ name = "uniffi-fixture-proc-macro"
 version = "0.22.0"
 dependencies = [
  "lazy_static",
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -2142,7 +2122,7 @@ dependencies = [
 name = "uniffi-fixture-rename"
 version = "0.22.0"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -2158,7 +2138,7 @@ name = "uniffi-fixture-simple-iface"
 version = "0.22.0"
 dependencies = [
  "lazy_static",
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -2202,7 +2182,7 @@ name = "uniffi-fixture-time"
 version = "0.22.0"
 dependencies = [
  "chrono",
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -2211,7 +2191,7 @@ name = "uniffi-fixture-trait-methods"
 version = "0.22.0"
 dependencies = [
  "once_cell",
- "thiserror 2.0.12",
+ "thiserror",
  "uniffi",
 ]
 
@@ -2355,7 +2335,7 @@ dependencies = [
 name = "uniffi_uitests"
 version = "0.22.0"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror",
  "trybuild",
  "uniffi",
  "uniffi_macros",
