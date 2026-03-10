@@ -51,7 +51,7 @@ pub fn map_namespace(namespace: initial::Namespace, context: &Context) -> Result
             .into_iter()
             .flatten()
             .collect();
-            infer_recursive_enums::infer_recursive_enums(&mut type_defs);
+            infer_recursive_enums::infer_recursive_types(&mut type_defs);
             sort::sort_type_definitions(type_defs)
         },
         ffi_rustbuffer_alloc: rust_buffer::rustbuffer_alloc_fn_name(context)?,

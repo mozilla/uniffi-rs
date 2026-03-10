@@ -86,7 +86,7 @@ public enum MyEnum : UInt8 {
 
 ## Recursive enums
 
-Enums that reference themselves are supported. UniFFI automatically detects the cycle and generates appropriate bindings. Use `Box<T>` in variant fields to satisfy Rust's ownership rules:
+Enums that reference themselves are supported. UniFFI detects cycles that are self-referential, or mutually recursive through other enums or records and generates appropriate bindings. Use `Box<T>` in variant fields to satisfy Rust's ownership rules:
 
 ```rust
 #[derive(uniffi::Enum)]

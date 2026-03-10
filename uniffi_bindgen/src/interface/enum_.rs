@@ -190,7 +190,7 @@ pub struct Enum {
     #[checksum_ignore]
     pub(super) docstring: Option<String>,
     /// Whether this enum participates in a recursive type cycle.
-    /// Set by `ComponentInterface::infer_recursive_enums()`.
+    /// Set by `ComponentInterface::infer_recursive_types()`.
     #[checksum_ignore]
     pub(super) recursive: bool,
 }

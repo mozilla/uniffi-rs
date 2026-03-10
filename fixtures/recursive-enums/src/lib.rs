@@ -69,7 +69,7 @@ fn trie_sum(trie: Trie) -> i32 {
 #[derive(uniffi::Enum)]
 pub enum RoseTree {
     Leaf(i32),
-    Branch(Box<RoseData>),
+    Branch(RoseData),
 }
 
 #[derive(uniffi::Record)]

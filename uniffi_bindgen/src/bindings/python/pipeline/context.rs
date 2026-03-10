@@ -12,6 +12,7 @@ pub struct Context {
     pub current_config: Option<PythonConfig>,
     pub module_namespace: Option<String>,
     pub recursive_enum_names: HashSet<String>,
+    pub recursive_record_names: HashSet<String>,
 }
 
 impl Context {
@@ -40,11 +41,30 @@ impl Context {
                 }
             })
             .collect();
+        self.recursive_record_names = namespace
+            .type_definitions
+            .iter()
+            .filter_map(|td| {
+                if let general::TypeDefinition::Record(r) = td {
+                    if r.recursive {
+                        Some(r.name.clone())
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            })
+            .collect();
         Ok(())
     }
 
     pub fn is_recursive_enum(&self, name: &str) -> bool {
         self.recursive_enum_names.contains(name)
+    }
+
+    pub fn is_recursive_record(&self, name: &str) -> bool {
+        self.recursive_record_names.contains(name)
     }
 
     pub fn module_namespace(&self) -> Result<&str> {

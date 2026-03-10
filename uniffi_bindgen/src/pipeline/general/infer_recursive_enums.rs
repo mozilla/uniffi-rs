@@ -8,62 +8,69 @@ use std::hash::Hash;
 use super::*;
 
 /// Walk the structural containment graph of `type_defs` and mark every
-/// `Enum` that participates in a cycle as `recursive = true`.
-pub fn infer_recursive_enums(type_defs: &mut [TypeDefinition]) {
-    let deps = enum_dep_graph(type_defs);
+/// `Enum` or `Record` that participates in a cycle as `recursive = true`.
+///
+/// Both enums and records are treated as nodes; edges are direct type
+/// references in variant fields or record fields (unwrapping
+/// `Optional`/`Sequence`/`Map` wrappers).
+pub fn infer_recursive_types(type_defs: &mut [TypeDefinition]) {
+    let deps = type_dep_graph(type_defs);
     let recursive = find_recursive_enum_names(&deps);
-    mark_recursive_enums(type_defs, &recursive);
+    mark_recursive_types(type_defs, &recursive);
 }
 
-/// Build the structural-containment graph for `find_recursive_enum_names`.
+/// Build the structural-containment graph for cycle detection.
 ///
-/// Each key is an enum name; its value is the set of enum names reachable
-/// through its variant fields (unwrapping `Optional`/`Sequence`/`Map` wrappers
-/// and crossing `Record` boundaries).
-fn enum_dep_graph(type_defs: &[TypeDefinition]) -> HashMap<String, HashSet<String>> {
+/// Each node is either an enum name or a record name. Edges point from a
+/// type to every other enum or record name directly reachable through its
+/// fields (unwrapping `Optional`/`Sequence`/`Map` wrappers).
+fn type_dep_graph(type_defs: &[TypeDefinition]) -> HashMap<String, HashSet<String>> {
     type_defs
         .iter()
-        .filter_map(|td| {
-            if let TypeDefinition::Enum(e) = td {
-                Some(e)
-            } else {
-                None
+        .filter_map(|td| match td {
+            TypeDefinition::Enum(e) => {
+                let deps: HashSet<String> = e
+                    .variants
+                    .iter()
+                    .flat_map(|v| v.fields.iter())
+                    .flat_map(|f| type_names_in_type(&f.ty.ty))
+                    .collect();
+                Some((e.name.clone(), deps))
             }
-        })
-        .map(|e| {
-            let deps: HashSet<String> = e
-                .variants
-                .iter()
-                .flat_map(|v| v.fields.iter())
-                .flat_map(|f| enum_names_in_type(&f.ty.ty, type_defs))
-                .collect();
-            (e.name.clone(), deps)
+            TypeDefinition::Record(r) => {
+                let deps: HashSet<String> = r
+                    .fields
+                    .iter()
+                    .flat_map(|f| type_names_in_type(&f.ty.ty))
+                    .collect();
+                Some((r.name.clone(), deps))
+            }
+            _ => None,
         })
         .collect()
 }
 
-fn mark_recursive_enums(type_defs: &mut [TypeDefinition], recursive: &HashSet<String>) {
+fn mark_recursive_types(type_defs: &mut [TypeDefinition], recursive: &HashSet<String>) {
     for td in type_defs.iter_mut() {
-        if let TypeDefinition::Enum(e) = td {
-            if recursive.contains(&e.name) {
-                e.recursive = true;
-            }
+        match td {
+            TypeDefinition::Enum(e) if recursive.contains(&e.name) => e.recursive = true,
+            TypeDefinition::Record(r) if recursive.contains(&r.name) => r.recursive = true,
+            _ => {}
         }
     }
 }
 
 /// Given a directed containment graph, return every node that participates in a cycle.
 ///
-/// **Nodes** are enum names. **Edges** point from an enum to every other enum
-/// it structurally contains — i.e. reachable through variant fields, unwrapping
-/// `Optional`/`Sequence`/`Map` wrappers, and crossing `Record` field boundaries.
-/// `Interface` references (`Arc<T>`) are treated as leaves: following method
-/// signatures would produce false positives.
+/// **Nodes** are type names (enums or records). **Edges** point from a type to
+/// every other type it structurally contains — i.e. reachable through variant
+/// or record fields, unwrapping `Optional`/`Sequence`/`Map` wrappers.
+/// `Interface` references (`Arc<T>`) are treated as leaves.
 ///
 /// `deps` maps each node to the nodes it directly contains (outgoing edges).
 /// A node is in a cycle if any path of edges leads back to itself.
 ///
-/// This is the algorithmic core shared with `ComponentInterface::infer_recursive_enums`.
+/// This is the algorithmic core shared with `ComponentInterface::infer_recursive_types`.
 pub(crate) fn find_recursive_enum_names<T>(deps: &HashMap<T, HashSet<T>>) -> HashSet<T>
 where
     T: Eq + Hash + Clone,
@@ -100,8 +107,8 @@ fn dfs<T>(
         return;
     }
     stack.push(name.clone());
-    if let Some(enum_deps) = deps.get(name) {
-        for dep in enum_deps {
+    if let Some(neighbors) = deps.get(name) {
+        for dep in neighbors {
             dfs(dep, deps, stack, visited, recursive);
         }
     }
@@ -109,56 +116,23 @@ fn dfs<T>(
     visited.insert(name.clone());
 }
 
-fn enum_names_in_type(ty: &Type, type_defs: &[TypeDefinition]) -> Vec<String> {
-    enum_names_in_type_inner(ty, type_defs, &mut HashSet::new())
-}
-
-fn enum_names_in_type_inner(
-    ty: &Type,
-    type_defs: &[TypeDefinition],
-    visited_records: &mut HashSet<String>,
-) -> Vec<String> {
+/// Return all enum and record names directly reachable from `ty`.
+///
+/// Unwraps `Optional`/`Sequence`/`Map` wrappers but does not cross type
+/// definition boundaries — both `Enum` and `Record` references are returned
+/// as-is rather than recursed into, because they are nodes in their own right.
+fn type_names_in_type(ty: &Type) -> Vec<String> {
     match ty {
-        Type::Enum { name, .. } => vec![name.clone()],
+        Type::Enum { name, .. } | Type::Record { name, .. } => vec![name.clone()],
         Type::Optional { inner_type } | Type::Sequence { inner_type } => {
-            enum_names_in_type_inner(inner_type, type_defs, visited_records)
+            type_names_in_type(inner_type)
         }
         Type::Map {
             key_type,
             value_type,
         } => {
-            enum_names_in_type_inner(key_type, type_defs, visited_records);
-            enum_names_in_type_inner(value_type, type_defs, visited_records)
-        }
-        Type::Record { name, .. } => {
-            // Guard against mutually-recursive records (e.g. RecordA containing
-            // Option<RecordB> and RecordB containing Option<RecordA>), which would
-            // otherwise cause infinite recursion.
-            if !visited_records.insert(name.clone()) {
-                return vec![];
-            }
-            let record = type_defs.iter().find_map(|td| {
-                if let TypeDefinition::Record(r) = td {
-                    if &r.name == name {
-                        Some(r)
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                }
-            });
-            let Some(record) = record else {
-                return vec![];
-            };
-            let mut names = Vec::new();
-            for f in &record.fields {
-                names.extend(enum_names_in_type_inner(
-                    &f.ty.ty,
-                    type_defs,
-                    visited_records,
-                ));
-            }
+            let mut names = type_names_in_type(key_type);
+            names.extend(type_names_in_type(value_type));
             names
         }
         _ => vec![],
@@ -300,6 +274,13 @@ mod tests {
         }
     }
 
+    fn record_type(name: &str) -> Type {
+        Type::Record {
+            namespace: "test".to_string(),
+            name: name.to_string(),
+        }
+    }
+
     // Like `make_enum_with_field_type` but one variant per entry in `field_types`.
     fn make_enum_with_variants(name: &str, field_types: Vec<Type>) -> TypeDefinition {
         let discr_type_node = make_type_node(Type::Int8);
@@ -338,10 +319,33 @@ mod tests {
         })
     }
 
+    fn make_record_with_field_type(name: &str, field_ty: Type) -> TypeDefinition {
+        let self_type = make_type_node(Type::Record {
+            namespace: "test".to_string(),
+            name: name.to_string(),
+        });
+        TypeDefinition::Record(Record {
+            name: name.to_string(),
+            self_type,
+            fields_kind: FieldsKind::Named,
+            uniffi_trait_methods: UniffiTraitMethods::default(),
+            constructors: vec![],
+            methods: vec![],
+            docstring: None,
+            recursive: false,
+            fields: vec![Field {
+                name: "value".to_string(),
+                ty: make_type_node(field_ty),
+                default: None,
+                docstring: None,
+            }],
+        })
+    }
+
     #[test]
     fn dep_graph_no_deps() {
         let defs = vec![make_flat_enum("Apple"), make_flat_enum("Orange")];
-        let graph = enum_dep_graph(&defs);
+        let graph = type_dep_graph(&defs);
         assert!(graph["Apple"].is_empty());
         assert!(graph["Orange"].is_empty());
     }
@@ -349,7 +353,7 @@ mod tests {
     #[test]
     fn dep_graph_self_referential() {
         let defs = vec![make_enum_with_field_type("Quine", enum_type("Quine"))];
-        let graph = enum_dep_graph(&defs);
+        let graph = type_dep_graph(&defs);
         assert_eq!(graph["Quine"], HashSet::from(["Quine".to_string()]));
     }
 
@@ -360,7 +364,7 @@ mod tests {
             make_enum_with_variants("Socks", vec![enum_type("Sock"), enum_type("Sock")]),
             make_flat_enum("Sock"),
         ];
-        let graph = enum_dep_graph(&defs);
+        let graph = type_dep_graph(&defs);
         assert_eq!(graph["Socks"], HashSet::from(["Sock".to_string()]));
     }
 
@@ -375,7 +379,7 @@ mod tests {
             ),
             make_flat_enum("Inner"),
         ];
-        let graph = enum_dep_graph(&defs);
+        let graph = type_dep_graph(&defs);
         assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
     }
 
@@ -390,7 +394,7 @@ mod tests {
             ),
             make_flat_enum("Inner"),
         ];
-        let graph = enum_dep_graph(&defs);
+        let graph = type_dep_graph(&defs);
         assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
     }
 
@@ -406,7 +410,7 @@ mod tests {
             ),
             make_flat_enum("Inner"),
         ];
-        let graph = enum_dep_graph(&defs);
+        let graph = type_dep_graph(&defs);
         assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
     }
 
@@ -425,7 +429,30 @@ mod tests {
             ),
             make_flat_enum("Sentence"),
         ];
-        let graph = enum_dep_graph(&defs);
+        let graph = type_dep_graph(&defs);
         assert!(graph["Verdict"].is_empty());
+    }
+
+    #[test]
+    fn dep_graph_enum_record_cycle() {
+        // RoseTree → RoseData (via Branch field), RoseData → RoseTree (via Vec field).
+        let defs = vec![
+            make_enum_with_field_type("RoseTree", record_type("RoseData")),
+            make_record_with_field_type(
+                "RoseData",
+                Type::Sequence {
+                    inner_type: Box::new(enum_type("RoseTree")),
+                },
+            ),
+        ];
+        let graph = type_dep_graph(&defs);
+        assert_eq!(graph["RoseTree"], HashSet::from(["RoseData".to_string()]));
+        assert_eq!(graph["RoseData"], HashSet::from(["RoseTree".to_string()]));
+
+        let recursive = find_recursive_enum_names(&graph);
+        assert_eq!(
+            recursive,
+            HashSet::from(["RoseTree".to_string(), "RoseData".to_string()])
+        );
     }
 }

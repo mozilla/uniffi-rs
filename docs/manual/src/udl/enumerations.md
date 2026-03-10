@@ -47,7 +47,7 @@ Any attempt to pass that variant across the FFI will result in a panic.
 
 ## Recursive enums
 
-Enums that reference themselves are supported. UniFFI automatically detects the cycle and generates appropriate bindings:
+Enums that reference themselves are supported. UniFFI detects cycles that are self-referential, or mutually recursive through other enums or records and generates appropriate bindings.
 
 ```idl
 [Enum]

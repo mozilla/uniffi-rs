@@ -162,7 +162,7 @@ impl ComponentInterface {
         // Unconditionally add the String type, which is used by the panic handling
         self.types.add_known_type(&Type::String)?;
         crate::macro_metadata::add_group_to_ci(self, group)?;
-        self.infer_recursive_enums();
+        self.infer_recursive_types();
         Ok(())
     }
 
@@ -1181,40 +1181,47 @@ impl ComponentInterface {
         Ok(())
     }
 
-    /// Detect and mark recursive enums using a depth-first search for cycles.
-    fn infer_recursive_enums(&mut self) {
-        let deps = self.enum_dep_graph();
+    /// Detect and mark recursive enums and records using a depth-first search for cycles.
+    fn infer_recursive_types(&mut self) {
+        let deps = self.type_dep_graph();
         let recursive =
             crate::pipeline::general::infer_recursive_enums::find_recursive_enum_names(&deps);
-        self.mark_recursive_enums(&recursive);
-    }
-
-    /// Build the structural-containment graph for `find_recursive_enum_names`.
-    ///
-    /// Each key is an enum name; its value is the set of enum names reachable
-    /// through its variant fields (unwrapping `Optional`/`Sequence`/`Map` wrappers
-    /// and crossing `Record` boundaries).
-    fn enum_dep_graph(&self) -> HashMap<String, HashSet<String>> {
-        self.enums
-            .iter()
-            .map(|e| {
-                let deps: HashSet<String> = e
-                    .variants()
-                    .iter()
-                    .flat_map(|v| v.fields())
-                    .flat_map(|f| enum_names_in_type(&f.as_type(), &self.records))
-                    .collect();
-                (e.name().to_string(), deps)
-            })
-            .collect()
-    }
-
-    fn mark_recursive_enums(&mut self, recursive: &HashSet<String>) {
         for e in &mut self.enums {
             if recursive.contains(e.name()) {
                 e.recursive = true;
             }
         }
+        for r in &mut self.records {
+            if recursive.contains(r.name()) {
+                r.recursive = true;
+            }
+        }
+    }
+
+    /// Build the structural-containment graph for cycle detection.
+    ///
+    /// Both enums and records are nodes. Edges point from a type to every
+    /// other enum or record name directly reachable through its fields
+    /// (unwrapping `Optional`/`Sequence`/`Map` wrappers).
+    fn type_dep_graph(&self) -> HashMap<String, HashSet<String>> {
+        let enum_entries = self.enums.iter().map(|e| {
+            let deps: HashSet<String> = e
+                .variants()
+                .iter()
+                .flat_map(|v| v.fields())
+                .flat_map(|f| type_names_in_type(&f.as_type()))
+                .collect();
+            (e.name().to_string(), deps)
+        });
+        let record_entries = self.records.iter().map(|r| {
+            let deps: HashSet<String> = r
+                .fields()
+                .iter()
+                .flat_map(|f| type_names_in_type(&f.as_type()))
+                .collect();
+            (r.name().to_string(), deps)
+        });
+        enum_entries.chain(record_entries).collect()
     }
 }
 
@@ -1378,51 +1385,23 @@ fn throws_name(throws: &Option<Type>) -> Option<&str> {
     }
 }
 
-/// Return the enum names structurally reachable from `ty`.
+/// Return all enum and record names directly reachable from `ty`.
 ///
-/// Recurses through `Optional`, `Sequence`, `Map` wrappers and crosses `Record`
-/// boundaries by looking up record fields.
-///
-/// NOTE: Mirrors `pipeline::general::infer_recursive_enums::enum_names_in_type`.
-/// Any logic change here (e.g. adding new wrapper types) must also be applied there,
-/// and vice versa.
-pub(crate) fn enum_names_in_type(ty: &Type, records: &[Record]) -> Vec<String> {
-    enum_names_in_type_inner(ty, records, &mut HashSet::new())
-}
-
-fn enum_names_in_type_inner(
-    ty: &Type,
-    records: &[Record],
-    visited_records: &mut HashSet<String>,
-) -> Vec<String> {
+/// Unwraps `Optional`/`Sequence`/`Map` wrappers but does not cross type
+/// definition boundaries — both `Enum` and `Record` references are returned
+/// as-is rather than recursed into, because they are nodes in their own right.
+fn type_names_in_type(ty: &Type) -> Vec<String> {
     match ty {
-        Type::Enum { name, .. } => vec![name.clone()],
+        Type::Enum { name, .. } | Type::Record { name, .. } => vec![name.clone()],
         Type::Optional { inner_type } | Type::Sequence { inner_type } => {
-            enum_names_in_type_inner(inner_type, records, visited_records)
+            type_names_in_type(inner_type)
         }
         Type::Map {
             key_type,
             value_type,
         } => {
-            enum_names_in_type_inner(key_type, records, visited_records);
-            enum_names_in_type_inner(value_type, records, visited_records)
-        }
-        Type::Record { name, .. } => {
-            // Guard against mutually-recursive records.
-            if !visited_records.insert(name.clone()) {
-                return vec![];
-            }
-            let Some(record) = records.iter().find(|r| r.name() == name) else {
-                return vec![];
-            };
-            let mut names = Vec::new();
-            for f in record.fields() {
-                names.extend(enum_names_in_type_inner(
-                    &f.as_type(),
-                    records,
-                    visited_records,
-                ));
-            }
+            let mut names = type_names_in_type(key_type);
+            names.extend(type_names_in_type(value_type));
             names
         }
         _ => vec![],
@@ -1722,7 +1701,7 @@ new definition: Enum {
             "crate",
         )
         .unwrap();
-        let graph = ci.enum_dep_graph();
+        let graph = ci.type_dep_graph();
         assert!(graph["Apple"].is_empty());
         assert!(graph["Orange"].is_empty());
     }
@@ -1740,7 +1719,7 @@ new definition: Enum {
             "crate",
         )
         .unwrap();
-        let graph = ci.enum_dep_graph();
+        let graph = ci.type_dep_graph();
         assert_eq!(graph["Quine"], HashSet::from(["Quine".to_string()]));
     }
 
@@ -1760,7 +1739,7 @@ new definition: Enum {
             "crate",
         )
         .unwrap();
-        let graph = ci.enum_dep_graph();
+        let graph = ci.type_dep_graph();
         assert_eq!(graph["Socks"], HashSet::from(["Sock".to_string()]));
     }
 
@@ -1778,7 +1757,7 @@ new definition: Enum {
             "crate",
         )
         .unwrap();
-        let graph = ci.enum_dep_graph();
+        let graph = ci.type_dep_graph();
         assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
     }
 
@@ -1796,7 +1775,7 @@ new definition: Enum {
             "crate",
         )
         .unwrap();
-        let graph = ci.enum_dep_graph();
+        let graph = ci.type_dep_graph();
         assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
     }
 
@@ -1814,7 +1793,7 @@ new definition: Enum {
             "crate",
         )
         .unwrap();
-        let graph = ci.enum_dep_graph();
+        let graph = ci.type_dep_graph();
         assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
     }
 
@@ -1832,7 +1811,7 @@ new definition: Enum {
             "crate",
         )
         .unwrap();
-        let graph = ci.enum_dep_graph();
+        let graph = ci.type_dep_graph();
         assert!(graph["Mixed"].is_empty());
     }
 
@@ -1855,7 +1834,7 @@ new definition: Enum {
             "crate",
         )
         .unwrap();
-        let graph = ci.enum_dep_graph();
+        let graph = ci.type_dep_graph();
         assert!(graph["Verdict"].is_empty());
     }
 }

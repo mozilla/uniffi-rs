@@ -67,7 +67,7 @@ class {{ type_name }}:
 
     {%-  else %}
         def __init__(self, {% for field in variant.fields %}
-        {{- field.name }}: {{- field.ty.forward_ref_type_name}}
+        {{- field.name }}: {{- field.type_annotation}}
         {%- if let Some(default) = field.default %} = {{ default.arg_literal }}{% endif %}
         {%- if !loop.last %}, {% endif %}
         {%- endfor %}):
