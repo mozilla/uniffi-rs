@@ -69,6 +69,10 @@ pub struct Record {
     pub uniffi_traits: Vec<UniffiTrait>,
     #[checksum_ignore]
     pub(super) docstring: Option<String>,
+    /// Whether this record participates in a recursive type cycle.
+    /// Set by `ComponentInterface::infer_recursive_records()`.
+    #[checksum_ignore]
+    pub(super) recursive: bool,
 }
 
 impl Record {
@@ -94,6 +98,10 @@ impl Record {
 
     pub fn methods(&self) -> &[Method] {
         &self.methods
+    }
+
+    pub fn recursive(&self) -> bool {
+        self.recursive
     }
 
     pub fn docstring(&self) -> Option<&str> {
@@ -181,6 +189,7 @@ impl TryFrom<uniffi_meta::RecordMetadata> for Record {
             methods: vec![],
             uniffi_traits: vec![],
             docstring: meta.docstring.clone(),
+            recursive: false,
         })
     }
 }

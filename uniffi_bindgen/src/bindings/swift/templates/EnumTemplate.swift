@@ -1,13 +1,12 @@
-// Note that we don't yet support `indirect` for enums.
-// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 {%- call swift::docstring(e, 0) %}
 {%- let uniffi_trait_methods = e.uniffi_trait_methods() %}
 {% match e.variant_discr_type() %}
 {% when None %}
-{%- if config.enum_has_conformances(e, contains_object_references) %}
-public enum {{ type_name }}: {{ config.conformance_list_for_enum(e, contains_object_references) }} {
-{%- else %}
-public enum {{ type_name }} {
+public {% if e.recursive() %}indirect {% endif %}
+{%- if config.enum_has_conformances(e, contains_object_references) -%}
+enum {{ type_name }}: {{ config.conformance_list_for_enum(e, contains_object_references) }} {
+{%- else -%}
+enum {{ type_name }} {
 {%- endif %}
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}
@@ -16,7 +15,8 @@ public enum {{ type_name }} {
     ){% endif -%}
     {% endfor %}
 {% when Some(variant_discr_type) %}
-public enum {{ type_name }}: {{ variant_discr_type|type_name }}, {{ config.conformance_list_for_enum(e, contains_object_references) }} {
+public {% if e.recursive() %}indirect {% endif -%}
+enum {{ type_name }}: {{ variant_discr_type|type_name }}, {{ config.conformance_list_for_enum(e, contains_object_references) }} {
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}
     case {{ variant.name()|enum_variant_swift_quoted }} = {{ e|variant_discr_literal(loop.index0) }}{% if variant.fields().len() > 0 %}(

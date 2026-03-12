@@ -203,6 +203,8 @@ pub struct Record {
     #[map_node(objects::methods(self.methods, context)?)]
     pub methods: Vec<Method>,
     pub docstring: Option<String>,
+    #[map_node(false)]
+    pub recursive: bool,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -250,6 +252,8 @@ pub struct Enum {
     #[map_node(objects::methods(self.methods, context)?)]
     pub methods: Vec<Method>,
     pub docstring: Option<String>,
+    #[map_node(false)]
+    pub recursive: bool,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]

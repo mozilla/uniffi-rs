@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::collections::HashSet;
+
 use super::*;
 
 #[derive(Default, Clone)]
@@ -9,6 +11,8 @@ pub struct Context {
     pub cdylib: Option<String>,
     pub current_config: Option<PythonConfig>,
     pub module_namespace: Option<String>,
+    pub recursive_enum_names: HashSet<String>,
+    pub recursive_record_names: HashSet<String>,
 }
 
 impl Context {
@@ -22,7 +26,45 @@ impl Context {
             None => PythonConfig::default(),
         });
         self.module_namespace = Some(namespace.name.clone());
+        self.recursive_enum_names = namespace
+            .type_definitions
+            .iter()
+            .filter_map(|td| {
+                if let general::TypeDefinition::Enum(e) = td {
+                    if e.recursive {
+                        Some(e.name.clone())
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            })
+            .collect();
+        self.recursive_record_names = namespace
+            .type_definitions
+            .iter()
+            .filter_map(|td| {
+                if let general::TypeDefinition::Record(r) = td {
+                    if r.recursive {
+                        Some(r.name.clone())
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            })
+            .collect();
         Ok(())
+    }
+
+    pub fn is_recursive_enum(&self, name: &str) -> bool {
+        self.recursive_enum_names.contains(name)
+    }
+
+    pub fn is_recursive_record(&self, name: &str) -> bool {
+        self.recursive_record_names.contains(name)
     }
 
     pub fn module_namespace(&self) -> Result<&str> {

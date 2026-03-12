@@ -243,6 +243,7 @@ pub struct Record {
     pub constructors: Vec<Constructor>,
     pub methods: Vec<Method>,
     pub uniffi_trait_methods: UniffiTraitMethods,
+    pub recursive: bool,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -250,6 +251,8 @@ pub struct Record {
 pub struct Field {
     #[map_node(names::var_name(&self.name))]
     pub name: String,
+    #[map_node(types::type_annotation(&self.ty.ty, context)?)]
+    pub type_annotation: String,
     pub ty: TypeNode,
     pub default: Option<DefaultValueNode>,
     pub docstring: Option<String>,
@@ -272,6 +275,7 @@ pub struct Enum {
     pub constructors: Vec<Constructor>,
     pub methods: Vec<Method>,
     pub uniffi_trait_methods: UniffiTraitMethods,
+    pub recursive: bool,
 }
 
 #[derive(Debug, Clone, Node)]

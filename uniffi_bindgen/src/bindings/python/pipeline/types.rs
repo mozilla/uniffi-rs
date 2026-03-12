@@ -88,6 +88,47 @@ pub fn type_name(ty: &Type, context: &Context) -> Result<String> {
     })
 }
 
+/// Like `type_name`, but wraps recursive enum and record type names in Python
+/// string quotes so they work as forward-reference annotations inside a class
+/// body (needed for Python < 3.10 which evaluates annotations eagerly).
+pub fn type_annotation(ty: &Type, context: &Context) -> Result<String> {
+    match ty {
+        Type::Enum { name, .. } => {
+            let base = type_name(ty, context)?;
+            if context.is_recursive_enum(name) {
+                Ok(format!("\"{}\"", base))
+            } else {
+                Ok(base)
+            }
+        }
+        Type::Record { name, .. } => {
+            let base = type_name(ty, context)?;
+            if context.is_recursive_record(name) {
+                Ok(format!("\"{}\"", base))
+            } else {
+                Ok(base)
+            }
+        }
+        Type::Optional { inner_type } => Ok(format!(
+            "typing.Optional[{}]",
+            type_annotation(inner_type, context)?
+        )),
+        Type::Sequence { inner_type } => Ok(format!(
+            "typing.List[{}]",
+            type_annotation(inner_type, context)?
+        )),
+        Type::Map {
+            key_type,
+            value_type,
+        } => Ok(format!(
+            "dict[{}, {}]",
+            type_annotation(key_type, context)?,
+            type_annotation(value_type, context)?
+        )),
+        _ => type_name(ty, context),
+    }
+}
+
 pub fn ffi_converter_name(ty: &general::TypeNode, context: &Context) -> Result<String> {
     let ext_package = match ty.ty.namespace() {
         Some(namespace) => context.external_package_name(namespace)?,

@@ -46,7 +46,7 @@
 //!   * Error messages and general developer experience leave a lot to be desired.
 
 use std::{
-    collections::{BTreeMap, BTreeSet, HashSet},
+    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
     iter,
 };
 
@@ -162,6 +162,7 @@ impl ComponentInterface {
         // Unconditionally add the String type, which is used by the panic handling
         self.types.add_known_type(&Type::String)?;
         crate::macro_metadata::add_group_to_ci(self, group)?;
+        self.infer_recursive_types();
         Ok(())
     }
 
@@ -1179,6 +1180,49 @@ impl ComponentInterface {
         }
         Ok(())
     }
+
+    /// Detect and mark recursive enums and records using a depth-first search for cycles.
+    fn infer_recursive_types(&mut self) {
+        let deps = self.type_dep_graph();
+        let recursive =
+            crate::pipeline::general::infer_recursive_enums::find_recursive_enum_names(&deps);
+        for e in &mut self.enums {
+            if recursive.contains(e.name()) {
+                e.recursive = true;
+            }
+        }
+        for r in &mut self.records {
+            if recursive.contains(r.name()) {
+                r.recursive = true;
+            }
+        }
+    }
+
+    /// Build the structural-containment graph for cycle detection.
+    ///
+    /// Both enums and records are nodes. Edges point from a type to every
+    /// other enum or record name directly reachable through its fields
+    /// (unwrapping `Optional`/`Sequence`/`Map` wrappers).
+    fn type_dep_graph(&self) -> HashMap<String, HashSet<String>> {
+        let enum_entries = self.enums.iter().map(|e| {
+            let deps: HashSet<String> = e
+                .variants()
+                .iter()
+                .flat_map(|v| v.fields())
+                .flat_map(|f| type_names_in_type(&f.as_type()))
+                .collect();
+            (e.name().to_string(), deps)
+        });
+        let record_entries = self.records.iter().map(|r| {
+            let deps: HashSet<String> = r
+                .fields()
+                .iter()
+                .flat_map(|f| type_names_in_type(&f.as_type()))
+                .collect();
+            (r.name().to_string(), deps)
+        });
+        enum_entries.chain(record_entries).collect()
+    }
 }
 
 fn get_object<'a>(objects: &'a mut [Object], name: &str) -> Option<&'a mut Object> {
@@ -1341,6 +1385,29 @@ fn throws_name(throws: &Option<Type>) -> Option<&str> {
     }
 }
 
+/// Return all enum and record names directly reachable from `ty`.
+///
+/// Unwraps `Optional`/`Sequence`/`Map` wrappers but does not cross type
+/// definition boundaries — both `Enum` and `Record` references are returned
+/// as-is rather than recursed into, because they are nodes in their own right.
+fn type_names_in_type(ty: &Type) -> Vec<String> {
+    match ty {
+        Type::Enum { name, .. } | Type::Record { name, .. } => vec![name.clone()],
+        Type::Optional { inner_type } | Type::Sequence { inner_type } => {
+            type_names_in_type(inner_type)
+        }
+        Type::Map {
+            key_type,
+            value_type,
+        } => {
+            let mut names = type_names_in_type(key_type);
+            names.extend(type_names_in_type(value_type));
+            names
+        }
+        _ => vec![],
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -1404,6 +1471,7 @@ existing definition: Enum {
     methods: [],
     uniffi_traits: [],
     docstring: None,
+    recursive: false,
 },
 new definition: Enum {
     name: \"Testing\",
@@ -1432,6 +1500,7 @@ new definition: Enum {
     methods: [],
     uniffi_traits: [],
     docstring: None,
+    recursive: false,
 }",
         );
 
@@ -1619,5 +1688,153 @@ new definition: Enum {
         // have not called `ci.set_crate_to_namespace_map()`, should still resolve our own
         assert_eq!(ci.namespace_for_module_path("crate").unwrap(), "ns");
         assert!(ci.namespace_for_module_path("oops").is_err());
+    }
+
+    #[test]
+    fn dep_graph_no_deps() {
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            enum Apple { "one", "two" };
+            enum Orange { "a", "b" };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert!(graph["Apple"].is_empty());
+        assert!(graph["Orange"].is_empty());
+    }
+
+    #[test]
+    fn dep_graph_self_referential() {
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            [Enum]
+            interface Quine {
+                Recurse(Quine value);
+            };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert_eq!(graph["Quine"], HashSet::from(["Quine".to_string()]));
+    }
+
+    #[test]
+    fn dep_graph_deduplicates_repeated_dep() {
+        // Two variants of Socks both contain Sock — Sock should appear once in the dep set.
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            [Enum]
+            interface Socks {
+                WithLeft(Sock left);
+                WithRight(Sock right);
+            };
+            enum Sock { "left", "right" };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert_eq!(graph["Socks"], HashSet::from(["Sock".to_string()]));
+    }
+
+    #[test]
+    fn dep_graph_optional_field_propagates_dep() {
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            [Enum]
+            interface Outer {
+                WithInner(Inner? value);
+            };
+            enum Inner { "a", "b" };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
+    }
+
+    #[test]
+    fn dep_graph_sequence_field_propagates_dep() {
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            [Enum]
+            interface Outer {
+                WithInners(sequence<Inner> values);
+            };
+            enum Inner { "a", "b" };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
+    }
+
+    #[test]
+    fn dep_graph_map_value_propagates_dep() {
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            [Enum]
+            interface Outer {
+                WithMap(record<DOMString, Inner> map);
+            };
+            enum Inner { "a", "b" };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
+    }
+
+    #[test]
+    fn dep_graph_primitive_fields_have_no_deps() {
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            [Enum]
+            interface Mixed {
+                WithInt(u32 value);
+                WithStr(string value);
+            };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert!(graph["Mixed"].is_empty());
+    }
+
+    #[test]
+    fn dep_graph_interface_field_has_no_dep() {
+        // Verdict holds a Judge (Interface) that has a method returning Sentence.
+        // Verdict must not gain Sentence as a dep — the traversal stops at Interface boundaries.
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            [Enum]
+            interface Verdict {
+                Guilty(Judge judge);
+            };
+            interface Judge {
+                Sentence sentence();
+            };
+            enum Sentence { "life", "parole" };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert!(graph["Verdict"].is_empty());
     }
 }

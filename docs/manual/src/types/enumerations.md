@@ -55,6 +55,18 @@ proc-macros allow you to use `#[uniffi::export]` on an `impl` block for an `enum
 and the bindings will generate a method which calls into the Rust method.
 But take care - every time one of the methods is called, the entire enum will be copied by-value across the FFI.
 
+## Recursive enums
+
+Enums that reference themselves are supported. UniFFI automatically detects the cycle and generates appropriate bindings. Use `Box<T>` in variant fields to satisfy Rust's ownership rules:
+
+```rust
+#[derive(uniffi::Enum)]
+pub enum Tree {
+    Leaf,
+    Branch { left: Box<Tree>, right: Box<Tree> },
+}
+```
+
 ## Exposing methods from standard Rust traits
 
 While less useful for Enums, there are a number of standard Rust traits (`Debug`, `Eq` etc) you can expose, so, eg, Python
