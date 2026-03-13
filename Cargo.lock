@@ -2124,6 +2124,7 @@ version = "0.22.0"
 dependencies = [
  "thiserror",
  "uniffi",
+ "url",
 ]
 
 [[package]]

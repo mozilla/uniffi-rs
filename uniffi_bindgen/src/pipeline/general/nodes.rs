@@ -193,6 +193,8 @@ pub struct Record {
     pub fields_kind: FieldsKind,
     #[map_node(context.self_type()?)]
     pub self_type: TypeNode,
+    #[map_node(self.name.clone())]
+    pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
     #[map_node(from(uniffi_traits))]
@@ -239,6 +241,8 @@ pub struct Enum {
     pub discr_type: TypeNode,
     #[map_node(enums::map_variants(&self.discr_type, self.variants, context)?)]
     pub variants: Vec<Variant>,
+    #[map_node(self.name.clone())]
+    pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
     #[map_node(from(uniffi_traits))]
@@ -276,6 +280,8 @@ pub struct Interface {
     pub ffi_func_clone: RustFfiFunctionName,
     #[map_node(objects::ffi_free_name(&self.name, context)?)]
     pub ffi_func_free: RustFfiFunctionName,
+    #[map_node(self.name.clone())]
+    pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
     // This `map_node` works because we've implemented a map from Vec<UniffiTrait> -> UniffiTraitMethods
@@ -298,6 +304,8 @@ pub struct CallbackInterface {
     pub vtable: VTable,
     #[map_node(context.self_type()?)]
     pub self_type: TypeNode,
+    #[map_node(self.name.clone())]
+    pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
     pub docstring: Option<String>,
@@ -342,6 +350,9 @@ pub struct ObjectTraitImpl {
 pub struct CustomType {
     #[map_node(context.self_type()?)]
     pub self_type: TypeNode,
+    #[map_node(self.name.clone())]
+    pub orig_name: String,
+    #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
     pub builtin: TypeNode,
     pub docstring: Option<String>,
