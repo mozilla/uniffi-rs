@@ -202,6 +202,7 @@ pub struct Record {
     pub constructors: Vec<Constructor>,
     #[map_node(objects::methods(self.methods, context)?)]
     pub methods: Vec<Method>,
+    pub trait_impls: Vec<ObjectTraitImpl>,
     pub docstring: Option<String>,
 }
 
