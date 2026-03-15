@@ -102,6 +102,8 @@ pub struct ComponentInterface {
     pub(crate) callback_interfaces: Vec<CallbackInterface>,
     // Type names which were seen used as an error.
     errors: HashSet<String>,
+    // Type names which participate in a recursive type cycle.
+    recursive_types: HashSet<String>,
     // Types which were seen used as callback interface error.
     callback_interface_throws_types: BTreeSet<Type>,
     // A mapping from an external module path to the external namespace.
@@ -1181,21 +1183,16 @@ impl ComponentInterface {
         Ok(())
     }
 
-    /// Detect and mark recursive enums and records using a depth-first search for cycles.
+    /// Detect recursive enums and records using a depth-first search for cycles.
     fn infer_recursive_types(&mut self) {
         let deps = self.type_dep_graph();
-        let recursive =
+        self.recursive_types =
             crate::pipeline::general::infer_recursive_enums::find_recursive_enum_names(&deps);
-        for e in &mut self.enums {
-            if recursive.contains(e.name()) {
-                e.recursive = true;
-            }
-        }
-        for r in &mut self.records {
-            if recursive.contains(r.name()) {
-                r.recursive = true;
-            }
-        }
+    }
+
+    /// Whether the named type participates in a recursive type cycle.
+    pub fn is_recursive(&self, name: &str) -> bool {
+        self.recursive_types.contains(name)
     }
 
     /// Build the structural-containment graph for cycle detection.
@@ -1471,7 +1468,6 @@ existing definition: Enum {
     methods: [],
     uniffi_traits: [],
     docstring: None,
-    recursive: false,
 },
 new definition: Enum {
     name: \"Testing\",
@@ -1500,7 +1496,6 @@ new definition: Enum {
     methods: [],
     uniffi_traits: [],
     docstring: None,
-    recursive: false,
 }",
         );
 

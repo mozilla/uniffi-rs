@@ -2,7 +2,7 @@
 {%- let uniffi_trait_methods = e.uniffi_trait_methods() %}
 {% match e.variant_discr_type() %}
 {% when None %}
-public {% if e.recursive() %}indirect {% endif %}
+public {% if ci.is_recursive(e.name()) %}indirect {% endif %}
 {%- if config.enum_has_conformances(e, contains_object_references) -%}
 enum {{ type_name }}: {{ config.conformance_list_for_enum(e, contains_object_references) }} {
 {%- else -%}
@@ -15,7 +15,7 @@ enum {{ type_name }} {
     ){% endif -%}
     {% endfor %}
 {% when Some(variant_discr_type) %}
-public {% if e.recursive() %}indirect {% endif -%}
+public {% if ci.is_recursive(e.name()) %}indirect {% endif -%}
 enum {{ type_name }}: {{ variant_discr_type|type_name }}, {{ config.conformance_list_for_enum(e, contains_object_references) }} {
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}
