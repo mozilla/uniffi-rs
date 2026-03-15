@@ -2,11 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::{
-    bindings::GenerateOptions,
-    interface::{apply_exclusions, rename},
-    BindgenLoader, Component, ComponentInterface, Result,
-};
+use crate::bindings::GenerateOptions;
+use crate::interface::{apply_exclusions, rename};
+use crate::{BindgenLoader, Component, ComponentInterface, Result};
 use anyhow::bail;
 use camino::{Utf8Path, Utf8PathBuf};
 use fs_err as fs;
@@ -46,6 +44,7 @@ pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> 
             }
         }
     }
+
     for c in components.iter_mut() {
         // Call derive_ffi_functions after `apply_renames`
         c.ci.derive_ffi_funcs()?;
@@ -91,9 +90,13 @@ fn parse_config(
         Some(v) => v.clone().try_into()?,
         None => Default::default(),
     };
-    config
-        .package_name
-        .get_or_insert_with(|| format!("uniffi.{}", ci.namespace()));
+
+    // package_name + namespace,
+    // if only package_name and include other crate that has own scafolding it'll conflict by common type name with different implementation
+    config.package_name = Some(match config.package_name {
+        Some(package_name) => format!("{package_name}.{}", ci.namespace()),
+        None => format!("uniffi.{}", ci.namespace()),
+    });
     config.cdylib_name.get_or_insert_with(|| {
         cdylib
             .clone()
@@ -104,6 +107,7 @@ fn parse_config(
 }
 
 // A helper for renaming items.
+#[inline]
 fn apply_renames(components: &mut Vec<Component<Config>>) {
     // Remove excluded items, this happens before renaming
     for c in components.iter_mut() {
