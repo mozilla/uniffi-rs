@@ -93,21 +93,8 @@ pub fn type_name(ty: &Type, context: &Context) -> Result<String> {
 /// body (needed for Python < 3.10 which evaluates annotations eagerly).
 pub fn type_annotation(ty: &Type, context: &Context) -> Result<String> {
     match ty {
-        Type::Enum { name, .. } => {
-            let base = type_name(ty, context)?;
-            if context.is_recursive_enum(name) {
-                Ok(format!("\"{}\"", base))
-            } else {
-                Ok(base)
-            }
-        }
-        Type::Record { name, .. } => {
-            let base = type_name(ty, context)?;
-            if context.is_recursive_record(name) {
-                Ok(format!("\"{}\"", base))
-            } else {
-                Ok(base)
-            }
+        Type::Enum { name, .. } | Type::Record { name, .. } if context.is_recursive(name) => {
+            Ok(format!("\"{}\"", type_name(ty, context)?))
         }
         Type::Optional { inner_type } => Ok(format!(
             "typing.Optional[{}]",

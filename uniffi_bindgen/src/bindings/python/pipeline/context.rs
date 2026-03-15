@@ -11,8 +11,7 @@ pub struct Context {
     pub cdylib: Option<String>,
     pub current_config: Option<PythonConfig>,
     pub module_namespace: Option<String>,
-    pub recursive_enum_names: HashSet<String>,
-    pub recursive_record_names: HashSet<String>,
+    pub recursive_type_names: HashSet<String>,
 }
 
 impl Context {
@@ -26,45 +25,23 @@ impl Context {
             None => PythonConfig::default(),
         });
         self.module_namespace = Some(namespace.name.clone());
-        self.recursive_enum_names = namespace
-            .type_definitions
-            .iter()
-            .filter_map(|td| {
-                if let general::TypeDefinition::Enum(e) = td {
-                    if e.recursive {
-                        Some(e.name.clone())
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                }
-            })
-            .collect();
-        self.recursive_record_names = namespace
-            .type_definitions
-            .iter()
-            .filter_map(|td| {
-                if let general::TypeDefinition::Record(r) = td {
-                    if r.recursive {
-                        Some(r.name.clone())
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                }
-            })
-            .collect();
+        let mut recursive_type_names = HashSet::new();
+        namespace.visit(|e: &general::Enum| {
+            if e.recursive {
+                recursive_type_names.insert(e.name.clone());
+            }
+        });
+        namespace.visit(|r: &general::Record| {
+            if r.recursive {
+                recursive_type_names.insert(r.name.clone());
+            }
+        });
+        self.recursive_type_names = recursive_type_names;
         Ok(())
     }
 
-    pub fn is_recursive_enum(&self, name: &str) -> bool {
-        self.recursive_enum_names.contains(name)
-    }
-
-    pub fn is_recursive_record(&self, name: &str) -> bool {
-        self.recursive_record_names.contains(name)
+    pub fn is_recursive(&self, name: &str) -> bool {
+        self.recursive_type_names.contains(name)
     }
 
     pub fn module_namespace(&self) -> Result<&str> {
