@@ -36,7 +36,7 @@ into_custom = "Date(timeIntervalSince1970: TimeInterval({}))"
 from_custom = "Float({}.timeIntervalSince1970)"
 
 [bindings.kotlin]
-package_name = "customtypes"
+package_name = "uniffi"
 
 [bindings.kotlin.custom_types.Url]
 # Name of the type in the Kotlin code

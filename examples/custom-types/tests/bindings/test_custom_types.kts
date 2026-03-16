@@ -4,7 +4,7 @@
 
 import java.net.URL
 
-import customtypes.*
+import uniffi.custom_types.*
 
 // TODO: use an actual test runner.
 

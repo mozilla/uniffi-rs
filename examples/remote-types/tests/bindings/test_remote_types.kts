@@ -1,4 +1,4 @@
-import remote_types.*
+import uniffi.remote_types.*
 
 val testLogger = LogSink("SomeFile")
 testLogger.log(LogLevel.INFO, "Hello world")

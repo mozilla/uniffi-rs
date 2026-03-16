@@ -1,2 +1,2 @@
 [bindings.kotlin]
-package_name = "remote_types"
+package_name = "uniffi"
