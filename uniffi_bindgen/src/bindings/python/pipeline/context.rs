@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::collections::HashSet;
+
 use super::*;
 
 #[derive(Default, Clone)]
@@ -9,6 +11,7 @@ pub struct Context {
     pub cdylib: Option<String>,
     pub current_config: Option<PythonConfig>,
     pub module_namespace: Option<String>,
+    pub recursive_type_names: HashSet<String>,
 }
 
 impl Context {
@@ -22,7 +25,23 @@ impl Context {
             None => PythonConfig::default(),
         });
         self.module_namespace = Some(namespace.name.clone());
+        let mut recursive_type_names = HashSet::new();
+        namespace.visit(|e: &general::Enum| {
+            if e.recursive {
+                recursive_type_names.insert(e.name.clone());
+            }
+        });
+        namespace.visit(|r: &general::Record| {
+            if r.recursive {
+                recursive_type_names.insert(r.name.clone());
+            }
+        });
+        self.recursive_type_names = recursive_type_names;
         Ok(())
+    }
+
+    pub fn is_recursive(&self, name: &str) -> bool {
+        self.recursive_type_names.contains(name)
     }
 
     pub fn module_namespace(&self) -> Result<&str> {
