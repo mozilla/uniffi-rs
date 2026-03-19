@@ -116,6 +116,26 @@ impl Trait for StructWithTrait {
     }
 }
 
+// A record implementing a trait interface.
+#[derive(uniffi::Record)]
+pub struct RecordWithTrait {
+    pub label: String,
+}
+
+#[uniffi::export]
+impl Trait for RecordWithTrait {
+    fn concat_strings(&self, a: &str, b: &str) -> String {
+        format!("{}: {a}{b}", self.label)
+    }
+}
+
+#[uniffi::export]
+impl TraitWithForeign for RecordWithTrait {
+    fn name(&self) -> String {
+        format!("RecordWithTrait({})", self.label)
+    }
+}
+
 #[derive(uniffi::Object, Eq, PartialEq)]
 #[uniffi::export(Eq)]
 pub struct Object;
