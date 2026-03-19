@@ -1,6 +1,12 @@
 #
 # Custom type configuration
 #
+[bindings.kotlin.custom_types.CustomType2]
+# Use `dict` as our custom type wrapper, since we can use it without having to import any types
+type_name = "Map<String, ULong>"
+lift = "mapOf(\"value\" to {})"
+lower = "{}[\"value\"]!!"
+
 [bindings.python.custom_types.CustomType2]
 # Use `dict` as our custom type wrapper, since we can use it without having to import any types
 type_name = "dict[str, str]"
@@ -20,33 +26,33 @@ lower = "{}[\"value\"]!"
 [bindings.kotlin.rename]
 # Rename a function and its args.
 binding_function_to_rename = "ktFunction"
-"binding_function_to_rename.record" = "kotlinRecord"
+"binding_function_to_rename.record" = "ktRecord"
 
 # Rename a record and its items.
 BindingRecordToRename = "KtRecord"
-"BindingRecordToRename.item" = "kotlinItem"
+"BindingRecordToRename.item" = "ktItem"
 
 # Enum
 BindingEnumToRename = "KtEnum"
-"BindingEnumToRename.VariantA" = "KotlinVariantA"
-"BindingEnumToRename.Record" = "KotlinRecord"
+"BindingEnumToRename.VariantA" = "KtVariantA"
+"BindingEnumToRename.Record" = "KtRecord"
 
 BindingEnumWithFieldsToRename = "KtEnumWithFields"
-"BindingEnumWithFieldsToRename.VariantA" = "KotlinVariantA"
-"BindingEnumWithFieldsToRename.VariantA.binding_int" = "kotlin_int"
+"BindingEnumWithFieldsToRename.VariantA" = "KtVariantA"
+"BindingEnumWithFieldsToRename.VariantA.binding_int" = "kt_int"
 
 # New error name still gets passed through normal Error->Exception processing.
 BindingErrorToRename = "KtError"
-"BindingErrorToRename.Simple" = "KotlinSimple"
+"BindingErrorToRename.Simple" = "KtSimple"
 
 BindingTraitToRename = "KtTrait"
-"BindingTraitToRename.trait_method" = "kotlinTraitMethod"
+"BindingTraitToRename.trait_method" = "ktTraitMethod"
 
 BindingObjectToRename = "KtObject"
-# Note "kotlin_method" vs "kotlinTraitMethod" above - equiv as we always do the case-change thing.
+# Note "kt_method" vs "ktTraitMethod" above - equiv as we always do the case-change thing.
 # Is this good or bad? :) Either way, is what actually happens
-"BindingObjectToRename.method" = "kotlin_method"
-"BindingObjectToRename.method.arg" = "kotlinArg"
+"BindingObjectToRename.method" = "kt_method"
+"BindingObjectToRename.method.arg" = "ktArg"
 
 [bindings.python.rename]
 binding_function_to_rename = "py_function"
