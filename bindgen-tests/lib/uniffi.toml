@@ -1,6 +1,12 @@
 #
 # Custom type configuration
 #
+[bindings.python.custom_types.CustomType2]
+# Use `dict` as our custom type wrapper, since we can use it without having to import any types
+type_name = "dict[str, str]"
+lift = "{\"value\": {}}"
+lower = "{}[\"value\"]"
+
 [bindings.swift.custom_types.CustomType2]
 # Use `Dictionary` as our custom type wrapper, since we can use it without having to import any
 # types
@@ -44,33 +50,33 @@ BindingObjectToRename = "KtObject"
 
 [bindings.python.rename]
 binding_function_to_rename = "py_function"
-"binding_function_to_rename.record" = "python_record"
+"binding_function_to_rename.record" = "py_record"
 
 BindingRecordToRename = "PyRecord"
-"BindingRecordToRename.item" = "python_item"
+"BindingRecordToRename.item" = "py_item"
 
 BindingEnumToRename = "PyEnum"
-"BindingEnumToRename.VariantA" = "PythonVariantA"
-"BindingEnumToRename.Record" = "PythonRecord"
+"BindingEnumToRename.VariantA" = "PyVariantA"
+"BindingEnumToRename.Record" = "PyRecord"
 
 BindingEnumWithFieldsToRename = "PyEnumWithFields"
-"BindingEnumWithFieldsToRename.VariantA" = "PythonVariantA"
-"BindingEnumWithFieldsToRename.VariantA.binding_int" = "python_int"
-"BindingEnumWithFieldsToRename.Record" = "PythonRecord"
-"BindingEnumWithFieldsToRename.Record.binding_record" = "python_record"
-"BindingEnumWithFieldsToRename.Record.binding_int" = "python_int"
+"BindingEnumWithFieldsToRename.VariantA" = "PyVariantA"
+"BindingEnumWithFieldsToRename.VariantA.binding_int" = "py_int"
+"BindingEnumWithFieldsToRename.Record" = "PyRecord"
+"BindingEnumWithFieldsToRename.Record.binding_record" = "py_record"
+"BindingEnumWithFieldsToRename.Record.binding_int" = "py_int"
 
 BindingErrorToRename = "PyError"
-"BindingErrorToRename.Simple" = "PythonSimple"
+"BindingErrorToRename.Simple" = "PySimple"
 
 BindingTraitToRename = "PyTrait"
-"BindingTraitToRename.trait_method" = "python_trait_method"
+"BindingTraitToRename.trait_method" = "py_trait_method"
 
 BindingObjectToRename = "PyObject"
-"BindingObjectToRename.new.value" = "python_value"
+"BindingObjectToRename.new.value" = "py_value"
 
-"BindingObjectToRename.method" = "python_method"
-"BindingObjectToRename.method.arg" = "python_arg"
+"BindingObjectToRename.method" = "py_method"
+"BindingObjectToRename.method.arg" = "py_arg"
 
 [bindings.swift.rename]
 # Rename a function and its args.

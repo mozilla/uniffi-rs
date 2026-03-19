@@ -1723,6 +1723,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-bindgen-tests-python"
+version = "0.31.0"
+dependencies = [
+ "camino",
+ "glob",
+ "uniffi",
+ "uniffi-bindgen-tests",
+]
+
+[[package]]
 name = "uniffi-bindgen-tests-swift"
 version = "0.31.0"
 dependencies = [

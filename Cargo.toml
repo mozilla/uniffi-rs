@@ -27,6 +27,7 @@ members = [
 
   "bindgen-tests/external-types",
   "bindgen-tests/lib",
+  "bindgen-tests/python",
   "bindgen-tests/swift",
   "bindgen-tests/swift/keywords",
   "bindgen-tests/swift/callbacks-omit-labels",
