@@ -108,13 +108,13 @@ pub mod test_util {
         .unwrap();
     }
 
-    pub fn generate_sources(tempdir: &Utf8Path, language: uniffi::TargetLanguage) {
+    pub fn generate_sources(library_dir: &Utf8Path, language: uniffi::TargetLanguage) {
         let library_filename = library_filename();
         uniffi::generate(uniffi::GenerateOptions {
             languages: vec![language],
-            source: tempdir.join(library_filename),
+            source: library_dir.join(library_filename),
             format: false,
-            out_dir: tempdir.to_path_buf(),
+            out_dir: library_dir.to_path_buf(),
             ..uniffi::GenerateOptions::default()
         })
         .unwrap();

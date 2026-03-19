@@ -153,7 +153,7 @@ impl<T: Node> Node for Box<T> {
     }
 
     fn visit_children(&self, visitor: &mut dyn FnMut(&dyn Node)) {
-        (**self).visit_children(visitor);
+        visitor(&**self)
     }
 
     fn has_descendant_type<N: Node>(visited: &mut HashSet<TypeId>) -> bool {

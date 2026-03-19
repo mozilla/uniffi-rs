@@ -39,15 +39,9 @@ let swiftEnum2 = SwiftEnum.swiftRecord(swiftRecord)
 let swiftEnum3 = SwiftEnumWithFields.swiftVariantA(swiftInt: 1)
 
 // Test renamed function with renamed argument via TOML
-do {
-    let swiftResult = try swiftFunction(swiftRecord: swiftRecord)
-    if case .swiftRecord(let recordResult) = swiftResult {
-        assert(recordResult.swiftItem == 100)
-    }
-} catch let error as SwiftError {
-    if case .SwiftSimple = error {
-        // Expected for nil input
-    }
+let swiftResult = try swiftFunction(swiftRecord: swiftRecord)
+if case .swiftRecord(let recordResult) = swiftResult {
+    assert(recordResult.swiftItem == 100)
 }
 
 // Test that we can also get an error from the function

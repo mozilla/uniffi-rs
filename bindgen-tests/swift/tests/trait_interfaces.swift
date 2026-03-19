@@ -38,7 +38,7 @@ class TraitImpl: TestTraitInterface, @unchecked Sendable {
     }
 }
 
-// Test calling the Rust impl from JS
+// Test calling the Rust impl from Swift
 func testRustImpl(traitImpl: TestTraitInterface) {
     traitImpl.noop();
     assert(traitImpl.getValue() == 42)
@@ -62,8 +62,8 @@ testRustImpl(traitImpl: createTestTraitInterface(value: 42))
 testRustImpl(traitImpl: roundtripTestTraitInterface(interface: createTestTraitInterface(value: 42)))
 testRustImpl(traitImpl: roundtripTestTraitInterfaceList(interfaces: [createTestTraitInterface(value: 42)])[0])
 
-// Test calling the JS impl by roundtripping it through a Rust function
-func testJsImpl(traitImpl: TestTraitInterface) {
+// Test calling the Swift impl by roundtripping it through a Rust function
+func testSwiftImpl(traitImpl: TestTraitInterface) {
     invokeTestTraitInterfaceNoop(interface: traitImpl)
     assert(invokeTestTraitInterfaceGetValue(interface: traitImpl) == 42)
     invokeTestTraitInterfaceSetValue(interface: traitImpl, value: 43)
@@ -87,9 +87,9 @@ func testJsImpl(traitImpl: TestTraitInterface) {
         ) == CallbackInterfaceNumbers(a: 10, b: 11))
 }
 
-testJsImpl(traitImpl: TraitImpl(value: 42))
-testJsImpl(traitImpl: roundtripTestTraitInterface(interface: TraitImpl(value: 42)))
-testJsImpl(traitImpl: roundtripTestTraitInterfaceList(interfaces: [TraitImpl(value: 42)])[0])
+testSwiftImpl(traitImpl: TraitImpl(value: 42))
+testSwiftImpl(traitImpl: roundtripTestTraitInterface(interface: TraitImpl(value: 42)))
+testSwiftImpl(traitImpl: roundtripTestTraitInterfaceList(interfaces: [TraitImpl(value: 42)])[0])
 
 var asyncTraitRefCount = 0;
 
@@ -152,7 +152,7 @@ Task {
 }
 dispatchGroup.wait()
 
-func testAsyncJsImpl(traitImpl: AsyncTestTraitInterface) async {
+func testAsyncSwiftImpl(traitImpl: AsyncTestTraitInterface) async {
     await invokeAsyncTestTraitInterfaceNoop(interface: traitImpl)
     var val = await invokeAsyncTestTraitInterfaceGetValue(interface: traitImpl)
     assert(val == 42)
@@ -180,9 +180,9 @@ func testAsyncJsImpl(traitImpl: AsyncTestTraitInterface) async {
 
 dispatchGroup.enter()
 Task {
-    await testAsyncRustImpl(traitImpl: AsyncTraitImpl(value: 42))
-    await testAsyncRustImpl(traitImpl: roundtripAsyncTestTraitInterface(interface: AsyncTraitImpl(value: 42)))
-    await testAsyncRustImpl(traitImpl: roundtripAsyncTestTraitInterfaceList(interfaces: [AsyncTraitImpl(value: 42)])[0])
+    await testAsyncSwiftImpl(traitImpl: AsyncTraitImpl(value: 42))
+    await testAsyncSwiftImpl(traitImpl: roundtripAsyncTestTraitInterface(interface: AsyncTraitImpl(value: 42)))
+    await testAsyncSwiftImpl(traitImpl: roundtripAsyncTestTraitInterfaceList(interfaces: [AsyncTraitImpl(value: 42)])[0])
     dispatchGroup.leave()
 }
 dispatchGroup.wait()
