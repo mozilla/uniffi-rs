@@ -1219,6 +1219,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#recursive-enums" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recursive enums
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#renaming-enums" class="md-nav__link">
     <span class="md-ellipsis">
       Renaming enums
@@ -2331,6 +2340,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#recursive-enums" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recursive enums
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#renaming-enums" class="md-nav__link">
     <span class="md-ellipsis">
       Renaming enums
@@ -2423,6 +2441,14 @@ types inside variants are UniFFI builtin types; user-defined types might be allo
 <span class="kd">public</span> <span class="kd">enum</span> <span class="nc">MyEnum</span> <span class="p">:</span> <span class="nb">UInt8</span> <span class="p">{</span>
     <span class="k">case</span> <span class="n">foo</span> <span class="p">=</span> <span class="mi">3</span>
     <span class="k">case</span> <span class="n">bar</span> <span class="p">=</span> <span class="mi">4</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="recursive-enums">Recursive enums</h2>
+<p>Enums that reference themselves are supported. UniFFI detects cycles that are self-referential, or mutually recursive through other enums or records and generates appropriate bindings. Use <code>Box&lt;T&gt;</code> in variant fields to satisfy Rust's ownership rules:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Enum)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="nc">Tree</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Leaf</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Branch</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">left</span><span class="p">:</span><span class="w"> </span><span class="nb">Box</span><span class="o">&lt;</span><span class="n">Tree</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">right</span><span class="p">:</span><span class="w"> </span><span class="nb">Box</span><span class="o">&lt;</span><span class="n">Tree</span><span class="o">&gt;</span><span class="w"> </span><span class="p">},</span>
 <span class="p">}</span>
 </code></pre></div>
 <h2 id="renaming-enums">Renaming enums</h2>

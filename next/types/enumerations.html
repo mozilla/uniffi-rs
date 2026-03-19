@@ -589,6 +589,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#recursive-enums" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recursive enums
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#exposing-methods-from-standard-rust-traits" class="md-nav__link">
     <span class="md-ellipsis">
       Exposing methods from standard Rust traits
@@ -2341,6 +2350,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#recursive-enums" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recursive enums
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#exposing-methods-from-standard-rust-traits" class="md-nav__link">
     <span class="md-ellipsis">
       Exposing methods from standard Rust traits
@@ -2405,6 +2423,14 @@
 <p>proc-macros allow you to use <code>#[uniffi::export]</code> on an <code>impl</code> block for an <code>enum</code>.
 and the bindings will generate a method which calls into the Rust method.
 But take care - every time one of the methods is called, the entire enum will be copied by-value across the FFI.</p>
+<h2 id="recursive-enums">Recursive enums</h2>
+<p>Enums that reference themselves are supported. UniFFI automatically detects the cycle and generates appropriate bindings. Use <code>Box&lt;T&gt;</code> in variant fields to satisfy Rust's ownership rules:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Enum)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="nc">Tree</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Leaf</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Branch</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">left</span><span class="p">:</span><span class="w"> </span><span class="nb">Box</span><span class="o">&lt;</span><span class="n">Tree</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">right</span><span class="p">:</span><span class="w"> </span><span class="nb">Box</span><span class="o">&lt;</span><span class="n">Tree</span><span class="o">&gt;</span><span class="w"> </span><span class="p">},</span>
+<span class="p">}</span>
+</code></pre></div>
 <h2 id="exposing-methods-from-standard-rust-traits">Exposing methods from standard Rust traits</h2>
 <p>While less useful for Enums, there are a number of standard Rust traits (<code>Debug</code>, <code>Eq</code> etc) you can expose, so, eg, Python
 might generate <code>__repr__()</code> or <code>__eq__()</code> methods - <a href="uniffi_traits.html">see the docs for this feature</a>.</p>
