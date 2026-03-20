@@ -37,6 +37,9 @@ pub mod primitive_types;
 #[cfg(feature = "records")]
 pub mod records;
 
+#[cfg(feature = "recursive_types")]
+pub mod recursive_types;
+
 #[cfg(feature = "renames")]
 pub mod renames;
 

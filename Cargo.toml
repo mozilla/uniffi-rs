@@ -82,7 +82,6 @@ members = [
   "fixtures/large-enum",
   "fixtures/large-error",
   "fixtures/enum-types",
-  "fixtures/recursive-enums",
   "fixtures/wasm-unstable-single-threaded",
   "fixtures/multi-arch-extract",
   "fixtures/mutable-records",

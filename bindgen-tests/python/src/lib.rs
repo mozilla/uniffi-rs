@@ -90,12 +90,17 @@ mod test {
         run_tests(test_dir(), "tests/renames.py");
     }
 
+    #[test]
+    fn test_recursive_types() {
+        run_tests(test_dir(), "tests/recursive_types.py");
+    }
+
     fn test_dir() -> &'static Utf8Path {
         static TEST_TEMPDIR: OnceLock<Utf8PathBuf> = OnceLock::new();
         TEST_TEMPDIR.get_or_init(|| {
             let temp_dir = test_util::setup_test_dir("python");
-            let test_package = temp_dir.join("test_package");
-            fs::create_dir(&test_package).unwrap();
+            let test_package = temp_dir.join("tests/test_package");
+            fs::create_dir_all(&test_package).unwrap();
             let mut f = fs::File::create(test_package.join("__init__.py")).unwrap();
             write!(f, "").unwrap();
             test_util::build_library(&test_package);

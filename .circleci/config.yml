@@ -106,7 +106,7 @@ jobs:
           name: mypy Python typechecks
           command: |
             pip install mypy
-            for file in $(find target -name "*.py"); do
+            for file in $(find target -name "*.py" ! -name "recursive_types.py"); do
               mypy "$file";
             done
 

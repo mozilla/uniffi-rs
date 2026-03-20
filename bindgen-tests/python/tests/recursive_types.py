@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from recursive_enums import *
+from test_package.uniffi_bindgen_tests import *
 
 # --- Tree (self-recursive) ---
 
