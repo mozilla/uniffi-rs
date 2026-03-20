@@ -1,5 +1,5 @@
 [package]
-name = "uniffi-fixture-benchmarks"
+name = "uniffi-benchmarks"
 edition = "2021"
 version = "0.22.0"
 license = "MPL-2.0"
@@ -11,18 +11,19 @@ name = "uniffi_benchmarks"
 bench = false
 
 [dependencies]
+cargo_metadata = "0.19"
 uniffi = { workspace = true }
+uniffi_bindgen = {path = "../uniffi_bindgen", features = ["bindgen-tests"]}
+anyhow = "1"
+camino = "1"
 clap = { version = "4", features = ["cargo", "std", "derive"] }
-criterion = "0.5.1"
 regex = "1.5.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 thiserror = "2"
 
-[dev-dependencies]
-uniffi_bindgen = {path = "../../uniffi_bindgen", features = ["bindgen-tests"]}
-
-[[bench]]
-name = "benchmarks"
-harness = false
+[[bin]]
+name = "uniffi-benchmarks"
 
 [features]
 ffi-trace = ["uniffi/ffi-trace"]

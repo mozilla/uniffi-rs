@@ -16,3 +16,4 @@ release-backend-crates = [
     "-p", "uniffi_udl",
 ]
 release-uniffi = ["release", "--execute", "--no-publish", "-p", "uniffi"]
+uniffi-bench = ["run", "-p", "uniffi-benchmarks", "--"]

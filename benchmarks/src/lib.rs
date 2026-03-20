@@ -2,10 +2,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::{collections::HashMap, sync::Arc, time::Duration};
+use std::{collections::HashMap, sync::Arc, time::Instant};
+
+use anyhow::Result;
 
 mod cli;
+mod measurements;
 pub use cli::Args;
+
+use measurements::BenchmarkMeasurements;
+
+use crate::measurements::{print_headers, print_measurement};
+
+const ITERATIONS: u64 = 10_000;
 
 /// Benchmark test cases
 ///
@@ -335,27 +344,81 @@ pub fn run_callback_test(cb: Arc<dyn TestCallbackInterface>, test_case: TestCase
 #[uniffi::export]
 pub fn run_benchmarks(language: String, cb: Arc<dyn TestCallbackInterface>) {
     let args = Args::parse_for_run_benchmarks();
-    let mut c = args.build_criterion();
+    let save_name = args.save.as_deref().unwrap_or("draft").to_string();
+    let mut measurements = BenchmarkMeasurements::default();
+    let compare = args
+        .compare
+        .iter()
+        .map(|name| BenchmarkMeasurements::load(name))
+        .collect::<Result<Vec<_>>>()
+        .unwrap();
 
-    {
-        let mut function_calls = c.benchmark_group("function-calls");
-        for test_case in TestCase::iter_all() {
-            function_calls.bench_function(format!("{language}-{}", test_case.name()), |b| {
-                b.iter_custom(|count| Duration::from_nanos(cb.run_test(test_case, count)))
-            });
+    println!();
+    print_headers(&save_name, &args.compare);
+
+    for test_case in TestCase::iter_all() {
+        let name = format!("{language}-to-rust/{}", test_case.name());
+        if args.matches_test(&name) {
+            benchmark_test_case(name, test_case, &mut measurements, &compare, &cb);
         }
     }
-    {
-        let mut callbacks = c.benchmark_group("callbacks");
-        for test_case in TestCase::iter_all() {
-            let test_case_fn = test_case.callback_test_case_fn(cb.clone());
-            callbacks.bench_function(format!("{language}-{}", test_case.name()), move |b| {
-                b.iter(&test_case_fn);
-            });
+
+    for test_case in TestCase::iter_all() {
+        let name = format!("rust-to-{language}/{}", test_case.name());
+        if args.matches_test(&name) {
+            benchmark_callback_test_case(name, test_case, &mut measurements, &compare, &cb);
         }
     }
 
-    c.final_summary();
+    measurements.save(&save_name).unwrap();
+    println!();
+    println!("* table shows average benchmark times, lower values are better.")
+}
+
+fn benchmark_test_case(
+    name: String,
+    test_case: TestCase,
+    measurements: &mut BenchmarkMeasurements,
+    compare: &[BenchmarkMeasurements],
+    cb: &Arc<dyn TestCallbackInterface>,
+) {
+    // Warm-up
+    cb.run_test(test_case, ITERATIONS);
+    // Collect samples for 5 seconds
+    let start = Instant::now();
+    let mut samples = vec![];
+    while start.elapsed().as_secs() < 5 {
+        samples.push(cb.run_test(test_case, ITERATIONS));
+    }
+    print_measurement(&name, &samples, compare);
+    measurements.samples.insert(name, samples);
+}
+
+fn benchmark_callback_test_case(
+    name: String,
+    test_case: TestCase,
+    measurements: &mut BenchmarkMeasurements,
+    compare: &[BenchmarkMeasurements],
+    cb: &Arc<dyn TestCallbackInterface>,
+) {
+    let call_callback_test_case_fn = test_case.callback_test_case_fn(cb.clone());
+    // Warm-up
+    for _ in 0..ITERATIONS {
+        call_callback_test_case_fn();
+    }
+    // Collect samples for 5 seconds
+    let start = Instant::now();
+    let mut samples = vec![];
+    while start.elapsed().as_secs() < 5 {
+        let start = Instant::now();
+        for _ in 0..ITERATIONS {
+            call_callback_test_case_fn();
+        }
+        let sample = start.elapsed().as_nanos() as u64;
+        samples.push(sample);
+    }
+    print_measurement(&name, &samples, compare);
+    measurements.samples.insert(name, samples);
 }
 
 uniffi::setup_scaffolding!("benchmarks");

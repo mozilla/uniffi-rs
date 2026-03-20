@@ -1,19 +1,17 @@
 This fixture runs a set of benchmark tests, using criterion to test the performance.
 
-Note your cwd must be this crate, not the workspace/repo root!
-
-- `cargo bench` to run all benchmarks.
-- `cargo bench -- -p` to run all python benchmarks (or -s for swift, -k for kotlin)
-- `cargo bench -- [glob]` to run a subset of the benchmarks
-- `cargo bench -- --help` for more details on the CLI
+- `cargo uniffi-bench` to run all benchmarks.
+- `cargo uniffi-bench [filter]` to run some benchmarks
+- `cargo uniffi-bench -s [name]` to run benchmarks and save a baseline
+- `cargo uniffi-bench -c [name1],[name2]` to run benchmarks and compare against previously saved baselines
 
 Benchmarking UniFFI is tricky and involves a bit of ping-pong between Rust and
 the foreign language:
 
- - `benchmarks.rs` is the top-level Rust executable where the process starts.
+ - `main.rs` is the top-level Rust executable where the process starts.
    It parses the CLI arguments and determines which languages we want to run
    the benchmarks for.
- - `benchmarks.rs` executes a script for each foreign language that we want to benchmark.
+ - `main.rs` executes a script for each foreign language that we want to benchmark.
  - Those scripts call the `run_benchmarks()` function from `lib.rs`
  - `run_benchmarks()` parses the CLI arguments again, this time to determine how to setup
    the `Criterion` object.

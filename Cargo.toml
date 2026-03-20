@@ -37,7 +37,8 @@ members = [
   "bindgen-tests/swift/bridging-header-compile",
   "bindgen-tests/swift/link-frameworks",
 
-  "fixtures/benchmarks",
+  "benchmarks",
+
   "fixtures/coverall",
   "fixtures/callbacks",
   "fixtures/error-types",
