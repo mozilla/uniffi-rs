@@ -53,6 +53,7 @@ pub struct Namespace {
 pub struct Function {
     #[map_node(callable::function_callable(&self, context)?)]
     pub callable: Callable,
+    pub module_path: String,
     pub docstring: Option<String>,
 }
 
