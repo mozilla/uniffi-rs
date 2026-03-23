@@ -40,6 +40,7 @@ pub struct Function {
     #[map_node(context.new_callable_id())]
     pub id: u64,
     pub name: String,
+    pub module_path: String,
     pub is_async: bool,
     pub inputs: Vec<Argument>,
     pub return_type: Option<Type>,
