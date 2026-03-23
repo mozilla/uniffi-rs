@@ -1,0 +1,30 @@
+[package]
+name = "uniffi-bindgen-kotlin-jni"
+version = "0.31.1"
+description = "a multi-language bindings generator for rust (codegen and cli tooling)"
+documentation = "https://mozilla.github.io/uniffi-rs"
+homepage = "https://mozilla.github.io/uniffi-rs"
+repository = "https://github.com/mozilla/uniffi-rs"
+license = "MPL-2.0"
+edition = "2021"
+keywords = ["ffi", "bindgen"]
+readme = "../README.md"
+
+[dependencies]
+anyhow = "1"
+askama = { version = "0.14", default-features = false, features = ["config", "derive", "alloc"] }
+camino = "1"
+cargo_metadata = { version = "0.19", optional = true }
+clap = { version = "4", default-features = false, features = [ "cargo", "derive", "error-context", "help", "suggestions", "std", "usage" ] }
+heck = "0.5"
+indexmap = { version = "2.2", features = ["serde"] }
+serde = "1"
+toml = "0.8"
+uniffi_bindgen = { path = "../uniffi_bindgen", version = "=0.31.1" }
+uniffi_meta = { path = "../uniffi_meta", version = "=0.31.1" }
+uniffi_pipeline = { path = "../uniffi_pipeline", version = "=0.31.1" }
+textwrap = { version = "0.16", features=["smawk"], default-features = false }
+
+[features]
+default = ["cargo-metadata"]
+cargo-metadata = ["cargo_metadata"]

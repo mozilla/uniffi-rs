@@ -30,9 +30,12 @@ mod setup_scaffolding;
 mod test;
 mod util;
 
+use derive::DeriveOptions;
+
+#[cfg(feature = "scaffolding")]
 use self::{
-    derive::DeriveOptions, enum_::expand_enum, error::expand_error, export::expand_export,
-    object::expand_object, record::expand_record,
+    enum_::expand_enum, error::expand_error, export::expand_export, object::expand_object,
+    record::expand_record,
 };
 
 /// A macro to build testcases for a component's generated bindings.
@@ -72,11 +75,19 @@ pub fn setup_scaffolding(tokens: TokenStream) -> TokenStream {
         .into()
 }
 
+#[cfg(feature = "scaffolding")]
 #[proc_macro_attribute]
 pub fn export(attr_args: TokenStream, input: TokenStream) -> TokenStream {
     do_export(attr_args, input, true, false)
 }
 
+#[cfg(not(feature = "scaffolding"))]
+#[proc_macro_attribute]
+pub fn export(_attr_args: TokenStream, input: TokenStream) -> TokenStream {
+    input
+}
+
+#[cfg(feature = "scaffolding")]
 fn do_export(
     attr_args: TokenStream,
     input: TokenStream,
@@ -100,6 +111,7 @@ fn do_export(
 // Generate export items for UDL mode
 //
 // This works similarly to `udl_derive`, but for #[export].
+#[cfg(feature = "scaffolding")]
 #[doc(hidden)]
 #[proc_macro_attribute]
 pub fn export_for_udl(attrs: TokenStream, input: TokenStream) -> TokenStream {
@@ -108,12 +120,14 @@ pub fn export_for_udl(attrs: TokenStream, input: TokenStream) -> TokenStream {
 
 // This is for attributes on items we also `udl_derive`. It always keeps the input tokens
 // for `udl_derive` to consume (and then discard!)
+#[cfg(feature = "scaffolding")]
 #[doc(hidden)]
 #[proc_macro_attribute]
 pub fn export_for_udl_derive(attrs: TokenStream, input: TokenStream) -> TokenStream {
     do_export(attrs, input, true, true)
 }
 
+#[cfg(feature = "scaffolding")]
 #[proc_macro_derive(Record, attributes(uniffi))]
 pub fn derive_record(input: TokenStream) -> TokenStream {
     expand_record(parse_macro_input!(input), DeriveOptions::default())
@@ -121,6 +135,7 @@ pub fn derive_record(input: TokenStream) -> TokenStream {
         .into()
 }
 
+#[cfg(feature = "scaffolding")]
 #[proc_macro_derive(Enum, attributes(uniffi))]
 pub fn derive_enum(input: TokenStream) -> TokenStream {
     expand_enum(parse_macro_input!(input), DeriveOptions::default())
@@ -128,6 +143,7 @@ pub fn derive_enum(input: TokenStream) -> TokenStream {
         .into()
 }
 
+#[cfg(feature = "scaffolding")]
 #[proc_macro_derive(Object, attributes(uniffi))]
 pub fn derive_object(input: TokenStream) -> TokenStream {
     expand_object(parse_macro_input!(input), DeriveOptions::default())
@@ -135,6 +151,7 @@ pub fn derive_object(input: TokenStream) -> TokenStream {
         .into()
 }
 
+#[cfg(feature = "scaffolding")]
 #[proc_macro_derive(Error, attributes(uniffi))]
 pub fn derive_error(input: TokenStream) -> TokenStream {
     expand_error(parse_macro_input!(input), DeriveOptions::default())
@@ -142,12 +159,43 @@ pub fn derive_error(input: TokenStream) -> TokenStream {
         .into()
 }
 
+#[cfg(not(feature = "scaffolding"))]
+#[proc_macro_derive(Record, attributes(uniffi))]
+pub fn derive_record(_input: TokenStream) -> TokenStream {
+    TokenStream::default()
+}
+
+#[cfg(not(feature = "scaffolding"))]
+#[proc_macro_derive(Enum, attributes(uniffi))]
+pub fn derive_enum(_input: TokenStream) -> TokenStream {
+    TokenStream::default()
+}
+
+#[cfg(not(feature = "scaffolding"))]
+#[proc_macro_derive(Object, attributes(uniffi))]
+pub fn derive_object(_input: TokenStream) -> TokenStream {
+    TokenStream::default()
+}
+
+#[cfg(not(feature = "scaffolding"))]
+#[proc_macro_derive(Error, attributes(uniffi))]
+pub fn derive_error(_input: TokenStream) -> TokenStream {
+    TokenStream::default()
+}
+
 /// Generate FFI code for a custom type
+#[cfg(feature = "scaffolding")]
 #[proc_macro]
 pub fn custom_type(tokens: TokenStream) -> TokenStream {
     custom::expand_custom_type(parse_macro_input!(tokens))
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
+}
+
+#[cfg(not(feature = "scaffolding"))]
+#[proc_macro]
+pub fn custom_type(_tokens: TokenStream) -> TokenStream {
+    TokenStream::default()
 }
 
 /// Generate FFI code for a custom newtype
@@ -165,6 +213,7 @@ pub fn custom_newtype(tokens: TokenStream) -> TokenStream {
 ///
 /// Use this to wrap the definition of an item defined in a remote crate.
 /// See `<https://mozilla.github.io/uniffi-rs/latest/types/remote_ext_types.html>` for details.
+#[cfg(feature = "scaffolding")]
 #[doc(hidden)]
 #[proc_macro_attribute]
 pub fn remote(attrs: TokenStream, input: TokenStream) -> TokenStream {
@@ -177,6 +226,13 @@ pub fn remote(attrs: TokenStream, input: TokenStream) -> TokenStream {
     .into()
 }
 
+#[cfg(not(feature = "scaffolding"))]
+#[doc(hidden)]
+#[proc_macro_attribute]
+pub fn remote(_attrs: TokenStream, _input: TokenStream) -> TokenStream {
+    TokenStream::default()
+}
+
 /// `#[udl_remote(<kind>)]` attribute
 ///
 /// Alternate version of `#[remote]` for UDL-based generation
@@ -185,6 +241,7 @@ pub fn remote(attrs: TokenStream, input: TokenStream) -> TokenStream {
 /// UDL.
 #[doc(hidden)]
 #[proc_macro_attribute]
+#[cfg(feature = "scaffolding")]
 pub fn udl_remote(attrs: TokenStream, input: TokenStream) -> TokenStream {
     derive::expand_derive(
         parse_macro_input!(attrs),
@@ -205,6 +262,7 @@ pub fn udl_remote(attrs: TokenStream, input: TokenStream) -> TokenStream {
 /// metadata items, since we get those from parsing the UDL.
 #[doc(hidden)]
 #[proc_macro_attribute]
+#[cfg(feature = "scaffolding")]
 pub fn udl_derive(attrs: TokenStream, input: TokenStream) -> TokenStream {
     derive::expand_derive(
         parse_macro_input!(attrs),

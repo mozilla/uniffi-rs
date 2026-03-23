@@ -2,39 +2,43 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::time::Duration;
+
 use clap::Parser;
 use criterion::Criterion;
 
+use crate::TestCase;
+
 #[derive(Parser, Debug)]
 pub struct Args {
-    // Args to select which test scripts run.  These are handled in `benchmarks.rs`.
-    /// Run Python tests
-    #[clap(short, long = "py", display_order = 0)]
-    pub python: bool,
-    /// Run Kotlin tests
-    #[clap(short, long = "kt", display_order = 0)]
-    pub kotlin: bool,
-    /// Run Swift tests
-    #[clap(short, long, display_order = 0)]
-    pub swift: bool,
-
     /// Dump compiler output to the console.  Good for debugging new benchmarks.
-    #[clap(long, display_order = 1)]
+    #[clap(long)]
     pub compiler_messages: bool,
 
-    /// Save benchmark data to new baseline named [baseline]
-    #[clap(long)]
-    pub save_baseline: Option<String>,
+    /// Save benchmark data for later comparisons
+    #[clap(short, long)]
+    pub save: Option<String>,
 
-    /// Load benchmark data from a saved baseline named [baseline]
+    /// Create a table comparing previously saved benchmark data
+    ///
+    /// Inputs a list of names previously passed to `--save`.
+    /// Each name will be a column in the table.
+    ///
+    /// If `--save` is also present, then new measurements will be added as a column in the table.
+    /// If not, then this will skip new measurements and only print out a table.
+    #[clap(short, long, use_value_delimiter = true)]
+    pub compare: Vec<String>,
+
+    /// Run for a fixed number of seconds and skip the analysis.
+    ///
+    /// Use this for hooking up a profile to the benchmark code.
     #[clap(long)]
-    pub load_baseline: Option<String>,
+    pub profile_time: Option<u64>,
 
     // Args for running the metrics, these are handled in `lib.rs`
     /// Only run benchmarks whose names contain FILTER
-    /// Multiple filters will be ORed together.
     #[clap()]
-    pub filter: Vec<String>,
+    pub filter: Option<String>,
 
     // It would be great to also support the baseline arguments, but there doesn't seem to be any
     // way to manually set those.
@@ -45,23 +49,14 @@ pub struct Args {
 }
 
 impl Args {
-    /// Should we run the Python tests?
-    pub fn should_run_python(&self) -> bool {
-        self.python || self.no_languages_selected()
-    }
-
-    /// Should we run the Kotlin tests?
-    pub fn should_run_kotlin(&self) -> bool {
-        self.kotlin || self.no_languages_selected()
-    }
-
-    /// Should we run the Swift tests?
-    pub fn should_run_swift(&self) -> bool {
-        self.swift || self.no_languages_selected()
-    }
-
-    pub fn no_languages_selected(&self) -> bool {
-        !(self.python || self.kotlin || self.swift)
+    /// Should we run the tests for a foreign language?
+    pub fn should_run_foreign_language(&self, language: &str) -> bool {
+        match &self.filter {
+            None => true,
+            Some(filter) => {
+                TestCase::all_names_for_language(language).any(|name| name.contains(filter))
+            }
+        }
     }
 
     /// Parse arguments for run_benchmarks()
@@ -87,29 +82,27 @@ impl Args {
     /// Build a Criterion instance from the arguments
     pub fn build_criterion(&self) -> Criterion {
         let mut c = Criterion::default();
-        c = match &self.filter.len() {
-            0 => c,
-            _ => {
-                let re = regex::Regex::new(
-                    &self
-                        .filter
-                        .iter()
-                        .map(|s| format!("({})", regex::escape(s)))
-                        .collect::<Vec<_>>()
-                        .join("|"),
-                )
-                .unwrap();
-                c.with_benchmark_filter(criterion::BenchmarkFilter::Regex(re))
-            }
-        };
-        c = match &self.save_baseline {
-            Some(baseline) => c.save_baseline(baseline.clone()),
+        c = match &self.filter {
             None => c,
+            Some(filter) => c.with_filter(filter),
         };
-        c = match &self.load_baseline {
-            Some(baseline) => c.retain_baseline(baseline.clone(), true),
-            None => c,
-        };
+        if let Some(profile_time) = self.profile_time {
+            c = c.profile_time(Some(Duration::from_secs(profile_time)));
+        }
         c
+    }
+
+    pub fn skip_measurements(&self) -> bool {
+        self.save.is_none() && !self.compare.is_empty()
+    }
+
+    pub fn compare_table_columns(&self) -> Option<Vec<&str>> {
+        (!self.compare.is_empty()).then(|| {
+            self.compare
+                .iter()
+                .map(String::as_str)
+                .chain(self.save.as_deref())
+                .collect()
+        })
     }
 }

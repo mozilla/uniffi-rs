@@ -35,6 +35,7 @@ pub struct Function {
     #[map_node(self.orig_name.unwrap_or_else(|| self.name.clone()))]
     pub orig_name: String,
     pub name: String,
+    pub module_path: String,
     pub is_async: bool,
     pub inputs: Vec<Argument>,
     pub return_type: Option<Type>,

@@ -29,7 +29,7 @@ clap = { version = "4", default-features = false, features = [ "cargo", "derive"
 trybuild = "1"
 
 [features]
-default = ["cargo-metadata"]
+default = ["cargo-metadata", "macro-scaffolding"]
 # Printout tracing information on FFI calls.  Useful for debugging issues with the bindings code.
 ffi-trace = ["uniffi_core/ffi-trace", "uniffi_bindgen?/ffi-trace"]
 # Support for features needed by the `build.rs` script. Enable this in your
@@ -49,6 +49,12 @@ bindgen-tests = [ "dep:uniffi_bindgen", "uniffi_bindgen?/bindgen-tests" ]
 # Enable support for Tokio's futures.
 # This must still be opted into on a per-function basis using `#[uniffi::export(async_runtime = "tokio")]`.
 tokio = ["uniffi_core/tokio"]
+# Generate scaffolding in the UniFFI macros
+#
+# This is a default feature that should always be enabled,
+# except by experimental bindgens like `uniffi-bindgen-kotlin-jni`.
+# Disabling this feature prevents the macros from generating any scaffolding code.
+macro-scaffolding = ["uniffi_macros/scaffolding"]
 # Generate extra scaffolding functions that use FfiBuffer to pass arguments and return values
 # This is needed for the gecko-js bindings.
 scaffolding-ffi-buffer-fns = ["uniffi_core/scaffolding-ffi-buffer-fns", "uniffi_macros/scaffolding-ffi-buffer-fns"]

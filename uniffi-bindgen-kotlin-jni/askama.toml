@@ -1,0 +1,8 @@
+[general]
+dirs = [ "src/bindings/templates", "src/scaffolding/templates" ]
+
+[[syntax]]
+name = "kt"
+
+[[syntax]]
+name = "rs"
