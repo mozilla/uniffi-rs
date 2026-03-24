@@ -19,4 +19,4 @@ name = "weedle"
 nom = "7.1.0"
 
 [dev-dependencies]
-fs-err = "2.7.0"
+fs-err = "3.3.0"
