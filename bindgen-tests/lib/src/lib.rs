@@ -79,7 +79,9 @@ pub mod test_util {
     }
 
     pub fn library_filename() -> String {
-        format!("{DLL_PREFIX}uniffi_bindgen_tests{DLL_SUFFIX}")
+        let package_name = var("CARGO_PKG_NAME").expect("CARGO_PKG_NAME not set");
+        let lib_name = package_name.replace("-", "_");
+        format!("{DLL_PREFIX}{lib_name}{DLL_SUFFIX}")
     }
 
     pub fn setup_test_dir(language_name: &str) -> Utf8PathBuf {
@@ -95,10 +97,14 @@ pub mod test_util {
     }
 
     pub fn build_library(tempdir: &Utf8Path) {
-        Command::new("cargo")
-            .args(["build", "-p", "uniffi-bindgen-tests"])
+        let package_name = var("CARGO_PKG_NAME").expect("CARGO_PKG_NAME not set");
+        let status = Command::new("cargo")
+            .args(["build", "-p", &package_name])
             .status()
             .unwrap();
+        if !status.success() {
+            panic!("cargo build -p {package_name} failed");
+        }
         let target_dir = workspace_dir().join("target/debug").to_string();
         let library_filename = library_filename();
         fs::copy(
