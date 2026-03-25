@@ -51,9 +51,8 @@ bindgen-tests = [ "dep:uniffi_bindgen", "uniffi_bindgen?/bindgen-tests" ]
 tokio = ["uniffi_core/tokio"]
 # Generate scaffolding in the UniFFI macros
 #
-# This is a default feature that should always be enabled,
-# except by experimental bindgens like `uniffi-bindgen-kotlin-jni`.
-# Disabling this feature prevents the macros from generating any scaffolding code.
+# This is a default feature that should always be enabled, except for experimental bindgens like
+# uniffi-bindgen-kotlin-jni which generate the necessary scaffolding
 macro-scaffolding = ["uniffi_macros/scaffolding"]
 # Generate extra scaffolding functions that use FfiBuffer to pass arguments and return values
 # This is needed for the gecko-js bindings.
