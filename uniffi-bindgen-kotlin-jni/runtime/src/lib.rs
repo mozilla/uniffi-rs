@@ -7,8 +7,10 @@
 //! Shared/generic code used by uniffi-bindgen-kotlin-jni consumers
 
 mod caching;
+mod calls;
 mod strings;
 
 pub use caching::*;
+pub use calls::*;
 pub use jni_sys::*;
 pub use strings::*;

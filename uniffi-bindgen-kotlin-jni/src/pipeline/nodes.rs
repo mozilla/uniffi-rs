@@ -68,6 +68,10 @@ impl Package {
         format!("`{}`", self.crate_name.to_upper_camel_case())
     }
 
+    pub fn name_jni(&self) -> String {
+        self.name.replace(".", "/")
+    }
+
     pub fn name_rs(&self) -> String {
         names::escape_rust(&self.crate_name)
     }

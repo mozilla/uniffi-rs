@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::ffi::{c_char, CString};
+
 use anyhow::Result;
 use jni_sys::{jstring, JNIEnv};
 use simd_cesu8::mutf8;
@@ -20,5 +22,33 @@ pub unsafe fn decode_jni_string(env: *mut JNIEnv, string: jstring) -> Result<Str
         let rust_string = mutf8::decode(bytes).map(|bytes| bytes.to_string());
         ((**env).v1_2.ReleaseStringUTFChars)(env, string, data);
         Ok(rust_string?)
+    }
+}
+
+pub struct JniString(CString);
+
+impl JniString {
+    pub fn new(s: String) -> Self {
+        s.into()
+    }
+
+    pub fn as_ptr(&self) -> *const c_char {
+        self.0.as_ptr()
+    }
+}
+
+impl From<String> for JniString {
+    fn from(s: String) -> Self {
+        Self::from(s.as_str())
+    }
+}
+
+impl From<&str> for JniString {
+    fn from(s: &str) -> Self {
+        let mut data = mutf8::encode(s).to_vec();
+        data.push(b'\0');
+        // Safety:
+        // data has a trailing null byte
+        unsafe { Self(CString::from_vec_with_nul_unchecked(data)) }
     }
 }
