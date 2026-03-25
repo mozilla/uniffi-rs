@@ -5,3 +5,6 @@
 import uniffi_bindgen_tests
 
 testFunc()
+
+// Unfortunately there's no way to test unexpected errors.
+// In swift, they're always fatal.
