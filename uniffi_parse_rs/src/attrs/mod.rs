@@ -17,7 +17,7 @@ pub use docstring::extract_docstring;
 pub use enums::{EnumAttributes, VariantAttributes};
 pub use objects::{ImplAttributes, ObjectAttributes};
 pub use records::{FieldAttributes, RecordAttributes};
-pub use traits::TraitAttributes;
+pub use traits::{TraitAttributes, TraitExportType};
 
 fn meta_matches_uniffi_export(meta: &Meta, export_name: &str) -> bool {
     path_matches_uniffi_ident(meta.path(), export_name)

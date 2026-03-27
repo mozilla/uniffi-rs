@@ -6,7 +6,8 @@ use syn::{ext::IdentExt, Ident, ItemStruct};
 
 use crate::{
     attrs::{FieldAttributes, RecordAttributes},
-    Result,
+    paths::LookupCache,
+    Ir, RPath, Result,
 };
 
 #[derive(Clone)]
@@ -42,9 +43,14 @@ impl Record {
         self.ident.unraw().to_string()
     }
 
-    pub fn record_metadata(&self) -> Result<uniffi_meta::RecordMetadata> {
+    pub fn record_metadata<'ir>(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        path: &RPath<'ir>,
+    ) -> Result<uniffi_meta::RecordMetadata> {
         Ok(uniffi_meta::RecordMetadata {
-            module_path: "".into(), // TODO
+            module_path: path.path_string(),
             name: self.name(),
             orig_name: None, // TODO
             remote: false,
@@ -52,7 +58,7 @@ impl Record {
             fields: self
                 .fields
                 .iter()
-                .map(|f| f.create_field_metadata())
+                .map(|f| f.create_field_metadata(ir, cache, path))
                 .collect::<Result<Vec<_>>>()?,
         })
     }
@@ -74,13 +80,19 @@ impl Field {
         }
     }
 
-    pub fn create_field_metadata<'ir>(&self) -> Result<uniffi_meta::FieldMetadata> {
+    pub fn create_field_metadata<'ir>(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+    ) -> Result<uniffi_meta::FieldMetadata> {
         let name = self.name();
+        let ty = module_path.resolve_uniffi_meta_type(ir, cache, &self.ty, None)?;
 
         Ok(uniffi_meta::FieldMetadata {
             name,
-            orig_name: None,             // TODO
-            ty: uniffi_meta::Type::Int8, // TODO
+            orig_name: None, // TODO
+            ty,
             default: None,
             docstring: self.attrs.docstring.clone(),
         })

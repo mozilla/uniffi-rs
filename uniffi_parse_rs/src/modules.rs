@@ -14,9 +14,11 @@ use crate::{
         RecordAttributes, TraitAttributes,
     },
     files::{read_to_string, FileId},
+    parse_use,
+    paths::LookupCache,
     Enum, Error,
     ErrorKind::*,
-    Function, Impl, Item, Object, Record, Result, Trait,
+    Function, Impl, Ir, Item, Object, RPath, Record, Result, Trait,
 };
 
 #[derive(Debug)]
@@ -174,33 +176,53 @@ impl Module {
                 }
             }
             syn::Item::Type(ty) => self.items.push(Item::Type(ty)),
-            syn::Item::Use(use_) => self.items.push(Item::Use(use_)),
+            syn::Item::Use(use_) => self.items.extend(parse_use(use_)?),
             _ => (),
         }
         Ok(())
     }
 
-    pub fn create_metadata(&self, metadata: &mut MetadataGroup) -> Result<()> {
+    pub fn create_metadata<'ir>(
+        &'ir self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &mut RPath<'ir>,
+        metadata: &mut MetadataGroup,
+    ) -> Result<()> {
         for item in self.items.iter() {
             match item {
                 Item::Fn(f) => {
-                    metadata.items.insert(f.fn_metadata()?.into());
+                    metadata
+                        .items
+                        .insert(f.fn_metadata(ir, cache, module_path)?.into());
                 }
                 Item::Record(rec) => {
-                    metadata.items.insert(rec.record_metadata()?.into());
+                    metadata
+                        .items
+                        .insert(rec.record_metadata(ir, cache, module_path)?.into());
                 }
                 Item::Enum(en) => {
-                    metadata.items.insert(en.enum_metadata()?.into());
+                    metadata
+                        .items
+                        .insert(en.enum_metadata(ir, cache, module_path)?.into());
                 }
                 Item::Object(o) => {
-                    metadata.items.insert(o.obj_metadata()?.into());
+                    metadata.items.insert(o.obj_metadata(module_path)?.into());
                 }
-                Item::Impl(imp) => metadata.items.extend(imp.impl_metadata()?),
+                Item::Impl(imp) => {
+                    metadata
+                        .items
+                        .extend(imp.impl_metadata(ir, cache, module_path)?)
+                }
                 Item::Trait(tr) => {
-                    metadata.items.extend(tr.trait_metadata()?);
+                    metadata
+                        .items
+                        .extend(tr.trait_metadata(ir, cache, module_path)?);
                 }
                 Item::Module(submod) => {
-                    submod.create_metadata(metadata)?;
+                    module_path.push(item);
+                    submod.create_metadata(ir, cache, module_path, metadata)?;
+                    module_path.pop();
                 }
                 _ => (),
             }

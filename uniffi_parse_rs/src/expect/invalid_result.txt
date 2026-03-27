@@ -1,0 +1,6 @@
+error: Invalid type
+  ┌─ src/test_src/invalid_result.rs:7:28
+  │
+7 │ pub fn function(a: u32) -> Result<(), Result<u32, Error>> {
+  │                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Invalid type
+

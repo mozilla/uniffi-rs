@@ -2,12 +2,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use syn::{ext::IdentExt, Ident, ImplItemFn};
+use proc_macro2::Span;
+use syn::{ext::IdentExt, spanned::Spanned, FnArg, Ident, ImplItemFn, Receiver};
 use uniffi_meta::ObjectImpl;
 
 use crate::{
     attrs::{ConstructorAttributes, MethodAttributes, ObjectAttributes},
-    Argument, Result, ReturnType,
+    paths::LookupCache,
+    Argument, Error,
+    ErrorKind::*,
+    Ir, RPath, Result, ReturnType,
 };
 
 #[derive(Clone)]
@@ -30,8 +34,14 @@ pub struct Method {
     pub attrs: MethodAttributes,
     pub is_async: bool,
     pub ident: Ident,
+    pub self_arg: SelfArg,
     pub args: Vec<Argument>,
     pub return_type: ReturnType,
+}
+
+#[derive(Clone)]
+pub struct SelfArg {
+    receiver: Receiver,
 }
 
 impl Object {
@@ -43,9 +53,9 @@ impl Object {
         self.ident.unraw().to_string()
     }
 
-    pub fn obj_metadata(&self) -> Result<uniffi_meta::ObjectMetadata> {
+    pub fn obj_metadata<'ir>(&self, path: &RPath<'ir>) -> Result<uniffi_meta::ObjectMetadata> {
         Ok(uniffi_meta::ObjectMetadata {
-            module_path: "".into(), // TODO
+            module_path: path.path_string(),
             name: self.name(),
             orig_name: None, // TODO
             remote: false,
@@ -75,12 +85,27 @@ impl Constructor {
         self.ident.unraw().to_string()
     }
 
-    pub fn to_constructor_metadata(
+    pub fn to_constructor_metadata<'ir>(
         &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
         self_name: &str,
+        self_ty: &uniffi_meta::Type,
     ) -> Result<uniffi_meta::ConstructorMetadata> {
+        let (return_type, throws) =
+            self.return_type
+                .return_type_and_throws_for_method(ir, cache, module_path, self_ty)?;
+        if return_type.as_ref() != Some(self_ty) {
+            return Err(Error::new(
+                module_path.file_id(),
+                self.return_type.return_ty.span(),
+                InvalidReturnType,
+            ));
+        }
+
         Ok(uniffi_meta::ConstructorMetadata {
-            module_path: "".into(), // TODO
+            module_path: module_path.path_string(),
             self_name: self_name.to_string(),
             name: self.name(),
             orig_name: None, // TODO
@@ -89,9 +114,9 @@ impl Constructor {
             inputs: self
                 .args
                 .iter()
-                .map(|arg| arg.create_metadata())
+                .map(|arg| arg.create_fn_metadata(ir, cache, module_path))
                 .collect::<Result<Vec<_>>>()?,
-            throws: None, // TODO
+            throws,
             // Method checksums are not supported, we can implement an improved system by
             // checksumming the entire interface and having a single checksum
             checksum: None,
@@ -101,12 +126,14 @@ impl Constructor {
 
 impl Method {
     pub fn parse(attrs: MethodAttributes, f: ImplItemFn) -> syn::Result<Self> {
-        let inputs = f.sig.inputs.into_iter().take(1);
+        let mut inputs = f.sig.inputs.into_iter();
+        let self_arg = SelfArg::parse(inputs.next(), f.sig.ident.span())?;
 
         Ok(Self {
             attrs,
             ident: f.sig.ident,
             is_async: f.sig.asyncness.is_some(),
+            self_arg,
             args: inputs
                 .map(Argument::parse)
                 .collect::<syn::Result<Vec<_>>>()?,
@@ -118,25 +145,59 @@ impl Method {
         self.ident.unraw().to_string()
     }
 
-    pub fn to_method_metadata(&self, self_name: &str) -> Result<uniffi_meta::MethodMetadata> {
+    pub fn to_method_metadata<'ir>(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+        self_name: &str,
+        self_ty: &uniffi_meta::Type,
+    ) -> Result<uniffi_meta::MethodMetadata> {
+        let (return_type, throws) =
+            self.return_type
+                .return_type_and_throws_for_method(ir, cache, module_path, self_ty)?;
+
         Ok(uniffi_meta::MethodMetadata {
-            module_path: "".into(), // TODO
+            module_path: module_path.path_string(),
             self_name: self_name.to_string(),
             name: self.name(),
             orig_name: None, // TODO
             docstring: self.attrs.docstring.clone(),
             is_async: self.is_async,
-            takes_self_by_arc: false,
+            takes_self_by_arc: self.self_arg.takes_self_by_arc(ir, cache, module_path)?,
             inputs: self
                 .args
                 .iter()
-                .map(|arg| arg.create_metadata())
+                .map(|arg| arg.create_method_metadata(ir, cache, module_path, self_ty))
                 .collect::<Result<Vec<_>>>()?,
-            return_type: None, // TODO
-            throws: None,      // TODO
+            return_type,
+            throws,
             // Method checksums are not supported, we can implement an improved system by
             // checksumming the entire interface and having a single checksum
             checksum: None,
         })
+    }
+}
+
+impl SelfArg {
+    /// Parses sig.inputs.first() into a `SelfArg`
+    pub fn parse(arg: Option<FnArg>, ident_span: Span) -> syn::Result<Self> {
+        match arg {
+            Some(FnArg::Receiver(receiver)) => Ok(Self { receiver }),
+            Some(_) => Err(syn::Error::new(arg.span(), InvalidSelfType)),
+            None => Err(syn::Error::new(ident_span, MissingSelfType)),
+        }
+    }
+
+    /// There's no uniffi_meta metadata for the self arg, the only thing we store is the
+    /// `takes_self_by_arc` boolean.
+    pub fn takes_self_by_arc<'ir>(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+    ) -> Result<bool> {
+        let self_ty = module_path.resolve_self_type(ir, cache, &self.receiver.ty)?;
+        Ok(self_ty.takes_self_by_arc)
     }
 }
