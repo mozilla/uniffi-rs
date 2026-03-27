@@ -54,7 +54,7 @@ impl Record {
             module_path: path.path_string(),
             name,
             orig_name,
-            remote: false,
+            remote: self.attrs.remote,
             docstring: self.attrs.docstring.clone(),
             fields: self
                 .fields
