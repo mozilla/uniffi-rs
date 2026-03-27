@@ -1,3 +1,4 @@
+use uniffi::custom_type as renamed_custom_type;
 use std::primitive::u64 as RenamedU64;
 use std::primitive;
 use std::collections::HashMap;
@@ -14,7 +15,28 @@ enum TestError { }
 #[derive(uniffi::Object)]
 struct TestInterface { }
 
+uniffi::custom_type!(
+    /// Custom type docstring
+    JsonObject, String,
+    {
+        into: |obj| obj.serialize(),
+        try_from: |s| s.deserialize(),
+    }
+);
+
+uniffi::custom_type!(CustomRecord, TestRecord, {
+    into: |r| r.into(),
+    try_from: |r| r.try_into(),
+});
+
+uniffi::custom_newtype!(
+    /// Custom newtype docstring
+    Guid, u64
+);
+
 mod mod1 {
+    use super::renamed_custom_type;
+
     #[derive(uniffi::Record)]
     struct Mod1Record { }
 
@@ -26,6 +48,12 @@ mod mod1 {
 
     #[uniffi::export(callback_interface)]
     pub trait CallbackInterface { }
+
+    renamed_custom_type!(Handle, u64, {
+        remote,
+        into: |handle| handle.0,
+        try_from: |v| Ok(Handle(v)),
+    });
 }
 
 mod glob_import_module {

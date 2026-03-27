@@ -84,6 +84,12 @@ enum Type {
     Slice(Box<Type>),
     HashMap(Box<Type>, Box<Type>),
     Result(Box<Type>, Box<Type>),
+    // Custom type on the scaffolding side
+    Custom {
+        module_path: String,
+        name: String,
+        builtin: Box<Type>,
+    },
     Ref {
         mutable: bool,
         ty: Box<Type>,
@@ -168,6 +174,15 @@ impl Type {
                     inner_type: Box::new(ty.try_into_uniffi_meta(source, span, self_ty)?),
                 }),
             },
+            Type::Custom {
+                module_path,
+                name,
+                builtin,
+            } => Ok(uniffi_meta::Type::Custom {
+                module_path,
+                name,
+                builtin: Box::new((*builtin).try_into_uniffi_meta(source, span, self_ty)?),
+            }),
             Type::SelfTy => {
                 if let Some(self_ty) = self_ty {
                     Ok(self_ty.clone())
@@ -456,6 +471,16 @@ impl<'ir> RPath<'ir> {
                     }
                     Item::Trait { .. } => {
                         Err(Error::new(self.file_id(), ty.span(), TraitWithoutDyn))
+                    }
+                    Item::CustomType(custom_type) => {
+                        let module_path = path_to_type.parent_module()?;
+                        let builtin =
+                            module_path._resolve_type(ir, cache, &custom_type.builtin, context)?;
+                        Ok(Type::Custom {
+                            module_path: module_path.path_string(),
+                            name: custom_type.ident.unraw().to_string(),
+                            builtin: Box::new(builtin),
+                        })
                     }
                     _ => Err(Error::new(self.file_id(), ty.span(), InvalidType)),
                 }
@@ -857,6 +882,55 @@ pub mod tests {
         assert_eq!(
             run_resolve_type(&ir, &mut cache, "types", "TestRecord<String>"),
             Err(ErrorKind::InvalidGenericArg)
+        );
+    }
+
+    #[test]
+    fn test_resolve_custom_types() {
+        let ir = Ir::new_for_test(&["types"]);
+        let mut cache = LookupCache::default();
+
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types", "JsonObject"),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                name: "JsonObject".into(),
+                builtin: Box::new(Type::String),
+            })
+        );
+        // Builtin is a user type and also that type is not reachable from the
+        // module where the custom type is used.
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types::mod1", "super::CustomRecord"),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                name: "CustomRecord".into(),
+                builtin: Box::new(Type::Record {
+                    module_path: "types".into(),
+                    name: "TestRecord".into(),
+                }),
+            })
+        );
+
+        // Test a custom_newtype
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types", "Guid"),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                name: "Guid".into(),
+                builtin: Box::new(Type::UInt64),
+            })
+        );
+
+        // Test complex imports.  Here the `uniffi::custom_type` macro has been imported through
+        // multiple use statements and also renamed.
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types::mod1", "Handle"),
+            Ok(Type::Custom {
+                module_path: "types::mod1".into(),
+                name: "Handle".into(),
+                builtin: Box::new(Type::UInt64),
+            })
         );
     }
 
@@ -1333,6 +1407,43 @@ pub mod tests {
                 },
                 by_ref: true,
             }),
+        );
+    }
+
+    #[test]
+    fn test_raw_ident() {
+        let ir = Ir::new_for_test(&["raw_idents"]);
+        let mut cache = LookupCache::default();
+
+        assert_eq!(
+            run_resolve_uniffi_meta_type(&ir, &mut cache, "raw_idents", "RecordWrapper", None),
+            Ok(uniffi_meta::Type::Custom {
+                module_path: "raw_idents".into(),
+                name: "RecordWrapper".into(),
+                builtin: Box::new(uniffi_meta::Type::Record {
+                    module_path: "raw_idents".into(),
+                    name: "Record".into(),
+                })
+            })
+        );
+        assert_eq!(
+            run_resolve_uniffi_meta_type(&ir, &mut cache, "raw_idents", "RecordWrapper2", None),
+            Ok(uniffi_meta::Type::Custom {
+                module_path: "raw_idents".into(),
+                name: "RecordWrapper2".into(),
+                builtin: Box::new(uniffi_meta::Type::Record {
+                    module_path: "raw_idents".into(),
+                    name: "Record".into(),
+                })
+            })
+        );
+        assert_eq!(
+            run_resolve_uniffi_meta_type(&ir, &mut cache, "raw_idents", "Guid", None),
+            Ok(uniffi_meta::Type::Custom {
+                module_path: "raw_idents".into(),
+                name: "Guid".into(),
+                builtin: Box::new(uniffi_meta::Type::UInt64),
+            })
         );
     }
 }

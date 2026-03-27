@@ -47,6 +47,8 @@ pub enum ErrorKind {
     TraitWithoutDyn,
     #[error("Expected trait")]
     ExpectedTrait,
+    #[error("Invalid builtin type")]
+    InvalidCustomTypeBuiltin,
     #[error("Invalid dyn trait")]
     InvalidDynTrait,
     #[error("Invalid generic argument")]
