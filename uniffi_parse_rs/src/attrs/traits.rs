@@ -4,7 +4,10 @@
 
 use syn::{Attribute, LitStr, Meta};
 
-use crate::attrs::{extract_docstring, meta_matches_uniffi_export};
+use crate::{
+    attrs::{extract_docstring, meta_matches_uniffi_export},
+    CompileEnv,
+};
 
 #[derive(Default, Debug, PartialEq, Eq)]
 pub struct TraitAttributes {
@@ -32,18 +35,21 @@ impl TraitExportType {
 }
 
 impl TraitAttributes {
-    pub fn parse(attrs: &[Attribute]) -> syn::Result<Option<Self>> {
+    pub fn parse(env: &CompileEnv, attrs: &[Attribute]) -> syn::Result<Option<Self>> {
         let mut parsed = Self::default();
-        if !attrs
+        let Some(metas) = env.parse_attrs(attrs)? else {
+            return Ok(None);
+        };
+        if !metas
             .iter()
-            .any(|a| meta_matches_uniffi_export(&a.meta, "export"))
+            .any(|meta| meta_matches_uniffi_export(meta, "export"))
         {
             return Ok(None);
         }
 
-        for a in attrs {
-            if meta_matches_uniffi_export(&a.meta, "export") {
-                if let Meta::List(list) = &a.meta {
+        for meta in metas {
+            if meta_matches_uniffi_export(&meta, "export") {
+                if let Meta::List(list) = meta {
                     list.parse_nested_meta(|meta| {
                         if meta.path.is_ident("name") {
                             meta.value()?;
@@ -61,8 +67,8 @@ impl TraitAttributes {
                         }
                     })?;
                 }
-            } else if a.meta.path().is_ident("doc") {
-                extract_docstring(&mut parsed.docstring, &a.meta);
+            } else if meta.path().is_ident("doc") {
+                extract_docstring(&mut parsed.docstring, &meta);
             }
         }
         Ok(Some(parsed))

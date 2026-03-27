@@ -16,7 +16,7 @@ use crate::{
     files::{read_to_string, FileId},
     macros, parse_use,
     paths::LookupCache,
-    Enum, Error,
+    CompileEnv, Enum, Error,
     ErrorKind::*,
     Function, Impl, Ir, Item, Object, RPath, Record, Result, Trait,
 };
@@ -38,7 +38,7 @@ pub struct Module {
 }
 
 impl Module {
-    pub fn new_crate_root(ident: Ident, file_path: &Utf8Path) -> Result<Self> {
+    pub fn new_crate_root(ident: Ident, file_path: &Utf8Path, env: &CompileEnv) -> Result<Self> {
         let crate_root = file_path
             .parent()
             .ok_or_else(|| Error::new_without_location(InvalidPath(file_path.to_path_buf())))?
@@ -46,7 +46,7 @@ impl Module {
         let (file_id, content) = read_to_string(file_path)?;
         let file = parse_file(file_id, content)?;
         let mut module = Self::empty(ident, file_id, vec![], crate_root)?;
-        module.add_items(file.attrs, file.items)?;
+        module.add_items(file.attrs, file.items, env)?;
         Ok(module)
     }
 
@@ -57,11 +57,12 @@ impl Module {
         crate_root: Utf8PathBuf,
         attrs: Vec<syn::Attribute>,
         items: Vec<syn::Item>,
+        env: &CompileEnv,
     ) -> Result<Self> {
         let mut module_names = self.module_names.clone();
         module_names.push(ident.to_string());
         let mut module = Self::empty(ident, source, module_names, crate_root)?;
-        module.add_items(attrs, items)?;
+        module.add_items(attrs, items, env)?;
         Ok(module)
     }
 
@@ -98,7 +99,12 @@ impl Module {
         candidates.into_iter().find(|p| p.exists())
     }
 
-    fn add_items(&mut self, attrs: Vec<syn::Attribute>, syn_items: Vec<syn::Item>) -> Result<()> {
+    fn add_items(
+        &mut self,
+        attrs: Vec<syn::Attribute>,
+        syn_items: Vec<syn::Item>,
+        env: &CompileEnv,
+    ) -> Result<()> {
         // Ignore errors in `extract_docstring`, maybe the module is using a macro or something to
         // generate the docstring.  This is only needed for modules, since we parse every all
         // of them unlike types which are only parsed if they have a UniFFI derive.
@@ -107,7 +113,11 @@ impl Module {
         }
         for item in syn_items {
             match item {
-                syn::Item::Mod(submod) => {
+                syn::Item::Mod(submod)
+                    if env
+                        .should_parse_module(&submod.attrs)
+                        .map_err(|e| Error::new_syn(self.source, e))? =>
+                {
                     let ident = submod.ident.clone();
                     match submod.content {
                         None => {
@@ -122,6 +132,7 @@ impl Module {
                                     self.crate_root.clone(),
                                     file.attrs,
                                     file.items,
+                                    env,
                                 )?));
                             }
                         }
@@ -132,12 +143,13 @@ impl Module {
                                 self.crate_root.clone(),
                                 submod.attrs,
                                 items,
+                                env,
                             )?));
                         }
                     }
                 }
                 item => {
-                    self.parse_non_module_item(item)
+                    self.parse_non_module_item(item, env)
                         .map_err(|e| Error::new_syn(self.source, e))?;
                 }
             }
@@ -145,38 +157,38 @@ impl Module {
         Ok(())
     }
 
-    fn parse_non_module_item(&mut self, item: syn::Item) -> syn::Result<()> {
+    fn parse_non_module_item(&mut self, item: syn::Item, env: &CompileEnv) -> syn::Result<()> {
         match item {
             syn::Item::Fn(func) => {
-                if let Some(attrs) = FunctionAttributes::parse(&func.attrs)? {
+                if let Some(attrs) = FunctionAttributes::parse(env, &func.attrs)? {
                     self.items.push(Item::Fn(Function::parse(attrs, func)?));
                 }
             }
             syn::Item::Struct(st) => {
-                if let Some(attrs) = RecordAttributes::parse(&st.attrs)? {
-                    let r = Record::parse(attrs, st)?;
+                if let Some(attrs) = RecordAttributes::parse(env, &st.attrs)? {
+                    let r = Record::parse(env, attrs, st)?;
                     self.items.push(Item::Record(r));
-                } else if let Some(attrs) = ObjectAttributes::parse(&st.attrs)? {
+                } else if let Some(attrs) = ObjectAttributes::parse(env, &st.attrs)? {
                     self.items
                         .push(Item::Object(Object::parse(attrs, st.ident)?));
                 }
             }
             syn::Item::Enum(en) => {
-                if let Some(attrs) = ObjectAttributes::parse(&en.attrs)? {
+                if let Some(attrs) = ObjectAttributes::parse(env, &en.attrs)? {
                     self.items
                         .push(Item::Object(Object::parse(attrs, en.ident)?));
-                } else if let Some(attrs) = EnumAttributes::parse(&en.attrs)? {
-                    self.items.push(Item::Enum(Enum::parse(attrs, en)?));
+                } else if let Some(attrs) = EnumAttributes::parse(env, &en.attrs)? {
+                    self.items.push(Item::Enum(Enum::parse(env, attrs, en)?));
                 }
             }
             syn::Item::Trait(tr) => {
-                if let Some(attrs) = TraitAttributes::parse(&tr.attrs)? {
-                    self.items.push(Item::Trait(Trait::parse(attrs, tr)?));
+                if let Some(attrs) = TraitAttributes::parse(env, &tr.attrs)? {
+                    self.items.push(Item::Trait(Trait::parse(env, attrs, tr)?));
                 }
             }
             syn::Item::Impl(imp) => {
-                if let Some(attrs) = ImplAttributes::parse(&imp.attrs)? {
-                    self.items.push(Item::Impl(Impl::parse(attrs, imp)?));
+                if let Some(attrs) = ImplAttributes::parse(env, &imp.attrs)? {
+                    self.items.push(Item::Impl(Impl::parse(env, attrs, imp)?));
                 }
             }
             syn::Item::Type(ty) => self.items.push(Item::Type(ty)),

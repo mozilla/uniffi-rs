@@ -2,12 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 
 use camino::Utf8Path;
+pub use target_lexicon::Triple;
 pub use uniffi_meta::MetadataGroup;
 
 mod attrs;
+mod compile_env;
 mod custom_types;
 mod enums;
 mod errors;
@@ -26,6 +28,7 @@ mod traits;
 mod types;
 mod use_;
 
+pub use compile_env::CompileEnv;
 pub use custom_types::CustomType;
 pub use enums::{Enum, Variant};
 pub use errors::{Error, ErrorContext, ErrorKind};
@@ -50,17 +53,35 @@ pub type MetadataGroupMap = HashMap<String, MetadataGroup>;
 /// All failable methods return `anyhow::Result`
 /// to integrate better with the rest of the UniFFI.
 pub struct Parser {
+    target: Triple,
     ir: Ir,
 }
 
 impl Parser {
-    pub fn new() -> anyhow::Result<Self> {
-        Ok(Self { ir: Ir::default() })
+    pub fn new(target: &str) -> anyhow::Result<Self> {
+        Ok(Self {
+            target: Triple::from_str(target)
+                .map_err(|_| anyhow::anyhow!("Invalid target triple"))?,
+            ir: Ir::default(),
+        })
     }
 
-    pub fn add_crate_root(&mut self, name: &str, path: &Utf8Path) -> anyhow::Result<&Module> {
+    pub fn new_for_host_target() -> Self {
+        Self {
+            target: Triple::host(),
+            ir: Ir::default(),
+        }
+    }
+
+    pub fn add_crate_root(
+        &mut self,
+        name: &str,
+        path: &Utf8Path,
+        features: Vec<String>,
+    ) -> anyhow::Result<&Module> {
+        let env = CompileEnv::new(self.target.clone(), features);
         self.ir
-            .add_crate_root(name, path)
+            .add_crate_root(name, path, &env)
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
