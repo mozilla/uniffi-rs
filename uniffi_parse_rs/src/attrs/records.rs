@@ -2,12 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use syn::Attribute;
+use syn::{Attribute, LitStr, Meta};
 
 use crate::attrs::{extract_docstring, find_uniffi_derive};
 
 #[derive(Clone, Default)]
 pub struct RecordAttributes {
+    pub name: Option<String>,
     pub docstring: Option<String>,
 }
 
@@ -23,7 +24,20 @@ impl RecordAttributes {
         }
 
         for a in attrs {
-            if a.meta.path().is_ident("doc") {
+            if a.meta.path().is_ident("uniffi") {
+                if let Meta::List(list) = &a.meta {
+                    list.parse_nested_meta(|meta| {
+                        if meta.path.is_ident("name") {
+                            meta.value()?;
+                            let name: LitStr = meta.input.parse()?;
+                            parsed.name = Some(name.value());
+                            Ok(())
+                        } else {
+                            Err(meta.error("Invalid attribute"))
+                        }
+                    })?;
+                }
+            } else if a.meta.path().is_ident("doc") {
                 extract_docstring(&mut parsed.docstring, &a.meta);
             }
         }
@@ -33,6 +47,7 @@ impl RecordAttributes {
 
 #[derive(Clone, Default)]
 pub struct FieldAttributes {
+    pub name: Option<String>,
     pub docstring: Option<String>,
 }
 
@@ -40,7 +55,20 @@ impl FieldAttributes {
     pub fn parse(attrs: &[Attribute]) -> syn::Result<Option<Self>> {
         let mut parsed = FieldAttributes::default();
         for a in attrs {
-            if a.meta.path().is_ident("doc") {
+            if a.meta.path().is_ident("uniffi") {
+                if let Meta::List(list) = &a.meta {
+                    list.parse_nested_meta(|meta| {
+                        if meta.path.is_ident("name") {
+                            meta.value()?;
+                            let name: LitStr = meta.input.parse()?;
+                            parsed.name = Some(name.value());
+                            Ok(())
+                        } else {
+                            Err(meta.error("Invalid attribute"))
+                        }
+                    })?;
+                }
+            } else if a.meta.path().is_ident("doc") {
                 extract_docstring(&mut parsed.docstring, &a.meta);
             }
         }

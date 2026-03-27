@@ -48,9 +48,10 @@ impl Impl {
         module_path: &RPath<'ir>,
     ) -> Result<Vec<uniffi_meta::Metadata>> {
         let self_ty = module_path.resolve_uniffi_meta_type(ir, cache, &self.self_type, None)?;
-        let self_name = match self_ty.name() {
-            Some(n) => n.to_string(),
-            None => {
+        let self_name = match (&self.attrs.name, self_ty.name()) {
+            (Some(n), _) => n.to_string(),
+            (None, Some(n)) => n.to_string(),
+            (None, None) => {
                 return Err(Error::new(
                     module_path.file_id(),
                     self.self_type.span(),
