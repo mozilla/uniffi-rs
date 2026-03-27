@@ -1,8 +1,5 @@
 pub struct Guid(u64);
 
-#[derive(uniffi::Record)]
-pub struct Record;
-
 pub struct RecordWrapper(Record);
 pub struct RecordWrapper2(Record);
 

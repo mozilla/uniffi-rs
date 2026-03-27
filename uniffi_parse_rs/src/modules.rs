@@ -5,7 +5,7 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use camino::{Utf8Path, Utf8PathBuf};
-use syn::Ident;
+use syn::{ext::IdentExt, Ident};
 use uniffi_meta::MetadataGroup;
 
 use crate::{
@@ -14,7 +14,7 @@ use crate::{
         RecordAttributes, TraitAttributes,
     },
     files::{read_to_string, FileId},
-    parse_use,
+    macros, parse_use,
     paths::LookupCache,
     Enum, Error,
     ErrorKind::*,
@@ -33,6 +33,8 @@ pub struct Module {
     pub docstring: Option<String>,
     pub items: Vec<Item>,
     pub id: usize,
+    pub udl_name: Option<String>,
+    pub metadata_from_udl: Vec<uniffi_meta::Metadata>,
 }
 
 impl Module {
@@ -79,6 +81,8 @@ impl Module {
             docstring: None,
             items: vec![],
             id: ID_GENERATOR.fetch_add(1, Ordering::Relaxed),
+            udl_name: None,
+            metadata_from_udl: vec![],
         })
     }
 
@@ -178,11 +182,26 @@ impl Module {
             syn::Item::Type(ty) => self.items.push(Item::Type(ty)),
             syn::Item::Use(use_) => self.items.extend(parse_use(use_)?),
             syn::Item::Macro(item_macro) => {
-                self.items.push(Item::Macro(item_macro));
+                if let Some(udl_name) = macros::parse_include_scaffolding(&item_macro.mac)? {
+                    self.udl_name = Some(udl_name.value());
+                } else {
+                    self.items.push(Item::Macro(item_macro));
+                }
             }
             _ => (),
         }
         Ok(())
+    }
+
+    pub fn lookup_udl_item(&self, ident: &Ident) -> Option<&Item> {
+        let ident = ident.unraw();
+        self.items.iter().find(|i| match i {
+            Item::Udl(ty) => match ty.name() {
+                Some(n) => ident == n,
+                None => false,
+            },
+            _ => false,
+        })
     }
 
     pub fn create_metadata<'ir>(
@@ -237,6 +256,7 @@ impl Module {
                 _ => (),
             }
         }
+        metadata.items.extend(self.metadata_from_udl.clone());
         Ok(())
     }
 }

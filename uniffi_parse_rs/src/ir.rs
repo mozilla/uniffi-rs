@@ -9,7 +9,9 @@ use quote::format_ident;
 use syn::{ext::IdentExt, Ident};
 use uniffi_meta::MetadataGroup;
 
-use crate::{paths::LookupCache, Item, MetadataGroupMap, Module, RPath, Result};
+use crate::{
+    paths::LookupCache, Error, ErrorKind::*, Item, MetadataGroupMap, Module, RPath, Result,
+};
 
 /// Intermediate representation of the interface
 ///
@@ -40,6 +42,58 @@ impl Ir {
             Some(Item::Module(m)) => Ok(m),
             _ => unreachable!(),
         }
+    }
+
+    pub fn add_udl_metadata(
+        &mut self,
+        crate_name: &str,
+        items: impl IntoIterator<Item = uniffi_meta::Metadata>,
+    ) -> Result<()> {
+        let module = match self.crate_roots_mut().find(|c| c.ident == crate_name) {
+            Some(m) => m,
+            None => return Err(Error::new_without_location(NotFound)),
+        };
+        for i in items {
+            match &i {
+                uniffi_meta::Metadata::Enum(e) => {
+                    module.items.push(Item::Udl(uniffi_meta::Type::Enum {
+                        module_path: e.module_path.clone(),
+                        name: e.name.clone(),
+                    }));
+                }
+                uniffi_meta::Metadata::Record(r) => {
+                    module.items.push(Item::Udl(uniffi_meta::Type::Record {
+                        module_path: r.module_path.clone(),
+                        name: r.name.clone(),
+                    }));
+                }
+                uniffi_meta::Metadata::Object(o) => {
+                    module.items.push(Item::Udl(uniffi_meta::Type::Object {
+                        module_path: o.module_path.clone(),
+                        name: o.name.clone(),
+                        imp: o.imp,
+                    }));
+                }
+                uniffi_meta::Metadata::CallbackInterface(c) => {
+                    module
+                        .items
+                        .push(Item::Udl(uniffi_meta::Type::CallbackInterface {
+                            module_path: c.module_path.clone(),
+                            name: c.name.clone(),
+                        }));
+                }
+                uniffi_meta::Metadata::CustomType(c) => {
+                    module.items.push(Item::Udl(uniffi_meta::Type::Custom {
+                        module_path: c.module_path.clone(),
+                        name: c.name.clone(),
+                        builtin: Box::new(c.builtin.clone()),
+                    }));
+                }
+                _ => (),
+            }
+            module.metadata_from_udl.push(i);
+        }
+        Ok(())
     }
 
     pub fn crate_root(&self, ident: &Ident) -> Option<&Module> {
@@ -123,5 +177,12 @@ mod test {
         );
         let expected = expect_test::expect_file!["./expect/full_interface.txt"];
         expected.assert_eq(&format!("{:#?}", metadata_group.items));
+    }
+
+    #[test]
+    fn test_udl_path() {
+        let ir = Ir::new_for_test(&["udl_include"]);
+        let module = ir.crate_roots().find(|m| m.ident == "udl_include").unwrap();
+        assert_eq!(module.udl_name, Some("test_udl_name".into()));
     }
 }
