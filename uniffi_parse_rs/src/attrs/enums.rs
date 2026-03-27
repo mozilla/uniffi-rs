@@ -5,7 +5,10 @@
 use syn::{Attribute, LitStr, Meta};
 use uniffi_meta::EnumShape;
 
-use crate::attrs::{extract_docstring, find_uniffi_derive};
+use crate::{
+    attrs::{extract_docstring, find_uniffi_derive},
+    ErrorKind::*,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EnumAttributes {
@@ -31,7 +34,7 @@ impl EnumAttributes {
 
         let mut shape = match (enum_derive, error_derive) {
             (None, None) => return Ok(None),
-            (Some(_), Some(span)) => return Err(syn::Error::new(span, "Multiple enum derives")),
+            (Some(_), Some(span)) => return Err(syn::Error::new(span, MultipleEnumDerives)),
             (Some(_), None) => EnumShape::Enum,
             (None, Some(_)) => EnumShape::Error { flat: false },
         };

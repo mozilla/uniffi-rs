@@ -7,6 +7,7 @@ use uniffi_meta::{EnumShape, LiteralMetadata};
 
 use crate::{
     attrs::{EnumAttributes, FieldAttributes, VariantAttributes},
+    ErrorKind::*,
     Field, Result,
 };
 
@@ -116,7 +117,7 @@ impl Variant {
                     uniffi_meta::Radix::Decimal,
                     discr_type.clone(),
                 ))),
-                _ => Err(syn::Error::new(discr.span(), "Invalid discriminant")),
+                _ => Err(syn::Error::new(discr.span(), InvalidDiscr)),
             },
             Expr::Unary(expr_unary) if matches!(expr_unary.op, syn::UnOp::Neg(_)) => {
                 match &*expr_unary.expr {
@@ -126,12 +127,12 @@ impl Variant {
                             uniffi_meta::Radix::Decimal,
                             discr_type.clone(),
                         ))),
-                        _ => Err(syn::Error::new(discr.span(), "Invalid discriminant")),
+                        _ => Err(syn::Error::new(discr.span(), InvalidDiscr)),
                     },
-                    _ => Err(syn::Error::new(discr.span(), "Invalid discriminant")),
+                    _ => Err(syn::Error::new(discr.span(), InvalidDiscr)),
                 }
             }
-            _ => Err(syn::Error::new(discr.span(), "Invalid discriminant")),
+            _ => Err(syn::Error::new(discr.span(), InvalidDiscr)),
         }
     }
 
