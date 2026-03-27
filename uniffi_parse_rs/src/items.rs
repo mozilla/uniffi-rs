@@ -31,6 +31,7 @@ pub enum Item {
     Macro(ItemMacro),
     /// Custom type macro expression
     CustomType(CustomType),
+    Udl(uniffi_meta::Type),
     /// Builtin items that we know about.
     Builtin(BuiltinItem),
 }
@@ -94,7 +95,10 @@ impl Item {
     pub fn name(&self) -> String {
         match self.ident() {
             Some(i) => i.to_string(),
-            None => "<unnamed>".to_string(),
+            None => match self {
+                Item::Udl(ty) => ty.name().unwrap_or("<unnamed>").to_string(),
+                _ => "<unnamed>".to_string(),
+            },
         }
     }
 
@@ -148,6 +152,7 @@ impl fmt::Debug for Item {
                 .debug_struct("CustomType")
                 .field("ident", &c.ident.to_string())
                 .finish(),
+            Self::Udl(ty) => f.debug_tuple("Udl").field(ty).finish(),
             Self::Macro(_) => f.debug_tuple("Macro").finish(),
         }
     }

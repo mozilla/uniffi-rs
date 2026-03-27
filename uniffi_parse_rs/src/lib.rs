@@ -63,6 +63,16 @@ impl Parser {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
+    pub fn add_udl_metadata(
+        &mut self,
+        crate_name: &str,
+        items: impl IntoIterator<Item = uniffi_meta::Metadata>,
+    ) -> anyhow::Result<()> {
+        self.ir
+            .add_udl_metadata(crate_name, items)
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
     pub fn into_uniffi_meta(mut self) -> anyhow::Result<MetadataGroupMap> {
         resolve_macros(&mut self.ir).map_err(|e| anyhow::anyhow!("{e}"))?;
         self.ir
