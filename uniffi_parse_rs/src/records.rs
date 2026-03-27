@@ -39,20 +39,21 @@ impl Record {
         })
     }
 
-    pub fn name(&self) -> String {
-        self.ident.unraw().to_string()
-    }
-
     pub fn record_metadata<'ir>(
         &self,
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
         path: &RPath<'ir>,
     ) -> Result<uniffi_meta::RecordMetadata> {
+        let item_name = self.ident.unraw().to_string();
+        let (name, orig_name) = match &self.attrs.name {
+            None => (item_name, None),
+            Some(name) => (name.clone(), Some(item_name)),
+        };
         Ok(uniffi_meta::RecordMetadata {
             module_path: path.path_string(),
-            name: self.name(),
-            orig_name: None, // TODO
+            name,
+            orig_name,
             remote: false,
             docstring: self.attrs.docstring.clone(),
             fields: self
@@ -73,25 +74,25 @@ impl Field {
         })
     }
 
-    pub fn name(&self) -> String {
-        match &self.ident {
-            Some(i) => i.unraw().to_string(),
-            None => "".to_string(),
-        }
-    }
-
     pub fn create_field_metadata<'ir>(
         &self,
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
         module_path: &RPath<'ir>,
     ) -> Result<uniffi_meta::FieldMetadata> {
-        let name = self.name();
         let ty = module_path.resolve_uniffi_meta_type(ir, cache, &self.ty, None)?;
+        let item_name = match &self.ident {
+            Some(i) => i.unraw().to_string(),
+            None => "".to_string(),
+        };
+        let (name, orig_name) = match &self.attrs.name {
+            None => (item_name, None),
+            Some(name) => (name.clone(), Some(item_name)),
+        };
 
         Ok(uniffi_meta::FieldMetadata {
             name,
-            orig_name: None, // TODO
+            orig_name,
             ty,
             default: None,
             docstring: self.attrs.docstring.clone(),

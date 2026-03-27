@@ -42,10 +42,6 @@ impl Function {
         })
     }
 
-    pub fn name(&self) -> String {
-        self.ident.unraw().to_string()
-    }
-
     pub fn fn_metadata<'ir>(
         &self,
         ir: &'ir Ir,
@@ -55,11 +51,16 @@ impl Function {
         let (return_type, throws) =
             self.return_ty
                 .return_type_and_throws(ir, cache, module_path)?;
+        let item_name = self.ident.unraw().to_string();
+        let (name, orig_name) = match &self.attrs.name {
+            None => (item_name, None),
+            Some(name) => (name.clone(), Some(item_name)),
+        };
 
         Ok(uniffi_meta::FnMetadata {
             module_path: module_path.path_string(),
-            name: self.name(),
-            orig_name: None, // TODO
+            name,
+            orig_name,
             is_async: self.is_async,
             docstring: self.attrs.docstring.clone(),
             checksum: None,

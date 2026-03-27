@@ -43,10 +43,6 @@ impl Enum {
         })
     }
 
-    pub fn name(&self) -> String {
-        self.ident.unraw().to_string()
-    }
-
     pub fn enum_metadata<'ir>(
         &self,
         ir: &'ir Ir,
@@ -54,10 +50,16 @@ impl Enum {
         path: &RPath<'ir>,
     ) -> Result<uniffi_meta::EnumMetadata> {
         let is_flat = matches!(self.attrs.shape, EnumShape::Error { flat: true });
+        let item_name = self.ident.unraw().to_string();
+        let (name, orig_name) = match &self.attrs.name {
+            None => (item_name, None),
+            Some(name) => (name.clone(), Some(item_name)),
+        };
+
         Ok(uniffi_meta::EnumMetadata {
             module_path: path.path_string(),
-            name: self.name(),
-            orig_name: None, // TODO
+            name,
+            orig_name,
             remote: false,
             non_exhaustive: self.attrs.non_exhaustive,
             discr_type: self.attrs.discr_type.clone(),
@@ -143,10 +145,6 @@ impl Variant {
         }
     }
 
-    pub fn name(&self) -> String {
-        self.ident.unraw().to_string()
-    }
-
     pub fn create_variant_metadata<'ir>(
         &self,
         ir: &'ir Ir,
@@ -154,9 +152,14 @@ impl Variant {
         path: &RPath<'ir>,
         flat: bool,
     ) -> Result<uniffi_meta::VariantMetadata> {
+        let item_name = self.ident.unraw().to_string();
+        let (name, orig_name) = match &self.attrs.name {
+            None => (item_name, None),
+            Some(name) => (name.clone(), Some(item_name)),
+        };
         Ok(uniffi_meta::VariantMetadata {
-            name: self.name(),
-            orig_name: None, // TODO
+            name,
+            orig_name,
             discr: self.discr.clone(),
             docstring: self.attrs.docstring.clone(),
             fields: if flat {

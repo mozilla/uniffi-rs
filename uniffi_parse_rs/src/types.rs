@@ -365,21 +365,29 @@ impl<'ir> RPath<'ir> {
                         generics.check_empty(self.file_id())?;
                         Ok(Type::Record {
                             module_path: path_to_type.parent_module()?.path_string(),
-                            name: rec.name(),
+                            name: rec
+                                .attrs
+                                .name
+                                .clone()
+                                .unwrap_or_else(|| rec.ident.to_string()),
                         })
                     }
                     Item::Enum(en) => {
                         generics.check_empty(self.file_id())?;
                         Ok(Type::Enum {
                             module_path: path_to_type.parent_module()?.path_string(),
-                            name: en.name(),
+                            name: en
+                                .attrs
+                                .name
+                                .clone()
+                                .unwrap_or_else(|| en.ident.to_string()),
                         })
                     }
                     Item::Object(o) => {
                         generics.check_empty(self.file_id())?;
                         Ok(Type::Object {
                             module_path: path_to_type.parent_module()?.path_string(),
-                            name: o.name(),
+                            name: o.attrs.name.clone().unwrap_or_else(|| o.ident.to_string()),
                         })
                     }
                     Item::Type(type_alias) => {
