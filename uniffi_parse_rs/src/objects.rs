@@ -60,7 +60,7 @@ impl Object {
             module_path: path.path_string(),
             name,
             orig_name,
-            remote: false,
+            remote: self.attrs.remote,
             docstring: self.attrs.docstring.clone(),
             imp: ObjectImpl::Struct,
         })
