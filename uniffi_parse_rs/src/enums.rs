@@ -8,6 +8,7 @@ use uniffi_meta::{EnumShape, LiteralMetadata};
 use crate::{
     attrs::{EnumAttributes, FieldAttributes, VariantAttributes},
     paths::LookupCache,
+    CompileEnv,
     ErrorKind::*,
     Field, Ir, RPath, Result,
 };
@@ -28,11 +29,11 @@ pub struct Variant {
 }
 
 impl Enum {
-    pub fn parse(attrs: EnumAttributes, e: syn::ItemEnum) -> syn::Result<Self> {
+    pub fn parse(env: &CompileEnv, attrs: EnumAttributes, e: syn::ItemEnum) -> syn::Result<Self> {
         let mut variants = vec![];
         for v in e.variants {
-            if let Some(variant_attrs) = VariantAttributes::parse(&v.attrs)? {
-                variants.push(Variant::parse(&attrs, variant_attrs, v)?);
+            if let Some(variant_attrs) = VariantAttributes::parse(env, &v.attrs)? {
+                variants.push(Variant::parse(env, &attrs, variant_attrs, v)?);
             }
         }
 
@@ -76,6 +77,7 @@ impl Enum {
 
 impl Variant {
     pub fn parse(
+        env: &CompileEnv,
         enum_attrs: &EnumAttributes,
         attrs: VariantAttributes,
         v: syn::Variant,
@@ -83,7 +85,7 @@ impl Variant {
         let discr = Self::parse_discriminant(&v, enum_attrs)?;
         let mut fields = vec![];
         for f in v.fields {
-            if let Some(field_attrs) = FieldAttributes::parse(&f.attrs)? {
+            if let Some(field_attrs) = FieldAttributes::parse(env, &f.attrs)? {
                 fields.push(Field::parse(field_attrs, f)?);
             }
         }

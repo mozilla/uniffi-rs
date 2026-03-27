@@ -8,7 +8,7 @@ use uniffi_meta::{CallbackInterfaceMetadata, ObjectMetadata};
 use crate::{
     attrs::{MethodAttributes, TraitAttributes, TraitExportType},
     paths::LookupCache,
-    Argument, Ir, RPath, Result, ReturnType, SelfArg,
+    Argument, CompileEnv, Ir, RPath, Result, ReturnType, SelfArg,
 };
 
 pub struct Trait {
@@ -28,11 +28,11 @@ pub struct TraitMethod {
 }
 
 impl Trait {
-    pub fn parse(attrs: TraitAttributes, tr: ItemTrait) -> syn::Result<Self> {
+    pub fn parse(env: &CompileEnv, attrs: TraitAttributes, tr: ItemTrait) -> syn::Result<Self> {
         let mut methods = vec![];
         for item in tr.items {
             if let TraitItem::Fn(f) = item {
-                if let Some(attrs) = MethodAttributes::parse(&f.attrs)? {
+                if let Some(attrs) = MethodAttributes::parse(env, &f.attrs)? {
                     methods.push(TraitMethod::parse(attrs, f)?);
                 }
             }
