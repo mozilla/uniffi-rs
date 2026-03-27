@@ -4,7 +4,12 @@
 
 use syn::{ext::IdentExt, spanned::Spanned, FnArg, Ident, ItemFn, Pat};
 
-use crate::{attrs::FunctionAttributes, paths::LookupCache, ErrorKind::*, Ir, RPath, Result};
+use crate::{
+    attrs::{DefaultMap, FunctionAttributes},
+    paths::LookupCache,
+    ErrorKind::*,
+    Ir, RPath, Result,
+};
 
 #[derive(Clone)]
 pub struct Function {
@@ -68,7 +73,7 @@ impl Function {
             inputs: self
                 .args
                 .iter()
-                .map(|arg| arg.create_fn_metadata(ir, cache, module_path))
+                .map(|arg| arg.create_fn_metadata(ir, cache, module_path, &self.attrs.defaults))
                 .collect::<Result<Vec<_>>>()?,
             return_type,
             throws,
@@ -98,8 +103,9 @@ impl Argument {
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
         path: &RPath<'ir>,
+        defaults: &DefaultMap,
     ) -> Result<uniffi_meta::FnParamMetadata> {
-        self.create_metadata(ir, cache, path, None)
+        self.create_metadata(ir, cache, path, defaults, None)
     }
 
     pub fn create_method_metadata<'ir>(
@@ -107,9 +113,10 @@ impl Argument {
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
         path: &RPath<'ir>,
+        defaults: &DefaultMap,
         self_type: &uniffi_meta::Type,
     ) -> Result<uniffi_meta::FnParamMetadata> {
-        self.create_metadata(ir, cache, path, Some(self_type))
+        self.create_metadata(ir, cache, path, defaults, Some(self_type))
     }
 
     pub fn create_metadata<'ir>(
@@ -117,15 +124,17 @@ impl Argument {
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
         path: &RPath<'ir>,
+        defaults: &DefaultMap,
         self_ty: Option<&uniffi_meta::Type>,
     ) -> Result<uniffi_meta::FnParamMetadata> {
         let arg = path.resolve_arg(ir, cache, &self.ty, self_ty)?;
+        let default = defaults.get_uniffi_meta(path.file_id(), &self.ident, &arg.ty)?;
 
         Ok(uniffi_meta::FnParamMetadata {
             name: self.ident.unraw().to_string(),
             ty: arg.ty,
             by_ref: arg.by_ref,
-            default: None,
+            default,
             optional: false,
         })
     }
