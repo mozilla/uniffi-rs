@@ -6,6 +6,8 @@ struct TestRecord { }
 #[derive(uniffi::Record)]
 struct r#break { }
 
+uniffi::use_remote_type!(paths3::RemoteRecord);
+
 mod mod1 {
     // Test a renaming via a use statement
     use mod2::Mod2Record as Mod2RecordRenamed;

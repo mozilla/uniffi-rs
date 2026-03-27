@@ -25,7 +25,7 @@ fn meta_matches_uniffi_export(meta: &Meta, export_name: &str) -> bool {
     path_matches_uniffi_ident(meta.path(), export_name)
 }
 
-fn find_uniffi_derive(meta: &Meta, derive_name: &str) -> Option<Span> {
+fn find_uniffi_derive(meta: &Meta, derive_name: &str) -> Option<DeriveInfo> {
     let mut result = None;
     if meta.path().is_ident("derive") {
         if let Meta::List(list) = meta {
@@ -33,13 +33,35 @@ fn find_uniffi_derive(meta: &Meta, derive_name: &str) -> Option<Span> {
             // understand
             let _ = list.parse_nested_meta(|meta| {
                 if path_matches_uniffi_ident(&meta.path, derive_name) {
-                    result = Some(meta.path.span());
+                    result = Some(DeriveInfo {
+                        remote: false,
+                        span: meta.path.span(),
+                    });
+                }
+                Ok(())
+            });
+        }
+    } else if path_matches_uniffi_ident(meta.path(), "remote") {
+        if let Meta::List(list) = meta {
+            // Ignore errors when parsing the meta, maybe it's a derive syntax that we don't
+            // understand
+            let _ = list.parse_nested_meta(|meta| {
+                if path_matches_uniffi_ident(&meta.path, derive_name) {
+                    result = Some(DeriveInfo {
+                        remote: true,
+                        span: meta.path.span(),
+                    });
                 }
                 Ok(())
             });
         }
     }
     result
+}
+
+pub struct DeriveInfo {
+    remote: bool,
+    span: Span,
 }
 
 fn path_matches_uniffi_ident(path: &Path, ident: &str) -> bool {

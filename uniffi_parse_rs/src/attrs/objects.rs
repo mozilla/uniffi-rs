@@ -10,18 +10,20 @@ use crate::attrs::{extract_docstring, find_uniffi_derive, meta_matches_uniffi_ex
 pub struct ObjectAttributes {
     pub name: Option<String>,
     pub docstring: Option<String>,
+    pub remote: bool,
 }
 
 impl ObjectAttributes {
     pub fn parse(attrs: &[Attribute]) -> syn::Result<Option<Self>> {
         let mut parsed = Self::default();
 
-        if !attrs
+        parsed.remote = match attrs
             .iter()
-            .any(|a| find_uniffi_derive(&a.meta, "Object").is_some())
+            .find_map(|a| find_uniffi_derive(&a.meta, "Object"))
         {
-            return Ok(None);
-        }
+            Some(d) => d.remote,
+            None => return Ok(None),
+        };
 
         for a in attrs {
             if a.meta.path().is_ident("uniffi") {
