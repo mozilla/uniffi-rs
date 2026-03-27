@@ -9,6 +9,8 @@ pub use uniffi_meta::MetadataGroup;
 
 mod attrs;
 mod enums;
+mod errors;
+mod files;
 mod functions;
 mod impls;
 mod ir;
@@ -20,6 +22,7 @@ mod records;
 mod traits;
 
 pub use enums::{Enum, Variant};
+pub use errors::{Error, ErrorContext, ErrorKind};
 pub use functions::{Argument, Function, ReturnType};
 pub use impls::Impl;
 pub use ir::Ir;
@@ -29,7 +32,7 @@ pub use objects::{Constructor, Method, Object};
 pub use records::{Field, Record};
 pub use traits::Trait;
 
-pub use anyhow::Result;
+pub type Result<T, E = Error> = std::result::Result<T, E>;
 pub type MetadataGroupMap = HashMap<String, MetadataGroup>;
 
 /// Top-level API for `uniffi_parse_rs`
