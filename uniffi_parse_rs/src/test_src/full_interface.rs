@@ -14,6 +14,8 @@ pub struct Record {
     c: Option<String>,
     d: HashMap<u32, String>,
     e: HashSet<String>,
+    #[uniffi(default = "test")]
+    f: CustomType
 }
 
 mod submod {
@@ -138,3 +140,12 @@ pub fn trait_fn(a: Arc<dyn TraitInterface>, b: &dyn TraitInterfaceWithForeign, c
 #[uniffi::export]
 pub fn bytes_fn(a: Vec<u8>, b: &[u8]) {
 }
+
+uniffi::custom_type!(
+    /// Custom type docstring
+    CustomType, String,
+    {
+        into: |custom| custom.into(),
+        try_from: |s| s.try_from(),
+    }
+);
