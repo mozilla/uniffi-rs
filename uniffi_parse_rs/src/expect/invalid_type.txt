@@ -1,0 +1,12 @@
+error: Unknown item
+  ┌─ src/test_src/invalid_type.rs:2:28
+  │
+2 │ pub fn function(a: u32, b: std::net::IpAddr) {
+  │                            ^^^^^^^^^^^^^^^^
+  │                            │
+  │                            Unknown item
+  │                            while resolving type
+  │
+  = Do you need to add a UniFFI derive or uniffi::export?
+  = Does the item come from a non-UniFFI crate?
+
