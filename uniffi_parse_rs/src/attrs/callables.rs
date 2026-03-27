@@ -8,6 +8,7 @@ use crate::attrs::{extract_docstring, meta_matches_uniffi_export};
 
 #[derive(Clone, Default)]
 pub struct FunctionAttributes {
+    pub name: Option<String>,
     pub docstring: Option<String>,
     pub async_runtime: Option<LitStr>,
 }
@@ -25,7 +26,12 @@ impl FunctionAttributes {
             if meta_matches_uniffi_export(&a.meta, "export") {
                 if let Meta::List(list) = &a.meta {
                     list.parse_nested_meta(|meta| {
-                        if meta.path.is_ident("async_runtime") {
+                        if meta.path.is_ident("name") {
+                            meta.value()?;
+                            let name: LitStr = meta.input.parse()?;
+                            parsed.name = Some(name.value());
+                            Ok(())
+                        } else if meta.path.is_ident("async_runtime") {
                             meta.value()?;
                             parsed.async_runtime = meta.input.parse()?;
                             Ok(())
@@ -44,6 +50,7 @@ impl FunctionAttributes {
 
 #[derive(Clone, Default)]
 pub struct MethodAttributes {
+    pub name: Option<String>,
     pub docstring: Option<String>,
     pub async_runtime: Option<LitStr>,
 }
@@ -55,7 +62,12 @@ impl MethodAttributes {
             if meta_matches_uniffi_export(&a.meta, "method") {
                 if let Meta::List(list) = &a.meta {
                     list.parse_nested_meta(|meta| {
-                        if meta.path.is_ident("async_runtime") {
+                        if meta.path.is_ident("name") {
+                            meta.value()?;
+                            let name: LitStr = meta.input.parse()?;
+                            parsed.name = Some(name.value());
+                            Ok(())
+                        } else if meta.path.is_ident("async_runtime") {
                             meta.value()?;
                             parsed.async_runtime = meta.input.parse()?;
                             Ok(())
@@ -76,6 +88,7 @@ impl MethodAttributes {
 
 #[derive(Clone, Default)]
 pub struct ConstructorAttributes {
+    pub name: Option<String>,
     pub docstring: Option<String>,
     pub async_runtime: Option<LitStr>,
 }
@@ -93,7 +106,12 @@ impl ConstructorAttributes {
             if meta_matches_uniffi_export(&a.meta, "constructor") {
                 if let Meta::List(list) = &a.meta {
                     list.parse_nested_meta(|meta| {
-                        if meta.path.is_ident("async_runtime") {
+                        if meta.path.is_ident("name") {
+                            meta.value()?;
+                            let name: LitStr = meta.input.parse()?;
+                            parsed.name = Some(name.value());
+                            Ok(())
+                        } else if meta.path.is_ident("async_runtime") {
                             meta.value()?;
                             parsed.async_runtime = meta.input.parse()?;
                             Ok(())
