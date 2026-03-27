@@ -40,7 +40,10 @@ impl Record {
     }
 
     pub fn name(&self) -> String {
-        self.ident.unraw().to_string()
+        self.attrs
+            .name
+            .clone()
+            .unwrap_or_else(|| self.ident.unraw().to_string())
     }
 
     pub fn record_metadata<'ir>(
@@ -73,10 +76,13 @@ impl Field {
     }
 
     pub fn name(&self) -> String {
-        match &self.ident {
-            Some(i) => i.unraw().to_string(),
-            None => "".to_string(),
-        }
+        self.attrs
+            .name
+            .clone()
+            .unwrap_or_else(|| match &self.ident {
+                Some(i) => i.unraw().to_string(),
+                None => "".to_string(),
+            })
     }
 
     pub fn create_field_metadata<'ir>(

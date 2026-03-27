@@ -2,6 +2,55 @@
     Func(
         FnMetadata {
             module_path: "full_interface",
+            name: "func_renamed",
+            is_async: false,
+            inputs: [
+                FnParamMetadata {
+                    name: "a",
+                    ty: UInt8,
+                    by_ref: false,
+                    optional: false,
+                    default: None,
+                },
+                FnParamMetadata {
+                    name: "r",
+                    ty: Record {
+                        module_path: "full_interface",
+                        name: "RecordRenamed",
+                    },
+                    by_ref: false,
+                    optional: false,
+                    default: None,
+                },
+                FnParamMetadata {
+                    name: "e",
+                    ty: Enum {
+                        module_path: "full_interface::submod",
+                        name: "EnumRenamed",
+                    },
+                    by_ref: true,
+                    optional: false,
+                    default: None,
+                },
+                FnParamMetadata {
+                    name: "s",
+                    ty: String,
+                    by_ref: true,
+                    optional: false,
+                    default: None,
+                },
+            ],
+            return_type: None,
+            throws: None,
+            checksum: None,
+            docstring: Some(
+                "Function docstring",
+            ),
+        },
+    ),
+    Func(
+        FnMetadata {
+            module_path: "full_interface",
             name: "trait_fn",
             is_async: false,
             inputs: [
@@ -47,7 +96,7 @@
     Object(
         ObjectMetadata {
             module_path: "full_interface",
-            name: "Object",
+            name: "ObjectRenamed",
             remote: false,
             imp: Struct,
             docstring: Some(
@@ -89,7 +138,7 @@
     Record(
         RecordMetadata {
             module_path: "full_interface",
-            name: "Record",
+            name: "RecordRenamed",
             remote: false,
             fields: [
                 FieldMetadata {
@@ -99,7 +148,7 @@
                     docstring: None,
                 },
                 FieldMetadata {
-                    name: "b",
+                    name: "b_renamed",
                     ty: UInt32,
                     default: None,
                     docstring: None,
@@ -240,7 +289,7 @@
     Enum(
         EnumMetadata {
             module_path: "full_interface::submod",
-            name: "Enum",
+            name: "EnumRenamed",
             shape: Enum,
             remote: false,
             variants: [
@@ -252,7 +301,7 @@
                             name: "r",
                             ty: Record {
                                 module_path: "full_interface",
-                                name: "Record",
+                                name: "RecordRenamed",
                             },
                             default: None,
                             docstring: None,
@@ -263,7 +312,7 @@
                     ),
                 },
                 VariantMetadata {
-                    name: "Two",
+                    name: "TwoRenamed",
                     discr: None,
                     fields: [
                         FieldMetadata {
@@ -291,6 +340,132 @@
             ),
         },
     ),
+    Constructor(
+        ConstructorMetadata {
+            module_path: "full_interface",
+            self_name: "ObjectRenamed",
+            name: "failible_constructor",
+            is_async: false,
+            inputs: [
+                FnParamMetadata {
+                    name: "a",
+                    ty: String,
+                    by_ref: false,
+                    optional: false,
+                    default: None,
+                },
+            ],
+            throws: Some(
+                Enum {
+                    module_path: "full_interface",
+                    name: "Error",
+                },
+            ),
+            checksum: None,
+            docstring: None,
+        },
+    ),
+    Constructor(
+        ConstructorMetadata {
+            module_path: "full_interface",
+            self_name: "ObjectRenamed",
+            name: "new",
+            is_async: false,
+            inputs: [],
+            throws: None,
+            checksum: None,
+            docstring: Some(
+                "Constructor docstring",
+            ),
+        },
+    ),
+    Method(
+        MethodMetadata {
+            module_path: "full_interface",
+            self_name: "ObjectRenamed",
+            name: "meth1",
+            is_async: false,
+            inputs: [],
+            return_type: Some(
+                String,
+            ),
+            throws: Some(
+                Enum {
+                    module_path: "full_interface",
+                    name: "Error",
+                },
+            ),
+            takes_self_by_arc: false,
+            checksum: None,
+            docstring: Some(
+                "Method docstring",
+            ),
+        },
+    ),
+    Method(
+        MethodMetadata {
+            module_path: "full_interface",
+            self_name: "ObjectRenamed",
+            name: "meth2_renamed",
+            is_async: false,
+            inputs: [
+                FnParamMetadata {
+                    name: "a",
+                    ty: Object {
+                        module_path: "full_interface",
+                        name: "ObjectRenamed",
+                        imp: Struct,
+                    },
+                    by_ref: false,
+                    optional: false,
+                    default: None,
+                },
+            ],
+            return_type: Some(
+                Object {
+                    module_path: "full_interface",
+                    name: "ObjectRenamed",
+                    imp: Struct,
+                },
+            ),
+            throws: Some(
+                Enum {
+                    module_path: "full_interface",
+                    name: "Error",
+                },
+            ),
+            takes_self_by_arc: false,
+            checksum: None,
+            docstring: None,
+        },
+    ),
+    Method(
+        MethodMetadata {
+            module_path: "full_interface",
+            self_name: "ObjectRenamed",
+            name: "meth3",
+            is_async: false,
+            inputs: [
+                FnParamMetadata {
+                    name: "s",
+                    ty: String,
+                    by_ref: false,
+                    optional: false,
+                    default: None,
+                },
+            ],
+            return_type: None,
+            throws: Some(
+                Enum {
+                    module_path: "full_interface",
+                    name: "Error",
+                },
+            ),
+            takes_self_by_arc: true,
+            checksum: None,
+            docstring: None,
+        },
+    ),
     TraitMethod(
         TraitMethodMetadata {
             module_path: "full_interface",
@@ -310,7 +485,7 @@
             return_type: Some(
                 Object {
                     module_path: "full_interface",
-                    name: "Object",
+                    name: "ObjectRenamed",
                     imp: Struct,
                 },
             ),

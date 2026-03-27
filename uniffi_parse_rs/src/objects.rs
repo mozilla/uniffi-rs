@@ -50,7 +50,10 @@ impl Object {
     }
 
     pub fn name(&self) -> String {
-        self.ident.unraw().to_string()
+        self.attrs
+            .name
+            .clone()
+            .unwrap_or_else(|| self.ident.unraw().to_string())
     }
 
     pub fn obj_metadata<'ir>(&self, path: &RPath<'ir>) -> Result<uniffi_meta::ObjectMetadata> {
@@ -81,7 +84,10 @@ impl Constructor {
     }
 
     pub fn name(&self) -> String {
-        self.ident.unraw().to_string()
+        self.attrs
+            .name
+            .clone()
+            .unwrap_or_else(|| self.ident.unraw().to_string())
     }
 
     pub fn to_constructor_metadata<'ir>(
@@ -140,7 +146,10 @@ impl Method {
     }
 
     pub fn name(&self) -> String {
-        self.ident.unraw().to_string()
+        self.attrs
+            .name
+            .clone()
+            .unwrap_or_else(|| self.ident.unraw().to_string())
     }
 
     pub fn to_method_metadata<'ir>(

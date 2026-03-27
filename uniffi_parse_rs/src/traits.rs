@@ -46,7 +46,10 @@ impl Trait {
     }
 
     pub fn name(&self) -> String {
-        self.ident.unraw().to_string()
+        self.attrs
+            .name
+            .clone()
+            .unwrap_or_else(|| self.ident.unraw().to_string())
     }
 
     pub fn self_ty(&self, module_path: &RPath<'_>) -> uniffi_meta::Type {
@@ -155,7 +158,10 @@ impl TraitMethod {
     }
 
     pub fn name(&self) -> String {
-        self.ident.unraw().to_string()
+        self.attrs
+            .name
+            .clone()
+            .unwrap_or_else(|| self.ident.unraw().to_string())
     }
 
     pub fn to_trait_method_metadata<'ir>(

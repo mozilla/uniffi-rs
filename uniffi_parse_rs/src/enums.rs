@@ -44,7 +44,10 @@ impl Enum {
     }
 
     pub fn name(&self) -> String {
-        self.ident.unraw().to_string()
+        self.attrs
+            .name
+            .clone()
+            .unwrap_or_else(|| self.ident.unraw().to_string())
     }
 
     pub fn enum_metadata<'ir>(
@@ -143,7 +146,10 @@ impl Variant {
     }
 
     pub fn name(&self) -> String {
-        self.ident.unraw().to_string()
+        self.attrs
+            .name
+            .clone()
+            .unwrap_or_else(|| self.ident.unraw().to_string())
     }
 
     pub fn create_variant_metadata<'ir>(

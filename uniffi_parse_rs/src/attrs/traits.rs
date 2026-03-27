@@ -2,12 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use syn::{Attribute, Meta};
+use syn::{Attribute, LitStr, Meta};
 
 use crate::attrs::{extract_docstring, meta_matches_uniffi_export};
 
 #[derive(Default, Debug, PartialEq, Eq)]
 pub struct TraitAttributes {
+    pub name: Option<String>,
     pub export_ty: TraitExportType,
     pub docstring: Option<String>,
 }
@@ -44,7 +45,12 @@ impl TraitAttributes {
             if meta_matches_uniffi_export(&a.meta, "export") {
                 if let Meta::List(list) = &a.meta {
                     list.parse_nested_meta(|meta| {
-                        if meta.path.is_ident("with_foreign") {
+                        if meta.path.is_ident("name") {
+                            meta.value()?;
+                            let name: LitStr = meta.input.parse()?;
+                            parsed.name = Some(name.value());
+                            Ok(())
+                        } else if meta.path.is_ident("with_foreign") {
                             parsed.export_ty = TraitExportType::TraitInterfaceWithForeign;
                             Ok(())
                         } else if meta.path.is_ident("callback_interface") {

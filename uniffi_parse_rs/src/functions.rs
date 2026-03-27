@@ -43,7 +43,10 @@ impl Function {
     }
 
     pub fn name(&self) -> String {
-        self.ident.unraw().to_string()
+        self.attrs
+            .name
+            .clone()
+            .unwrap_or_else(|| self.ident.unraw().to_string())
     }
 
     pub fn fn_metadata<'ir>(

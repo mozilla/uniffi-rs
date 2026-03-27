@@ -13,6 +13,7 @@ use crate::{
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EnumAttributes {
     pub shape: EnumShape,
+    pub name: Option<String>,
     pub docstring: Option<String>,
     pub non_exhaustive: bool,
     pub discr_type: Option<uniffi_meta::Type>,
@@ -96,6 +97,7 @@ impl EnumAttributes {
 
         Ok(Some(EnumAttributes {
             shape,
+            name,
             docstring,
             non_exhaustive,
             discr_type,
@@ -105,6 +107,7 @@ impl EnumAttributes {
 
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
 pub struct VariantAttributes {
+    pub name: Option<String>,
     pub docstring: Option<String>,
 }
 
@@ -112,7 +115,20 @@ impl VariantAttributes {
     pub fn parse(attrs: &[Attribute]) -> syn::Result<Option<Self>> {
         let mut parsed = Self::default();
         for a in attrs {
-            if a.meta.path().is_ident("doc") {
+            if a.meta.path().is_ident("uniffi") {
+                if let Meta::List(list) = &a.meta {
+                    list.parse_nested_meta(|meta| {
+                        if meta.path.is_ident("name") {
+                            meta.value()?;
+                            let name: LitStr = meta.input.parse()?;
+                            parsed.name = Some(name.value());
+                            Ok(())
+                        } else {
+                            Err(meta.error("Invalid attribute"))
+                        }
+                    })?;
+                }
+            } else if a.meta.path().is_ident("doc") {
                 extract_docstring(&mut parsed.docstring, &a.meta);
             }
         }
