@@ -12,6 +12,7 @@ use syn::{
     ext::IdentExt, spanned::Spanned, AngleBracketedGenericArguments, GenericArgument, GenericParam,
     Generics, Ident, Path, PathArguments, TypeParamBound,
 };
+use uniffi_meta::{ObjectImpl, TraitKind};
 
 use crate::{
     attrs::TraitExportType, files::FileId, paths::LookupCache, BuiltinItem, Error, ErrorContext,
@@ -96,6 +97,7 @@ enum Type {
         ty: Box<Type>,
     },
     SelfTy,
+    Udl(uniffi_meta::Type),
 }
 
 impl Type {
@@ -166,6 +168,7 @@ impl Type {
                         Err(Error::new(source, span, InvalidType))
                     }
                 }
+                Type::Udl(ty) => Ok(ty),
                 _ => Err(Error::new(source, span, InvalidType)),
             },
             Type::Box(inner) => match *inner {
@@ -174,6 +177,9 @@ impl Type {
                     name,
                     export_ty: TraitExportType::CallbackInterface,
                 } => Ok(uniffi_meta::Type::CallbackInterface { module_path, name }),
+                Type::Udl(uniffi_meta::Type::CallbackInterface { module_path, name }) => {
+                    Ok(uniffi_meta::Type::CallbackInterface { module_path, name })
+                }
                 ty => Ok(uniffi_meta::Type::Box {
                     inner_type: Box::new(ty.try_into_uniffi_meta(source, span, self_ty)?),
                 }),
@@ -194,6 +200,7 @@ impl Type {
                     Err(Error::new(source, span, InvalidType))
                 }
             }
+            Type::Udl(ty) => Ok(ty),
             _ => Err(Error::new(source, span, InvalidType)),
         }
     }
@@ -483,6 +490,7 @@ impl<'ir> RPath<'ir> {
                             builtin: Box::new(builtin),
                         })
                     }
+                    Item::Udl(ty) => Ok(Type::Udl(ty.clone())),
                     _ => Err(Error::new(self.file_id(), ty.span(), InvalidType)),
                 }
             }
@@ -505,6 +513,40 @@ impl<'ir> RPath<'ir> {
                         name: tr.ident.unraw().to_string(),
                         export_ty: tr.attrs.export_ty,
                     }),
+                    Item::Udl(uniffi_meta::Type::Object {
+                        module_path,
+                        name,
+                        imp: ObjectImpl::Trait(TraitKind::RustOnly),
+                    }) => Ok(Type::Trait {
+                        module_path: module_path.clone(),
+                        name: name.clone(),
+                        export_ty: TraitExportType::TraitInterface(TraitKind::RustOnly),
+                    }),
+                    Item::Udl(uniffi_meta::Type::Object {
+                        module_path,
+                        name,
+                        imp: ObjectImpl::Trait(TraitKind::ForeignOnly),
+                    }) => Ok(Type::Trait {
+                        module_path: module_path.clone(),
+                        name: name.clone(),
+                        export_ty: TraitExportType::TraitInterface(TraitKind::ForeignOnly),
+                    }),
+                    Item::Udl(uniffi_meta::Type::Object {
+                        module_path,
+                        name,
+                        imp: ObjectImpl::Trait(TraitKind::Both),
+                    }) => Ok(Type::Trait {
+                        module_path: module_path.clone(),
+                        name: name.clone(),
+                        export_ty: TraitExportType::TraitInterface(TraitKind::Both),
+                    }),
+                    Item::Udl(uniffi_meta::Type::CallbackInterface { module_path, name }) => {
+                        Ok(Type::Trait {
+                            module_path: module_path.clone(),
+                            name: name.clone(),
+                            export_ty: TraitExportType::CallbackInterface,
+                        })
+                    }
                     _ => Err(Error::new(self.file_id(), ty.span(), ExpectedTrait)),
                 }
             }
@@ -726,6 +768,19 @@ pub mod tests {
         let module = path_for_module(ir, module_path);
         module
             .resolve_uniffi_meta_type(ir, cache, &syn::parse_str(ty).unwrap(), self_ty)
+            .map_err(|e| e.kind)
+    }
+
+    fn run_resolve_return_type<'ir>(
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &str,
+        ty: &str,
+        self_ty: Option<&uniffi_meta::Type>,
+    ) -> Result<ReturnType, ErrorKind> {
+        let module = path_for_module(ir, module_path);
+        module
+            .resolve_return_type(ir, cache, &syn::parse_str(ty).unwrap(), self_ty)
             .map_err(|e| e.kind)
     }
 
@@ -1332,6 +1387,161 @@ pub mod tests {
     }
 
     #[test]
+    fn test_udl_types() {
+        let mut ir = Ir::new_for_test(&["udl_types", "udl_types_crate2"]);
+        let mut cache = LookupCache::default();
+        ir.add_udl_metadata(
+            "udl_types",
+            vec![
+                uniffi_meta::RecordMetadata {
+                    module_path: "udl_types".into(),
+                    name: "UdlRecord".into(),
+                    orig_name: None,
+                    remote: false,
+                    fields: vec![],
+                    docstring: None,
+                }
+                .into(),
+                uniffi_meta::ObjectMetadata {
+                    module_path: "udl_types".into(),
+                    name: "UdlObject".into(),
+                    orig_name: None,
+                    remote: false,
+                    docstring: None,
+                    imp: uniffi_meta::ObjectImpl::Struct,
+                }
+                .into(),
+                uniffi_meta::ObjectMetadata {
+                    module_path: "udl_types".into(),
+                    name: "UdlTrait".into(),
+                    orig_name: None,
+                    remote: false,
+                    docstring: None,
+                    imp: uniffi_meta::ObjectImpl::Trait(TraitKind::RustOnly),
+                }
+                .into(),
+                uniffi_meta::CallbackInterfaceMetadata {
+                    module_path: "udl_types".into(),
+                    name: "UdlCallback".into(),
+                    docstring: None,
+                }
+                .into(),
+            ],
+        )
+        .unwrap();
+
+        assert_eq!(
+            run_resolve_uniffi_meta_type(&ir, &mut cache, "udl_types::mod1", "UdlRecord", None),
+            Ok(uniffi_meta::Type::Record {
+                module_path: "udl_types".into(),
+                name: "UdlRecord".into(),
+            })
+        );
+        assert_eq!(
+            run_resolve_uniffi_meta_type(
+                &ir,
+                &mut cache,
+                "udl_types::mod1",
+                "std::sync::Arc<dyn crate::UdlTrait>",
+                None,
+            ),
+            Ok(uniffi_meta::Type::Object {
+                module_path: "udl_types".into(),
+                name: "UdlTrait".into(),
+                imp: uniffi_meta::ObjectImpl::Trait(TraitKind::RustOnly),
+            })
+        );
+        assert_eq!(
+            run_resolve_uniffi_meta_type(
+                &ir,
+                &mut cache,
+                "udl_types",
+                "Box<dyn UdlCallback>",
+                None,
+            ),
+            Ok(uniffi_meta::Type::CallbackInterface {
+                module_path: "udl_types".into(),
+                name: "UdlCallback".into(),
+            })
+        );
+        assert_eq!(
+            run_resolve_uniffi_meta_type(&ir, &mut cache, "udl_types_crate2", "UdlRecord", None),
+            Ok(uniffi_meta::Type::Record {
+                module_path: "udl_types".into(),
+                name: "UdlRecord".into(),
+            })
+        );
+        assert_eq!(
+            run_resolve_uniffi_meta_type(&ir, &mut cache, "udl_types", "UdlObject", None),
+            Ok(uniffi_meta::Type::Object {
+                module_path: "udl_types".into(),
+                name: "UdlObject".into(),
+                imp: ObjectImpl::Struct,
+            })
+        );
+        assert_eq!(
+            run_resolve_return_type(&ir, &mut cache, "udl_types", "Result<(), UdlRecord>", None),
+            Ok(ReturnType {
+                ok: None,
+                err: Some(uniffi_meta::Type::Record {
+                    module_path: "udl_types".into(),
+                    name: "UdlRecord".into(),
+                }),
+            })
+        );
+        assert_eq!(
+            run_resolve_return_type(
+                &ir,
+                &mut cache,
+                "udl_types",
+                "Result<(), std::sync::Arc<UdlObject>>",
+                None
+            ),
+            Ok(ReturnType {
+                ok: None,
+                err: Some(uniffi_meta::Type::Object {
+                    module_path: "udl_types".into(),
+                    name: "UdlObject".into(),
+                    imp: ObjectImpl::Struct,
+                }),
+            })
+        );
+        assert_eq!(
+            run_resolve_return_type(
+                &ir,
+                &mut cache,
+                "udl_types",
+                "Result<(), std::sync::Arc<UdlTrait>>",
+                None
+            ),
+            Ok(ReturnType {
+                ok: None,
+                err: Some(uniffi_meta::Type::Object {
+                    module_path: "udl_types".into(),
+                    name: "UdlTrait".into(),
+                    imp: ObjectImpl::Trait(TraitKind::RustOnly),
+                }),
+            })
+        );
+        assert_eq!(
+            run_resolve_return_type(
+                &ir,
+                &mut cache,
+                "udl_types",
+                "Result<(), Box<UdlCallback>>",
+                None
+            ),
+            Ok(ReturnType {
+                ok: None,
+                err: Some(uniffi_meta::Type::CallbackInterface {
+                    module_path: "udl_types".into(),
+                    name: "UdlCallback".into(),
+                }),
+            })
+        );
+    }
+
+    #[test]
     fn test_result_uniffi_meta() {
         let ir = Ir::new_for_test(&["types"]);
         let mut cache = LookupCache::default();
@@ -1447,8 +1657,21 @@ pub mod tests {
 
     #[test]
     fn test_raw_ident() {
-        let ir = Ir::new_for_test(&["raw_idents"]);
+        let mut ir = Ir::new_for_test(&["raw_idents"]);
         let mut cache = LookupCache::default();
+        ir.add_udl_metadata(
+            "raw_idents",
+            vec![uniffi_meta::RecordMetadata {
+                module_path: "raw_idents".into(),
+                name: "Record".into(),
+                orig_name: None,
+                remote: false,
+                fields: vec![],
+                docstring: None,
+            }
+            .into()],
+        )
+        .unwrap();
 
         assert_eq!(
             run_resolve_uniffi_meta_type(&ir, &mut cache, "raw_idents", "RecordWrapper", None),

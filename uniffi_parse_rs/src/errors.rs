@@ -63,6 +63,8 @@ pub enum ErrorKind {
     CycleDetected,
     #[error("Unknown item")]
     NotFound,
+    #[error("Failed to add UDL metadata {0}")]
+    AddUdlMetadataError(String),
     #[error("`super` invalid")]
     SuperInvalid,
     #[error("`crate` invalid")]
