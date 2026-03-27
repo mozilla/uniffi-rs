@@ -9,7 +9,7 @@ use syn::{
     braced,
     parse::{Parse, ParseStream},
     token::Brace,
-    Attribute, Ident, ItemMacro, Token,
+    Attribute, Ident, ItemMacro, LitStr, Macro, Token,
 };
 
 use crate::{
@@ -140,5 +140,18 @@ impl Parse for CustomTypeArgs {
             ident,
             builtin,
         })
+    }
+}
+
+/// Try to parse the `include_scaffolding!` macro.
+///
+/// This is done earlier than all other macros because we need to know the UDL name early so that
+/// we can load items from there.
+///
+/// This means the detection is a bit worse and won't handle renames, but that seems okay for now.
+pub fn parse_include_scaffolding(mac: &Macro) -> syn::Result<Option<LitStr>> {
+    match mac.path.segments.last() {
+        Some(s) if s.ident == "include_scaffolding" => Ok(Some(mac.parse_body()?)),
+        _ => Ok(None),
     }
 }
