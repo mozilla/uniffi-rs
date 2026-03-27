@@ -4,10 +4,11 @@
 
 use syn::{Attribute, LitStr, Meta};
 
-use crate::attrs::{extract_docstring, meta_matches_uniffi_export};
+use crate::attrs::{extract_docstring, meta_matches_uniffi_export, DefaultMap};
 
 #[derive(Clone, Default)]
 pub struct FunctionAttributes {
+    pub defaults: DefaultMap,
     pub name: Option<String>,
     pub docstring: Option<String>,
     pub async_runtime: Option<LitStr>,
@@ -26,7 +27,9 @@ impl FunctionAttributes {
             if meta_matches_uniffi_export(&a.meta, "export") {
                 if let Meta::List(list) = &a.meta {
                     list.parse_nested_meta(|meta| {
-                        if meta.path.is_ident("name") {
+                        if meta.path.is_ident("default") {
+                            parsed.defaults.parse(meta)
+                        } else if meta.path.is_ident("name") {
                             meta.value()?;
                             let name: LitStr = meta.input.parse()?;
                             parsed.name = Some(name.value());
@@ -50,6 +53,7 @@ impl FunctionAttributes {
 
 #[derive(Clone, Default)]
 pub struct MethodAttributes {
+    pub defaults: DefaultMap,
     pub name: Option<String>,
     pub docstring: Option<String>,
     pub async_runtime: Option<LitStr>,
@@ -62,7 +66,9 @@ impl MethodAttributes {
             if meta_matches_uniffi_export(&a.meta, "method") {
                 if let Meta::List(list) = &a.meta {
                     list.parse_nested_meta(|meta| {
-                        if meta.path.is_ident("name") {
+                        if meta.path.is_ident("default") {
+                            parsed.defaults.parse(meta)
+                        } else if meta.path.is_ident("name") {
                             meta.value()?;
                             let name: LitStr = meta.input.parse()?;
                             parsed.name = Some(name.value());
@@ -88,6 +94,7 @@ impl MethodAttributes {
 
 #[derive(Clone, Default)]
 pub struct ConstructorAttributes {
+    pub defaults: DefaultMap,
     pub name: Option<String>,
     pub docstring: Option<String>,
     pub async_runtime: Option<LitStr>,
@@ -106,7 +113,9 @@ impl ConstructorAttributes {
             if meta_matches_uniffi_export(&a.meta, "constructor") {
                 if let Meta::List(list) = &a.meta {
                     list.parse_nested_meta(|meta| {
-                        if meta.path.is_ident("name") {
+                        if meta.path.is_ident("default") {
+                            parsed.defaults.parse(meta)
+                        } else if meta.path.is_ident("name") {
                             meta.value()?;
                             let name: LitStr = meta.input.parse()?;
                             parsed.name = Some(name.value());

@@ -89,12 +89,18 @@ impl Field {
             None => (item_name, None),
             Some(name) => (name.clone(), Some(item_name)),
         };
+        let default = self
+            .attrs
+            .default
+            .as_ref()
+            .map(|d| d.create_default_value_metadata(module_path.file_id(), &ty))
+            .transpose()?;
 
         Ok(uniffi_meta::FieldMetadata {
             name,
             orig_name,
             ty,
-            default: None,
+            default,
             docstring: self.attrs.docstring.clone(),
         })
     }

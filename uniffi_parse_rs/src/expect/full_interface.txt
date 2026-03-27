@@ -13,7 +13,15 @@
                     ty: UInt8,
                     by_ref: false,
                     optional: false,
-                    default: None,
+                    default: Some(
+                        Literal(
+                            UInt(
+                                0,
+                                Decimal,
+                                UInt8,
+                            ),
+                        ),
+                    ),
                 },
                 FnParamMetadata {
                     name: "r",
@@ -175,7 +183,9 @@
                     ty: Optional {
                         inner_type: String,
                     },
-                    default: None,
+                    default: Some(
+                        Default,
+                    ),
                     docstring: None,
                 },
             ],
@@ -383,6 +393,40 @@
         ConstructorMetadata {
             module_path: "full_interface",
             self_name: "ObjectRenamed",
+            name: "constructor_with_default_renamed",
+            orig_name: Some(
+                "constructor_with_default",
+            ),
+            is_async: false,
+            inputs: [
+                FnParamMetadata {
+                    name: "a",
+                    ty: String,
+                    by_ref: false,
+                    optional: false,
+                    default: Some(
+                        Literal(
+                            String(
+                                "test",
+                            ),
+                        ),
+                    ),
+                },
+            ],
+            throws: Some(
+                Enum {
+                    module_path: "full_interface",
+                    name: "Error",
+                },
+            ),
+            checksum: None,
+            docstring: None,
+        },
+    ),
+    Constructor(
+        ConstructorMetadata {
+            module_path: "full_interface",
+            self_name: "ObjectRenamed",
             name: "failible_constructor",
             orig_name: None,
             is_async: false,
@@ -497,7 +541,9 @@
                     ty: String,
                     by_ref: false,
                     optional: false,
-                    default: None,
+                    default: Some(
+                        Default,
+                    ),
                 },
             ],
             return_type: None,
