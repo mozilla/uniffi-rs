@@ -4,7 +4,7 @@
 
 use syn::{ext::IdentExt, spanned::Spanned, FnArg, Ident, ItemFn, Pat};
 
-use crate::{attrs::FunctionAttributes, ErrorKind::*, Result};
+use crate::{attrs::FunctionAttributes, paths::LookupCache, ErrorKind::*, Ir, RPath, Result};
 
 #[derive(Clone)]
 pub struct Function {
@@ -46,9 +46,18 @@ impl Function {
         self.ident.unraw().to_string()
     }
 
-    pub fn fn_metadata<'ir>(&self) -> Result<uniffi_meta::FnMetadata> {
+    pub fn fn_metadata<'ir>(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+    ) -> Result<uniffi_meta::FnMetadata> {
+        let (return_type, throws) =
+            self.return_ty
+                .return_type_and_throws(ir, cache, module_path)?;
+
         Ok(uniffi_meta::FnMetadata {
-            module_path: "".into(), // TODO
+            module_path: module_path.path_string(),
             name: self.name(),
             is_async: self.is_async,
             docstring: self.attrs.docstring.clone(),
@@ -56,10 +65,10 @@ impl Function {
             inputs: self
                 .args
                 .iter()
-                .map(|arg| arg.create_metadata())
+                .map(|arg| arg.create_fn_metadata(ir, cache, module_path))
                 .collect::<Result<Vec<_>>>()?,
-            return_type: None, // TODO
-            throws: None,      // TODO
+            return_type,
+            throws,
         })
     }
 }
@@ -81,11 +90,38 @@ impl Argument {
         })
     }
 
-    pub fn create_metadata<'ir>(&self) -> Result<uniffi_meta::FnParamMetadata> {
+    pub fn create_fn_metadata<'ir>(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        path: &RPath<'ir>,
+    ) -> Result<uniffi_meta::FnParamMetadata> {
+        self.create_metadata(ir, cache, path, None)
+    }
+
+    pub fn create_method_metadata<'ir>(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        path: &RPath<'ir>,
+        self_type: &uniffi_meta::Type,
+    ) -> Result<uniffi_meta::FnParamMetadata> {
+        self.create_metadata(ir, cache, path, Some(self_type))
+    }
+
+    pub fn create_metadata<'ir>(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        path: &RPath<'ir>,
+        self_ty: Option<&uniffi_meta::Type>,
+    ) -> Result<uniffi_meta::FnParamMetadata> {
+        let arg = path.resolve_arg(ir, cache, &self.ty, self_ty)?;
+
         Ok(uniffi_meta::FnParamMetadata {
             name: self.ident.unraw().to_string(),
-            ty: uniffi_meta::Type::Int8, // TODO
-            by_ref: false,
+            ty: arg.ty,
+            by_ref: arg.by_ref,
             default: None,
             optional: false,
         })
@@ -97,9 +133,38 @@ impl ReturnType {
         Ok(Self { return_ty })
     }
 
-    pub fn return_type_and_throws(
+    pub fn return_type_and_throws<'ir>(
         &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
     ) -> Result<(Option<uniffi_meta::Type>, Option<uniffi_meta::Type>)> {
-        Ok((None, None)) // TODO
+        self._return_type_and_throws(ir, cache, module_path, None)
+    }
+
+    pub fn return_type_and_throws_for_method<'ir>(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+        self_type: &uniffi_meta::Type,
+    ) -> Result<(Option<uniffi_meta::Type>, Option<uniffi_meta::Type>)> {
+        self._return_type_and_throws(ir, cache, module_path, Some(self_type))
+    }
+
+    fn _return_type_and_throws<'ir>(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+        self_ty: Option<&uniffi_meta::Type>,
+    ) -> Result<(Option<uniffi_meta::Type>, Option<uniffi_meta::Type>)> {
+        Ok(match &self.return_ty {
+            syn::ReturnType::Default => (None, None),
+            syn::ReturnType::Type(_, return_ty) => {
+                let rt = module_path.resolve_return_type(ir, cache, return_ty, self_ty)?;
+                (rt.ok, rt.err)
+            }
+        })
     }
 }

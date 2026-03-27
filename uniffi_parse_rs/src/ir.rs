@@ -9,7 +9,7 @@ use quote::format_ident;
 use syn::{ext::IdentExt, Ident};
 use uniffi_meta::MetadataGroup;
 
-use crate::{Item, MetadataGroupMap, Module, Result};
+use crate::{paths::LookupCache, Item, MetadataGroupMap, Module, RPath, Result};
 
 /// Intermediate representation of the interface
 ///
@@ -56,6 +56,13 @@ impl Ir {
         })
     }
 
+    pub fn crate_roots_and_paths(&self) -> impl Iterator<Item = (RPath<'_>, &Module)> {
+        self.crate_roots.values().map(|item| match item {
+            Item::Module(module) => (RPath::new(item), module),
+            item => panic!("Crate root is not Item::Module ({item:?})"),
+        })
+    }
+
     pub fn crate_roots_mut(&mut self) -> impl Iterator<Item = &mut Module> {
         self.crate_roots.values_mut().map(|item| match item {
             Item::Module(module) => module,
@@ -64,8 +71,9 @@ impl Ir {
     }
 
     pub fn into_metadata_group_map(self) -> Result<MetadataGroupMap> {
-        self.crate_roots()
-            .map(|module| {
+        let mut cache = LookupCache::default();
+        self.crate_roots_and_paths()
+            .map(|(mut module_path, module)| {
                 let mut group = MetadataGroup {
                     namespace: uniffi_meta::NamespaceMetadata {
                         crate_name: module.ident.unraw().to_string(),
@@ -74,7 +82,7 @@ impl Ir {
                     namespace_docstring: module.docstring.clone(),
                     items: BTreeSet::default(),
                 };
-                module.create_metadata(&mut group)?;
+                module.create_metadata(&self, &mut cache, &mut module_path, &mut group)?;
                 Ok((module.ident.unraw().to_string(), group))
             })
             .collect()
@@ -96,5 +104,23 @@ impl Ir {
             .unwrap();
         }
         ir
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::Ir;
+
+    #[test]
+    fn test_create_metadata() {
+        let ir = Ir::new_for_test(&["full_interface"]);
+        let metadata_group_map = ir.into_metadata_group_map().unwrap();
+        let metadata_group = metadata_group_map.get("full_interface").unwrap();
+        assert_eq!(
+            metadata_group.namespace_docstring,
+            Some("Module docstring".into())
+        );
+        let expected = expect_test::expect_file!["./expect/full_interface.txt"];
+        expected.assert_eq(&format!("{:#?}", metadata_group.items));
     }
 }

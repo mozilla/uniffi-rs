@@ -18,8 +18,11 @@ mod items;
 mod kw;
 mod modules;
 mod objects;
+mod paths;
 mod records;
 mod traits;
+mod types;
+mod use_;
 
 pub use enums::{Enum, Variant};
 pub use errors::{Error, ErrorContext, ErrorKind};
@@ -28,7 +31,8 @@ pub use impls::Impl;
 pub use ir::Ir;
 pub use items::{BuiltinItem, Item};
 pub use modules::Module;
-pub use objects::{Constructor, Method, Object};
+pub use objects::{Constructor, Method, Object, SelfArg};
+pub use paths::RPath;
 pub use records::{Field, Record};
 pub use traits::Trait;
 

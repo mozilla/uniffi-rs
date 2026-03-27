@@ -1,0 +1,380 @@
+{
+    Func(
+        FnMetadata {
+            module_path: "full_interface",
+            name: "trait_fn",
+            is_async: false,
+            inputs: [
+                FnParamMetadata {
+                    name: "a",
+                    ty: Object {
+                        module_path: "full_interface",
+                        name: "TraitInterface",
+                        imp: Trait,
+                    },
+                    by_ref: false,
+                    optional: false,
+                    default: None,
+                },
+                FnParamMetadata {
+                    name: "b",
+                    ty: Object {
+                        module_path: "full_interface",
+                        name: "TraitInterfaceWithForeign",
+                        imp: CallbackTrait,
+                    },
+                    by_ref: true,
+                    optional: false,
+                    default: None,
+                },
+                FnParamMetadata {
+                    name: "c",
+                    ty: CallbackInterface {
+                        module_path: "full_interface",
+                        name: "CallbackInterface",
+                    },
+                    by_ref: false,
+                    optional: false,
+                    default: None,
+                },
+            ],
+            return_type: None,
+            throws: None,
+            checksum: None,
+            docstring: None,
+        },
+    ),
+    Object(
+        ObjectMetadata {
+            module_path: "full_interface",
+            name: "Object",
+            remote: false,
+            imp: Struct,
+            docstring: Some(
+                "Object docstring",
+            ),
+        },
+    ),
+    Object(
+        ObjectMetadata {
+            module_path: "full_interface",
+            name: "TraitInterface",
+            remote: false,
+            imp: Trait,
+            docstring: Some(
+                "Trait interface docstring",
+            ),
+        },
+    ),
+    Object(
+        ObjectMetadata {
+            module_path: "full_interface",
+            name: "TraitInterfaceWithForeign",
+            remote: false,
+            imp: CallbackTrait,
+            docstring: Some(
+                "Trait interface (with foreign) docstring",
+            ),
+        },
+    ),
+    CallbackInterface(
+        CallbackInterfaceMetadata {
+            module_path: "full_interface",
+            name: "CallbackInterface",
+            docstring: Some(
+                "Callback interface docstring",
+            ),
+        },
+    ),
+    Record(
+        RecordMetadata {
+            module_path: "full_interface",
+            name: "Record",
+            remote: false,
+            fields: [
+                FieldMetadata {
+                    name: "a",
+                    ty: String,
+                    default: None,
+                    docstring: None,
+                },
+                FieldMetadata {
+                    name: "b",
+                    ty: UInt32,
+                    default: None,
+                    docstring: None,
+                },
+                FieldMetadata {
+                    name: "c",
+                    ty: Optional {
+                        inner_type: String,
+                    },
+                    default: None,
+                    docstring: None,
+                },
+            ],
+            docstring: Some(
+                "Record docstring",
+            ),
+        },
+    ),
+    Enum(
+        EnumMetadata {
+            module_path: "full_interface",
+            name: "Error",
+            shape: Error {
+                flat: false,
+            },
+            remote: false,
+            variants: [],
+            discr_type: None,
+            non_exhaustive: false,
+            docstring: None,
+        },
+    ),
+    Enum(
+        EnumMetadata {
+            module_path: "full_interface",
+            name: "FlatError",
+            shape: Error {
+                flat: true,
+            },
+            remote: false,
+            variants: [
+                VariantMetadata {
+                    name: "Variant",
+                    discr: None,
+                    fields: [],
+                    docstring: None,
+                },
+                VariantMetadata {
+                    name: "Variant2",
+                    discr: None,
+                    fields: [],
+                    docstring: None,
+                },
+            ],
+            discr_type: None,
+            non_exhaustive: false,
+            docstring: None,
+        },
+    ),
+    Enum(
+        EnumMetadata {
+            module_path: "full_interface",
+            name: "U8Enum",
+            shape: Enum,
+            remote: false,
+            variants: [
+                VariantMetadata {
+                    name: "One",
+                    discr: None,
+                    fields: [],
+                    docstring: None,
+                },
+                VariantMetadata {
+                    name: "Two",
+                    discr: Some(
+                        UInt(
+                            4,
+                            Decimal,
+                            UInt8,
+                        ),
+                    ),
+                    fields: [],
+                    docstring: None,
+                },
+                VariantMetadata {
+                    name: "Three",
+                    discr: None,
+                    fields: [],
+                    docstring: None,
+                },
+            ],
+            discr_type: Some(
+                UInt8,
+            ),
+            non_exhaustive: false,
+            docstring: None,
+        },
+    ),
+    Enum(
+        EnumMetadata {
+            module_path: "full_interface",
+            name: "i8Enum",
+            shape: Enum,
+            remote: false,
+            variants: [
+                VariantMetadata {
+                    name: "One",
+                    discr: None,
+                    fields: [],
+                    docstring: None,
+                },
+                VariantMetadata {
+                    name: "Two",
+                    discr: Some(
+                        Int(
+                            -4,
+                            Decimal,
+                            Int8,
+                        ),
+                    ),
+                    fields: [],
+                    docstring: None,
+                },
+                VariantMetadata {
+                    name: "Three",
+                    discr: None,
+                    fields: [],
+                    docstring: None,
+                },
+            ],
+            discr_type: Some(
+                Int8,
+            ),
+            non_exhaustive: false,
+            docstring: None,
+        },
+    ),
+    Enum(
+        EnumMetadata {
+            module_path: "full_interface::submod",
+            name: "Enum",
+            shape: Enum,
+            remote: false,
+            variants: [
+                VariantMetadata {
+                    name: "One",
+                    discr: None,
+                    fields: [
+                        FieldMetadata {
+                            name: "r",
+                            ty: Record {
+                                module_path: "full_interface",
+                                name: "Record",
+                            },
+                            default: None,
+                            docstring: None,
+                        },
+                    ],
+                    docstring: Some(
+                        "Variant docstring",
+                    ),
+                },
+                VariantMetadata {
+                    name: "Two",
+                    discr: None,
+                    fields: [
+                        FieldMetadata {
+                            name: "",
+                            ty: Int8,
+                            default: None,
+                            docstring: None,
+                        },
+                        FieldMetadata {
+                            name: "",
+                            ty: UInt8,
+                            default: None,
+                            docstring: None,
+                        },
+                    ],
+                    docstring: Some(
+                        "Variant2 docstring",
+                    ),
+                },
+            ],
+            discr_type: None,
+            non_exhaustive: true,
+            docstring: Some(
+                "Enum docstring",
+            ),
+        },
+    ),
+    TraitMethod(
+        TraitMethodMetadata {
+            module_path: "full_interface",
+            trait_name: "CallbackInterface",
+            index: 0,
+            name: "method",
+            is_async: false,
+            inputs: [
+                FnParamMetadata {
+                    name: "a",
+                    ty: String,
+                    by_ref: false,
+                    optional: false,
+                    default: None,
+                },
+            ],
+            return_type: Some(
+                Object {
+                    module_path: "full_interface",
+                    name: "Object",
+                    imp: Struct,
+                },
+            ),
+            throws: Some(
+                Enum {
+                    module_path: "full_interface",
+                    name: "Error",
+                },
+            ),
+            takes_self_by_arc: false,
+            checksum: None,
+            docstring: None,
+        },
+    ),
+    TraitMethod(
+        TraitMethodMetadata {
+            module_path: "full_interface",
+            trait_name: "TraitInterface",
+            index: 0,
+            name: "method",
+            is_async: false,
+            inputs: [],
+            return_type: Some(
+                UInt8,
+            ),
+            throws: Some(
+                Enum {
+                    module_path: "full_interface",
+                    name: "Error",
+                },
+            ),
+            takes_self_by_arc: false,
+            checksum: None,
+            docstring: None,
+        },
+    ),
+    TraitMethod(
+        TraitMethodMetadata {
+            module_path: "full_interface",
+            trait_name: "TraitInterfaceWithForeign",
+            index: 0,
+            name: "method",
+            is_async: false,
+            inputs: [
+                FnParamMetadata {
+                    name: "a",
+                    ty: UInt8,
+                    by_ref: false,
+                    optional: false,
+                    default: None,
+                },
+            ],
+            return_type: Some(
+                String,
+            ),
+            throws: Some(
+                Enum {
+                    module_path: "full_interface",
+                    name: "Error",
+                },
+            ),
+            takes_self_by_arc: false,
+            checksum: None,
+            docstring: None,
+        },
+    ),
+}
