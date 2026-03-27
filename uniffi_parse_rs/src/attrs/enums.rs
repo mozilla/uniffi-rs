@@ -7,6 +7,7 @@ use uniffi_meta::EnumShape;
 
 use crate::{
     attrs::{extract_docstring, find_uniffi_derive},
+    CompileEnv,
     ErrorKind::*,
 };
 
@@ -21,18 +22,22 @@ pub struct EnumAttributes {
 }
 
 impl EnumAttributes {
-    pub fn parse(attrs: &[Attribute]) -> syn::Result<Option<Self>> {
+    pub fn parse(env: &CompileEnv, attrs: &[Attribute]) -> syn::Result<Option<Self>> {
         let mut name = None;
         let mut docstring = None;
         let mut non_exhaustive = false;
         let mut discr_type = None;
 
-        let enum_derive = attrs
+        let Some(metas) = env.parse_attrs(attrs)? else {
+            return Ok(None);
+        };
+
+        let enum_derive = metas
             .iter()
-            .find_map(|a| find_uniffi_derive(&a.meta, "Enum"));
-        let error_derive = attrs
+            .find_map(|meta| find_uniffi_derive(meta, "Enum"));
+        let error_derive = metas
             .iter()
-            .find_map(|a| find_uniffi_derive(&a.meta, "Error"));
+            .find_map(|meta| find_uniffi_derive(meta, "Error"));
 
         let (mut shape, remote) = match (enum_derive, error_derive) {
             (None, None) => return Ok(None),
@@ -41,10 +46,10 @@ impl EnumAttributes {
             (None, Some(d)) => (EnumShape::Error { flat: false }, d.remote),
         };
 
-        for a in attrs {
-            let path = a.meta.path();
+        for meta in metas {
+            let path = meta.path();
             if path.is_ident("uniffi") {
-                if let Meta::List(list) = &a.meta {
+                if let Meta::List(list) = meta {
                     list.parse_nested_meta(|meta| {
                         if meta.path.is_ident("name") {
                             meta.value()?;
@@ -63,12 +68,12 @@ impl EnumAttributes {
                         }
                     })?;
                 }
-            } else if a.meta.path().is_ident("doc") {
-                extract_docstring(&mut docstring, &a.meta);
-            } else if a.meta.path().is_ident("non_exhaustive") {
+            } else if meta.path().is_ident("doc") {
+                extract_docstring(&mut docstring, &meta);
+            } else if meta.path().is_ident("non_exhaustive") {
                 non_exhaustive = true;
-            } else if a.meta.path().is_ident("repr") {
-                a.meta.require_list()?.parse_nested_meta(|meta| {
+            } else if meta.path().is_ident("repr") {
+                meta.require_list()?.parse_nested_meta(|meta| {
                     let Some(i) = meta.path.get_ident() else {
                         return Ok(());
                     };
@@ -114,11 +119,14 @@ pub struct VariantAttributes {
 }
 
 impl VariantAttributes {
-    pub fn parse(attrs: &[Attribute]) -> syn::Result<Option<Self>> {
+    pub fn parse(env: &CompileEnv, attrs: &[Attribute]) -> syn::Result<Option<Self>> {
         let mut parsed = Self::default();
-        for a in attrs {
-            if a.meta.path().is_ident("uniffi") {
-                if let Meta::List(list) = &a.meta {
+        let Some(metas) = env.parse_attrs(attrs)? else {
+            return Ok(None);
+        };
+        for meta in metas {
+            if meta.path().is_ident("uniffi") {
+                if let Meta::List(list) = meta {
                     list.parse_nested_meta(|meta| {
                         if meta.path.is_ident("name") {
                             meta.value()?;
@@ -130,8 +138,8 @@ impl VariantAttributes {
                         }
                     })?;
                 }
-            } else if a.meta.path().is_ident("doc") {
-                extract_docstring(&mut parsed.docstring, &a.meta);
+            } else if meta.path().is_ident("doc") {
+                extract_docstring(&mut parsed.docstring, &meta);
             }
         }
         Ok(Some(parsed))

@@ -4,7 +4,10 @@
 
 use syn::{Attribute, LitStr, Meta};
 
-use crate::attrs::{extract_docstring, find_uniffi_derive, meta_matches_uniffi_export};
+use crate::{
+    attrs::{extract_docstring, find_uniffi_derive, meta_matches_uniffi_export},
+    CompileEnv,
+};
 
 #[derive(Clone, Default)]
 pub struct ObjectAttributes {
@@ -14,20 +17,23 @@ pub struct ObjectAttributes {
 }
 
 impl ObjectAttributes {
-    pub fn parse(attrs: &[Attribute]) -> syn::Result<Option<Self>> {
+    pub fn parse(env: &CompileEnv, attrs: &[Attribute]) -> syn::Result<Option<Self>> {
         let mut parsed = Self::default();
 
-        parsed.remote = match attrs
+        let Some(metas) = env.parse_attrs(attrs)? else {
+            return Ok(None);
+        };
+        parsed.remote = match metas
             .iter()
-            .find_map(|a| find_uniffi_derive(&a.meta, "Object"))
+            .find_map(|meta| find_uniffi_derive(meta, "Object"))
         {
             Some(d) => d.remote,
             None => return Ok(None),
         };
 
-        for a in attrs {
-            if a.meta.path().is_ident("uniffi") {
-                if let Meta::List(list) = &a.meta {
+        for meta in metas {
+            if meta.path().is_ident("uniffi") {
+                if let Meta::List(list) = meta {
                     list.parse_nested_meta(|meta| {
                         if meta.path.is_ident("name") {
                             meta.value()?;
@@ -39,8 +45,8 @@ impl ObjectAttributes {
                         }
                     })?;
                 }
-            } else if a.meta.path().is_ident("doc") {
-                extract_docstring(&mut parsed.docstring, &a.meta);
+            } else if meta.path().is_ident("doc") {
+                extract_docstring(&mut parsed.docstring, &meta);
             }
         }
         Ok(Some(parsed))
@@ -54,18 +60,21 @@ pub struct ImplAttributes {
 }
 
 impl ImplAttributes {
-    pub fn parse(attrs: &[Attribute]) -> syn::Result<Option<Self>> {
+    pub fn parse(env: &CompileEnv, attrs: &[Attribute]) -> syn::Result<Option<Self>> {
         let mut parsed = Self::default();
-        if !attrs
+        let Some(metas) = env.parse_attrs(attrs)? else {
+            return Ok(None);
+        };
+        if !metas
             .iter()
-            .any(|a| meta_matches_uniffi_export(&a.meta, "export"))
+            .any(|meta| meta_matches_uniffi_export(meta, "export"))
         {
             return Ok(None);
         }
 
-        for a in attrs {
-            if meta_matches_uniffi_export(&a.meta, "export") {
-                if let Meta::List(list) = &a.meta {
+        for meta in metas {
+            if meta_matches_uniffi_export(&meta, "export") {
+                if let Meta::List(list) = meta {
                     list.parse_nested_meta(|meta| {
                         if meta.path.is_ident("name") {
                             meta.value()?;

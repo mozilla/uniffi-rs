@@ -6,7 +6,10 @@ use syn::{spanned::Spanned, Attribute, LitStr, Meta};
 
 use uniffi_meta::TraitKind;
 
-use crate::attrs::{extract_docstring, meta_matches_uniffi_export};
+use crate::{
+    attrs::{extract_docstring, meta_matches_uniffi_export},
+    CompileEnv,
+};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct TraitAttributes {
@@ -32,20 +35,22 @@ impl TraitExportType {
 }
 
 impl TraitAttributes {
-    pub fn parse(attrs: &[Attribute]) -> syn::Result<Option<Self>> {
+    pub fn parse(env: &CompileEnv, attrs: &[Attribute]) -> syn::Result<Option<Self>> {
         let mut export_ty = None;
         let mut name = None;
         let mut docstring = None;
-
-        for a in attrs {
-            if meta_matches_uniffi_export(&a.meta, "export") {
+        let Some(metas) = env.parse_attrs(attrs)? else {
+            return Ok(None);
+        };
+        for meta in metas {
+            if meta_matches_uniffi_export(&meta, "export") {
                 if export_ty.is_some() {
-                    return Err(syn::Error::new(a.span(), "multiple `export` attributes"));
+                    return Err(syn::Error::new(meta.span(), "multiple `export` attributes"));
                 }
                 let mut saw_callback_interface = false;
                 let mut saw_rust = false;
                 let mut saw_foreign = false;
-                if let Meta::List(list) = &a.meta {
+                if let Meta::List(list) = &meta {
                     list.parse_nested_meta(|meta| {
                         if meta.path.is_ident("name") {
                             meta.value()?;
@@ -72,7 +77,7 @@ impl TraitAttributes {
                 }
                 if (saw_rust || saw_foreign) && saw_callback_interface {
                     return Err(syn::Error::new(
-                        a.span(),
+                        meta.span(),
                         "`callback_interface` not compatible with `rust`, `foreign` or `with_foreign`",
                     ));
                 }
@@ -86,8 +91,8 @@ impl TraitAttributes {
                     };
                     Some(TraitExportType::TraitInterface(kind))
                 }
-            } else if a.meta.path().is_ident("doc") {
-                extract_docstring(&mut docstring, &a.meta);
+            } else if meta.path().is_ident("doc") {
+                extract_docstring(&mut docstring, &meta);
             }
         }
         if let Some(export_ty) = export_ty {

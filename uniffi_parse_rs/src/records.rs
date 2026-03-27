@@ -7,7 +7,7 @@ use syn::{ext::IdentExt, Ident, ItemStruct};
 use crate::{
     attrs::{FieldAttributes, RecordAttributes},
     paths::LookupCache,
-    Ir, RPath, Result,
+    CompileEnv, Ir, RPath, Result,
 };
 
 #[derive(Clone)]
@@ -25,10 +25,10 @@ pub struct Field {
 }
 
 impl Record {
-    pub fn parse(attrs: RecordAttributes, st: ItemStruct) -> syn::Result<Self> {
+    pub fn parse(env: &CompileEnv, attrs: RecordAttributes, st: ItemStruct) -> syn::Result<Self> {
         let mut fields = vec![];
         for f in st.fields {
-            if let Some(field_attrs) = FieldAttributes::parse(&f.attrs)? {
+            if let Some(field_attrs) = FieldAttributes::parse(env, &f.attrs)? {
                 fields.push(Field::parse(field_attrs, f)?);
             }
         }

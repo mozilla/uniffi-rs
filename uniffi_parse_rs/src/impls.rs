@@ -7,7 +7,7 @@ use syn::{spanned::Spanned, ImplItem, ItemImpl};
 use crate::{
     attrs::{ConstructorAttributes, ImplAttributes, MethodAttributes},
     paths::LookupCache,
-    Constructor, Error,
+    CompileEnv, Constructor, Error,
     ErrorKind::*,
     Ir, Method, RPath, Result,
 };
@@ -20,14 +20,14 @@ pub struct Impl {
 }
 
 impl Impl {
-    pub fn parse(attrs: ImplAttributes, imp: ItemImpl) -> syn::Result<Self> {
+    pub fn parse(env: &CompileEnv, attrs: ImplAttributes, imp: ItemImpl) -> syn::Result<Self> {
         let mut constructors = vec![];
         let mut methods = vec![];
         for item in imp.items {
             if let ImplItem::Fn(f) = item {
-                if let Some(attrs) = ConstructorAttributes::parse(&f.attrs)? {
+                if let Some(attrs) = ConstructorAttributes::parse(env, &f.attrs)? {
                     constructors.push(Constructor::parse(attrs, f)?);
-                } else if let Some(attrs) = MethodAttributes::parse(&f.attrs)? {
+                } else if let Some(attrs) = MethodAttributes::parse(env, &f.attrs)? {
                     methods.push(Method::parse(attrs, f)?);
                 }
             }

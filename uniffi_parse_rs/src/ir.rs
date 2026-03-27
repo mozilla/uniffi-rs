@@ -10,7 +10,8 @@ use syn::{ext::IdentExt, Ident};
 use uniffi_meta::MetadataGroup;
 
 use crate::{
-    paths::LookupCache, Error, ErrorKind::*, Item, MetadataGroupMap, Module, RPath, Result,
+    paths::LookupCache, CompileEnv, Error, ErrorKind::*, Item, MetadataGroupMap, Module, RPath,
+    Result,
 };
 
 /// Intermediate representation of the interface
@@ -33,10 +34,15 @@ impl Ir {
     }
 
     /// Add a new crate to the IR
-    pub fn add_crate_root(&mut self, crate_name: &str, file_path: &Utf8Path) -> Result<&Module> {
+    pub fn add_crate_root(
+        &mut self,
+        crate_name: &str,
+        file_path: &Utf8Path,
+        env: &CompileEnv,
+    ) -> Result<&Module> {
         let crate_name = crate_name.replace("-", "_");
         let ident = format_ident!("{crate_name}");
-        let module = Module::new_crate_root(ident.clone(), file_path)?;
+        let module = Module::new_crate_root(ident.clone(), file_path, env)?;
         self.crate_roots.insert(ident.clone(), Item::Module(module));
         match self.crate_roots.get(&ident) {
             Some(Item::Module(m)) => Ok(m),
@@ -144,16 +150,17 @@ impl Ir {
 
     #[cfg(test)]
     pub fn new_for_test(test_sources: &[&str]) -> Self {
-        Self::new_for_test_with_env(test_sources)
+        Self::new_for_test_with_env(test_sources, CompileEnv::new_for_test())
     }
 
     #[cfg(test)]
-    pub fn new_for_test_with_env(test_sources: &[&str]) -> Self {
+    pub fn new_for_test_with_env(test_sources: &[&str], env: CompileEnv) -> Self {
         let mut ir = Self::default();
         for test_source in test_sources.iter() {
             ir.add_crate_root(
                 test_source,
                 &camino::Utf8PathBuf::from(format!("src/test_src/{test_source}.rs")),
+                &env,
             )
             .unwrap();
         }
@@ -164,7 +171,12 @@ impl Ir {
 
 #[cfg(test)]
 mod test {
-    use crate::Ir;
+    use std::{collections::BTreeSet, str::FromStr};
+
+    use target_lexicon::Triple;
+    use uniffi_meta::Metadata;
+
+    use crate::{CompileEnv, Ir};
 
     #[test]
     fn test_create_metadata() {
@@ -177,6 +189,104 @@ mod test {
         );
         let expected = expect_test::expect_file!["./expect/full_interface.txt"];
         expected.assert_eq(&format!("{:#?}", metadata_group.items));
+    }
+
+    fn feature_detection_items(target: &str, features: &[&str]) -> BTreeSet<String> {
+        let target = Triple::from_str(target).unwrap();
+        let features = features.iter().map(|s| s.to_string()).collect();
+        let env = CompileEnv::new(target, features);
+        let ir = Ir::new_for_test_with_env(&["feature_detection"], env);
+        let mut metadata_group_map = ir.into_metadata_group_map().unwrap();
+        let metadata_group = metadata_group_map.remove("feature_detection").unwrap();
+        let mut items = BTreeSet::default();
+        for item in metadata_group.items.into_iter() {
+            match item {
+                Metadata::Func(f) => {
+                    items.insert(format!("func:{}", f.name));
+                }
+                Metadata::Object(o) => {
+                    items.insert(format!("obj:{}", o.name));
+                }
+                Metadata::Method(m) => {
+                    items.insert(format!("method:{}:{}", m.self_name, m.name));
+                }
+                Metadata::CallbackInterface(c) => {
+                    items.insert(format!("cbi:{}", c.name));
+                }
+                Metadata::Record(r) => {
+                    items.insert(format!("rec:{}", r.name));
+                    for f in r.fields {
+                        items.insert(format!("field:{}:{}", r.name, f.name));
+                    }
+                }
+                Metadata::Enum(e) => {
+                    if e.shape.is_error() {
+                        items.insert(format!("error:{}", e.name));
+                    } else {
+                        items.insert(format!("enum:{}", e.name));
+                    }
+                    for v in e.variants {
+                        items.insert(format!("variant:{}:{}", e.name, v.name));
+                    }
+                }
+                Metadata::CustomType(c) => {
+                    items.insert(format!("custom_type:{}", c.name));
+                }
+                _ => (),
+            }
+        }
+        items
+    }
+
+    #[test]
+    fn test_feature_detection() {
+        assert_eq!(
+            feature_detection_items("x86_64-unknown-linux-gnu", &["feature1"]),
+            BTreeSet::from([
+                "rec:Feature1".into(),
+                "func:feature2_or_x86_64".into(),
+                "func:feature2_xor_x86_64".into(),
+                "func:renamed_feature1".into(),
+                "enum:EnumOrError".into(),
+                "obj:Object".into(),
+            ]),
+        );
+        assert_eq!(
+            feature_detection_items("x86_64-unknown-linux-gnu", &["feature2"]),
+            BTreeSet::from([
+                "enum:NotFeature1".into(),
+                "func:feature2_and_x86_64".into(),
+                "func:feature2_or_x86_64".into(),
+                "func:renamed_no_feature1".into(),
+                "error:EnumOrError".into(),
+                "obj:Object".into(),
+            ]),
+        );
+        assert_eq!(
+            feature_detection_items("aarch64-apple-darwin", &["feature2", "feature3"]),
+            BTreeSet::from([
+                "enum:NotFeature1".into(),
+                "variant:NotFeature1:Feature3".into(),
+                "func:feature2_xor_x86_64".into(),
+                "func:feature2_or_x86_64".into(),
+                "func:renamed_no_feature1".into(),
+                "error:EnumOrError".into(),
+                "obj:Object".into(),
+            ]),
+        );
+        assert_eq!(
+            feature_detection_items("x86_64-unknown-linux-gnu", &["feature1", "feature2"]),
+            BTreeSet::from([
+                "rec:Feature1".into(),
+                "field:Feature1:feature_2".into(),
+                "func:feature2_or_x86_64".into(),
+                "func:feature2_and_x86_64".into(),
+                "func:renamed_feature1".into(),
+                "enum:EnumOrError".into(),
+                "obj:Object".into(),
+                "method:Object:feature_1_and_2".into(),
+            ]),
+        );
     }
 
     #[test]
