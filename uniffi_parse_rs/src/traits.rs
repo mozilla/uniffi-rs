@@ -167,7 +167,15 @@ impl TraitMethod {
             inputs: self
                 .args
                 .iter()
-                .map(|arg| arg.create_method_metadata(ir, cache, module_path, self_ty))
+                .map(|arg| {
+                    arg.create_method_metadata(
+                        ir,
+                        cache,
+                        module_path,
+                        &self.attrs.defaults,
+                        self_ty,
+                    )
+                })
                 .collect::<Result<Vec<_>>>()?,
             return_type,
             throws,
