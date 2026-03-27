@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 mod callables;
+mod defaults;
 mod docstring;
 mod enums;
 mod objects;
@@ -13,6 +14,7 @@ use proc_macro2::Span;
 use syn::{spanned::Spanned, Meta, Path};
 
 pub use callables::{ConstructorAttributes, FunctionAttributes, MethodAttributes};
+pub use defaults::{Default, DefaultMap};
 pub use docstring::extract_docstring;
 pub use enums::{EnumAttributes, VariantAttributes};
 pub use objects::{ImplAttributes, ObjectAttributes};
