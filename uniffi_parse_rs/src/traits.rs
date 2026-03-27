@@ -3,10 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use syn::{ext::IdentExt, Ident, ItemTrait, TraitItem, TraitItemFn};
+use uniffi_meta::{CallbackInterfaceMetadata, ObjectMetadata};
 
 use crate::{
-    attrs::{MethodAttributes, TraitAttributes},
-    Argument, Result, ReturnType,
+    attrs::{MethodAttributes, TraitAttributes, TraitExportType},
+    paths::LookupCache,
+    Argument, Ir, RPath, Result, ReturnType, SelfArg,
 };
 
 pub struct Trait {
@@ -20,6 +22,7 @@ pub struct TraitMethod {
     pub attrs: MethodAttributes,
     pub is_async: bool,
     pub ident: Ident,
+    pub self_arg: SelfArg,
     pub args: Vec<Argument>,
     pub return_type: ReturnType,
 }
@@ -46,12 +49,91 @@ impl Trait {
         self.ident.unraw().to_string()
     }
 
-    pub fn trait_metadata(&self) -> Result<Vec<uniffi_meta::Metadata>> {
+    pub fn self_ty(&self, module_path: &RPath<'_>) -> uniffi_meta::Type {
+        match self.attrs.export_ty {
+            TraitExportType::TraitInterface => uniffi_meta::Type::Object {
+                module_path: module_path.path_string(),
+                name: self.name(),
+                imp: uniffi_meta::ObjectImpl::Trait,
+            },
+            TraitExportType::TraitInterfaceWithForeign => uniffi_meta::Type::Object {
+                module_path: module_path.path_string(),
+                name: self.name(),
+                imp: uniffi_meta::ObjectImpl::CallbackTrait,
+            },
+            TraitExportType::CallbackInterface => uniffi_meta::Type::CallbackInterface {
+                module_path: module_path.path_string(),
+                name: self.name(),
+            },
+        }
+    }
+
+    pub fn trait_metadata<'ir>(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+    ) -> Result<Vec<uniffi_meta::Metadata>> {
         let mut items = vec![];
 
         let trait_name = self.name();
+        let self_ty = match self.attrs.export_ty {
+            TraitExportType::TraitInterface => {
+                items.push(
+                    ObjectMetadata {
+                        module_path: module_path.path_string(),
+                        name: trait_name.clone(),
+                        orig_name: None, // TODO
+                        docstring: self.attrs.docstring.clone(),
+                        imp: uniffi_meta::ObjectImpl::Trait,
+                        remote: false,
+                    }
+                    .into(),
+                );
+                uniffi_meta::Type::Object {
+                    module_path: module_path.path_string(),
+                    name: trait_name.clone(),
+                    imp: uniffi_meta::ObjectImpl::Trait,
+                }
+            }
+            TraitExportType::TraitInterfaceWithForeign => {
+                items.push(
+                    ObjectMetadata {
+                        module_path: module_path.path_string(),
+                        name: trait_name.clone(),
+                        orig_name: None, // TODO
+                        docstring: self.attrs.docstring.clone(),
+                        imp: uniffi_meta::ObjectImpl::CallbackTrait,
+                        remote: false,
+                    }
+                    .into(),
+                );
+                uniffi_meta::Type::Object {
+                    module_path: module_path.path_string(),
+                    name: trait_name.clone(),
+                    imp: uniffi_meta::ObjectImpl::CallbackTrait,
+                }
+            }
+            TraitExportType::CallbackInterface => {
+                items.push(
+                    CallbackInterfaceMetadata {
+                        module_path: module_path.path_string(),
+                        name: trait_name.clone(),
+                        docstring: self.attrs.docstring.clone(),
+                    }
+                    .into(),
+                );
+                uniffi_meta::Type::CallbackInterface {
+                    module_path: module_path.path_string(),
+                    name: trait_name.clone(),
+                }
+            }
+        };
         for (i, m) in self.methods.iter().enumerate() {
-            items.push(m.to_trait_method_metadata(&trait_name, i)?.into());
+            items.push(
+                m.to_trait_method_metadata(ir, cache, module_path, &trait_name, &self_ty, i)?
+                    .into(),
+            );
         }
         Ok(items)
     }
@@ -59,12 +141,14 @@ impl Trait {
 
 impl TraitMethod {
     pub fn parse(attrs: MethodAttributes, f: TraitItemFn) -> syn::Result<Self> {
-        let inputs = f.sig.inputs.into_iter().take(1);
+        let mut inputs = f.sig.inputs.into_iter();
+        let self_arg = SelfArg::parse(inputs.next(), f.sig.ident.span())?;
 
         Ok(Self {
             attrs,
             ident: f.sig.ident,
             is_async: f.sig.asyncness.is_some(),
+            self_arg,
             args: inputs
                 .map(Argument::parse)
                 .collect::<syn::Result<Vec<_>>>()?,
@@ -78,24 +162,30 @@ impl TraitMethod {
 
     pub fn to_trait_method_metadata<'ir>(
         &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
         trait_name: &str,
+        self_ty: &uniffi_meta::Type,
         index: usize,
     ) -> Result<uniffi_meta::TraitMethodMetadata> {
-        let (return_type, throws) = (None, None); // TODO
+        let (return_type, throws) =
+            self.return_type
+                .return_type_and_throws_for_method(ir, cache, module_path, self_ty)?;
 
         Ok(uniffi_meta::TraitMethodMetadata {
-            module_path: "".into(), // TODO
+            module_path: module_path.path_string(),
             trait_name: trait_name.to_string(),
             index: index as u32,
             name: self.name(),
             orig_name: None, // TODO
             docstring: self.attrs.docstring.clone(),
             is_async: self.is_async,
-            takes_self_by_arc: false,
+            takes_self_by_arc: self.self_arg.takes_self_by_arc(ir, cache, module_path)?,
             inputs: self
                 .args
                 .iter()
-                .map(|arg| arg.create_metadata())
+                .map(|arg| arg.create_method_metadata(ir, cache, module_path, self_ty))
                 .collect::<Result<Vec<_>>>()?,
             return_type,
             throws,

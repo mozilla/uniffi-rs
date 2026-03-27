@@ -4,9 +4,9 @@
 
 use std::fmt;
 
-use syn::{ext::IdentExt, Ident, ItemType, ItemUse, LitStr};
+use syn::{ext::IdentExt, Ident, ItemType, LitStr};
 
-use crate::{Enum, Function, Impl, Module, Object, Record, Trait};
+use crate::{Enum, Function, Impl, Module, Object, Record, Trait, UseGlob, UseItem};
 
 /// Item enum
 ///
@@ -21,7 +21,8 @@ pub enum Item {
     Impl(Impl),
     Trait(Trait),
     Type(ItemType),
-    Use(ItemUse),
+    UseItem(UseItem),
+    UseGlob(UseGlob),
     IncludeScaffolding(LitStr),
     /// Builtin items that we know about.
     Builtin(BuiltinItem),
@@ -115,7 +116,15 @@ impl fmt::Debug for Item {
                 ))
                 .finish(),
             Self::Type(ty) => f.debug_tuple("Type").field(&ty.ident.to_string()).finish(),
-            Self::Use(_) => f.debug_tuple("Use").finish(),
+            Self::UseItem(use_item) => f
+                .debug_tuple("UseItem")
+                .field(&use_item.path)
+                .field(&use_item.ident)
+                .finish(),
+            Self::UseGlob(use_glob) => f
+                .debug_tuple("UseGlob")
+                .field(&use_glob.module_path)
+                .finish(),
             Self::IncludeScaffolding(_) => f.debug_tuple("IncludeScaffolding").finish(),
             Self::Builtin(builtin) => f.debug_tuple("Builtin").field(&builtin).finish(),
         }

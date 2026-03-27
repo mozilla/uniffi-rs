@@ -2,11 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use syn::{ImplItem, ItemImpl};
+use syn::{spanned::Spanned, ImplItem, ItemImpl};
 
 use crate::{
     attrs::{ConstructorAttributes, ImplAttributes, MethodAttributes},
-    Constructor, Method, Result,
+    paths::LookupCache,
+    Constructor, Error,
+    ErrorKind::*,
+    Ir, Method, RPath, Result,
 };
 
 pub struct Impl {
@@ -38,14 +41,35 @@ impl Impl {
         })
     }
 
-    pub fn impl_metadata(&self) -> Result<Vec<uniffi_meta::Metadata>> {
-        let self_name = "TraitName"; // TODO
+    pub fn impl_metadata<'ir>(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+    ) -> Result<Vec<uniffi_meta::Metadata>> {
+        let self_ty = module_path.resolve_uniffi_meta_type(ir, cache, &self.self_type, None)?;
+        let self_name = match self_ty.name() {
+            Some(n) => n.to_string(),
+            None => {
+                return Err(Error::new(
+                    module_path.file_id(),
+                    self.self_type.span(),
+                    InvalidSelfType,
+                ))
+            }
+        };
         let mut items = vec![];
         for c in self.constructors.iter() {
-            items.push(c.to_constructor_metadata(self_name)?.into());
+            items.push(
+                c.to_constructor_metadata(ir, cache, module_path, &self_name, &self_ty)?
+                    .into(),
+            );
         }
         for m in self.methods.iter() {
-            items.push(m.to_method_metadata(self_name)?.into());
+            items.push(
+                m.to_method_metadata(ir, cache, module_path, &self_name, &self_ty)?
+                    .into(),
+            );
         }
         Ok(items)
     }

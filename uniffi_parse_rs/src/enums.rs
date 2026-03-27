@@ -7,8 +7,9 @@ use uniffi_meta::{EnumShape, LiteralMetadata};
 
 use crate::{
     attrs::{EnumAttributes, FieldAttributes, VariantAttributes},
+    paths::LookupCache,
     ErrorKind::*,
-    Field, Result,
+    Field, Ir, RPath, Result,
 };
 
 #[derive(Clone)]
@@ -46,10 +47,15 @@ impl Enum {
         self.ident.unraw().to_string()
     }
 
-    pub fn enum_metadata<'ir>(&self) -> Result<uniffi_meta::EnumMetadata> {
+    pub fn enum_metadata<'ir>(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        path: &RPath<'ir>,
+    ) -> Result<uniffi_meta::EnumMetadata> {
         let is_flat = matches!(self.attrs.shape, EnumShape::Error { flat: true });
         Ok(uniffi_meta::EnumMetadata {
-            module_path: "".into(), // TODO
+            module_path: path.path_string(),
             name: self.name(),
             orig_name: None, // TODO
             remote: false,
@@ -60,7 +66,7 @@ impl Enum {
             variants: self
                 .variants
                 .iter()
-                .map(|v| v.create_variant_metadata(is_flat))
+                .map(|v| v.create_variant_metadata(ir, cache, path, is_flat))
                 .collect::<Result<Vec<_>>>()?,
         })
     }
@@ -141,7 +147,13 @@ impl Variant {
         self.ident.unraw().to_string()
     }
 
-    pub fn create_variant_metadata<'ir>(&self, flat: bool) -> Result<uniffi_meta::VariantMetadata> {
+    pub fn create_variant_metadata<'ir>(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        path: &RPath<'ir>,
+        flat: bool,
+    ) -> Result<uniffi_meta::VariantMetadata> {
         Ok(uniffi_meta::VariantMetadata {
             name: self.name(),
             orig_name: None, // TODO
@@ -152,7 +164,7 @@ impl Variant {
             } else {
                 self.fields
                     .iter()
-                    .map(|f| f.create_field_metadata())
+                    .map(|f| f.create_field_metadata(ir, cache, path))
                     .collect::<Result<Vec<_>>>()?
             },
         })

@@ -89,6 +89,8 @@ pub enum ErrorKind {
     InvalidRepr,
     #[error("Invalid discriminant")]
     InvalidDiscr,
+    #[error("uniffi_parse_rs internal error: {0}")]
+    InternalError(String),
     #[error("Invalid file path: {0}")]
     InvalidPath(Utf8PathBuf),
     #[error("Error reading {0} {1}")]
@@ -125,6 +127,10 @@ impl Error {
             location: None,
             context: vec![],
         }
+    }
+
+    pub fn internal(message: impl Into<String>) -> Self {
+        Self::new_without_location(ErrorKind::InternalError(message.into()))
     }
 
     pub fn is_not_found(&self) -> bool {
@@ -216,5 +222,31 @@ impl fmt::Display for Error {
                     .expect("Error writing errors to terminal")
             )
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::Ir;
+
+    #[test]
+    fn test_invalid_type() {
+        let ir = Ir::new_for_test(&["invalid_type"]);
+        let expected = expect_test::expect_file!["./expect/invalid_type.txt"];
+        expected.assert_eq(&format!("{:#?}", ir.into_metadata_group_map().unwrap_err()));
+    }
+
+    #[test]
+    fn test_invalid_result() {
+        let ir = Ir::new_for_test(&["invalid_result"]);
+        let expected = expect_test::expect_file!["./expect/invalid_result.txt"];
+        expected.assert_eq(&format!("{:#?}", ir.into_metadata_group_map().unwrap_err()));
+    }
+
+    #[test]
+    fn test_error_through_type_alias() {
+        let ir = Ir::new_for_test(&["error_through_type_alias"]);
+        let expected = expect_test::expect_file!["./expect/error_through_type_alias.txt"];
+        expected.assert_eq(&format!("{:#?}", ir.into_metadata_group_map().unwrap_err()));
     }
 }
