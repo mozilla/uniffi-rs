@@ -40,3 +40,14 @@ mod mod3 {
 
 use mod3::*;
 use mod3::mod4::*;
+
+// Complete corner case: record that shares the same name with the custom_type! macro.
+//
+// This is not an error in Rust, since macros live in a different namespace.  It doesn't need to
+// be a UniFFI error either since we don't export the custom_type! macro to the foreign language.
+// However, the current code does consider this a name conflict and it doesn't seem worth it to
+// fix.
+use uniffi::custom_type as CustomTypeConflict;
+
+#[derive(Record)]
+pub struct CustomTypeConflict { }

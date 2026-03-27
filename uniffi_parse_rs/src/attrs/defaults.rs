@@ -52,8 +52,13 @@ impl Default {
     pub fn create_default_value_metadata(
         &self,
         source: FileId,
-        ty: &Type,
+        mut ty: &Type,
     ) -> Result<DefaultValueMetadata> {
+        // Use the builtin type when resolving defaults
+        while let Type::Custom { builtin, .. } = ty {
+            ty = builtin;
+        }
+
         Ok(match &self.kind {
             DefaultKind::Default => DefaultValueMetadata::Default,
             DefaultKind::EmptySequence => {
