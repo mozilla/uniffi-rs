@@ -5,8 +5,10 @@ use ::std::sync::Arc;
 
 /// Record docstring
 #[derive(uniffi::Record)]
+#[uniffi(name="RecordRenamed")]
 pub struct Record {
     a: String,
+    #[uniffi(name="b_renamed")]
     b: u32,
     c: Option<String>,
     d: HashMap<u32, String>,
@@ -16,6 +18,7 @@ pub struct Record {
 mod submod {
     /// Enum docstring
     #[derive(uniffi::Enum)]
+    #[uniffi(name="EnumRenamed")]
     #[non_exhaustive]
     pub enum Enum {
         /// Variant docstring
@@ -23,6 +26,7 @@ mod submod {
             r: super::Record,
         },
         /// Variant2 docstring
+        #[uniffi(name="TwoRenamed")]
         Two(i8, u8),
     }
 }
@@ -43,8 +47,14 @@ pub enum i8Enum {
     Three,
 }
 
+#[uniffi::export(name="func_renamed")]
+/// Function docstring
+pub fn func(a: u8, r: Record, e: &submod::Enum, s: &str) {
+}
+
 /// Object docstring
 #[derive(uniffi::Object)]
+#[uniffi(name="ObjectRenamed")]
 pub struct Object;
 
 #[derive(uniffi::Error)]
@@ -62,6 +72,7 @@ pub enum FlatError {
 
 pub type Result<T, E=Error> = std::result::Result<T, E>;
 
+#[uniffi::export(name="ObjectRenamed")]
 impl Object {
     /// Constructor docstring
     #[uniffi::constructor]
@@ -79,6 +90,7 @@ impl Object {
         todo!()
     }
 
+    #[uniffi::method(name="meth2_renamed")]
     pub fn meth2(&self, a: Arc<Self>) -> Result<Arc<Self>> {
         todo!()
     }
