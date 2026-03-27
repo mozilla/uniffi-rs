@@ -4,7 +4,7 @@
 
 use syn::{Attribute, LitStr, Meta};
 
-use crate::attrs::{extract_docstring, find_uniffi_derive};
+use crate::attrs::{extract_docstring, find_uniffi_derive, Default};
 
 #[derive(Clone, Default)]
 pub struct RecordAttributes {
@@ -48,6 +48,7 @@ impl RecordAttributes {
 #[derive(Clone, Default)]
 pub struct FieldAttributes {
     pub name: Option<String>,
+    pub default: Option<Default>,
     pub docstring: Option<String>,
 }
 
@@ -62,6 +63,12 @@ impl FieldAttributes {
                             meta.value()?;
                             let name: LitStr = meta.input.parse()?;
                             parsed.name = Some(name.value());
+                            Ok(())
+                        } else if meta.path.is_ident("default") {
+                            if parsed.default.is_some() {
+                                return Err(meta.error("Multiple default values"));
+                            }
+                            parsed.default = Some(Default::parse(meta)?);
                             Ok(())
                         } else {
                             Err(meta.error("Invalid attribute"))

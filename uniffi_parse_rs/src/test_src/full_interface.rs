@@ -10,6 +10,7 @@ pub struct Record {
     a: String,
     #[uniffi(name="b_renamed")]
     b: u32,
+    #[uniffi(default)]
     c: Option<String>,
     d: HashMap<u32, String>,
     e: HashSet<String>,
@@ -47,7 +48,7 @@ pub enum i8Enum {
     Three,
 }
 
-#[uniffi::export(name="func_renamed")]
+#[uniffi::export(default(a=0), name="func_renamed")]
 /// Function docstring
 pub fn func(a: u8, r: Record, e: &submod::Enum, s: &str) {
 }
@@ -85,6 +86,11 @@ impl Object {
         todo!()
     }
 
+    #[uniffi::constructor(default(a="test"), name="constructor_with_default_renamed")]
+    pub fn constructor_with_default(a: String) -> Result<Arc<Self>> {
+        todo!()
+    }
+
     /// Method docstring
     pub fn meth1(&self) -> Result<String, Error> {
         todo!()
@@ -95,7 +101,7 @@ impl Object {
         todo!()
     }
 
-    #[uniffi::method]
+    #[uniffi::method(default(s))]
     pub fn meth3(self: Arc<Self>, s: String) -> Result<()> {
         todo!()
     }
