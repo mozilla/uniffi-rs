@@ -222,6 +222,13 @@ impl Module {
                         .items
                         .extend(tr.trait_metadata(ir, cache, module_path)?);
                 }
+                Item::CustomType(custom_type) => {
+                    metadata.items.insert(
+                        custom_type
+                            .custom_type_metadata(ir, cache, module_path)?
+                            .into(),
+                    );
+                }
                 Item::Module(submod) => {
                     module_path.push(item);
                     submod.create_metadata(ir, cache, module_path, metadata)?;
