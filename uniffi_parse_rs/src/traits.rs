@@ -71,14 +71,18 @@ impl Trait {
     ) -> Result<Vec<uniffi_meta::Metadata>> {
         let mut items = vec![];
 
-        let trait_name = self.name();
+        let trait_name = self.ident.unraw().to_string();
+        let (trait_name, orig_name) = match &self.attrs.name {
+            None => (trait_name, None),
+            Some(name) => (name.clone(), Some(trait_name)),
+        };
         let self_ty = match self.attrs.export_ty {
             TraitExportType::TraitInterface(kind) => {
                 items.push(
                     ObjectMetadata {
                         module_path: module_path.path_string(),
                         name: trait_name.clone(),
-                        orig_name: None, // TODO
+                        orig_name,
                         docstring: self.attrs.docstring.clone(),
                         imp: uniffi_meta::ObjectImpl::Trait(kind),
                         remote: false,
@@ -133,10 +137,6 @@ impl TraitMethod {
         })
     }
 
-    pub fn name(&self) -> String {
-        self.ident.unraw().to_string()
-    }
-
     pub fn to_trait_method_metadata<'ir>(
         &self,
         ir: &'ir Ir,
@@ -149,13 +149,18 @@ impl TraitMethod {
         let (return_type, throws) =
             self.return_type
                 .return_type_and_throws_for_method(ir, cache, module_path, self_ty)?;
+        let item_name = self.ident.unraw().to_string();
+        let (name, orig_name) = match &self.attrs.name {
+            None => (item_name, None),
+            Some(name) => (name.clone(), Some(item_name)),
+        };
 
         Ok(uniffi_meta::TraitMethodMetadata {
             module_path: module_path.path_string(),
             trait_name: trait_name.to_string(),
             index: index as u32,
-            name: self.name(),
-            orig_name: None, // TODO
+            name,
+            orig_name,
             docstring: self.attrs.docstring.clone(),
             is_async: self.is_async,
             takes_self_by_arc: self.self_arg.takes_self_by_arc(ir, cache, module_path)?,

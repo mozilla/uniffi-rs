@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use syn::{spanned::Spanned, Attribute, Meta};
+use syn::{spanned::Spanned, Attribute, LitStr, Meta};
 
 use uniffi_meta::TraitKind;
 
@@ -10,6 +10,7 @@ use crate::attrs::{extract_docstring, meta_matches_uniffi_export};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct TraitAttributes {
+    pub name: Option<String>,
     pub export_ty: TraitExportType,
     pub docstring: Option<String>,
 }
@@ -33,6 +34,7 @@ impl TraitExportType {
 impl TraitAttributes {
     pub fn parse(attrs: &[Attribute]) -> syn::Result<Option<Self>> {
         let mut export_ty = None;
+        let mut name = None;
         let mut docstring = None;
 
         for a in attrs {
@@ -45,7 +47,12 @@ impl TraitAttributes {
                 let mut saw_foreign = false;
                 if let Meta::List(list) = &a.meta {
                     list.parse_nested_meta(|meta| {
-                        if meta.path.is_ident("rust") {
+                        if meta.path.is_ident("name") {
+                            meta.value()?;
+                            let lit: LitStr = meta.input.parse()?;
+                            name = Some(lit.value());
+                            Ok(())
+                        } else if meta.path.is_ident("rust") {
                             saw_rust = true;
                             Ok(())
                         } else if meta.path.is_ident("foreign") {
@@ -87,6 +94,7 @@ impl TraitAttributes {
             Ok(Some(Self {
                 export_ty,
                 docstring,
+                name,
             }))
         } else {
             Ok(None)
