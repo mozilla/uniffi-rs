@@ -81,6 +81,10 @@ impl<'ir> RPath<'ir> {
         }
     }
 
+    pub fn crate_root_module(&self) -> Result<&'ir Module> {
+        self.crate_root()?.module()
+    }
+
     pub fn append_child(&self, item: &'ir Item) -> Self {
         Self {
             items: Vec::from_iter(self.items.iter().cloned().chain([item])),
@@ -192,6 +196,16 @@ impl<'ir> RPath<'ir> {
 
         let first_ident = &path.segments.first().unwrap().ident;
 
+        // Lookup UDL item from the crate root
+        if path.segments.len() == 1 {
+            if let Some(item) = self.crate_root_module()?.lookup_udl_item(first_ident) {
+                trace!("  resolved to UDL item: {item:?}");
+                let mut path = RPath::new(self.items[0]);
+                path.push(item);
+                return Ok(path);
+            }
+        }
+
         match ir.crate_roots.get(first_ident) {
             Some(crate_root) => {
                 let mut rpath = RPath::new(crate_root);
@@ -269,6 +283,9 @@ impl<'ir> RPath<'ir> {
         ident: &Ident,
     ) -> Result<Self> {
         let ident = ident.unraw();
+        if let Some(child) = self.child_udl_item(module, &ident)? {
+            return Ok(child);
+        }
         if let Some(child) = self.child_special_item(ir, cache, module, &ident)? {
             return Ok(child);
         }
@@ -285,7 +302,17 @@ impl<'ir> RPath<'ir> {
         }
     }
 
+    /// Try to find a UDL item for [Self::child]
+    fn child_udl_item(&self, module: &'ir Module, ident: &Ident) -> Result<Option<Self>> {
+        if let Some(item) = module.lookup_udl_item(ident) {
+            Ok(Some(self.append_child(item)))
+        } else {
+            Ok(None)
+        }
+    }
+
     // Try to find "special" items like `uniffi::use_remote_type!` for [Self::child]
+    //
     // These don't represent real Rust items, they're more like instructions to UniFFI.
     fn child_special_item(
         &self,
@@ -827,9 +854,22 @@ pub mod tests {
     #[test]
     fn test_raw_ident() {
         // Test that we "unraw" idents before matching them by removing the `r#` prefix
-        let ir = Ir::new_for_test(&["raw_idents"]);
+        let mut ir = Ir::new_for_test(&["raw_idents"]);
         let mut cache = LookupCache::default();
 
+        ir.add_udl_metadata(
+            "raw_idents",
+            vec![uniffi_meta::RecordMetadata {
+                module_path: "raw_idents".into(),
+                name: "Record".into(),
+                orig_name: None,
+                remote: false,
+                fields: vec![],
+                docstring: None,
+            }
+            .into()],
+        )
+        .unwrap();
         assert_eq!(
             run_resolve_item(&ir, &mut cache, "raw_idents", "r#Record"),
             Ok("raw_idents::Record".to_string()),
