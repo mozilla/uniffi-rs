@@ -8,6 +8,7 @@ use camino::Utf8Path;
 pub use uniffi_meta::MetadataGroup;
 
 mod attrs;
+mod custom_types;
 mod enums;
 mod errors;
 mod files;
@@ -25,6 +26,7 @@ mod traits;
 mod types;
 mod use_;
 
+pub use custom_types::CustomType;
 pub use enums::{Enum, Variant};
 pub use errors::{Error, ErrorContext, ErrorKind};
 pub use functions::{Argument, Function, ReturnType};

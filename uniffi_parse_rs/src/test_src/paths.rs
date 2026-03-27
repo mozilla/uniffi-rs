@@ -8,6 +8,12 @@ struct r#break { }
 
 uniffi::use_remote_type!(paths3::RemoteRecord);
 
+// Use the custom_type! impl from paths3
+// This is a bit weird because there's also a `use url::Url` import at the top.
+// This is not a name conflict because `use_remote_type` just instructs UniFFI which crate
+// implements the FfiConverter traits.
+uniffi::use_remote_type!(paths3::Url);
+
 mod mod1 {
     // Test a renaming via a use statement
     use mod2::Mod2Record as Mod2RecordRenamed;
