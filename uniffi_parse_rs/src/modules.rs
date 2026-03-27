@@ -177,6 +177,9 @@ impl Module {
             }
             syn::Item::Type(ty) => self.items.push(Item::Type(ty)),
             syn::Item::Use(use_) => self.items.extend(parse_use(use_)?),
+            syn::Item::Macro(item_macro) => {
+                self.items.push(Item::Macro(item_macro));
+            }
             _ => (),
         }
         Ok(())

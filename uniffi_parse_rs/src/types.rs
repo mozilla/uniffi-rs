@@ -1213,6 +1213,28 @@ pub mod tests {
     }
 
     #[test]
+    fn test_remote_types() {
+        let ir = Ir::new_for_test(&["remote_types"]);
+        let mut cache = LookupCache::default();
+
+        assert_eq!(
+            run_resolve_uniffi_meta_type(&ir, &mut cache, "remote_types", "AnyhowError", None),
+            Ok(uniffi_meta::Type::Object {
+                module_path: "remote_types".into(),
+                name: "AnyhowError".into(),
+                imp: ObjectImpl::Struct,
+            })
+        );
+        assert_eq!(
+            run_resolve_uniffi_meta_type(&ir, &mut cache, "remote_types", "LogLevel", None),
+            Ok(uniffi_meta::Type::Enum {
+                module_path: "remote_types".into(),
+                name: "LogLevel".into(),
+            })
+        );
+    }
+
+    #[test]
     fn test_result_uniffi_meta() {
         let ir = Ir::new_for_test(&["types"]);
         let mut cache = LookupCache::default();

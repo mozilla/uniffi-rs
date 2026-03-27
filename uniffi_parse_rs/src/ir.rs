@@ -103,6 +103,7 @@ impl Ir {
             )
             .unwrap();
         }
+        crate::resolve_macros(&mut ir).unwrap();
         ir
     }
 }

@@ -81,6 +81,12 @@ impl<'ir> RPath<'ir> {
         }
     }
 
+    pub fn append_child(&self, item: &'ir Item) -> Self {
+        Self {
+            items: Vec::from_iter(self.items.iter().cloned().chain([item])),
+        }
+    }
+
     pub fn module(&self) -> Result<&'ir Module> {
         self.items
             .iter()
@@ -263,6 +269,9 @@ impl<'ir> RPath<'ir> {
         ident: &Ident,
     ) -> Result<Self> {
         let ident = ident.unraw();
+        if let Some(child) = self.child_special_item(ir, cache, module, &ident)? {
+            return Ok(child);
+        }
         let mut use_globs = vec![];
         if let Some(child) =
             self.child_item_or_non_glob_use(ir, cache, module, &ident, &mut use_globs)?
@@ -273,6 +282,38 @@ impl<'ir> RPath<'ir> {
             Ok(child)
         } else {
             Err(Error::new(self.file_id(), ident.span(), NotFound))
+        }
+    }
+
+    // Try to find "special" items like `uniffi::use_remote_type!` for [Self::child]
+    //
+    // These don't represent real Rust items, they're more like instructions to UniFFI.
+    fn child_special_item(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module: &'ir Module,
+        ident: &Ident,
+    ) -> Result<Option<Self>> {
+        let mut found = None;
+        for item in module.items.iter().filter(|i| i.is_special()) {
+            if let Some(item_ident) = item.ident() {
+                if item_ident != *ident {
+                    continue;
+                }
+                match found {
+                    None => found = Some((item_ident, item)),
+                    Some((prev_ident, _)) => {
+                        return Err(Error::new(self.file_id(), prev_ident.span(), NameConflict)
+                            .context(self.file_id(), prev_ident.span(), "previous item"))
+                    }
+                }
+            }
+        }
+        match found {
+            Some((_, Item::UseRemoteType(path))) => self.resolve(ir, cache, path).map(Some),
+            Some((_, item)) => Ok(Some(self.append_child(item))),
+            None => Ok(None),
         }
     }
 
@@ -367,9 +408,7 @@ impl<'ir> RPath<'ir> {
             }
         }
         match found {
-            Some(FoundItem::Item(_, item)) => Ok(Some(Self {
-                items: Vec::from_iter(self.items.iter().cloned().chain([item])),
-            })),
+            Some(FoundItem::Item(_, item)) => Ok(Some(self.append_child(item))),
             Some(FoundItem::Use(_, path)) => Ok(Some(path.clone())),
             None => Ok(None),
         }
@@ -512,6 +551,9 @@ fn get_builtin_item(path: &Path) -> Option<&'static Item> {
         "std::time::Duration" => Some(&Item::Builtin(BuiltinItem::Duration)),
         "String" | "std::string::String" => Some(&Item::Builtin(BuiltinItem::String)),
         "str" | "std::primitive::str" => Some(&Item::Builtin(BuiltinItem::Str)),
+        "uniffi::use_remote_type" => {
+            Some(&Item::Builtin(BuiltinItem::UniffiMacro("use_remote_type")))
+        }
         _ => None,
     }
 }
@@ -673,6 +715,17 @@ pub mod tests {
         assert_eq!(
             run_resolve_item(&ir, &mut cache, "paths::mod1", "super::r#break"),
             Ok("paths::break".into())
+        );
+    }
+
+    #[test]
+    fn test_use_remote_type() {
+        let ir = Ir::new_for_test(&["paths", "paths2", "paths3"]);
+        let mut cache = LookupCache::default();
+
+        assert_eq!(
+            run_resolve_item(&ir, &mut cache, "paths", "RemoteRecord"),
+            Ok("paths3::RemoteRecord".into())
         );
     }
 
