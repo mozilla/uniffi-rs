@@ -4,7 +4,7 @@
 
 use syn::{ext::IdentExt, spanned::Spanned, FnArg, Ident, ItemFn, Pat};
 
-use crate::{attrs::FunctionAttributes, Result};
+use crate::{attrs::FunctionAttributes, ErrorKind::*, Result};
 
 #[derive(Clone)]
 pub struct Function {
@@ -69,12 +69,12 @@ impl Argument {
     pub fn parse(arg: FnArg) -> syn::Result<Self> {
         let span = arg.span();
         let pat_ty = match arg {
-            FnArg::Receiver(_) => return Err(syn::Error::new(span, "invalid arg type")),
+            FnArg::Receiver(_) => return Err(syn::Error::new(span, InvalidArgType)),
             FnArg::Typed(pat_ty) => pat_ty,
         };
         let ident = match *pat_ty.pat {
             Pat::Ident(p) => p.ident,
-            _ => return Err(syn::Error::new(span, "invalid arg type")),
+            _ => return Err(syn::Error::new(span, InvalidArgType)),
         };
         Ok(Self {
             ident,
