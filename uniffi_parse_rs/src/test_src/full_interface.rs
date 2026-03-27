@@ -9,6 +9,8 @@ pub struct Record {
     b: u32,
     #[uniffi(default)]
     c: Option<String>,
+    #[uniffi(default = "test")]
+    d: CustomType
 }
 
 mod submod {
@@ -129,3 +131,8 @@ pub trait CallbackInterface {
 #[uniffi::export]
 pub fn trait_fn(a: Arc<dyn TraitInterface>, b: &dyn TraitInterfaceWithForeign, c: Box<dyn CallbackInterface>) {
 }
+
+uniffi::custom_type!(CustomType, String, {
+    into: |custom| custom.into(),
+    try_from: |s| s.try_from(),
+});

@@ -4,9 +4,15 @@
 
 use std::collections::HashMap;
 
-use syn::ItemMacro;
+use proc_macro2::TokenStream;
+use syn::{
+    braced,
+    parse::{Parse, ParseStream},
+    token::Brace,
+    Ident, ItemMacro, Token,
+};
 
-use crate::{paths::LookupCache, BuiltinItem, Error, Ir, Item, Module, RPath, Result};
+use crate::{paths::LookupCache, BuiltinItem, CustomType, Error, Ir, Item, Module, RPath, Result};
 
 /// Resolve Item::Macro to more specific items like Item::UseRemoteType
 ///
@@ -65,6 +71,18 @@ fn maybe_resolve_macro<'ir>(
         },
     };
     match builtin {
+        // Note: custom_newtype and custom_type share enough of the same syntax that we can use the
+        // same parser for both
+        BuiltinItem::UniffiMacro("custom_type") | BuiltinItem::UniffiMacro("custom_newtype") => {
+            let args: CustomTypeArgs = mac
+                .mac
+                .parse_body()
+                .map_err(|e| Error::new_syn(path.file_id(), e))?;
+            Ok(Some(Item::CustomType(CustomType {
+                ident: args.ident,
+                builtin: args.builtin,
+            })))
+        }
         BuiltinItem::UniffiMacro("use_remote_type") => Ok(Some(Item::UseRemoteType(
             mac.mac
                 .parse_body()
@@ -82,5 +100,31 @@ fn insert_found_items(module: &mut Module, items: &mut HashMap<usize, Vec<Item>>
         if let Item::Module(child) = item {
             insert_found_items(child, items);
         }
+    }
+}
+
+struct CustomTypeArgs {
+    ident: Ident,
+    builtin: syn::Type,
+}
+
+impl Parse for CustomTypeArgs {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        // Parse the custom / UniFFI type which are both required
+        let ident = input.parse()?;
+        input.parse::<Token![,]>()?;
+        let builtin = input.parse()?;
+        // If there's an extra arg with a brace, just skip over it.  It's only used by the
+        // Rust proc-macros.
+        if input.peek(Token![,]) {
+            input.parse::<Token![,]>()?;
+
+            if input.peek(Brace) {
+                let content;
+                braced!(content in input);
+                let _tokens: TokenStream = content.parse()?;
+            }
+        };
+        Ok(Self { ident, builtin })
     }
 }

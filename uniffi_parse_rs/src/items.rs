@@ -6,7 +6,7 @@ use std::fmt;
 
 use syn::{ext::IdentExt, Ident, ItemMacro, ItemType, ItemUse, LitStr, Path};
 
-use crate::{Enum, Function, Impl, Module, Object, Record, Trait};
+use crate::{CustomType, Enum, Function, Impl, Module, Object, Record, Trait};
 
 /// Item enum
 ///
@@ -29,6 +29,8 @@ pub enum Item {
     /// `macros::resolve_macros` inspects these macros and converts them to other variants like
     /// `UseRemoteType` if they match.
     Macro(ItemMacro),
+    /// Custom type macro expression
+    CustomType(CustomType),
     /// Builtin items that we know about.
     Builtin(BuiltinItem),
 }
@@ -83,6 +85,7 @@ impl Item {
             Item::Fn(func) => Some(func.ident.unraw()),
             Item::Trait(tr) => Some(tr.ident.unraw()),
             Item::Type(ty) => Some(ty.ident.unraw()),
+            Item::CustomType(c) => Some(c.ident.unraw()),
             Item::UseRemoteType(p) => p.segments.last().map(|s| s.ident.unraw()),
             _ => None,
         }
@@ -105,6 +108,7 @@ impl Item {
             Item::Enum(en) => en.attrs.remote,
             Item::Object(o) => o.attrs.remote,
             Item::UseRemoteType(_) => true,
+            Item::CustomType(_) => true,
             _ => false,
         }
     }
@@ -140,6 +144,10 @@ impl fmt::Debug for Item {
             Self::UseRemoteType(_) => f.debug_tuple("UseRemoteType").finish(),
             Self::IncludeScaffolding(_) => f.debug_tuple("IncludeScaffolding").finish(),
             Self::Builtin(builtin) => f.debug_tuple("Builtin").field(&builtin).finish(),
+            Self::CustomType(c) => f
+                .debug_struct("CustomType")
+                .field("ident", &c.ident.to_string())
+                .finish(),
             Self::Macro(_) => f.debug_tuple("Macro").finish(),
         }
     }

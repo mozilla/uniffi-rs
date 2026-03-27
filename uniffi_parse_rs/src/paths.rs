@@ -307,7 +307,7 @@ impl<'ir> RPath<'ir> {
         }
     }
 
-    // Push a "special" items like `uniffi::use_remote_type!` for push_ident, if possible.
+    // Push a "special" items like `uniffi::custom_type!` for push_ident, if possible.
     //
     // These don't represent real Rust items, they're more like instructions to UniFFI.
     fn push_ident_special_item(
@@ -576,6 +576,10 @@ fn get_builtin_item(path: &Path) -> Option<&'static Item> {
         "std::time::Duration" => Some(&Item::Builtin(BuiltinItem::Duration)),
         "String" | "std::string::String" => Some(&Item::Builtin(BuiltinItem::String)),
         "str" | "std::primitive::str" => Some(&Item::Builtin(BuiltinItem::Str)),
+        "uniffi::custom_type" => Some(&Item::Builtin(BuiltinItem::UniffiMacro("custom_type"))),
+        "uniffi::custom_newtype" => {
+            Some(&Item::Builtin(BuiltinItem::UniffiMacro("custom_newtype")))
+        }
         "uniffi::use_remote_type" => {
             Some(&Item::Builtin(BuiltinItem::UniffiMacro("use_remote_type")))
         }
@@ -752,6 +756,11 @@ pub mod tests {
             run_resolve_item(&ir, &mut cache, "paths", "RemoteRecord"),
             Ok("paths3::RemoteRecord".into())
         );
+
+        assert_eq!(
+            run_resolve_item(&ir, &mut cache, "paths", "Url"),
+            Ok("paths3::Url".into())
+        );
     }
 
     #[test]
@@ -833,6 +842,27 @@ pub mod tests {
         assert_eq!(
             run_resolve_item(&ir, &mut cache, "name_conflicts", "GlobGlobConflict"),
             Err(ErrorKind::NameConflict),
+        );
+
+        assert_eq!(
+            run_resolve_item(&ir, &mut cache, "name_conflicts", "CustomTypeConflict"),
+            Err(ErrorKind::NameConflict),
+        );
+    }
+
+    #[test]
+    fn test_raw_ident() {
+        // Test that we "unraw" idents before matching them by removing the `r#` prefix
+        let ir = Ir::new_for_test(&["raw_idents"]);
+        let mut cache = LookupCache::default();
+
+        assert_eq!(
+            run_resolve_item(&ir, &mut cache, "raw_idents", "r#Record"),
+            Ok("raw_idents::Record".to_string()),
+        );
+        assert_eq!(
+            run_resolve_item(&ir, &mut cache, "raw_idents", "r#Guid"),
+            Ok("raw_idents::Guid".to_string()),
         );
     }
 

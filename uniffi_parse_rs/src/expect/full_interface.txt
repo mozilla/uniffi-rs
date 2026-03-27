@@ -171,6 +171,22 @@
                     ),
                     docstring: None,
                 },
+                FieldMetadata {
+                    name: "d",
+                    ty: Custom {
+                        module_path: "full_interface",
+                        name: "CustomType",
+                        builtin: String,
+                    },
+                    default: Some(
+                        Literal(
+                            String(
+                                "test",
+                            ),
+                        ),
+                    ),
+                    docstring: None,
+                },
             ],
             docstring: Some(
                 "Record docstring",
@@ -592,6 +608,14 @@
             ),
             takes_self_by_arc: false,
             checksum: None,
+            docstring: None,
+        },
+    ),
+    CustomType(
+        CustomTypeMetadata {
+            module_path: "full_interface",
+            name: "CustomType",
+            builtin: String,
             docstring: None,
         },
     ),
