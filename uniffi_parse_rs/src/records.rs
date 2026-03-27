@@ -55,7 +55,7 @@ impl Record {
         Ok(uniffi_meta::RecordMetadata {
             module_path: path.path_string(),
             name: self.name(),
-            remote: false,
+            remote: self.attrs.remote,
             docstring: self.attrs.docstring.clone(),
             fields: self
                 .fields

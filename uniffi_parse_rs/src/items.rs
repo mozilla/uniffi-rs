@@ -4,7 +4,7 @@
 
 use std::fmt;
 
-use syn::{ext::IdentExt, Ident, ItemType, ItemUse, LitStr};
+use syn::{ext::IdentExt, Ident, ItemMacro, ItemType, ItemUse, LitStr, Path};
 
 use crate::{Enum, Function, Impl, Module, Object, Record, Trait};
 
@@ -22,7 +22,13 @@ pub enum Item {
     Trait(Trait),
     Type(ItemType),
     Use(ItemUse),
+    UseRemoteType(Path),
     IncludeScaffolding(LitStr),
+    /// Macro expression that we haven't evaluated in any way yet.
+    ///
+    /// `macros::resolve_macros` inspects these macros and converts them to other variants like
+    /// `UseRemoteType` if they match.
+    Macro(ItemMacro),
     /// Builtin items that we know about.
     Builtin(BuiltinItem),
 }
@@ -77,6 +83,7 @@ impl Item {
             Item::Fn(func) => Some(func.ident.unraw()),
             Item::Trait(tr) => Some(tr.ident.unraw()),
             Item::Type(ty) => Some(ty.ident.unraw()),
+            Item::UseRemoteType(p) => p.segments.last().map(|s| s.ident.unraw()),
             _ => None,
         }
     }
@@ -85,6 +92,20 @@ impl Item {
         match self.ident() {
             Some(i) => i.to_string(),
             None => "<unnamed>".to_string(),
+        }
+    }
+
+    /// Is this a special item?
+    ///
+    /// "Special" here means that it's not a real Rust item, it's exists to give for UniFFI information
+    /// about the interface
+    pub fn is_special(&self) -> bool {
+        match self {
+            Item::Record(rec) => rec.attrs.remote,
+            Item::Enum(en) => en.attrs.remote,
+            Item::Object(o) => o.attrs.remote,
+            Item::UseRemoteType(_) => true,
+            _ => false,
         }
     }
 }
@@ -116,8 +137,10 @@ impl fmt::Debug for Item {
                 .finish(),
             Self::Type(ty) => f.debug_tuple("Type").field(&ty.ident.to_string()).finish(),
             Self::Use(_) => f.debug_tuple("Use").finish(),
+            Self::UseRemoteType(_) => f.debug_tuple("UseRemoteType").finish(),
             Self::IncludeScaffolding(_) => f.debug_tuple("IncludeScaffolding").finish(),
             Self::Builtin(builtin) => f.debug_tuple("Builtin").field(&builtin).finish(),
+            Self::Macro(_) => f.debug_tuple("Macro").finish(),
         }
     }
 }

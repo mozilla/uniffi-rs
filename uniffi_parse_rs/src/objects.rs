@@ -60,7 +60,7 @@ impl Object {
         Ok(uniffi_meta::ObjectMetadata {
             module_path: path.path_string(),
             name: self.name(),
-            remote: false,
+            remote: self.attrs.remote,
             docstring: self.attrs.docstring.clone(),
             imp: ObjectImpl::Struct,
         })

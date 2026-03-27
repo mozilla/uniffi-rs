@@ -16,6 +16,7 @@ mod impls;
 mod ir;
 mod items;
 mod kw;
+mod macros;
 mod modules;
 mod objects;
 mod paths;
@@ -30,6 +31,7 @@ pub use functions::{Argument, Function, ReturnType};
 pub use impls::Impl;
 pub use ir::Ir;
 pub use items::{BuiltinItem, Item};
+pub use macros::resolve_macros;
 pub use modules::Module;
 pub use objects::{Constructor, Method, Object, SelfArg};
 pub use paths::RPath;
@@ -59,7 +61,8 @@ impl Parser {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
-    pub fn into_uniffi_meta(self) -> anyhow::Result<MetadataGroupMap> {
+    pub fn into_uniffi_meta(mut self) -> anyhow::Result<MetadataGroupMap> {
+        resolve_macros(&mut self.ir).map_err(|e| anyhow::anyhow!("{e}"))?;
         self.ir
             .into_metadata_group_map()
             .map_err(|e| anyhow::anyhow!("{e}"))

@@ -17,6 +17,7 @@ pub struct EnumAttributes {
     pub docstring: Option<String>,
     pub non_exhaustive: bool,
     pub discr_type: Option<uniffi_meta::Type>,
+    pub remote: bool,
 }
 
 impl EnumAttributes {
@@ -33,11 +34,11 @@ impl EnumAttributes {
             .iter()
             .find_map(|a| find_uniffi_derive(&a.meta, "Error"));
 
-        let mut shape = match (enum_derive, error_derive) {
+        let (mut shape, remote) = match (enum_derive, error_derive) {
             (None, None) => return Ok(None),
-            (Some(_), Some(span)) => return Err(syn::Error::new(span, MultipleEnumDerives)),
-            (Some(_), None) => EnumShape::Enum,
-            (None, Some(_)) => EnumShape::Error { flat: false },
+            (Some(_), Some(d)) => return Err(syn::Error::new(d.span, MultipleEnumDerives)),
+            (Some(d), None) => (EnumShape::Enum, d.remote),
+            (None, Some(d)) => (EnumShape::Error { flat: false }, d.remote),
         };
 
         for a in attrs {
@@ -101,6 +102,7 @@ impl EnumAttributes {
             docstring,
             non_exhaustive,
             discr_type,
+            remote,
         }))
     }
 }

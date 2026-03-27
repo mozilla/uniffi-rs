@@ -293,6 +293,9 @@ impl<'ir> RPath<'ir> {
         ident: &Ident,
     ) -> Result<()> {
         let ident = ident.unraw();
+        if self.push_ident_special_item(ir, cache, module, &ident)? {
+            return Ok(());
+        }
         let mut use_glob_paths = vec![];
         if self.push_ident_item_or_non_glob_use(ir, cache, module, &ident, &mut use_glob_paths)? {
             return Ok(());
@@ -301,6 +304,40 @@ impl<'ir> RPath<'ir> {
             Ok(())
         } else {
             Err(Error::new(self.file_id(), ident.span(), NotFound))
+        }
+    }
+
+    // Push a "special" items like `uniffi::use_remote_type!` for push_ident, if possible.
+    //
+    // These don't represent real Rust items, they're more like instructions to UniFFI.
+    fn push_ident_special_item(
+        &mut self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module: &'ir Module,
+        ident: &Ident,
+    ) -> Result<bool> {
+        let mut found = None;
+        for item in module.items.iter().filter(|i| i.is_special()) {
+            if let Some(item_ident) = item.ident() {
+                if item_ident != *ident {
+                    continue;
+                }
+                match found {
+                    None => found = Some((item_ident, item)),
+                    Some((prev_ident, _)) => {
+                        return Err(Error::new(self.file_id(), prev_ident.span(), NameConflict)
+                            .context(self.file_id(), prev_ident.span(), "previous item"))
+                    }
+                }
+            }
+        }
+        match found {
+            Some((_, item)) => {
+                self.push_or_resolve(ir, cache, item)?;
+                Ok(true)
+            }
+            None => Ok(false),
         }
     }
 
@@ -387,7 +424,7 @@ impl<'ir> RPath<'ir> {
         }
         match found {
             Some(FoundItem::Item(_, item)) => {
-                self.items.push(item);
+                self.push_or_resolve(ir, cache, item)?;
                 Ok(true)
             }
             Some(FoundItem::Use(_, path)) => {
@@ -433,6 +470,23 @@ impl<'ir> RPath<'ir> {
                 Ok(true)
             }
         }
+    }
+
+    fn push_or_resolve(
+        &mut self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        item: &'ir Item,
+    ) -> Result<()> {
+        match item {
+            Item::UseRemoteType(path) => {
+                *self = self.resolve(ir, cache, path)?;
+            }
+            _ => {
+                self.items.push(item);
+            }
+        }
+        Ok(())
     }
 }
 
@@ -522,6 +576,9 @@ fn get_builtin_item(path: &Path) -> Option<&'static Item> {
         "std::time::Duration" => Some(&Item::Builtin(BuiltinItem::Duration)),
         "String" | "std::string::String" => Some(&Item::Builtin(BuiltinItem::String)),
         "str" | "std::primitive::str" => Some(&Item::Builtin(BuiltinItem::Str)),
+        "uniffi::use_remote_type" => {
+            Some(&Item::Builtin(BuiltinItem::UniffiMacro("use_remote_type")))
+        }
         _ => None,
     }
 }
@@ -683,6 +740,17 @@ pub mod tests {
         assert_eq!(
             run_resolve_item(&ir, &mut cache, "paths::mod1", "super::r#break"),
             Ok("paths::break".into())
+        );
+    }
+
+    #[test]
+    fn test_use_remote_type() {
+        let ir = Ir::new_for_test(&["paths", "paths2", "paths3"]);
+        let mut cache = LookupCache::default();
+
+        assert_eq!(
+            run_resolve_item(&ir, &mut cache, "paths", "RemoteRecord"),
+            Ok("paths3::RemoteRecord".into())
         );
     }
 

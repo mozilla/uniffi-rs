@@ -60,7 +60,7 @@ impl Enum {
         Ok(uniffi_meta::EnumMetadata {
             module_path: path.path_string(),
             name: self.name(),
-            remote: false,
+            remote: self.attrs.remote,
             non_exhaustive: self.attrs.non_exhaustive,
             discr_type: self.attrs.discr_type.clone(),
             shape: self.attrs.shape,
