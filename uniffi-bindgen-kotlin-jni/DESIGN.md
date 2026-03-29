@@ -12,6 +12,27 @@ rather than from the macros.
 Scaffolding is generated for a single crate only.
 The main reason is that we only want to parse the source code once.
 
+# FFI calling convention
+
+## Primitive arguments / return values
+
+If possible, we try to pass arguments directly using JNI.
+
+The following types are passed as primitives:
+  * Integers, floats, and bool.  Unsigned ints are converted to their signed counterparts.
+  * `String` is passed as a `jstring`
+  * `Vec`, `HashMap` and `HashSet` get passed as NIO byte buffer except for some special cases:
+      * `Vec<T>` where T is a primitive type gets passed as an array.
+  * Objects are passed as an `i64`
+  * `Option<T>` where T is an integer type with 32-bit width or less
+    We can use the niche optimization on these by casting them to an `i64`
+    and using `i64::MAX` for `None`.
+  * `Option<T>` where T is a floating point type.
+    For these, we pick a special NaN value to use for `None`
+  * `Option<String>` and `Option<Vec<u8>>` also uses the niche optimization
+    with `null` used for `None`.
+  * Flat enums are passed using their discriminants.
+
 # Kotlin `uniffi` package
 
 This is a generated package that contains all the FFI functions.

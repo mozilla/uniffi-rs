@@ -4,6 +4,7 @@
 
 mod callables;
 mod context;
+mod ffi_types;
 mod names;
 mod nodes;
 mod packages;
