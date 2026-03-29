@@ -41,6 +41,10 @@ pub struct Callable {
     pub name: String,
     pub is_async: bool,
     pub fully_qualified_name_rs: String,
+    pub arguments: Vec<Argument>,
+    pub return_type: Option<TypeNode>,
+    pub throws_type: Option<TypeNode>,
+    pub return_ffi: ReturnFfi,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -60,6 +64,14 @@ pub enum CallableKind {
     },
 }
 
+#[derive(Debug, Clone, Node)]
+pub struct Argument {
+    pub name: String,
+    pub ty: TypeNode,
+    pub optional: bool,
+    pub ffi_args: Vec<FfiArgument>,
+}
+
 /// Wrap `Type` so that we can add extra fields that are set for all variants.
 #[derive(Debug, Clone, Node, MapNode)]
 #[map_node(from(general::TypeNode))]
@@ -70,4 +82,36 @@ pub struct TypeNode {
     pub type_rs: String,
     pub type_kt: String,
     pub is_used_as_error: bool,
+    pub ffi_types: Vec<FfiType>,
+}
+
+/// Argument on the JNI FFI function
+#[derive(Debug, Clone, Node, MapNode)]
+pub struct FfiArgument {
+    pub name: String,
+    pub ty: FfiType,
+}
+
+#[derive(Debug, Clone, Node)]
+pub enum ReturnFfi {
+    /// JNI function returns a single primitive value
+    Primitive {
+        type_node: TypeNode,
+        ffi_type: FfiType,
+    },
+    Void,
+}
+
+/// Primitive type that's passed across the FFI using JNI
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Node)]
+pub enum FfiType {
+    Int8,
+    Int16,
+    Int32,
+    Int64,
+    Float32,
+    Float64,
+    Boolean,
+    String,
+    ByteArray,
 }
