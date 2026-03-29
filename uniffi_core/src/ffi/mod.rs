@@ -5,6 +5,7 @@
 //! Types that can cross the FFI boundary.
 
 pub mod callbackinterface;
+pub mod ffibuffer;
 pub mod ffidefault;
 #[cfg(feature = "scaffolding-ffi-buffer-fns")]
 pub mod ffiserialize;
@@ -17,6 +18,7 @@ pub mod rustcalls;
 pub mod rustfuture;
 
 pub use callbackinterface::*;
+pub use ffibuffer::*;
 pub use ffidefault::FfiDefault;
 #[cfg(feature = "scaffolding-ffi-buffer-fns")]
 pub use ffiserialize::FfiSerialize;

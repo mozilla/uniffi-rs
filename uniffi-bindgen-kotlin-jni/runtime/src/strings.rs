@@ -35,6 +35,18 @@ impl JniString {
     pub fn as_ptr(&self) -> *const c_char {
         self.0.as_ptr()
     }
+
+    /// Create a `jstring` object
+    ///
+    /// # Safety
+    /// env must point to a valid JNIEnv
+    pub unsafe fn into_jstring(&self, env: *mut JNIEnv) -> jstring {
+        // Safety:
+        //
+        // * env points to a valid JNIEnv
+        // * Our string is pointing to valid M-UTF8 data
+        unsafe { ((**env).v1_2.NewStringUTF)(env, self.as_ptr()) }
+    }
 }
 
 impl From<String> for JniString {

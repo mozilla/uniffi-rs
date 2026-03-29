@@ -4,6 +4,9 @@
 
 use super::*;
 
+uniffi_pipeline::use_prev_node!(general::ObjectImpl);
+uniffi_pipeline::use_prev_node!(general::Type);
+
 #[derive(Debug, Clone, Node, MapNode)]
 #[map_node(from(general::Root))]
 pub struct Root {
@@ -34,15 +37,52 @@ pub struct Function {
 
 #[derive(Debug, Clone, Node, MapNode)]
 #[map_node(from(general::Callable))]
+#[map_node(callables::map_callable)]
 pub struct Callable {
-    #[map_node(callables::map_kind(&self, context)?)]
     pub kind: CallableKind,
     pub name: String,
+    pub arguments: Vec<Argument>,
+    pub return_type: Option<TypeNode>,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::CallableKind))]
 pub enum CallableKind {
     Function,
+    Method {
+        self_type: TypeNode,
+    },
+    Constructor {
+        self_type: TypeNode,
+        primary: bool,
+    },
+    VTableMethod {
+        self_type: TypeNode,
+        for_callback_interface: bool,
+    },
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::Argument))]
+pub struct Argument {
+    pub name: String,
+    pub ty: TypeNode,
+    pub optional: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Node, MapNode)]
+#[map_node(from(general::TypeNode))]
+#[map_node(types::map_type_node)]
+pub struct TypeNode {
+    pub canonical_name: String,
+    pub is_used_as_error: bool,
+    pub ty: Type,
+    pub type_kt: String,
+    pub read_fn_rs: String,
+    pub write_fn_rs: String,
+    pub read_fn_kt: String,
+    pub write_fn_kt: String,
+    // Note: no ffi_type field, we have a very different FFI than the general IR
 }
 
 impl Root {
@@ -84,5 +124,22 @@ impl Callable {
 
     pub fn name_kt(&self) -> String {
         format!("`{}`", self.name.to_lower_camel_case())
+    }
+
+    pub fn return_type_kt(&self) -> &str {
+        match &self.return_type {
+            None => "Unit",
+            Some(ty) => &ty.type_kt,
+        }
+    }
+}
+
+impl Argument {
+    pub fn name_kt(&self) -> String {
+        format!("`{}`", self.name.to_lower_camel_case())
+    }
+
+    pub fn name_rs(&self) -> String {
+        names::escape_rust(&self.name)
     }
 }

@@ -13,4 +13,4 @@ keywords = ["ffi", "bindgen"]
 anyhow = "1"
 jni-sys = "0.4.1"
 simd_cesu8 = "1.1.1"
-
+uniffi = { path = "../../uniffi" }

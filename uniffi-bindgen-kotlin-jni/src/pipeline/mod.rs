@@ -7,6 +7,7 @@ mod context;
 mod names;
 mod nodes;
 mod packages;
+mod types;
 
 use crate::Config;
 use anyhow::{anyhow, bail, Result};

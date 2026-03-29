@@ -151,7 +151,7 @@ pub struct AsyncData {
     pub ffi_foreign_future_result: FfiStructName,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, MapNode)]
 pub struct Argument {
     pub name: String,
     pub orig_name: String,

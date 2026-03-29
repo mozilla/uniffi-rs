@@ -1,8 +1,12 @@
 // Skip clippy checks for the generate bindings
 #[allow(clippy::unused_unit)]
 #[allow(clippy::let_unit_value)]
+#[allow(unused)]
 mod uniffi_bindgen_kotlin_jni_scaffolding {
-    use uniffi_bindgen_kotlin_jni_runtime as uniffi_jni;
+    use ::uniffi_bindgen_kotlin_jni_runtime as uniffi_jni;
+    use ::uniffi_bindgen_kotlin_jni_runtime::uniffi;
+
+    {% filter indent(4) %}{% include "shared.rs" %}{% endfilter %}
 
     {%- for package in root.packages %}
     {%- for func in package.functions %}

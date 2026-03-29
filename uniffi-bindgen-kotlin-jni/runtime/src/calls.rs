@@ -4,6 +4,7 @@
 
 use std::panic::{catch_unwind, AssertUnwindSafe, UnwindSafe};
 
+use anyhow::Result;
 use jni_sys::JNIEnv;
 
 use crate::{CachedClass, JniString};
@@ -12,14 +13,14 @@ static INTERNAL_EXCEPTION: CachedClass = CachedClass::new(c"uniffi/InternalExcep
 
 /// Perform a Rust call and catch any panics
 ///
-/// On panic, this throws a `uniffi.InternalException` error and returns a default value.
+/// On panic or Error, this throws a `uniffi.InternalException` error and returns a default value.
 ///
 /// # Safety
 ///
 /// env must point to a valid JNIEnv
 pub unsafe fn rust_call<F, T>(env: *mut JNIEnv, f: F) -> T
 where
-    F: FnOnce(*mut JNIEnv) -> T + UnwindSafe,
+    F: FnOnce(*mut JNIEnv) -> Result<T> + UnwindSafe,
     T: Default,
 {
     // Create an copy env that we can move into the closure
@@ -28,7 +29,17 @@ where
     let env2 = AssertUnwindSafe(env);
 
     match catch_unwind(move || f(*env2)) {
-        Ok(v) => v,
+        // Successful call
+        Ok(Ok(v)) => v,
+        // Failed call
+        Ok(Err(e)) => {
+            let class = INTERNAL_EXCEPTION.get(env);
+            unsafe {
+                ((**env).v1_2.ThrowNew)(env, class, JniString::from(e.to_string()).as_ptr());
+            }
+            T::default()
+        }
+        // Rust panic
         Err(payload) => {
             // The `catch_unwind` documentation suggests that the payload will *usually* be a str or String.
             let message = if let Some(s) = payload.downcast_ref::<&'static str>() {
@@ -40,6 +51,7 @@ where
             };
 
             // Safety:
+            // env points to a valid JNIEnv
             // We're using the JNI API correctly
             unsafe {
                 let class = INTERNAL_EXCEPTION.get(env);

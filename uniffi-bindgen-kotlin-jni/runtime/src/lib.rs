@@ -14,3 +14,5 @@ pub use caching::*;
 pub use calls::*;
 pub use jni_sys::*;
 pub use strings::*;
+// Re-export for consumers
+pub use uniffi;
