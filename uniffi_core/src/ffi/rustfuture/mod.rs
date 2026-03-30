@@ -180,5 +180,5 @@ where
 /// The [Handle] must not previously have been passed to [rust_future_free]
 pub unsafe fn rust_future_free<FfiType>(handle: Handle) {
     trace!("rust_future_free: {handle:?}");
-    Handle::into_arc_borrowed::<RustFuture<FfiType>>(handle).free()
+    Handle::into_arc::<RustFuture<FfiType>>(handle).free()
 }
