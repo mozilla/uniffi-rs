@@ -112,9 +112,10 @@ fn add_item_to_ci(iface: &mut ComponentInterface, item: Metadata) -> anyhow::Res
         Metadata::CustomType(meta) => {
             iface.types.add_known_type(&Type::Custom {
                 module_path: meta.module_path.clone(),
-                name: meta.name,
-                builtin: Box::new(meta.builtin),
+                name: meta.name.clone(),
+                builtin: Box::new(meta.builtin.clone()),
             })?;
+            iface.add_custom_type_definition(meta.into())?;
         }
     }
     Ok(())

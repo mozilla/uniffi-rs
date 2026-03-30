@@ -88,6 +88,21 @@ pub struct Handle(i64);
 uniffi::custom_newtype!(Handle, i64);
 ```
 
+### `custom_type!` docstrings
+
+You can add docstrings for custom types, but it's not particularly intuitive - you need to
+add them as a docstring at the start of the macro body. For example:
+
+```rust
+uniffi::custom_type!(
+    /// This is a docstring for Handle
+    Handle, i64
+);
+```
+This also works with `custom_newtype`. Not all languages are able to associate the docstring
+with the alias - Python in particular renders the docstring after the alias, which may be
+picked up by some documentation systems, but it's not in `Handle.__doc__` - that remains `int.__doc__`
+
 ### UDL
 
 Define custom types in UDL via a `typedef` with a `Custom` attribute, specifying the UniFFI type
