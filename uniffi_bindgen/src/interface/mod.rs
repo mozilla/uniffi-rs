@@ -58,6 +58,8 @@ use universe::{TypeIterator, TypeUniverse};
 
 mod callbacks;
 pub use callbacks::CallbackInterface;
+mod custom_type;
+pub use custom_type::CustomType;
 mod enum_;
 pub use enum_::{Enum, Variant};
 mod function;
@@ -99,6 +101,7 @@ pub struct ComponentInterface {
     records: Vec<Record>,
     functions: Vec<Function>,
     objects: Vec<Object>,
+    custom_types: Vec<CustomType>,
     pub(crate) callback_interfaces: Vec<CallbackInterface>,
     // Type names which were seen used as an error.
     errors: HashSet<String>,
@@ -220,6 +223,11 @@ impl ComponentInterface {
     /// Get a Record definition by name, or None if no such Record is defined.
     pub fn get_record_definition(&self, name: &str) -> Option<&Record> {
         self.records.iter().find(|o| o.name == name)
+    }
+
+    /// Get a CustomType definition by name, or None if no such custom type is defined.
+    pub fn get_custom_type_definition(&self, name: &str) -> Option<&CustomType> {
+        self.custom_types.iter().find(|c| c.name == name)
     }
 
     /// Get the definitions for every Function in the interface.
@@ -932,6 +940,25 @@ impl ComponentInterface {
             .add_known_types(defn.iter_types())
             .with_context(|| format!("adding record {defn:?}"))?;
         self.records.push(defn);
+        Ok(())
+    }
+
+    pub(super) fn add_custom_type_definition(&mut self, defn: CustomType) -> Result<()> {
+        if let Some(existing) = self.custom_types.iter_mut().find(|c| c.name == defn.name) {
+            // Parallel merge logic exists in pipeline/initial/from_uniffi_meta.rs for the
+            // new pipeline path; keep them consistent.
+            anyhow::ensure!(
+                existing.builtin == defn.builtin && existing.module_path == defn.module_path,
+                "conflicting custom type definitions for {:?}",
+                defn.name,
+            );
+            // UDL provides docstring: None; proc-macro may provide Some.  Prefer Some.
+            if defn.docstring.is_some() && existing.docstring.is_none() {
+                existing.docstring = defn.docstring;
+            }
+            return Ok(());
+        }
+        self.custom_types.push(defn);
         Ok(())
     }
 
@@ -1831,5 +1858,50 @@ new definition: Enum {
         .unwrap();
         let graph = ci.type_dep_graph();
         assert!(graph["Verdict"].is_empty());
+    }
+
+    #[test]
+    fn test_custom_type_docstring_upgrade() {
+        // Simulates the UDL path (docstring: None) followed by the proc-macro path
+        // (docstring: Some) for the same custom type — the docstring should be preserved.
+        let mut ci = ComponentInterface::new("crate_name");
+        ci.add_custom_type_definition(CustomType {
+            name: "Guid".into(),
+            module_path: "crate_name".into(),
+            builtin: Type::String,
+            docstring: None,
+        })
+        .unwrap();
+        ci.add_custom_type_definition(CustomType {
+            name: "Guid".into(),
+            module_path: "crate_name".into(),
+            builtin: Type::String,
+            docstring: Some("A globally unique identifier.".into()),
+        })
+        .unwrap();
+        assert_eq!(
+            ci.get_custom_type_definition("Guid").unwrap().docstring(),
+            Some("A globally unique identifier.")
+        );
+    }
+
+    #[test]
+    fn test_custom_type_conflicting_builtin_is_error() {
+        let mut ci = ComponentInterface::new("crate_name");
+        ci.add_custom_type_definition(CustomType {
+            name: "Guid".into(),
+            module_path: "crate_name".into(),
+            builtin: Type::String,
+            docstring: None,
+        })
+        .unwrap();
+        assert!(ci
+            .add_custom_type_definition(CustomType {
+                name: "Guid".into(),
+                module_path: "crate_name".into(),
+                builtin: Type::Int32,
+                docstring: None,
+            })
+            .is_err());
     }
 }

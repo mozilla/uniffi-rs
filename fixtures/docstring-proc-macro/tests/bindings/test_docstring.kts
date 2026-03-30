@@ -34,3 +34,7 @@ val recField = rec.test
 class CallbackImpls() : CallbackTest {
     override fun test() {}
 }
+
+// We can't really reference these sanely
+// CustomNewType("hello")
+// CustomType(0)

@@ -35,3 +35,7 @@ final class CallbackImpls: CallbackTest {
     func test() {}
 }
 
+// We can't really reference these sanely
+// CustomNewType("hello")
+// CustomType(0)
+
