@@ -7,6 +7,102 @@
 // Simple tests for inputting and returning arguments
 
 #[uniffi::export]
+pub fn input_u8(_a: u8) {}
+
+#[uniffi::export]
+pub fn input_i8(_a: i8) {}
+
+#[uniffi::export]
+pub fn input_u16(_a: u16) {}
+
+#[uniffi::export]
+pub fn input_i16(_a: i16) {}
+
+#[uniffi::export]
+pub fn input_u32(_a: u32) {}
+
+#[uniffi::export]
+pub fn input_i32(_a: i32) {}
+
+#[uniffi::export]
+pub fn input_u64(_a: u64) {}
+
+#[uniffi::export]
+pub fn input_i64(_a: i64) {}
+
+#[uniffi::export]
+pub fn input_f32(_a: f32) {}
+
+#[uniffi::export]
+pub fn input_f64(_a: f64) {}
+
+#[uniffi::export]
+pub fn input_bool(_a: bool) {}
+
+#[uniffi::export]
+pub fn input_string(_a: String) {}
+
+#[uniffi::export]
+pub fn output_u8() -> u8 {
+    1
+}
+
+#[uniffi::export]
+pub fn output_i8() -> i8 {
+    1
+}
+
+#[uniffi::export]
+pub fn output_u16() -> u16 {
+    1
+}
+
+#[uniffi::export]
+pub fn output_i16() -> i16 {
+    1
+}
+
+#[uniffi::export]
+pub fn output_u32() -> u32 {
+    1
+}
+
+#[uniffi::export]
+pub fn output_i32() -> i32 {
+    1
+}
+
+#[uniffi::export]
+pub fn output_u64() -> u64 {
+    1
+}
+
+#[uniffi::export]
+pub fn output_i64() -> i64 {
+    1
+}
+
+#[uniffi::export]
+pub fn output_f32() -> f32 {
+    1.0
+}
+
+#[uniffi::export]
+pub fn output_f64() -> f64 {
+    1.0
+}
+
+#[uniffi::export]
+pub fn output_bool() -> bool {
+    true
+}
+
+#[uniffi::export]
+pub fn output_string() -> String {
+    "test-string".into()
+}
+
+#[uniffi::export]
 pub fn roundtrip_u8(a: u8) -> u8 {
     a
 }

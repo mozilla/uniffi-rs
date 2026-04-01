@@ -4,6 +4,32 @@
 
 import uniffi_bindgen_tests
 
+// Test passing values to Rust
+inputU8(a: 42)
+inputI8(a: -42)
+inputU16(a: 42)
+inputI16(a: -42)
+inputU32(a: 42)
+inputI32(a: -42)
+inputU64(a: 42)
+inputI64(a: -42)
+inputF32(a: 0.5)
+inputF64(a: -3.5)
+inputBool(a: true)
+inputString(a: "ABC")
+// Test returning values to Swift
+assert(outputU8() == 1);
+assert(outputI8() == 1);
+assert(outputU16() == 1);
+assert(outputI16() == 1);
+assert(outputU32() == 1);
+assert(outputI32() == 1);
+assert(outputU64() == 1);
+assert(outputI64() == 1);
+assert(outputF32() == 1.0);
+assert(outputF64() == 1.0);
+assert(outputBool() == true);
+assert(outputString() == "test-string");
 // Test calling and returning a single argument
 assert(roundtripU8(a: 42) == 42);
 assert(roundtripI8(a: -42) == -42);
