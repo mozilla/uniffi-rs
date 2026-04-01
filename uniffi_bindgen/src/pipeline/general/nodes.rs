@@ -204,6 +204,7 @@ pub struct Record {
     pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
+    pub module_path: String,
     #[map_node(from(uniffi_traits))]
     pub uniffi_trait_methods: UniffiTraitMethods,
     pub fields: Vec<Field>,

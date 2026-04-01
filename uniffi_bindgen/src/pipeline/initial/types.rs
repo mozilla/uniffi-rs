@@ -82,6 +82,7 @@ pub fn map_record(input: uniffi_meta::RecordMetadata, context: &Context) -> Resu
         uniffi_traits: context.uniffi_traits_for_type(&input.module_path, &input.name)?,
         orig_name: input.orig_name.unwrap_or_else(|| input.name.clone()),
         name: input.name,
+        module_path: input.module_path,
         fields: input.fields.map_node(context)?,
         docstring: input.docstring,
     })

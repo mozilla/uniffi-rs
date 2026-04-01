@@ -4,7 +4,8 @@ This is an experimental crate for generating JNI-based Kotlin bindings.
 
 ## Rust crates
 
-Crates that export a UniFFI interface should stay mostly the same.
+Crates that export a UniFFI interface should stay mostly the same,
+but see below for extra requirements.
 They should still depend on `uniffi`, except you can set `default-features = false`.
 This disables the `macro-scaffolding` feature which speeds up compilation and reduces binary size.
 
@@ -49,3 +50,10 @@ Run your executable and use the `bindings` subcommand to generate bindings.
 For example:
 
 `cargo run -p [bindgen-binary-crate-name] bindings src:[library-crate-name] [out-dir]`
+
+## Extra requriments compared to the normal macro code
+
+* All exported items must be `pub`. This includes types, fields, functions, etc.
+  Furthermore, types be publicly reachable (there must be a path that other crates can import).
+* The top-level Rust crate must directly depend on all UniFFI crates
+* The top-level Rust crate must depend on `uniffi-bindgen-kotlin-jni-runtime`

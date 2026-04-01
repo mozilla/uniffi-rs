@@ -4,6 +4,7 @@
 
 mod callables;
 mod context;
+mod defaults;
 mod names;
 mod nodes;
 mod packages;
@@ -12,7 +13,7 @@ mod types;
 use crate::Config;
 use anyhow::{anyhow, bail, Result};
 use context::Context;
-use heck::{ToLowerCamelCase, ToUpperCamelCase};
+use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
 use indexmap::IndexSet;
 use uniffi_bindgen::pipeline::{general, initial};
 use uniffi_pipeline::{MapNode, Node, Pipeline};

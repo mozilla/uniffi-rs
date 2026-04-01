@@ -16,7 +16,7 @@ pub fn map_callable(input: general::Callable, context: &Context) -> Result<Calla
 pub fn function_jni_method_name(func: &general::Function, context: &Context) -> Result<String> {
     Ok(format!(
         "function{}{}",
-        context.crate_name()?.to_upper_camel_case(),
+        context.current_crate_name()?.to_upper_camel_case(),
         func.callable.name.to_upper_camel_case()
     ))
 }

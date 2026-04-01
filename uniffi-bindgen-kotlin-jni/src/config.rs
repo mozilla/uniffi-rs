@@ -20,8 +20,6 @@ pub struct Config {
     #[serde(default)]
     custom_types: IndexMap<String, CustomTypeConfig>,
     #[serde(default)]
-    pub(super) external_packages: IndexMap<String, String>,
-    #[serde(default)]
     android: bool,
     #[serde(default)]
     android_cleaner: Option<bool>,
@@ -31,14 +29,20 @@ pub struct Config {
     disable_java_cleaner: bool,
     #[serde(default)]
     pub(super) exclude: Vec<String>,
+    // Note: we ignore `external_packages`.  We don't need it since we process all packages at once
+    // and know all the names.
 }
 
 impl Config {
-    pub fn from_toml(config_toml: Option<String>) -> Result<Self> {
+    pub fn from_toml(config_toml: Option<&str>) -> Result<Self> {
         Ok(match config_toml {
-            Some(s) => toml::from_str(&s)?,
+            Some(s) => toml::from_str(s)?,
             None => Self::default(),
         })
+    }
+
+    pub fn record_is_immutable(&self, name: &str) -> bool {
+        self.generate_immutable_records == Some(true) || self.mutable_records.contains(name)
     }
 
     pub(crate) fn android_cleaner(&self) -> bool {
@@ -61,20 +65,6 @@ impl Config {
                 })
             })
             .unwrap_or(KotlinVersion::new(0, 0, 0))
-    }
-
-    // Get the package name for an external type
-    fn external_package_name(&self, module_path: &str, namespace: Option<&str>) -> String {
-        // config overrides are keyed by the crate name, default fallback is the namespace.
-        let crate_name = module_path.split("::").next().unwrap();
-        match self.external_packages.get(crate_name) {
-            Some(name) => name.clone(),
-            // If the module path is not in `external_packages`, we need to fall back to a default
-            // with the namespace, which we hopefully have.  This is quite fragile, but it's
-            // unreachable in library mode - all deps get an entry in `external_packages` with the
-            // correct namespace.
-            None => format!("uniffi.{}", namespace.unwrap_or(module_path)),
-        }
     }
 }
 

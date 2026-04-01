@@ -7,7 +7,8 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-uniffi-bindgen-tests = { path = "../../bindgen-tests/lib", default-features = false, features = ["simple_fns", "primitive_types"] }
+uniffi-bindgen-tests = { path = "../../bindgen-tests/lib", default-features = false, features = ["simple_fns", "primitive_types", "records"] }
+uniffi-bindgen-tests-external-types-source = { path = "../../bindgen-tests/external-types" }
 uniffi-bindgen-kotlin-jni-runtime = { path = "../runtime" }
 
 [build-dependencies]

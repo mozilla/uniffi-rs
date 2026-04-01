@@ -146,6 +146,7 @@ pub struct Record {
     pub uniffi_traits: Vec<UniffiTrait>,
     pub name: String,
     pub orig_name: String,
+    pub module_path: String,
     pub fields: Vec<Field>,
     pub docstring: Option<String>,
 }
