@@ -2,16 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::fmt::Display;
+
 use super::*;
 
 pub fn map_type_node(type_node: general::TypeNode, context: &Context) -> Result<TypeNode> {
     let ty = &type_node.ty;
 
-    let ffi_types = if let Some(ffi_types) = ffi_types::standard_ffi_type_mapping(&type_node.ty) {
-        ffi_types
-    } else {
-        todo!();
-    };
+    let ffi_types = context.ffi_type_oracle.get_ffi_types(ty)?;
 
     Ok(TypeNode {
         is_used_as_error: type_node.is_used_as_error,
@@ -78,7 +76,9 @@ pub fn type_kt(ty: &Type, context: &Context) -> Result<String> {
 impl TypeNode {
     /// Function to lower this type
     ///
-    /// For primitive types, this converts the high-level type into a single FfiType.
+    /// This converts the high-level type into one or more FfiTypes.
+    /// If this type has exactly 1 FFI type, then this returns that type directly.
+    /// Otherwise it returns a tuple.
     pub fn lower_fn_rs(&self) -> String {
         let id = self.id;
         match &self.ty {
@@ -114,7 +114,7 @@ impl TypeNode {
 
     /// Function to lift this type
     ///
-    /// For primitive types, this converts the FfiType back into the high-level type.
+    /// This converts one or more FfiTypes into the high-level type.
     pub fn lift_fn_rs(&self) -> String {
         let id = self.id;
         match &self.ty {
@@ -150,7 +150,9 @@ impl TypeNode {
 
     /// Function to lower this type
     ///
-    /// For primitive types, this converts the high-level type into a single FfiType.
+    /// This converts the high-level type into one or more FfiTypes.
+    /// If this type has exactly 1 FFI type, then this returns that type directly.
+    /// Otherwise it returns a tuple-like class named `self.lower_type_kt`.
     pub fn lower_fn_kt(&self) -> String {
         let id = self.id;
         match &self.ty {
@@ -186,7 +188,7 @@ impl TypeNode {
 
     /// Function to lift this type
     ///
-    /// For primitive types, this converts the FfiType back into the high-level type.
+    /// This converts one or more FfiTypes into the high-level type.
     pub fn lift_fn_kt(&self) -> String {
         let id = self.id;
         match &self.ty {
@@ -218,5 +220,86 @@ impl TypeNode {
             },
             _ => format!("liftType{id}"),
         }
+    }
+
+    /// Does this type lower to a single primitive FFI type?
+    ///
+    /// If so, the lower function will return that type directly instead of a tuple.
+    pub fn lowers_to_primitive(&self) -> bool {
+        self.ffi_types.len() == 1
+    }
+
+    /// Get FFI values for a lowered variable
+    ///
+    /// Given a variable that comes from the lower function for this type,
+    /// this returns (var_name, ffi_type) pairs for all individual FFI values.
+    pub fn ffi_values_rs(&self, lowered_var_name: impl Display) -> Vec<(String, FfiType)> {
+        let mut ffi_values = vec![];
+        if self.lowers_to_primitive() {
+            ffi_values.push((lowered_var_name.to_string(), self.ffi_types[0]));
+        } else {
+            for (i, ffi_type) in self.ffi_types.iter().enumerate() {
+                ffi_values.push((format!("{lowered_var_name}.{i}"), *ffi_type))
+            }
+        }
+        ffi_values
+    }
+
+    pub fn ffi_values_kt(&self, lowered_var_name: impl Display) -> Vec<(String, FfiType)> {
+        let mut ffi_values = vec![];
+        if self.lowers_to_primitive() {
+            ffi_values.push((lowered_var_name.to_string(), self.ffi_types[0]));
+        } else {
+            for (i, ffi_type) in self.ffi_types.iter().enumerate() {
+                ffi_values.push((format!("{lowered_var_name}.v{i}"), *ffi_type))
+            }
+        }
+        ffi_values
+    }
+
+    /// Rust type that the lower function returns
+    ///
+    /// If this type has exactly 1 FFI type, then this is that type.
+    /// Otherwise this is a tuple of FFI types
+    pub fn lowered_type_rs(&self) -> String {
+        if self.lowers_to_primitive() {
+            self.ffi_types[0].type_rs().into()
+        } else {
+            format!(
+                "({})",
+                self.ffi_types
+                    .iter()
+                    .map(FfiType::type_rs)
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        }
+    }
+
+    /// Kotlin type that the lower function returns
+    ///
+    /// If this type has exactly 1 FFI type, then this is that type.
+    /// Otherwise this is a tuple-like class where all fields are named `v{index}`
+    pub fn lowered_type_kt(&self) -> String {
+        if self.lowers_to_primitive() {
+            self.ffi_types[0].type_kt().into()
+        } else {
+            format!("DeconstructedType{}", self.id)
+        }
+    }
+
+    /// Static Rust variable to call the Kotlin lift function from Rust
+    pub fn lift_kt_from_rust_var(&self) -> String {
+        format!("UNIFFI_CACHED_LIFT_KT_{}", self.id)
+    }
+
+    pub fn lift_fn_jni_signature(&self) -> String {
+        let args: String = self
+            .ffi_types
+            .iter()
+            .map(|ffi_type| ffi_type.jni_signature())
+            .collect();
+        let ret = format!("L{};", self.type_kt.replace(".", "/").replace("`", ""));
+        format!("({args}){ret}")
     }
 }

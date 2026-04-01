@@ -34,4 +34,42 @@ impl Root {
     pub fn jni_methods(&self) -> impl Iterator<Item = (&str, &Callable)> {
         self.packages.iter().flat_map(Package::jni_methods)
     }
+
+    /// Type definitions to generate FFI functions for
+    ///
+    /// This de-dupes the type definitions for all packages so we only don't generate duplicate
+    /// functions for types that may be used in multiple packages like `Vec<u32>`.
+    pub fn ffi_type_definitions(&self) -> impl Iterator<Item = &TypeDefinition> {
+        let mut seen = HashSet::new();
+        self.packages
+            .iter()
+            .flat_map(|p| &p.type_definitions)
+            .filter(move |type_def| {
+                seen.insert(match type_def {
+                    TypeDefinition::Record(r) => r.self_type.id,
+                })
+            })
+    }
+
+    /// Types where we need to call the Kotlin lift function from Rust
+    ///
+    /// We need to do this for non-primitive types that are returned
+    /// and any error types that get thrown from Rust functions.
+    pub fn lift_kt_from_rust_types(&self) -> impl Iterator<Item = &TypeNode> {
+        let mut seen = HashSet::new();
+        let mut type_nodes = vec![];
+        self.visit(|callable: &Callable| {
+            if let Some(return_type) = &callable.return_type {
+                if !return_type.lowers_to_primitive() && seen.insert(return_type.id) {
+                    type_nodes.push(return_type);
+                }
+            }
+            if let Some(throws_type) = &callable.throws_type {
+                if seen.insert(throws_type.id) {
+                    type_nodes.push(throws_type);
+                }
+            }
+        });
+        type_nodes.into_iter()
+    }
 }

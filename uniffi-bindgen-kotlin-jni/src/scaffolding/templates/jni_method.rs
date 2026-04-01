@@ -8,6 +8,7 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
 )
 {%- match callable.return_ffi %}
 {%- when ReturnFfi::Primitive { ffi_type, .. } %} -> {{ ffi_type.type_rs() }}
+{%- when ReturnFfi::Deconstruct { .. } %} -> uniffi_jni::jobject
 {%- when ReturnFfi::Void %}
 {%- endmatch %}
 {
@@ -31,6 +32,20 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
             {%- match callable.return_ffi %}
             {%- when ReturnFfi::Primitive { type_node, .. } %}
             uniffi::Result::Ok({{ type_node.lower_fn_rs() }}(uniffi_env, uniffi_return)?)
+
+            {%- when ReturnFfi::Deconstruct { type_node, ffi_types } %}
+            let uniffi_return_deconstructed = {{ type_node.lower_fn_rs() }}(uniffi_env, uniffi_return)?;
+            let uniffi_return_obj = {{ type_node.lift_kt_from_rust_var() }}.call_object(
+                uniffi_env,
+                [
+                    {%- for ffi_type in ffi_types %}
+                    uniffi_jni::jvalue {
+                        {{ ffi_type.jvalue_field() }}: uniffi_return_deconstructed.{{ loop.index0 }},
+                    },
+                    {%- endfor %}
+                ]
+            ).to_anyhow_result(uniffi_env, "{{ type_node.lift_fn_kt() }}")?;
+            uniffi::Result::Ok(uniffi_return_obj)
             {%- when ReturnFfi::Void %}
             uniffi::Result::Ok(())
             {% endmatch %}

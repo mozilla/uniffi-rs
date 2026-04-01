@@ -7,6 +7,7 @@ object Scaffolding {
     )
     {%- match callable.return_ffi %}
     {%- when ReturnFfi::Primitive { ffi_type, .. } %} : {{ ffi_type.type_kt() }}
+    {%- when ReturnFfi::Deconstruct { type_node, .. } %} : {{ type_node.type_kt }}
     {%- when ReturnFfi::Void %}
     {%- endmatch %}
     {%- endfor %}

@@ -8,13 +8,15 @@ mod ffi_types;
 mod names;
 mod nodes;
 mod packages;
+mod records;
 mod root;
 mod types;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use anyhow::{anyhow, bail, Result};
 use context::Context;
+use ffi_types::FfiTypeOracle;
 use heck::{ToLowerCamelCase, ToUpperCamelCase};
 use indexmap::IndexSet;
 use uniffi_bindgen::pipeline::{general, initial};
