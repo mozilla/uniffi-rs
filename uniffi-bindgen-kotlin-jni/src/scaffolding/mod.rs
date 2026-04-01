@@ -29,3 +29,6 @@ pub fn generate(initial_root: InitialRoot, pkg_name: String, out_dir: &Utf8Path)
 pub struct Scaffolding {
     root: Root,
 }
+
+// Defining filters modules to make template errors a bit better
+mod filters {}

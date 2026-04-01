@@ -29,13 +29,14 @@ fn map_callable(
     let return_type = input.return_type.ty.map_node(context)?;
     let throws_type = input.throws_type.ty.map_node(context)?;
     let return_ffi = match &return_type {
-        Some(type_node) if type_node.ffi_types.len() == 1 => ReturnFfi::Primitive {
+        Some(type_node) if type_node.lowers_to_primitive() => ReturnFfi::Primitive {
             type_node: type_node.clone(),
             ffi_type: type_node.ffi_types[0],
         },
-        Some(_type_node) => {
-            todo!("returns with more than one ffi type")
-        }
+        Some(type_node) => ReturnFfi::Deconstruct {
+            type_node: type_node.clone(),
+            ffi_types: type_node.ffi_types.clone(),
+        },
         None => ReturnFfi::Void,
     };
 
@@ -55,11 +56,13 @@ fn map_arguments(input: Vec<general::Argument>, context: &Context) -> Result<Vec
     let mut allocator = FfiArgAllocator::default();
     input
         .into_iter()
-        .map(|arg| {
+        .enumerate()
+        .map(|(index, arg)| {
             let ty = arg.ty.map_node(context)?;
             let ffi_args = allocator.create_ffi_args(&ty);
             Ok(Argument {
                 name: arg.name,
+                index,
                 optional: arg.optional,
                 ty,
                 ffi_args,
@@ -104,6 +107,10 @@ impl Argument {
 
     pub fn name_rs(&self) -> String {
         names::escape_rust(&self.name)
+    }
+
+    pub fn lowers_to_primitive(&self) -> bool {
+        self.ffi_args.len() == 1
     }
 }
 

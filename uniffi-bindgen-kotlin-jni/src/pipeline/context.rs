@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use uniffi_bindgen::pipeline::general::sort::sort_type_definitions;
+
 use super::*;
 
 #[derive(Default, Clone)]
@@ -16,12 +18,15 @@ pub struct Context {
     pub type_module_path_map: HashMap<Type, String>,
     pub package_map: HashMap<String, String>,
     pub type_id_map: HashMap<Type, u64>,
+    pub ffi_type_oracle: FfiTypeOracle,
 }
 
 impl Context {
     pub fn update_from_root(&mut self, root: &general::Root) -> Result<()> {
         self.populate_type_id_map(root);
         self.populate_type_module_path_map(root);
+        self.populate_fields_from_type_definitions(root)?;
+
         for namespace in root.namespaces.values() {
             let config = Config::from_toml(namespace.config_toml.as_deref())?;
             let package_name = match &config.package_name {
@@ -74,6 +79,26 @@ impl Context {
                 }
             }
         }
+    }
+
+    fn populate_fields_from_type_definitions(&mut self, root: &general::Root) -> Result<()> {
+        use anyhow::Context;
+
+        // Get type definitions for all packages and sort them.
+        // This makes it so that dependencies come before their dependant types,
+        // which simplifies the logic for the functions we're going to call.
+        //
+        // Note: recursive types can't be ordered in this manner and
+        // the following functions should take that into account.
+        let sorted_type_definitions = sort_type_definitions(
+            root.namespaces
+                .values()
+                .flat_map(|n| n.type_definitions.iter().cloned()),
+        );
+        self.ffi_type_oracle
+            .add_type_definitions(&sorted_type_definitions)
+            .context("while building the type ffi oracle")?;
+        Ok(())
     }
 
     pub fn update_from_namespace(&mut self, namespace: &general::Namespace) {
