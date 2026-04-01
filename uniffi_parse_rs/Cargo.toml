@@ -1,0 +1,27 @@
+[package]
+name = "uniffi_parse_rs"
+version = "0.31.0"
+description = "Rust source parsing for the uniffi project"
+documentation = "https://mozilla.github.io/uniffi-rs"
+homepage = "https://mozilla.github.io/uniffi-rs"
+repository = "https://github.com/mozilla/uniffi-rs"
+license = "MPL-2.0"
+edition = "2021"
+keywords = ["ffi", "bindgen"]
+readme = "../README.md"
+
+[dependencies]
+anyhow = "1"
+camino = "1"
+codespan-reporting = "0.13"
+quote = "1"
+proc-macro2 = { version = "1", features = ["span-locations"] }
+serde = { version = "1", features = ["derive"] }
+syn = { version = "2.0", features = ["full", "parsing"] }
+target-lexicon = "0.13"
+thiserror = "2"
+toml = "1.1.0"
+uniffi_meta = { path = "../uniffi_meta", version = "=0.31.0" }
+
+[dev-dependencies]
+expect-test = "1.4"
