@@ -4,7 +4,9 @@
 
 use super::*;
 
+uniffi_pipeline::use_prev_node!(general::FieldsKind);
 uniffi_pipeline::use_prev_node!(general::ObjectImpl);
+uniffi_pipeline::use_prev_node!(general::Radix);
 uniffi_pipeline::use_prev_node!(general::TraitKind);
 uniffi_pipeline::use_prev_node!(general::Type);
 
@@ -24,6 +26,35 @@ pub struct Package {
     pub crate_name: String,
     pub config: Config,
     pub functions: Vec<Function>,
+    pub type_definitions: Vec<TypeDefinition>,
+}
+
+#[derive(Debug, Clone, Node)]
+#[allow(clippy::large_enum_variant)]
+pub enum TypeDefinition {
+    Record(Record),
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::Record))]
+#[map_node(records::map_record)]
+pub struct Record {
+    pub self_type: TypeNode,
+    pub immutable: bool,
+    pub name: String,
+    pub fields_kind: FieldsKind,
+    pub fields: Vec<Field>,
+    pub docstring: Option<String>,
+    pub recursive: bool,
+}
+
+#[derive(Debug, Clone, Node)]
+pub struct Field {
+    pub name: String,
+    pub index: usize,
+    pub ty: TypeNode,
+    pub docstring: Option<String>,
+    pub ffi_fields: Vec<FfiField>,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -67,6 +98,7 @@ pub enum CallableKind {
 #[derive(Debug, Clone, Node)]
 pub struct Argument {
     pub name: String,
+    pub index: usize,
     pub ty: TypeNode,
     pub optional: bool,
     pub ffi_args: Vec<FfiArgument>,
@@ -85,6 +117,12 @@ pub struct TypeNode {
     pub ffi_types: Vec<FfiType>,
 }
 
+#[derive(Debug, Clone, Copy, Node)]
+pub struct FfiField {
+    pub index: usize,
+    pub ty: FfiType,
+}
+
 /// Argument on the JNI FFI function
 #[derive(Debug, Clone, Node, MapNode)]
 pub struct FfiArgument {
@@ -98,6 +136,13 @@ pub enum ReturnFfi {
     Primitive {
         type_node: TypeNode,
         ffi_type: FfiType,
+    },
+    /// High-level type is deconstructed then returned
+    ///
+    /// The exact mechanics of this varies by call type, see DESIGN.md for details.
+    Deconstruct {
+        type_node: TypeNode,
+        ffi_types: Vec<FfiType>,
     },
     Void,
 }

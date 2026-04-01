@@ -61,3 +61,6 @@ pub struct UniffiPackage<'a> {
     cdylib: String,
     root: &'a Root,
 }
+
+// Defining filters modules to make template errors a bit better
+mod filters {}
