@@ -33,6 +33,40 @@ The following types are passed as primitives:
     with `null` used for `None`.
   * Flat enums are passed using their discriminants.
 
+## Deconstructable types
+
+If we can't pass types as primitives,
+then we deconstruct the type into multiple FFI values and pass those.
+
+* Records are deconstructed into their field's FFI values.
+  Non-primitive fields are recursively deconstructed.
+* Enums are passed as the union of the FFI values required for each variant,
+  plus a `i32` value for the discriminant.
+  If a variant doesn't have a FFI field, then a default value is passed.
+  For example:
+    * variant A contains `{a: i32, b: String, c: i64}`
+    * variant B contains `{a: i32, b: i64}`
+    * variant C contains `{a: i32, b: f32}`
+    * The entire enum will be deconstructed to `(Int, String?, Long, Float)`
+    * Variant B is passed as `(a, null, b, 0.0)`
+* `Option<T>` that can't be passed as a primitive is passed as
+  `bool` plus the FFI types for `T`.
+
+Returning deconstructable types requires special handling that varies by the call type.
+See notes on "Returning deconstructed types" below for details.
+
+Note: if a type deconstructs to exactly 1 FFI type, then we simply return it as a primitive.
+
+## Call details
+
+### Kotlin -> Rust sync call
+
+* Returning deconstructed types:
+    * Deconstruct the value into primitives
+    * Pass the primitives to the Kotlin lift function via JNI, getting back a `jobject`.
+    * Return the resulting `jobject` back to Kotlin.
+* Error handling: Rust constructs and throws an exception as described in `Errors/exceptions`
+
 # Kotlin `uniffi` package
 
 This is a generated package that contains all the FFI functions.
