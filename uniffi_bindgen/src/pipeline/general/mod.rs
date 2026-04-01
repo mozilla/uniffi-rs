@@ -23,7 +23,7 @@ mod rename;
 mod root;
 mod rust_buffer;
 mod rust_future;
-mod sort;
+pub mod sort;
 mod type_definitions_from_api;
 mod types;
 mod uniffi_traits;

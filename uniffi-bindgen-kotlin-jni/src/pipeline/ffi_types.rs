@@ -52,6 +52,45 @@ pub fn standard_ffi_type_mapping(ty: &Type) -> Option<Vec<FfiType>> {
     }
 }
 
+/// Knows the FFI types for each type
+#[derive(Default, Clone)]
+pub struct FfiTypeOracle {
+    // Map user types to their FFI types
+    user_type_map: HashMap<Type, Vec<FfiType>>,
+}
+
+impl FfiTypeOracle {
+    pub fn get_ffi_types(&self, ty: &Type) -> Result<Vec<FfiType>> {
+        Ok(if let Some(ffi_types) = standard_ffi_type_mapping(ty) {
+            ffi_types
+        } else if let Some(ffi_types) = self.user_type_map.get(ty) {
+            ffi_types.clone()
+        } else {
+            bail!("Can't find FFI types for {ty:?}")
+        })
+    }
+
+    pub fn add_type_definitions(
+        &mut self,
+        sorted_type_definitions: &[general::TypeDefinition],
+    ) -> Result<()> {
+        for type_def in sorted_type_definitions {
+            match type_def {
+                general::TypeDefinition::Record(rec) => {
+                    let mut ffi_types = vec![];
+                    for f in rec.fields.iter() {
+                        ffi_types.extend(self.get_ffi_types(&f.ty.ty)?)
+                    }
+                    self.user_type_map
+                        .insert(rec.self_type.ty.clone(), ffi_types);
+                }
+                _ => (),
+            }
+        }
+        Ok(())
+    }
+}
+
 impl FfiType {
     pub fn type_kt(&self) -> &'static str {
         match self {
