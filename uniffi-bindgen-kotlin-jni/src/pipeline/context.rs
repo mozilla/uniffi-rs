@@ -18,6 +18,7 @@ pub struct Context {
     pub type_module_path_map: HashMap<Type, String>,
     pub package_map: HashMap<String, String>,
     pub ffi_type_oracle: FfiTypeOracle,
+    pub current_enum: Option<general::Enum>,
 }
 
 impl Context {
@@ -95,6 +96,10 @@ impl Context {
         self.current_namespace_name = Some(namespace.name.clone());
     }
 
+    pub fn update_from_enum(&mut self, en: &general::Enum) {
+        self.current_enum = Some(en.clone());
+    }
+
     pub fn current_crate_name(&self) -> Result<&str> {
         self.current_crate_name
             .as_deref()
@@ -154,5 +159,11 @@ impl Context {
             .get(namespace_name)
             .map(|s| s.as_str())
             .ok_or_else(|| anyhow!("crate name not found: {namespace_name}"))
+    }
+
+    pub fn current_enum(&self) -> Result<&general::Enum> {
+        self.current_enum
+            .as_ref()
+            .ok_or_else(|| anyhow!("current_enum not set"))
     }
 }

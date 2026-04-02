@@ -5,6 +5,7 @@
 mod callables;
 mod context;
 mod defaults;
+mod enums;
 mod ffi_types;
 mod names;
 mod nodes;

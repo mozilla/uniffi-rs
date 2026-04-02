@@ -84,6 +84,31 @@ impl FfiTypeOracle {
                     self.user_type_map
                         .insert(rec.self_type.ty.clone(), ffi_types);
                 }
+                general::TypeDefinition::Enum(en) => {
+                    if matches!(en.shape, EnumShape::Error { flat: true }) {
+                        todo!()
+                    }
+                    // Start with just a i32 for the variant index, we'll add to this as we process each
+                    // variant
+                    let mut all_ffi_types = vec![FfiType::Int32];
+                    for v in en.variants.iter() {
+                        let mut field_ffi_types = vec![];
+                        for f in v.fields.iter() {
+                            field_ffi_types.extend(self.get_ffi_types(&f.ty.ty)?);
+                        }
+                        // Extend `all_ffi_types` with the new FFI types for this variant.
+                        // However, if there already is an existing ffi type, then we can re-use it.
+                        let mut existing_types: HashSet<FfiType> =
+                            all_ffi_types.iter().skip(1).cloned().collect();
+                        for ffi_type in field_ffi_types {
+                            if !existing_types.remove(&ffi_type) {
+                                all_ffi_types.push(ffi_type);
+                            }
+                        }
+                    }
+                    self.user_type_map
+                        .insert(en.self_type.ty.clone(), all_ffi_types);
+                }
                 _ => (),
             }
         }
