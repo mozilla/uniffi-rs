@@ -10,6 +10,8 @@ class InternalException(message: String) : Exception(message)
 {%- match type_def %}
 {%- when TypeDefinition::Record(rec) %}
 {% include "RecordFfi.kt" %}
+{%- when TypeDefinition::Enum(en) %}
+{% include "EnumFfi.kt" %}
 {%- endmatch %}
 {%- endfor %}
 {%- endfor %}

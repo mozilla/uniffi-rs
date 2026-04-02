@@ -95,6 +95,7 @@ pub fn map_enum(input: uniffi_meta::EnumMetadata, context: &Context) -> Result<E
         uniffi_traits: context.uniffi_traits_for_type(&input.module_path, &input.name)?,
         orig_name: input.orig_name.unwrap_or_else(|| input.name.clone()),
         name: input.name,
+        module_path: input.module_path,
         shape: input.shape,
         variants: input.variants.map_node(context)?,
         discr_type: input.discr_type.map_node(context)?,

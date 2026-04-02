@@ -4,6 +4,7 @@
 
 use super::*;
 
+uniffi_pipeline::use_prev_node!(general::EnumShape);
 uniffi_pipeline::use_prev_node!(general::FieldsKind);
 uniffi_pipeline::use_prev_node!(general::ObjectImpl);
 uniffi_pipeline::use_prev_node!(general::Radix);
@@ -33,6 +34,7 @@ pub struct Package {
 #[allow(clippy::large_enum_variant)]
 pub enum TypeDefinition {
     Record(Record),
+    Enum(Enum),
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -43,15 +45,46 @@ pub struct Record {
     #[map_node(context.config()?.record_is_immutable(&self.name))]
     pub immutable: bool,
     pub name: String,
+    #[map_node(records::map_fields(self.fields, context)?)]
     pub fields: Vec<Field>,
     pub docstring: Option<String>,
     pub recursive: bool,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
-#[map_node(from(general::Field))]
+#[map_node(from(general::Enum))]
+#[map_node(update_context(context.update_from_enum(&self)))]
+pub struct Enum {
+    pub is_flat: bool,
+    #[map_node(context.config()?.use_enum_entries())]
+    pub use_entries: bool,
+    pub self_type: TypeNode,
+    pub discr_type: TypeNode,
+    pub discr_specified: bool,
+    pub variants: Vec<Variant>,
+    pub name: String,
+    pub shape: EnumShape,
+    pub docstring: Option<String>,
+    pub recursive: bool,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::Variant))]
+pub struct Variant {
+    #[map_node(enums::variant_name_kt(&self, context)?)]
+    pub name_kt: String,
+    pub name: String,
+    pub discr: LiteralNode,
+    pub fields_kind: FieldsKind,
+    #[map_node(records::map_fields(self.fields, context)?)]
+    pub fields: Vec<Field>,
+    pub docstring: Option<String>,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
 pub struct Field {
     pub name: String,
+    pub index: usize,
     pub ty: TypeNode,
     pub default: Option<DefaultValueNode>,
     pub docstring: Option<String>,
@@ -124,6 +157,14 @@ pub struct TypeNode {
 pub struct DefaultValueNode {
     pub default_kt: String,
     pub default: DefaultValue,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::Literal))]
+#[map_node(defaults::map_literal)]
+pub struct LiteralNode {
+    pub lit_kt: String,
+    pub lit: Literal,
 }
 
 /// Default value for a field/argument
@@ -210,9 +251,29 @@ impl Record {
     }
 }
 
+impl Enum {
+    pub fn name_kt(&self) -> String {
+        format!("`{}`", self.name.to_upper_camel_case())
+    }
+
+    pub fn name_rs(&self) -> String {
+        names::escape_rust(&self.name)
+    }
+}
+
+impl Variant {
+    pub fn name_rs(&self) -> String {
+        names::escape_rust(&self.name)
+    }
+}
+
 impl Field {
     pub fn name_kt(&self) -> String {
-        format!("`{}`", self.name.to_lower_camel_case())
+        if self.name.is_empty() {
+            format!("v{}", self.index + 1)
+        } else {
+            format!("`{}`", self.name.to_lower_camel_case())
+        }
     }
 
     pub fn name_rs(&self) -> String {

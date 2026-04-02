@@ -36,6 +36,11 @@ fn type_rs(ty: &Type, context: &Context) -> Result<String> {
             namespace,
             orig_name,
             ..
+        }
+        | Type::Enum {
+            namespace,
+            orig_name,
+            ..
         } => {
             format!(
                 "::{}::{orig_name}",
@@ -62,6 +67,9 @@ pub fn type_kt(ty: &Type, context: &Context) -> Result<String> {
         Type::String => "String".into(),
         Type::Record {
             namespace, name, ..
+        }
+        | Type::Enum {
+            namespace, name, ..
         } => {
             format!("{}.{name}", context.package_name(namespace)?)
         }
@@ -83,7 +91,7 @@ pub fn read_fn_rs(ty: &Type, canonical_name: &str) -> Result<String> {
         Type::Float64 => "uniffi::FfiBufferCursor::read_f64".into(),
         Type::Boolean => "uniffi::FfiBufferCursor::read_bool".into(),
         Type::String => "uniffi::FfiBufferCursor::read_string".into(),
-        Type::Record { namespace, .. } => {
+        Type::Record { namespace, .. } | Type::Enum { namespace, .. } => {
             format!(
                 "uniffi_read_type_{}_{}",
                 namespace.to_snake_case(),
@@ -108,7 +116,7 @@ pub fn write_fn_rs(ty: &Type, canonical_name: &str) -> Result<String> {
         Type::Float64 => "uniffi::FfiBufferCursor::write_f64".into(),
         Type::Boolean => "uniffi::FfiBufferCursor::write_bool".into(),
         Type::String => "uniffi::FfiBufferCursor::write_string".into(),
-        Type::Record { namespace, .. } => {
+        Type::Record { namespace, .. } | Type::Enum { namespace, .. } => {
             format!(
                 "uniffi_write_type_{}_{}",
                 namespace.to_snake_case(),
@@ -133,7 +141,7 @@ pub fn read_fn_kt(ty: &Type, canonical_name: &str) -> String {
         Type::Float64 => "readDouble".into(),
         Type::Boolean => "readBool".into(),
         Type::String => "readString".into(),
-        Type::Record { namespace, .. } => {
+        Type::Record { namespace, .. } | Type::Enum { namespace, .. } => {
             format!(
                 "read{}{}",
                 namespace.to_upper_camel_case(),
@@ -158,7 +166,7 @@ pub fn write_fn_kt(ty: &Type, canonical_name: &str) -> String {
         Type::Float64 => "writeDouble".into(),
         Type::Boolean => "writeBool".into(),
         Type::String => "writeString".into(),
-        Type::Record { namespace, .. } => {
+        Type::Record { namespace, .. } | Type::Enum { namespace, .. } => {
             format!(
                 "write{}{}",
                 namespace.to_upper_camel_case(),

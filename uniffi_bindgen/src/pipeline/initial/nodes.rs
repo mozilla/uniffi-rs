@@ -171,6 +171,7 @@ pub struct Enum {
     pub uniffi_traits: Vec<UniffiTrait>,
     pub name: String,
     pub orig_name: String,
+    pub module_path: String,
     pub shape: EnumShape,
     pub variants: Vec<Variant>,
     pub discr_type: Option<Type>,

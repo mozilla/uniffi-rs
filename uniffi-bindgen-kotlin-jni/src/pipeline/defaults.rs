@@ -12,6 +12,14 @@ pub fn map_default(default: general::DefaultValue, context: &Context) -> Result<
     })
 }
 
+pub fn map_literal(lit: general::Literal, context: &Context) -> Result<LiteralNode> {
+    let lit: Literal = lit.map_node(context)?;
+    Ok(LiteralNode {
+        lit_kt: render_lit(&lit, context)?,
+        lit,
+    })
+}
+
 fn render_default(default: &DefaultValue, context: &Context) -> Result<String> {
     match &default {
         DefaultValue::Literal(lit) => render_lit(lit, context),

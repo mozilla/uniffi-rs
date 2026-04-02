@@ -5,9 +5,11 @@
 mod callables;
 mod context;
 mod defaults;
+mod enums;
 mod names;
 mod nodes;
 mod packages;
+mod records;
 mod types;
 
 use crate::Config;

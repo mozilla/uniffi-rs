@@ -27,6 +27,9 @@ pub fn map_type_definitions(
             general::TypeDefinition::Record(rec) => {
                 mapped.push(TypeDefinition::Record(rec.map_node(context)?));
             }
+            general::TypeDefinition::Enum(en) => {
+                mapped.push(TypeDefinition::Enum(en.map_node(context)?));
+            }
             // All other variants are still TODO
             _ => (),
         }

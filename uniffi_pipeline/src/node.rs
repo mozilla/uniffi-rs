@@ -141,7 +141,7 @@ macro_rules! impl_leaf_nodes {
     };
 }
 
-impl_leaf_nodes!(u8, i8, u16, i16, u32, i32, u64, i64, f32, f64, String, bool,);
+impl_leaf_nodes!(u8, i8, u16, i16, u32, i32, u64, i64, f32, f64, usize, isize, String, bool,);
 
 impl<T: Node> Node for Box<T> {
     fn as_any(&self) -> &dyn Any {

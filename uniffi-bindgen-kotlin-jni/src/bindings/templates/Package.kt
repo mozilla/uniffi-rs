@@ -4,6 +4,8 @@ package {{ package.name }}
 {%- match type_def %}
 {%- when TypeDefinition::Record(rec) %}
 {% include "Record.kt" %}
+{%- when TypeDefinition::Enum(en) %}
+{% include "Enum.kt" %}
 {%- endmatch %}
 {%- endfor %}
 

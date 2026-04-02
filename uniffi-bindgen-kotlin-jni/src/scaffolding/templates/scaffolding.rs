@@ -13,6 +13,8 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
     {%- match type_def %}
     {%- when TypeDefinition::Record(rec) %}
     {%- filter indent(4) %}{% include "record.rs" %}{% endfilter %}
+    {%- when TypeDefinition::Enum(en) %}
+    {%- filter indent(4) %}{% include "enum.rs" %}{% endfilter %}
     {%- endmatch %}
     {%- endfor %}
 
