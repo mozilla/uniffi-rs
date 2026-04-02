@@ -279,6 +279,8 @@ pub struct Enum {
     pub is_flat: bool,
     #[map_node(context.self_type()?)]
     pub self_type: TypeNode,
+    #[map_node(self.discr_type.is_some())]
+    pub discr_specified: bool,
     /// type, this will be a sized integer type that's large enough to store all the discriminant
     /// values. We try to mimic what `rustc` does, but there's no guarantee that this will be
     /// exactly the same type.
