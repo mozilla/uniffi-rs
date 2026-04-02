@@ -102,6 +102,24 @@ pub trait CallbackTest {
     fn test(&self);
 }
 
+pub struct CustomNewType(String);
+
+// docstrings for these macros aren't particularly intuitive
+uniffi::custom_newtype!(
+    /// <docstring-custom-newtype>
+    CustomNewType, String
+);
+
+pub struct CustomType(i64);
+
+uniffi::custom_type!(
+    /// <docstring-custom-type>
+    CustomType, i64, {
+        lower: |v| v.0,
+        try_lift: |v| Ok(CustomType(v)),
+    }
+);
+
 /// This is a very long multi line test docstring that exceeds 255 characters.
 /// This is a very long multi line test docstring that exceeds 255 characters.
 /// This is a very long multi line test docstring that exceeds 255 characters.

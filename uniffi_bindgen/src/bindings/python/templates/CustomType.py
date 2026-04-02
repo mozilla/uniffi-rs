@@ -25,12 +25,18 @@ class {{ custom.self_type.ffi_converter_name }}:
 
 {# Render a type alias from the custom type name to the concrete type name #}
 {{ custom.name }} = {{ builtin.type_name -}}
+{# This alias can't have a real docstring. According to google, some tools
+  *might* associate a trailing docstring with the type, so...
+#}
+{{ custom.docstring|docstring(0) -}}
 
 {%- when Some(config) %}
 
 {%- if let Some(type_name) = config.type_name %}
 {# Render a type alias from the custom type name to the concrete type name #}
 {{ custom.name }} = {{ type_name }}
+{# See above - a pretend docstring #}
+{{ custom.docstring|docstring(0) -}}
 {%- endif %}
 
 {#- Custom type config supplied, use it to convert the builtin type #}
