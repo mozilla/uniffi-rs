@@ -47,6 +47,7 @@ impl Root {
             .filter(move |type_def| {
                 seen.insert(match type_def {
                     TypeDefinition::Record(r) => r.self_type.id,
+                    TypeDefinition::Enum(e) => e.self_type.id,
                 })
             })
     }
