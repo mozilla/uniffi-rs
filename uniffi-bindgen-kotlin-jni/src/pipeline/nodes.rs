@@ -4,6 +4,7 @@
 
 use super::*;
 
+uniffi_pipeline::use_prev_node!(general::EnumShape);
 uniffi_pipeline::use_prev_node!(general::FieldsKind);
 uniffi_pipeline::use_prev_node!(general::ObjectImpl);
 uniffi_pipeline::use_prev_node!(general::Radix);
@@ -33,6 +34,7 @@ pub struct Package {
 #[allow(clippy::large_enum_variant)]
 pub enum TypeDefinition {
     Record(Record),
+    Enum(Enum),
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -46,6 +48,42 @@ pub struct Record {
     pub fields: Vec<Field>,
     pub docstring: Option<String>,
     pub recursive: bool,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::Enum))]
+#[map_node(enums::map_enum)]
+pub struct Enum {
+    pub is_flat: bool,
+    pub use_entries: bool,
+    pub self_type: TypeNode,
+    pub discr_type: TypeNode,
+    pub discr_specified: bool,
+    pub variants: Vec<Variant>,
+    pub name: String,
+    pub shape: EnumShape,
+    pub kotlin_kind: KotlinEnumKind,
+    pub docstring: Option<String>,
+    pub recursive: bool,
+    pub ffi_fields: Vec<FfiField>,
+}
+
+#[derive(Debug, Clone, Node)]
+pub enum KotlinEnumKind {
+    EnumClass { discr_type: Option<String> },
+    FlatError,
+    SealedClass,
+}
+
+#[derive(Debug, Clone, Node)]
+pub struct Variant {
+    pub name_kt: String,
+    pub name: String,
+    pub discr: LiteralNode,
+    pub fields_kind: FieldsKind,
+    pub fields: Vec<Field>,
+    pub docstring: Option<String>,
+    pub used_ffi_fields: IndexSet<FfiField>,
 }
 
 #[derive(Debug, Clone, Node)]
@@ -118,7 +156,7 @@ pub struct TypeNode {
     pub ffi_types: Vec<FfiType>,
 }
 
-#[derive(Debug, Clone, Copy, Node)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Node)]
 pub struct FfiField {
     pub index: usize,
     pub ty: FfiType,
