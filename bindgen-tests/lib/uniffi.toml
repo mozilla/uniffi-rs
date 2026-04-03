@@ -1,3 +1,7 @@
+# Uncomment one of the following lines to test different cleaner styles
+# disable_java_cleaner = true
+# android_cleaner = true
+
 #
 # Custom type configuration
 #

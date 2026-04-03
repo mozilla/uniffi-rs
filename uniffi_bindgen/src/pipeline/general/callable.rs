@@ -35,7 +35,14 @@ pub fn function_callable(func: &initial::Function, context: &Context) -> Result<
 
 pub fn method_callable(meth: &initial::Method, context: &Context) -> Result<Callable> {
     let self_type = context.self_type()?;
-    method_callable_with_kind(meth, CallableKind::Method { self_type }, context)
+    method_callable_with_kind(
+        meth,
+        CallableKind::Method {
+            self_type,
+            takes_self_by_arc: meth.takes_self_by_arc,
+        },
+        context,
+    )
 }
 
 pub fn method_callable_with_kind(
