@@ -52,6 +52,8 @@ impl Root {
                     TypeDefinition::Sequence(s) => s.self_type.id,
                     TypeDefinition::Map(m) => m.self_type.id,
                     TypeDefinition::Set(s) => s.self_type.id,
+                    TypeDefinition::Class(c) => c.self_type.id,
+                    TypeDefinition::Interface(_) => return false,
                 })
             })
     }
@@ -76,5 +78,23 @@ impl Root {
             }
         });
         type_nodes.into_iter()
+    }
+
+    pub fn classes(&self) -> impl Iterator<Item = &Class> {
+        self.packages.iter().flat_map(Package::classes)
+    }
+
+    pub fn disable_java_cleaner(&self) -> bool {
+        // Try to merge the different config values as best we can.
+        //
+        // Maybe we can leverage https://github.com/mozilla/uniffi-rs/issues/2866 to improve this
+        self.packages.iter().any(|p| p.config.disable_java_cleaner)
+    }
+
+    pub fn enable_android_cleaner(&self) -> bool {
+        // Try to merge the different config values as best we can.
+        //
+        // Maybe we can leverage https://github.com/mozilla/uniffi-rs/issues/2866 to improve this
+        self.packages.iter().any(|p| p.config.android_cleaner())
     }
 }

@@ -62,6 +62,12 @@ pub fn type_rs(ty: &Type, context: &Context) -> Result<String> {
         | Type::Custom { orig_name, .. } => {
             format!("{}::{orig_name}", context.rust_module_path_for_type(ty)?)
         }
+        Type::Interface { orig_name, .. } => {
+            format!(
+                "::std::sync::Arc<{}::{orig_name}>",
+                context.rust_module_path_for_type(ty)?
+            )
+        }
         _ => todo!(),
     })
 }
@@ -106,6 +112,9 @@ pub fn type_kt(ty: &Type, context: &Context) -> Result<String> {
             namespace, name, ..
         }
         | Type::Custom {
+            namespace, name, ..
+        }
+        | Type::Interface {
             namespace, name, ..
         } => {
             format!("{}.{name}", context.package_name_for_namespace(namespace)?)
@@ -515,5 +524,9 @@ impl TypeNode {
             t if t.starts_with("kotlin.collections.Set") => "Ljava/util/Set;".into(),
             type_name => format!("L{};", type_name.replace(".", "/").replace("`", "")),
         }
+    }
+
+    pub fn is_interface(&self) -> bool {
+        matches!(self.ty, Type::Interface { .. })
     }
 }
