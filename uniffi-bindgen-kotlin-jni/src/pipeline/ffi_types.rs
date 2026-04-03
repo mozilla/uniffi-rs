@@ -127,6 +127,11 @@ impl FfiTypeOracle {
                             .insert(opt.self_type.ty.clone(), ffi_types);
                     }
                 }
+                general::TypeDefinition::Custom(custom) => {
+                    let ffi_types = self.get_ffi_types(&custom.builtin.ty)?;
+                    self.user_type_map
+                        .insert(custom.self_type.ty.clone(), ffi_types);
+                }
                 _ => (),
             }
         }

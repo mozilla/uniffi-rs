@@ -5,6 +5,7 @@
 mod callables;
 mod compounds;
 mod context;
+mod custom;
 mod defaults;
 mod enums;
 mod ffi_buffer;
@@ -28,7 +29,7 @@ use indexmap::IndexSet;
 use uniffi_bindgen::pipeline::{general, initial};
 use uniffi_pipeline::{MapNode, Node, Pipeline};
 
-use crate::Config;
+use crate::config::{Config, CustomTypeConfig};
 pub use initial::Root as InitialRoot;
 pub use nodes::*;
 

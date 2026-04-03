@@ -71,6 +71,7 @@ impl FfiBufferLayoutOracle {
             }
             // single data field
             Type::Box { .. } => Layout::from_size_align(8, 8)?,
+            Type::Custom { builtin, .. } => self.get(builtin.as_ref())?,
             // Other types require a lookup from the layout map
             _ => match self.layout_map.get(ty) {
                 Some(layout) => *layout,
