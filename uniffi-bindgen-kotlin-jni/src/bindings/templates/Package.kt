@@ -1,5 +1,9 @@
 package {{ package.name }}
 
+{%- for import in package.imports %}
+import {{ import }}
+{%- endfor %}
+
 {%- for type_def in package.type_definitions %}
 {%- match type_def %}
 {%- when TypeDefinition::Record(rec) %}
@@ -10,6 +14,8 @@ package {{ package.name }}
 {% include "Interface.kt" %}
 {%- when TypeDefinition::Class(cls) %}
 {% include "Class.kt" %}
+{%- when TypeDefinition::Custom(custom) %}
+{% include "Custom.kt" %}
 {%- when TypeDefinition::Optional(_) %}
 {%- when TypeDefinition::Sequence(_) %}
 {%- when TypeDefinition::Map(_) %}
