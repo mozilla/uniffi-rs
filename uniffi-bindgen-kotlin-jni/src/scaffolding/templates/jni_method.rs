@@ -2,7 +2,7 @@
 unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
     uniffi_env: *mut uniffi_jni::JNIEnv,
     _: *mut uniffi_jni::jclass,
-    {%- for ffi_arg in callable.ffi_arguments() %}
+    {%- for ffi_arg in callable.ffi_arguments_including_receiver() %}
     {{ ffi_arg.name_rs() }}: {{ ffi_arg.ty.type_rs() }},
     {%- endfor %}
 )
@@ -15,20 +15,28 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
     uniffi::trace!("Calling {{ callable.name }}");
     unsafe {
         uniffi_jni::rust_call_with_env(uniffi_env, |uniffi_env| {
-            {%- for arg in callable.arguments %}
-            let uniffi_arg_lifted_{{ loop.index0 }} = {{ arg.ty.lift_fn_rs() }}(
+            {%- for arg in callable.arguments_including_receiver() %}
+            let uniffi_arg_lifted_{{ loop.index0 }} = {{ arg.lift_fn_rs() }}(
                 uniffi_env,
-                {%- for ffi_arg in arg.ffi_args %}
+                {%- for ffi_arg in arg.ffi_args() %}
                 {{ ffi_arg.name_rs() }},
                 {%- endfor %}
             )?;
             {%- endfor %}
 
+            {%- if !callable.has_receiver() %}
             let uniffi_return = {{ callable.fully_qualified_name_rs }}(
                 {%- for arg in callable.arguments %}
-                uniffi_arg_lifted_{{ loop.index0 }},
+                uniffi_arg_lifted_{{ arg.index }},
                 {%- endfor %}
             );
+            {%- else %}
+            let uniffi_return = uniffi_arg_lifted_0.{{ callable.name_rs() }}(
+                {%- for arg in callable.arguments %}
+                uniffi_arg_lifted_{{ arg.index }},
+                {%- endfor %}
+            );
+            {%- endif %}
             {%- match callable.return_ffi %}
             {%- when ReturnFfi::Primitive { type_node, .. } %}
             uniffi::Result::Ok({{ type_node.lower_fn_rs() }}(uniffi_env, uniffi_return)?)

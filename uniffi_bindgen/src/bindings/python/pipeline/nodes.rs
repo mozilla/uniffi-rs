@@ -155,7 +155,10 @@ pub enum CallableKind {
     /// Toplevel function
     Function,
     /// Interface/Trait interface method
-    Method { self_type: TypeNode },
+    Method {
+        self_type: TypeNode,
+        takes_self_by_arc: bool,
+    },
     /// Interface constructor
     Constructor { self_type: TypeNode, primary: bool },
     /// Method inside a VTable or a CallbackInterface

@@ -35,6 +35,8 @@ pub struct Package {
 pub enum TypeDefinition {
     Record(Record),
     Enum(Enum),
+    Interface(Interface),
+    Class(Class),
     Optional(OptionalType),
     Sequence(SequenceType),
     Map(MapType),
@@ -72,6 +74,29 @@ pub struct Enum {
     pub ffi_fields: Vec<FfiField>,
 }
 
+/// Kotlin class for an exported interface
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::Interface))]
+#[map_node(interfaces::map_class)]
+pub struct Class {
+    pub name: String,
+    pub module_path: String,
+    pub self_type: TypeNode,
+    pub base_classes: Vec<String>,
+    pub constructors: Vec<Constructor>,
+    pub methods: Vec<Method>,
+    pub docstring: Option<String>,
+    pub crate_name: String,
+}
+
+/// Kotlin Interface
+#[derive(Debug, Clone, Node)]
+pub struct Interface {
+    pub name: String,
+    pub methods: Vec<Method>,
+    pub docstring: Option<String>,
+}
+
 #[derive(Debug, Clone, Node)]
 pub enum KotlinEnumKind {
     EnumClass { discr_type: Option<String> },
@@ -103,6 +128,24 @@ pub struct Field {
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::Constructor))]
+#[map_node(callables::map_constructor)]
+pub struct Constructor {
+    pub jni_method_name: String,
+    pub callable: Callable,
+    pub docstring: Option<String>,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::Method))]
+#[map_node(callables::map_method)]
+pub struct Method {
+    pub jni_method_name: String,
+    pub callable: Callable,
+    pub docstring: Option<String>,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
 #[map_node(from(general::Function))]
 #[map_node(callables::map_function)]
 pub struct Function {
@@ -117,6 +160,7 @@ pub struct Callable {
     pub name: String,
     pub is_async: bool,
     pub fully_qualified_name_rs: String,
+    pub receiver: Option<Argument>,
     pub arguments: Vec<Argument>,
     pub return_type: Option<TypeNode>,
     pub throws_type: Option<TypeNode>,
@@ -129,6 +173,7 @@ pub enum CallableKind {
     Function,
     Method {
         self_type: TypeNode,
+        takes_self_by_arc: bool,
     },
     Constructor {
         self_type: TypeNode,
@@ -145,8 +190,24 @@ pub struct Argument {
     pub name: String,
     pub index: usize,
     pub ty: TypeNode,
+    pub by_ref: bool,
     pub optional: bool,
-    pub ffi_args: Vec<FfiArgument>,
+    pub ffi: ArgumentFfi,
+}
+
+/// How an argument is passed across the FFI
+#[derive(Debug, Clone, Node)]
+pub enum ArgumentFfi {
+    /// Use the standard lift and lower functions for the argument type
+    Standard { ffi_args: Vec<FfiArgument> },
+    /// Use custom/optimized lift and lower functions
+    Custom {
+        ffi_args: Vec<FfiArgument>,
+        lift_fn_rs: String,
+        lower_fn_rs: String,
+        lift_fn_kt: String,
+        lower_fn_kt: String,
+    },
 }
 
 #[derive(Debug, Clone, Node, MapNode)]

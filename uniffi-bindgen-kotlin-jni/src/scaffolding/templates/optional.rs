@@ -46,6 +46,29 @@ unsafe fn {{ opt.self_type.lift_fn_rs() }}(
         ::std::option::Option::None
     })
 }
+{%- else if opt.inner.is_interface() %}
+
+unsafe fn {{ opt.self_type.lower_fn_rs() }}(
+    env: *mut uniffi_jni::JNIEnv,
+    value: {{ type_name }},
+) -> uniffi::Result<::std::primitive::i64> {
+    uniffi::Result::Ok(match value {
+        ::std::option::Option::Some(v) => {{ opt.inner.lower_fn_rs() }}(env, v)?,
+        ::std::option::Option::None => 0,
+    })
+}
+
+unsafe fn {{ opt.self_type.lift_fn_rs() }}(
+    env: *mut uniffi_jni::JNIEnv,
+    handle: ::std::primitive::i64,
+) -> uniffi::Result<{{ type_name }}> {
+    uniffi::Result::Ok(if handle != 0 {
+        ::std::option::Option::Some({{ opt.inner.lift_fn_rs() }}(env, handle)?)
+    } else {
+        ::std::option::Option::None
+    })
+}
+
 {%- endif %}
 
 unsafe fn {{ opt.self_type.write_fn_rs() }}(

@@ -47,6 +47,27 @@ fun {{ opt.self_type.lift_fn_kt() }}(
         return null
     }
 }
+
+{%- else if opt.inner.is_interface() %}
+
+@JvmName("{{ opt.self_type.lower_fn_kt() }}")
+fun {{ opt.self_type.lower_fn_kt() }}(value: {{ type_name }}): kotlin.Long {
+    if (value == null) {
+        return 0
+    } else {
+        return {{ opt.inner.lower_fn_kt() }}(value)
+    }
+}
+
+@JvmName("{{ opt.self_type.lift_fn_kt() }}")
+fun {{ opt.self_type.lift_fn_kt() }}(handle: kotlin.Long): {{ type_name }} {
+    if (handle > 0) {
+        return {{ opt.inner.lift_fn_kt() }}(handle)
+    } else {
+        return null
+    }
+}
+
 {%- endif %}
 
 fun {{ opt.self_type.write_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int, value: {{ type_name }}) {
