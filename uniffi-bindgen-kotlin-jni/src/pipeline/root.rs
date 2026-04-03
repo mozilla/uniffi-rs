@@ -53,6 +53,7 @@ impl Root {
                     TypeDefinition::Map(m) => m.self_type.id,
                     TypeDefinition::Set(s) => s.self_type.id,
                     TypeDefinition::Class(c) => c.self_type.id,
+                    TypeDefinition::Custom(c) => c.self_type.id,
                     TypeDefinition::Interface(_) => return false,
                 })
             })

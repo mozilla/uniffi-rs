@@ -6,6 +6,7 @@ use crate::util::{
     create_metadata_items, either_attribute_arg, extract_docstring, ident_to_string, kw,
     parse_comma_separated, UniffiAttributeArgs,
 };
+
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
 use syn::{
@@ -157,6 +158,18 @@ impl ToTokens for ConvertClosure {
 }
 
 pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStream> {
+    let mut tokens = TokenStream::default();
+
+    tokens.extend(expand_custom_type_main(&args));
+    tokens.extend(expand_custom_type_parse_rs(&args));
+
+    Ok(tokens)
+}
+
+/// Expand the `custom_type!` macro in the main/default way
+///
+/// This is what almost all bindgens use
+pub(crate) fn expand_custom_type_main(args: &CustomTypeArgs) -> syn::Result<TokenStream> {
     let CustomTypeArgs {
         custom_type,
         uniffi_type,
@@ -185,14 +198,14 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
         )
     };
 
-    let (lower_param, lower_expr) = match options.lower {
+    let (lower_param, lower_expr) = match &options.lower {
         Some(convert_closure) => convert_closure.token_tuple(),
         None => (
             quote! { val },
             quote! { <#custom_type as Into<#uniffi_type>>::into(val) },
         ),
     };
-    let (try_lift, try_lift_expr) = match options.try_lift {
+    let (try_lift, try_lift_expr) = match &options.try_lift {
         Some(convert_closure) => convert_closure.token_tuple(),
         None => (
             quote! { val },
@@ -225,7 +238,7 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
         }
     };
 
-    let meta_static_var = custom_type_meta_static_var(&name, &uniffi_type, &docstring)?;
+    let meta_static_var = custom_type_meta_static_var(&name, uniffi_type, docstring)?;
 
     Ok(quote! {
         #[allow(non_camel_case_types)]
@@ -261,6 +274,72 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
         #derive_ffi_traits
 
         #meta_static_var
+    })
+}
+
+/// Expand the `custom_type!` macro in a way that's compatible with `uniffi_parse_rs`
+///
+/// This is what `uniffi-bindgen-kotlin-jni` uses
+pub(crate) fn expand_custom_type_parse_rs(args: &CustomTypeArgs) -> syn::Result<TokenStream> {
+    let CustomTypeArgs {
+        custom_type,
+        uniffi_type,
+        options,
+        ..
+    } = args;
+
+    let (lower_param, lower_expr) = match &options.lower {
+        Some(convert_closure) => convert_closure.token_tuple(),
+        None => (
+            quote! { val },
+            quote! { <#custom_type as Into<#uniffi_type>>::into(val) },
+        ),
+    };
+    let (try_lift_param, try_lift_expr) = match &options.try_lift {
+        Some(convert_closure) => convert_closure.token_tuple(),
+        None => (
+            quote! { val },
+            quote! { ::core::result::Result::Ok(<#uniffi_type as TryInto<#custom_type>>::try_into(val)?) },
+        ),
+    };
+
+    let build_context = quote::quote! {
+        || {
+            let location = ::core::panic::Location::caller();
+            ::std::format!(
+                "Lifting custom type `{}` from FFI type `{}` failed at {}:{}",
+                ::core::any::type_name::<#custom_type>(),
+                ::core::any::type_name::<#uniffi_type>(),
+                location.file(),
+                location.line()
+            )
+        }
+    };
+
+    // We allow needless_question_mark here because the error type of `TryInto` only needs conversion
+    // if it is not a `anyhow::Error` already.
+    let try_lift_expr = quote::quote! {
+        #[allow(clippy::needless_question_mark)]
+        {
+            ::uniffi::deps::anyhow::Context::with_context(
+                (move || -> ::uniffi::Result<#custom_type> { #try_lift_expr })(),
+                #build_context
+            )
+        }
+    };
+
+    Ok(quote! {
+        impl uniffi::CustomType<crate::UniFfiTag> for #custom_type {
+            type Builtin = #uniffi_type;
+
+            fn lower(#lower_param: Self) -> #uniffi_type {
+                #lower_expr
+            }
+
+            fn try_lift(#try_lift_param: #uniffi_type) -> ::uniffi::Result<Self> {
+                #try_lift_expr
+            }
+        }
     })
 }
 
