@@ -61,6 +61,8 @@ impl FfiBufferLayoutOracle {
             Type::UInt16 | Type::Int16 => Layout::from_size_align(2, 2)?,
             Type::UInt32 | Type::Int32 | Type::Float32 => Layout::from_size_align(4, 4)?,
             Type::UInt64 | Type::Int64 | Type::Float64 => Layout::from_size_align(8, 8)?,
+            // One 8-byte handle
+            Type::Interface { .. } => Layout::from_size_align(8, 8)?,
             // (data, length, capacity) fields
             Type::String => Layout::from_size_align(24, 8)?,
             // (data, size) fields
