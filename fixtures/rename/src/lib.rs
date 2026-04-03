@@ -176,6 +176,19 @@ mod submodule {
 
     #[uniffi::export]
     pub fn function_to_exclude() {}
+
+    // Used to renaming a custom type that also has binding configuration
+    pub use url::Url;
+    uniffi::custom_type!(Url, String, {
+        remote,
+        lower: |url| url.to_string(),
+        try_lift: |raw_url| Ok(Url::parse(&raw_url)?),
+    });
+
+    #[uniffi::export]
+    pub fn roundtrip_url(url: Url) -> Url {
+        url
+    }
 }
 
 pub use submodule::*;

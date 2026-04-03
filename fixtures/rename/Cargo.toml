@@ -10,6 +10,7 @@ crate-type = ["lib", "cdylib"]
 
 [dependencies]
 uniffi = { workspace = true }
+url = "2"
 thiserror = "2"
 
 [build-dependencies]
