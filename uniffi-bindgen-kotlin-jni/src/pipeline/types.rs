@@ -63,6 +63,16 @@ fn type_rs(ty: &Type, context: &Context) -> Result<String> {
                 context.module_path_for_type(namespace, orig_name)?
             )
         }
+        Type::Interface {
+            namespace,
+            orig_name,
+            ..
+        } => {
+            format!(
+                "::std::sync::Arc<::{}::{orig_name}>",
+                context.module_path_for_type(namespace, orig_name)?
+            )
+        }
         _ => todo!(),
     })
 }
@@ -102,6 +112,9 @@ pub fn type_kt(ty: &Type, context: &Context) -> Result<String> {
         }
         | Type::Enum {
             namespace, name, ..
+        }
+        | Type::Interface {
+            namespace, name, ..
         } => {
             format!("{}.{name}", context.package_name(namespace)?)
         }
@@ -126,7 +139,9 @@ pub fn read_fn_rs(ty: &Type, canonical_name: &str) -> Result<String> {
         Type::Optional { .. } | Type::Sequence { .. } | Type::Map { .. } => {
             format!("uniffi_read_compound_{}", canonical_name.to_snake_case(),)
         }
-        Type::Record { namespace, .. } | Type::Enum { namespace, .. } => {
+        Type::Record { namespace, .. }
+        | Type::Enum { namespace, .. }
+        | Type::Interface { namespace, .. } => {
             format!(
                 "uniffi_read_type_{}_{}",
                 namespace.to_snake_case(),
@@ -154,7 +169,9 @@ pub fn write_fn_rs(ty: &Type, canonical_name: &str) -> Result<String> {
         Type::Optional { .. } | Type::Sequence { .. } | Type::Map { .. } => {
             format!("uniffi_write_compound_{}", canonical_name.to_snake_case(),)
         }
-        Type::Record { namespace, .. } | Type::Enum { namespace, .. } => {
+        Type::Record { namespace, .. }
+        | Type::Enum { namespace, .. }
+        | Type::Interface { namespace, .. } => {
             format!(
                 "uniffi_write_type_{}_{}",
                 namespace.to_snake_case(),
@@ -182,7 +199,9 @@ pub fn read_fn_kt(ty: &Type, canonical_name: &str) -> String {
         Type::Optional { .. } | Type::Sequence { .. } | Type::Map { .. } => {
             format!("readCompound{}", canonical_name.to_upper_camel_case(),)
         }
-        Type::Record { namespace, .. } | Type::Enum { namespace, .. } => {
+        Type::Record { namespace, .. }
+        | Type::Enum { namespace, .. }
+        | Type::Interface { namespace, .. } => {
             format!(
                 "readType{}{}",
                 namespace.to_upper_camel_case(),
@@ -210,7 +229,9 @@ pub fn write_fn_kt(ty: &Type, canonical_name: &str) -> String {
         Type::Optional { .. } | Type::Sequence { .. } | Type::Map { .. } => {
             format!("writeCompound{}", canonical_name.to_upper_camel_case(),)
         }
-        Type::Record { namespace, .. } | Type::Enum { namespace, .. } => {
+        Type::Record { namespace, .. }
+        | Type::Enum { namespace, .. }
+        | Type::Interface { namespace, .. } => {
             format!(
                 "writeType{}{}",
                 namespace.to_upper_camel_case(),

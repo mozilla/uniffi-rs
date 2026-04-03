@@ -16,6 +16,8 @@ pub struct Context {
     pub config_map: HashMap<String, Config>,
     // Map namespace / type names the type definition module_path
     pub type_module_paths: HashMap<String, HashMap<String, String>>,
+    // Map namespace / function names the module_path
+    pub function_module_paths: HashMap<String, HashMap<String, String>>,
     pub current_crate_name: Option<String>,
     pub current_namespace_name: Option<String>,
     pub current_enum: Option<general::Enum>,
@@ -36,6 +38,10 @@ impl Context {
                 .insert(namespace.name.clone(), namespace.crate_name.clone());
             self.type_module_paths
                 .insert(namespace.name.clone(), Self::type_module_paths(namespace));
+            self.function_module_paths.insert(
+                namespace.name.clone(),
+                Self::function_module_paths(namespace),
+            );
         }
         Ok(())
     }
@@ -45,14 +51,31 @@ impl Context {
             .type_definitions
             .iter()
             .filter_map(|type_def| match type_def {
-                general::TypeDefinition::Record(r) => {
-                    Some((r.orig_name.clone(), r.module_path.clone()))
+                general::TypeDefinition::Record(rec) => {
+                    Some((rec.orig_name.clone(), rec.module_path.clone()))
                 }
-                general::TypeDefinition::Enum(e) => {
-                    Some((e.orig_name.clone(), e.module_path.clone()))
+                general::TypeDefinition::Enum(en) => {
+                    Some((en.orig_name.clone(), en.module_path.clone()))
+                }
+                general::TypeDefinition::Interface(int) => {
+                    Some((int.orig_name.clone(), int.module_path.clone()))
+                }
+                general::TypeDefinition::CallbackInterface(cbi) => {
+                    Some((cbi.orig_name.clone(), cbi.module_path.clone()))
+                }
+                general::TypeDefinition::Custom(custom) => {
+                    Some((custom.orig_name.clone(), custom.module_path.clone()))
                 }
                 _ => None,
             })
+            .collect()
+    }
+
+    fn function_module_paths(namespace: &general::Namespace) -> HashMap<String, String> {
+        namespace
+            .functions
+            .iter()
+            .map(|f| (f.callable.orig_name.clone(), f.module_path.clone()))
             .collect()
     }
 
@@ -98,12 +121,20 @@ impl Context {
             .ok_or_else(|| anyhow!("crate name not found: {namespace_name}"))
     }
 
+    pub fn module_path_for_func(&self, namespace: &str, func_orig_name: &str) -> Result<&str> {
+        self.function_module_paths
+            .get(namespace)
+            .and_then(|map| map.get(func_orig_name))
+            .map(|s| s.as_str())
+            .ok_or_else(|| anyhow!("function module path not found: {namespace}:{func_orig_name}"))
+    }
+
     pub fn module_path_for_type(&self, namespace: &str, type_orig_name: &str) -> Result<&str> {
         self.type_module_paths
             .get(namespace)
             .and_then(|map| map.get(type_orig_name))
             .map(|s| s.as_str())
-            .ok_or_else(|| anyhow!("module path not found: {namespace}:{type_orig_name}"))
+            .ok_or_else(|| anyhow!("type module path not found: {namespace}:{type_orig_name}"))
     }
 
     pub fn current_enum(&self) -> Result<&general::Enum> {

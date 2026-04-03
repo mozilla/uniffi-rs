@@ -14,18 +14,21 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
     {%- filter indent(4) %}{% include "record.rs" %}{% endfilter %}
     {%- when TypeDefinition::Enum(en) %}
     {%- filter indent(4) %}{% include "enum.rs" %}{% endfilter %}
+    {%- when TypeDefinition::Class(cls) %}
+    {%- filter indent(4) %}{% include "class.rs" %}{% endfilter %}
     {%- when TypeDefinition::Optional(opt) %}
     {%- filter indent(4) %}{% include "optional.rs" %}{% endfilter %}
     {%- when TypeDefinition::Sequence(seq) %}
     {%- filter indent(4) %}{% include "sequence.rs" %}{% endfilter %}
     {%- when TypeDefinition::Map(map) %}
     {%- filter indent(4) %}{% include "map.rs" %}{% endfilter %}
+    {%- when TypeDefinition::Interface(_) %}
     {%- endmatch %}
     {%- endfor %}
 
     {%- for package in root.packages %}
-    {%- for func in package.functions %}
-    {%- filter indent(4) %}{% include "function.rs" %}{% endfilter %}
+    {%- for scaffolding_function in package.scaffolding_functions %}
+    {%- filter indent(4) %}{% include "scaffolding_function.rs" %}{% endfilter %}
     {%- endfor %}
     {%- endfor %}
 }

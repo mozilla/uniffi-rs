@@ -6,6 +6,10 @@ package {{ package.name }}
 {% include "Record.kt" %}
 {%- when TypeDefinition::Enum(en) %}
 {% include "Enum.kt" %}
+{%- when TypeDefinition::Interface(int) %}
+{% include "Interface.kt" %}
+{%- when TypeDefinition::Class(cls) %}
+{% include "Class.kt" %}
 {%- when TypeDefinition::Optional(_) %}
 {%- when TypeDefinition::Sequence(_) %}
 {%- when TypeDefinition::Map(_) %}

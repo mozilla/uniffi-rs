@@ -18,10 +18,15 @@ object Scaffolding {
     @JvmStatic external fun writeString(ptr: Long, value: String)
 
     {%- for package in root.packages %}
-    {%- for func in package.functions %}
-    @JvmStatic external fun {{ func.jni_method_name }}(uniffiBufferHandle: Long)
+    {%- for scaffolding_function in package.scaffolding_functions %}
+    @JvmStatic external fun {{ scaffolding_function.jni_method_name }}(uniffiBufferHandle: Long)
     {%- endfor %}
-    {%- endfor %}
+
+    {%- for cls in package.classes() %}
+    @JvmStatic external fun {{ cls.jni_free_name() }}(handle: Long)
+    @JvmStatic external fun {{ cls.jni_addref_name() }}(handle: Long)
+    {%- endfor  %}
+    {%- endfor  %}
 
     // access `uniffiLibrary` to make sure the cdylib is loaded
     init {

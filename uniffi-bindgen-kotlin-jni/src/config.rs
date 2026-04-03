@@ -26,7 +26,7 @@ pub struct Config {
     #[serde(default)]
     kotlin_target_version: Option<String>,
     #[serde(default)]
-    disable_java_cleaner: bool,
+    pub disable_java_cleaner: bool,
     #[serde(default)]
     pub(super) exclude: Vec<String>,
     // Note: we ignore `external_packages`.  We don't need it since we process all packages at once
@@ -35,10 +35,20 @@ pub struct Config {
 
 impl Config {
     pub fn from_toml(config_toml: Option<&str>) -> Result<Self> {
-        Ok(match config_toml {
-            Some(s) => toml::from_str(s)?,
-            None => Self::default(),
-        })
+        let Some(config_toml) = config_toml else {
+            return Ok(Self::default());
+        };
+
+        #[derive(Deserialize)]
+        pub struct ToplevelConfig {
+            bindings: BindingsConfig,
+        }
+        #[derive(Deserialize)]
+        pub struct BindingsConfig {
+            kotlin: Config,
+        }
+        let top_level: ToplevelConfig = toml::from_str(config_toml)?;
+        Ok(top_level.bindings.kotlin)
     }
 
     pub fn record_is_immutable(&self, name: &str) -> bool {

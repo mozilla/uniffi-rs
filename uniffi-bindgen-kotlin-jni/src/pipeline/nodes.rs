@@ -30,6 +30,7 @@ pub struct Package {
     pub config: Config,
     pub functions: Vec<Function>,
     pub type_definitions: Vec<TypeDefinition>,
+    pub scaffolding_functions: Vec<ScaffoldingFunction>,
 }
 
 #[derive(Debug, Clone, Node)]
@@ -37,6 +38,8 @@ pub struct Package {
 pub enum TypeDefinition {
     Record(Record),
     Enum(Enum),
+    Interface(Interface),
+    Class(Class),
     Optional(OptionalType),
     Sequence(SequenceType),
     Map(MapType),
@@ -73,6 +76,29 @@ pub struct Enum {
     pub recursive: bool,
 }
 
+/// Kotlin class
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::Interface))]
+#[map_node(interfaces::map_class)]
+pub struct Class {
+    pub name: String,
+    pub module_path: String,
+    pub self_type: TypeNode,
+    pub base_classes: Vec<String>,
+    pub constructors: Vec<Constructor>,
+    pub methods: Vec<Method>,
+    pub docstring: Option<String>,
+    pub crate_name: String,
+}
+
+/// Kotlin Interface
+#[derive(Debug, Clone, Node)]
+pub struct Interface {
+    pub name: String,
+    pub methods: Vec<Method>,
+    pub docstring: Option<String>,
+}
+
 #[derive(Debug, Clone, Node, MapNode)]
 #[map_node(from(general::Variant))]
 pub struct Variant {
@@ -96,12 +122,36 @@ pub struct Field {
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::Constructor))]
+pub struct Constructor {
+    #[map_node(callables::constructor_jni_method_name(&self, context)?)]
+    pub jni_method_name: String,
+    pub callable: Callable,
+    pub docstring: Option<String>,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::Method))]
+pub struct Method {
+    #[map_node(callables::method_jni_method_name(&self, context)?)]
+    pub jni_method_name: String,
+    pub callable: Callable,
+    pub docstring: Option<String>,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
 #[map_node(from(general::Function))]
 pub struct Function {
     #[map_node(callables::function_jni_method_name(&self, context)?)]
     pub jni_method_name: String,
     pub module_path: String,
     pub docstring: Option<String>,
+    pub callable: Callable,
+}
+
+#[derive(Debug, Clone, Node)]
+pub struct ScaffoldingFunction {
+    pub jni_method_name: String,
     pub callable: Callable,
 }
 
@@ -113,6 +163,7 @@ pub struct Callable {
     pub name: String,
     pub arguments: Vec<Argument>,
     pub return_type: Option<TypeNode>,
+    pub fully_qualified_name_rs: String,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -252,8 +303,22 @@ impl Root {
                     TypeDefinition::Optional(o) => &o.self_type,
                     TypeDefinition::Sequence(s) => &s.self_type,
                     TypeDefinition::Map(m) => &m.self_type,
+                    TypeDefinition::Class(c) => &c.self_type,
+                    TypeDefinition::Interface(_) => return false,
                 })
             })
+    }
+
+    pub fn disable_java_cleaner(&self) -> bool {
+        // Try to merge the different config values as best we can.
+        // https://github.com/mozilla/uniffi-rs/issues/2866 would help here.
+        self.packages.iter().any(|p| p.config.disable_java_cleaner)
+    }
+
+    pub fn enable_android_cleaner(&self) -> bool {
+        // Try to merge the different config values as best we can.
+        // https://github.com/mozilla/uniffi-rs/issues/2866 would help here.
+        self.packages.iter().any(|p| p.config.android_cleaner())
     }
 }
 
@@ -269,6 +334,15 @@ impl Package {
     pub fn name_rs(&self) -> String {
         names::escape_rust(&self.crate_name)
     }
+
+    pub fn classes(&self) -> impl Iterator<Item = &Class> {
+        self.type_definitions
+            .iter()
+            .filter_map(|type_def| match type_def {
+                TypeDefinition::Class(cls) => Some(cls),
+                _ => None,
+            })
+    }
 }
 
 impl Callable {
@@ -280,11 +354,89 @@ impl Callable {
         format!("`{}`", self.name.to_lower_camel_case())
     }
 
+    pub fn has_receiver(&self) -> bool {
+        self.receiver_type().is_some()
+    }
+
+    pub fn receiver_type(&self) -> Option<&TypeNode> {
+        match &self.kind {
+            CallableKind::Method { self_type, .. }
+            | CallableKind::VTableMethod { self_type, .. } => Some(self_type),
+            _ => None,
+        }
+    }
+
+    pub fn is_constructor(&self) -> bool {
+        matches!(self.kind, CallableKind::Constructor { .. })
+    }
+
+    pub fn is_primary_constructor(&self) -> bool {
+        matches!(self.kind, CallableKind::Constructor { primary: true, .. })
+    }
+
+    pub fn arg_list(&self) -> String {
+        self.arguments
+            .iter()
+            .map(|a| format!("{}: {}", a.name_kt(), a.ty.type_kt))
+            .collect::<Vec<_>>()
+            .join(" , ")
+    }
+
     pub fn return_type_kt(&self) -> &str {
         match &self.return_type {
             None => "Unit",
             Some(ty) => &ty.type_kt,
         }
+    }
+}
+
+impl Class {
+    pub fn name_kt(&self) -> String {
+        format!("`{}`", self.name.to_upper_camel_case())
+    }
+
+    pub fn name_rs(&self) -> String {
+        names::escape_rust(&self.name)
+    }
+
+    pub fn jni_free_name(&self) -> String {
+        format!(
+            "objectFree{}{}",
+            self.crate_name.to_upper_camel_case(),
+            self.name.to_upper_camel_case(),
+        )
+    }
+
+    pub fn jni_addref_name(&self) -> String {
+        format!(
+            "objectAddReff{}{}",
+            self.crate_name.to_upper_camel_case(),
+            self.name.to_upper_camel_case(),
+        )
+    }
+
+    pub fn primary_constructor(&self) -> Option<&Constructor> {
+        self.constructors.iter().find(|c| {
+            matches!(
+                c.callable.kind,
+                CallableKind::Constructor { primary: true, .. }
+            )
+        })
+    }
+
+    pub fn secondary_constructors(&self) -> impl Iterator<Item = &Constructor> {
+        self.constructors.iter().filter(|c| {
+            matches!(
+                c.callable.kind,
+                CallableKind::Constructor { primary: false, .. }
+            )
+        })
+    }
+}
+
+impl Interface {
+    pub fn name_kt(&self) -> String {
+        format!("`{}`", self.name.to_upper_camel_case())
     }
 }
 
@@ -327,7 +479,6 @@ impl Field {
         names::escape_rust(&self.name)
     }
 }
-
 impl Argument {
     pub fn name_kt(&self) -> String {
         format!("`{}`", self.name.to_lower_camel_case())

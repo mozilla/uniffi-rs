@@ -76,11 +76,14 @@ use bytes::buf::Buf;
 // Make Result<> public to support external impls of FfiConverter
 pub use anyhow::Result;
 
+mod arc_or_owned;
 pub mod ffi;
 mod ffi_converter_impls;
 mod ffi_converter_traits;
 pub mod metadata;
 mod oneshot;
+
+pub use arc_or_owned::ArcOrOwned;
 
 #[cfg(feature = "scaffolding-ffi-buffer-fns")]
 pub use ffi::ffiserialize::FfiBufferElement;

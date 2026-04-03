@@ -8,12 +8,40 @@ pub fn map_namespace(input: general::Namespace, context: &Context) -> Result<Pac
     let mut context = context.clone();
     context.update_from_namespace(&input);
 
-    Ok(Package {
+    // Map everything except scaffolding_functions
+    let package = Package {
         name: context.package_name(&input.name)?.to_string(),
         crate_name: input.name,
         config: context.config()?.clone(),
         functions: input.functions.map_node(&context)?,
         type_definitions: map_type_definitions(input.type_definitions, &context)?,
+        scaffolding_functions: vec![],
+    };
+    // Collect scaffolding_functions
+    let scaffolding_functions = package
+        .functions
+        .iter()
+        .map(|f| (&f.jni_method_name, &f.callable))
+        .chain(package.classes().flat_map(|c| {
+            c.methods
+                .iter()
+                .map(|m| (&m.jni_method_name, &m.callable))
+                .chain(
+                    c.constructors
+                        .iter()
+                        .map(|c| (&c.jni_method_name, &c.callable)),
+                )
+        }))
+        .map(|(name, callable)| ScaffoldingFunction {
+            jni_method_name: name.clone(),
+            callable: callable.clone(),
+        })
+        .collect();
+
+    // Put everything together
+    Ok(Package {
+        scaffolding_functions,
+        ..package
     })
 }
 
@@ -30,6 +58,16 @@ pub fn map_type_definitions(
             general::TypeDefinition::Enum(en) => {
                 mapped.push(TypeDefinition::Enum(en.map_node(context)?));
             }
+            general::TypeDefinition::Interface(int) => match int.imp {
+                ObjectImpl::Struct => {
+                    mapped.push(TypeDefinition::Interface(interfaces::map_interface(
+                        &int, context,
+                    )?));
+                    mapped.push(TypeDefinition::Class(int.map_node(context)?));
+                }
+                ObjectImpl::CallbackTrait => todo!(),
+                ObjectImpl::Trait => todo!(),
+            },
             general::TypeDefinition::Optional(inner) => {
                 mapped.push(TypeDefinition::Optional(inner.map_node(context)?));
             }

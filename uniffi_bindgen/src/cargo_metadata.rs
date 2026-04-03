@@ -144,7 +144,7 @@ impl BindgenPathsLayer for CrateConfigSupplier {
             let Some(package) = self.get_package(crate_name) else {
                 continue;
             };
-            if package.dependencies.iter().any(|d| d.name == "uniffi") {
+            if should_parse_package(package) {
                 if let Some(lib) = package.targets.iter().find(|t| t.is_lib()) {
                     found.push((package.name.to_string(), lib.src_path.clone()));
                 }
@@ -217,6 +217,17 @@ impl BindgenPathsLayer for CrateConfigSupplier {
                 .collect(),
         )
     }
+}
+
+fn should_parse_package(package: &Package) -> bool {
+    let skip_parsing = package
+        .metadata
+        .pointer("/uniffi/skip_parsing")
+        .and_then(|v| v.as_bool())
+        .unwrap_or_default();
+    let depends_on_uniffi = package.dependencies.iter().any(|d| d.name == "uniffi");
+
+    depends_on_uniffi && !skip_parsing
 }
 
 // Older trait for finding config paths
