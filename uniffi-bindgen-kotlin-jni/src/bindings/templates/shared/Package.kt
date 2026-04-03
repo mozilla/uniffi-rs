@@ -6,6 +6,7 @@ class InternalException(message: kotlin.String) : Exception(message)
 {% include "FfiBuffer.kt" %}
 {% include "LiftLower.kt" %}
 {% include "Scaffolding.kt" %}
+{% include "Interfaces.kt" %}
 
 {%- for type_def in root.ffi_type_definitions() %}
 {%- match type_def %}
@@ -13,6 +14,8 @@ class InternalException(message: kotlin.String) : Exception(message)
 {% include "RecordFfi.kt" %}
 {%- when TypeDefinition::Enum(en) %}
 {% include "EnumFfi.kt" %}
+{%- when TypeDefinition::Class(cls) %}
+{% include "ClassFfi.kt" %}
 {%- when TypeDefinition::Optional(opt) %}
 {% include "OptionalFfi.kt" %}
 {%- when TypeDefinition::Sequence(seq) %}
@@ -21,5 +24,6 @@ class InternalException(message: kotlin.String) : Exception(message)
 {% include "MapFfi.kt" %}
 {%- when TypeDefinition::Set(set) %}
 {% include "SetFfi.kt" %}
+{%- when TypeDefinition::Interface(_) %}
 {%- endmatch %}
 {%- endfor %}

@@ -9,6 +9,7 @@ mod defaults;
 mod enums;
 mod ffi_buffer;
 mod ffi_types;
+mod interfaces;
 mod names;
 mod nodes;
 mod packages;

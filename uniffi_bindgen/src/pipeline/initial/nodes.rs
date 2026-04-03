@@ -77,6 +77,7 @@ pub struct Method {
     pub orig_name: String,
     pub name: String,
     pub is_async: bool,
+    pub takes_self_by_arc: bool,
     pub inputs: Vec<Argument>,
     pub return_type: Option<Type>,
     pub throws: Option<Type>,

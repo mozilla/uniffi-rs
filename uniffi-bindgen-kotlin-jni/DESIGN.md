@@ -33,6 +33,13 @@ The following types are passed as primitives:
     with `null` used for `None`.
   * Flat enums are passed using their discriminants.
 
+## Receivers and ByRef
+
+For arguments that are passed by reference, including method receivers,
+we optimize passing the values in certain cases:
+
+* Interfaces handles are passed without an `clone` call.
+
 ## Deconstructable types
 
 If we can't pass types as primitives,
