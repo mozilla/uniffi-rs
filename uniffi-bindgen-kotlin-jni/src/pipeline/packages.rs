@@ -7,13 +7,21 @@ use super::*;
 pub fn map_namespace(input: general::Namespace, context: &Context) -> Result<Package> {
     let mut context = context.clone();
     context.update_from_namespace(&input);
+    let config = context.config()?.clone();
+    let imports = config
+        .custom_types
+        .values()
+        .flat_map(|c| c.imports.clone())
+        .flatten()
+        .collect();
 
     Ok(Package {
         name: context.package_name_for_namespace(&input.name)?.to_string(),
         crate_name: input.name,
-        config: context.config()?.clone(),
+        config,
         functions: input.functions.map_node(&context)?,
         type_definitions: map_type_definitions(input.type_definitions, &context)?,
+        imports,
     })
 }
 
@@ -39,6 +47,9 @@ pub fn map_type_definitions(
                 }
                 ObjectImpl::Trait(_) => todo!(),
             },
+            general::TypeDefinition::Custom(c) => {
+                mapped.push(TypeDefinition::Custom(c.map_node(context)?));
+            }
             general::TypeDefinition::Optional(opt) => {
                 mapped.push(TypeDefinition::Optional(opt.map_node(context)?));
             }

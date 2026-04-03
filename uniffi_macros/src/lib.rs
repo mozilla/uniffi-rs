@@ -184,18 +184,11 @@ pub fn derive_error(_input: TokenStream) -> TokenStream {
 }
 
 /// Generate FFI code for a custom type
-#[cfg(feature = "scaffolding")]
 #[proc_macro]
 pub fn custom_type(tokens: TokenStream) -> TokenStream {
     custom::expand_custom_type(parse_macro_input!(tokens))
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
-}
-
-#[cfg(not(feature = "scaffolding"))]
-#[proc_macro]
-pub fn custom_type(_tokens: TokenStream) -> TokenStream {
-    TokenStream::default()
 }
 
 /// Generate FFI code for a custom newtype
