@@ -57,6 +57,11 @@ fn type_rs(ty: &Type, context: &Context) -> Result<String> {
             namespace,
             orig_name,
             ..
+        }
+        | Type::Custom {
+            namespace,
+            orig_name,
+            ..
         } => {
             format!(
                 "::{}::{orig_name}",
@@ -115,6 +120,9 @@ pub fn type_kt(ty: &Type, context: &Context) -> Result<String> {
         }
         | Type::Interface {
             namespace, name, ..
+        }
+        | Type::Custom {
+            namespace, name, ..
         } => {
             format!("{}.{name}", context.package_name(namespace)?)
         }
@@ -141,7 +149,8 @@ pub fn read_fn_rs(ty: &Type, canonical_name: &str) -> Result<String> {
         }
         Type::Record { namespace, .. }
         | Type::Enum { namespace, .. }
-        | Type::Interface { namespace, .. } => {
+        | Type::Interface { namespace, .. }
+        | Type::Custom { namespace, .. } => {
             format!(
                 "uniffi_read_type_{}_{}",
                 namespace.to_snake_case(),
@@ -171,7 +180,8 @@ pub fn write_fn_rs(ty: &Type, canonical_name: &str) -> Result<String> {
         }
         Type::Record { namespace, .. }
         | Type::Enum { namespace, .. }
-        | Type::Interface { namespace, .. } => {
+        | Type::Interface { namespace, .. }
+        | Type::Custom { namespace, .. } => {
             format!(
                 "uniffi_write_type_{}_{}",
                 namespace.to_snake_case(),
@@ -201,7 +211,8 @@ pub fn read_fn_kt(ty: &Type, canonical_name: &str) -> String {
         }
         Type::Record { namespace, .. }
         | Type::Enum { namespace, .. }
-        | Type::Interface { namespace, .. } => {
+        | Type::Interface { namespace, .. }
+        | Type::Custom { namespace, .. } => {
             format!(
                 "readType{}{}",
                 namespace.to_upper_camel_case(),
@@ -231,7 +242,8 @@ pub fn write_fn_kt(ty: &Type, canonical_name: &str) -> String {
         }
         Type::Record { namespace, .. }
         | Type::Enum { namespace, .. }
-        | Type::Interface { namespace, .. } => {
+        | Type::Interface { namespace, .. }
+        | Type::Custom { namespace, .. } => {
             format!(
                 "writeType{}{}",
                 namespace.to_upper_camel_case(),

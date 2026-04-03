@@ -14,6 +14,8 @@ class InternalException(message: String) : Exception(message)
 {% include "EnumFfi.kt" %}
 {%- when TypeDefinition::Class(cls) %}
 {% include "ClassFfi.kt" %}
+{%- when TypeDefinition::Custom(custom) %}
+{% include "CustomFfi.kt" %}
 {%- when TypeDefinition::Optional(opt) %}
 {% include "OptionalFfi.kt" %}
 {%- when TypeDefinition::Sequence(seq) %}

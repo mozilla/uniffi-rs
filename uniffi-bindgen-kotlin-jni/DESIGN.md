@@ -39,6 +39,15 @@ Putting these functions here has some advantages over our current system:
 * **Simplified external types**.
   We don't need to map namespaces to package names to find the right function.
 
+# Custom types
+
+We use the `uniffi::CustomType` trait to handle this.
+The `custom_type!` macro implements it for the custom type.
+
+Note: this is one place where wheree we need the macros to generate code.
+This is because the `into` and `try_from` expressions need to be executed
+where they're defined rather than in the crate where we're generating scaffolding.
+
 # JNI
 
 This crate uses the low-level `jni_sys` crate rather than the high-level `jni` crate.

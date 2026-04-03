@@ -18,7 +18,7 @@ pub struct Config {
     #[serde(default)]
     omit_checksums: bool,
     #[serde(default)]
-    custom_types: IndexMap<String, CustomTypeConfig>,
+    pub custom_types: IndexMap<String, CustomTypeConfig>,
     #[serde(default)]
     android: bool,
     #[serde(default)]
@@ -81,17 +81,17 @@ impl Config {
 #[derive(Debug, Default, Clone, Serialize, Deserialize, Node)]
 #[serde(default)]
 pub struct CustomTypeConfig {
-    imports: Option<Vec<String>>,
-    type_name: Option<String>,
-    into_custom: String, // b/w compat alias for lift
-    lift: String,
-    from_custom: String, // b/w compat alias for lower
-    lower: String,
+    pub imports: Option<Vec<String>>,
+    pub type_name: Option<String>,
+    pub into_custom: String, // b/w compat alias for lift
+    pub lift: String,
+    pub from_custom: String, // b/w compat alias for lower
+    pub lower: String,
 }
 
 // functions replace literal "{}" in strings with a specified value.
 impl CustomTypeConfig {
-    fn lift(&self, name: &str) -> String {
+    pub fn lift(&self, name: &str) -> String {
         let converter = if self.lift.is_empty() {
             &self.into_custom
         } else {
@@ -99,7 +99,7 @@ impl CustomTypeConfig {
         };
         converter.replace("{}", name)
     }
-    fn lower(&self, name: &str) -> String {
+    pub fn lower(&self, name: &str) -> String {
         let converter = if self.lower.is_empty() {
             &self.from_custom
         } else {

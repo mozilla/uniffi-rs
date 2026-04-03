@@ -13,7 +13,7 @@ mod packages;
 mod records;
 mod types;
 
-use crate::Config;
+use crate::config::{Config, CustomTypeConfig};
 use anyhow::{anyhow, bail, Result};
 use context::Context;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};

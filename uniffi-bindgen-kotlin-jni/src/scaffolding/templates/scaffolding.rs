@@ -16,6 +16,8 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
     {%- filter indent(4) %}{% include "enum.rs" %}{% endfilter %}
     {%- when TypeDefinition::Class(cls) %}
     {%- filter indent(4) %}{% include "class.rs" %}{% endfilter %}
+    {%- when TypeDefinition::Custom(custom) %}
+    {%- filter indent(4) %}{% include "custom.rs" %}{% endfilter %}
     {%- when TypeDefinition::Optional(opt) %}
     {%- filter indent(4) %}{% include "optional.rs" %}{% endfilter %}
     {%- when TypeDefinition::Sequence(seq) %}

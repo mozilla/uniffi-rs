@@ -8,14 +8,23 @@ pub fn map_namespace(input: general::Namespace, context: &Context) -> Result<Pac
     let mut context = context.clone();
     context.update_from_namespace(&input);
 
+    let config = context.config()?.clone();
+    let imports = config
+        .custom_types
+        .values()
+        .flat_map(|c| c.imports.clone())
+        .flatten()
+        .collect();
+
     // Map everything except scaffolding_functions
     let package = Package {
         name: context.package_name(&input.name)?.to_string(),
         crate_name: input.name,
-        config: context.config()?.clone(),
+        config,
         functions: input.functions.map_node(&context)?,
         type_definitions: map_type_definitions(input.type_definitions, &context)?,
         scaffolding_functions: vec![],
+        imports,
     };
     // Collect scaffolding_functions
     let scaffolding_functions = package
@@ -68,6 +77,9 @@ pub fn map_type_definitions(
                 ObjectImpl::CallbackTrait => todo!(),
                 ObjectImpl::Trait => todo!(),
             },
+            general::TypeDefinition::Custom(c) => {
+                mapped.push(TypeDefinition::Custom(c.map_node(context)?));
+            }
             general::TypeDefinition::Optional(inner) => {
                 mapped.push(TypeDefinition::Optional(inner.map_node(context)?));
             }
