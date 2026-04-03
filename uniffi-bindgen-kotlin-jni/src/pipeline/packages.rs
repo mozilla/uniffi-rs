@@ -30,6 +30,15 @@ pub fn map_type_definitions(
             general::TypeDefinition::Enum(en) => {
                 mapped.push(TypeDefinition::Enum(en.map_node(context)?));
             }
+            general::TypeDefinition::Interface(int) => match int.imp {
+                ObjectImpl::Struct => {
+                    mapped.push(TypeDefinition::Interface(interfaces::map_interface(
+                        &int, context,
+                    )?));
+                    mapped.push(TypeDefinition::Class(int.map_node(context)?));
+                }
+                ObjectImpl::Trait(_) => todo!(),
+            },
             general::TypeDefinition::Optional(opt) => {
                 mapped.push(TypeDefinition::Optional(opt.map_node(context)?));
             }
@@ -58,8 +67,30 @@ impl Package {
     ///
     /// Generates a list of (jni_method_name, callable) pairs.
     pub fn jni_methods(&self) -> impl Iterator<Item = (&str, &Callable)> {
-        self.functions
+        let functions = self
+            .functions
             .iter()
-            .map(|f| (f.jni_method_name.as_str(), &f.callable))
+            .map(|f| (f.jni_method_name.as_str(), &f.callable));
+        let methods = self.classes().flat_map(|c| {
+            c.methods
+                .iter()
+                .map(|m| (m.jni_method_name.as_str(), &m.callable))
+        });
+        let constructors = self.classes().flat_map(|c| {
+            c.constructors
+                .iter()
+                .map(|c| (c.jni_method_name.as_str(), &c.callable))
+        });
+
+        functions.chain(methods).chain(constructors)
+    }
+
+    pub fn classes(&self) -> impl Iterator<Item = &Class> {
+        self.type_definitions
+            .iter()
+            .filter_map(|type_def| match type_def {
+                TypeDefinition::Class(cls) => Some(cls),
+                _ => None,
+            })
     }
 }

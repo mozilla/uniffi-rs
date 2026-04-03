@@ -52,6 +52,12 @@ For example:
 
 `cargo run -p [bindgen-binary-crate] bindings src:[top-level-library-crate] [out-dir]`
 
+## Differences from `uniffi-bindgen`
+
+Records and enums that store objects no longer implement the `Disposable` interface.
+All objects are freed automatically during normal garbage collections.
+See ADR-0008 for the reasoning.
+
 ## Extra requirements compared to the normal macro code
 
 * All exported items must be `pub`. This includes types, fields, functions, etc.
