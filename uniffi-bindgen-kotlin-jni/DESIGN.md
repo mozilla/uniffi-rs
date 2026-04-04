@@ -24,6 +24,21 @@ All arguments and return values are written/read from the buffer.
 * The caller passes the buffer to the callee.
 * If there is a return value, the callee writes it to the same buffer.
 
+# Errors/exceptions
+
+Errors/exceptions are handled JNI rather than `uniffi::RustCallStatus`
+
+For expected errors, we call a generated function in the `uniffi` package
+that's responsible for constructing the error and throwing.
+
+The throw function is passed an FFI buffer argument to read from.
+The callee passes the same FFI buffer that the caller passed to them.
+The caller is still responsible for freeing the buffer in the case of an exception.
+
+For unexpected errors, we construct a `uniffi.InternalException` instance and throw it using JNI.
+This is a simpler case since we can use the JNI `ThrowNew` function to construct
+the exception from a message string.
+
 # Kotlin `uniffi` package
 
 This is a generated package that contains all the FFI functions.

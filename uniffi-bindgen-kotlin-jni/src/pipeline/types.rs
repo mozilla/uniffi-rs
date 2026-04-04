@@ -124,7 +124,11 @@ pub fn type_kt(ty: &Type, context: &Context) -> Result<String> {
         | Type::Custom {
             namespace, name, ..
         } => {
-            format!("{}.{name}", context.package_name(namespace)?)
+            format!(
+                "{}.{}",
+                context.package_name(namespace)?,
+                names::class_name_kt(name, context.types_used_as_error.contains(&ty)),
+            )
         }
         _ => todo!(),
     })

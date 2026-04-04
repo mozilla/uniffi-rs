@@ -47,6 +47,21 @@ pub unsafe extern "system" fn Java_uniffi_Scaffolding_{{ scaffolding_function.jn
             );
             {%- endif %}
 
+            {%- if let Some(throws_ty) = callable.throws_type %}
+            let uniffi_return_value = match uniffi_return_value {
+                Ok(v) => v,
+                Err(uniffi_err) => {
+                    uniffi_buf.with_cursor(|uniffi_writer| {
+                        {{ throws_ty.write_fn_rs }}(uniffi_writer, uniffi_err)
+                    })?;
+                    // Safety:
+                    // `uniffi_buf` points to a valid FFI buffer
+                    unsafe { {{ throws_ty.throw_error_fn_rs() }}(uniffi_env, uniffi_buf.into_ptr()); };
+                    return Ok(());
+                }
+            };
+            {%- endif %}
+
             {%- if let Some(return_ty) = callable.return_type %}
             uniffi_buf.with_cursor(|uniffi_writer| {
                 {{ return_ty.write_fn_rs }}(uniffi_writer, uniffi_return_value)

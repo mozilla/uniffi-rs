@@ -10,10 +10,22 @@ class InternalException(message: String) : Exception(message)
 {%- match type_def %}
 {%- when TypeDefinition::Record(rec) %}
 {% include "RecordFfi.kt" %}
+{%- if rec.self_type.is_used_as_error %}
+{%- let error_type = rec.self_type %}
+{% include "ThrowErrorFun.kt" %}
+{%- endif %}
 {%- when TypeDefinition::Enum(en) %}
 {% include "EnumFfi.kt" %}
+{%- if en.self_type.is_used_as_error %}
+{%- let error_type = en.self_type %}
+{% include "ThrowErrorFun.kt" %}
+{%- endif %}
 {%- when TypeDefinition::Class(cls) %}
 {% include "ClassFfi.kt" %}
+{%- if cls.self_type.is_used_as_error %}
+{%- let error_type = cls.self_type %}
+{% include "ThrowErrorFun.kt" %}
+{%- endif %}
 {%- when TypeDefinition::Custom(custom) %}
 {% include "CustomFfi.kt" %}
 {%- when TypeDefinition::Optional(opt) %}

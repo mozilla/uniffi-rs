@@ -12,10 +12,22 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
     {%- match type_def %}
     {%- when TypeDefinition::Record(rec) %}
     {%- filter indent(4) %}{% include "record.rs" %}{% endfilter %}
+    {%- if rec.self_type.is_used_as_error %}
+    {%- let type_node = rec.self_type %}
+    {%- filter indent(4) %}{% include "throw_error_fn.rs" %}{% endfilter %}
+    {%- endif %}
     {%- when TypeDefinition::Enum(en) %}
     {%- filter indent(4) %}{% include "enum.rs" %}{% endfilter %}
+    {%- if en.self_type.is_used_as_error %}
+    {%- let type_node = en.self_type %}
+    {%- filter indent(4) %}{% include "throw_error_fn.rs" %}{% endfilter %}
+    {%- endif %}
     {%- when TypeDefinition::Class(cls) %}
     {%- filter indent(4) %}{% include "class.rs" %}{% endfilter %}
+    {%- if cls.self_type.is_used_as_error %}
+    {%- let type_node = cls.self_type %}
+    {%- filter indent(4) %}{% include "throw_error_fn.rs" %}{% endfilter %}
+    {%- endif %}
     {%- when TypeDefinition::Custom(custom) %}
     {%- filter indent(4) %}{% include "custom.rs" %}{% endfilter %}
     {%- when TypeDefinition::Optional(opt) %}

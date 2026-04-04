@@ -1,13 +1,7 @@
 {%- let type_name = en.self_type.type_kt %}
 
-{#
-// Kotlin's `enum class` construct doesn't support variants with associated data,
-// but is a little nicer for consumers than its `sealed class` enum pattern.
-// So, we switch here, using `enum class` for enums with no associated data
-// and `sealed class` for the general case.
-#}
-
-{%- if en.is_flat %}
+{%- match en.kotlin_kind %}
+{%- when KotlinEnumKind::EnumClass { .. } %}
 
 fun {{ en.self_type.read_fn_kt }}(cursor: uniffi.FfiBufferCursor): {{ type_name }} {
     val uniffiDiscriminent = uniffi.readUInt(cursor).toInt()
@@ -25,16 +19,22 @@ fun {{ en.self_type.read_fn_kt }}(cursor: uniffi.FfiBufferCursor): {{ type_name 
 fun {{ en.self_type.write_fn_kt }}(cursor: uniffi.FfiBufferCursor, value: {{ type_name }}) {
     uniffi.writeUInt(cursor, value.ordinal.toUInt())
 }
-{% else %}
+
+{%- when KotlinEnumKind::SealedClass %}
+
 fun {{ en.self_type.read_fn_kt }}(cursor: uniffi.FfiBufferCursor): {{ type_name }} {
     val uniffiDiscriminent = uniffi.readUInt(cursor)
     return when(uniffiDiscriminent) {
         {%- for v in en.variants %}
-        {{ loop.index0 }}u -> {{ type_name }}.{{ v.name_kt }}{% if !v.fields.is_empty() %}(
+        {%- if v.fields.is_empty() && !en.self_type.is_used_as_error %}
+        {{ loop.index0 }}u -> {{ type_name }}.{{ v.name_kt }}
+        {%- else %}
+        {{ loop.index0 }}u -> {{ type_name }}.{{ v.name_kt }}(
             {%- for f in v.fields %}
             {{ f.ty.read_fn_kt }}(cursor),
             {%- endfor %}
-        ){%- endif -%}
+        )
+        {%- endif %}
         {%- endfor %}
         else -> throw uniffi.InternalException("Invalid enum value: ${uniffiDiscriminent}")
     }
@@ -53,4 +53,21 @@ fun {{ en.self_type.write_fn_kt }}(cursor: uniffi.FfiBufferCursor, value: {{ typ
         {%- endfor %}
     }
 }
-{% endif %}
+
+{%- when KotlinEnumKind::FlatError %}
+
+fun {{ en.self_type.read_fn_kt }}(cursor: uniffi.FfiBufferCursor): {{ type_name }} {
+    val uniffiDiscriminent = uniffi.readUInt(cursor)
+    return when(uniffiDiscriminent) {
+        {%- for v in en.variants %}
+        {{ loop.index0 }}u -> {{ type_name }}.{{ v.name_kt }}(uniffi.readString(cursor))
+        {%- endfor %}
+        else -> throw uniffi.InternalException("Invalid enum value: ${uniffiDiscriminent}")
+    }
+}
+
+fun {{ en.self_type.write_fn_kt }}(cursor: uniffi.FfiBufferCursor, value: {{ type_name }}) {
+    throw uniffi.InternalException("{{ en.self_type.write_fn_kt }}: writing flat errors is not supported")
+}
+
+{% endmatch %}

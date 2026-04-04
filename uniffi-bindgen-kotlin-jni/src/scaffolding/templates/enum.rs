@@ -1,5 +1,24 @@
 {%- let type_name = en.self_type.type_rs %}
 
+{%- if en.is_flat_error() %}
+// Note: no read function, since passing flat errors from Kotlin to Rust is not allowed.
+
+/// Write a {{ type_name }} to a `FfiBufferCursor`
+pub fn {{ en.self_type.write_fn_rs }}(
+    cursor: &mut uniffi::FfiBufferCursor,
+    value: {{ type_name }},
+) -> uniffi::Result<()> {
+    match value {
+        {%- for v in en.variants %}
+        {{ type_name }}::{{ v.name_rs() }} { .. } => {
+            uniffi::FfiBufferCursor::write_u32(cursor, {{ loop.index0 }})?;
+            uniffi::FfiBufferCursor::write_string(cursor, value.to_string())?;
+        }
+        {%- endfor %}
+    }
+    Ok(())
+}
+{%- else %}
 /// Read a {{ type_name }} from a `FfiBufferCursor`
 pub fn {{ en.self_type.read_fn_rs }}(
     cursor: &mut uniffi::FfiBufferCursor,
@@ -68,3 +87,4 @@ pub fn {{ en.self_type.write_fn_rs }}(
     }
     Ok(())
 }
+{%- endif %}
