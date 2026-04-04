@@ -1,5 +1,6 @@
 {%- let type_name = en.self_type.type_rs %}
 
+{%- if !en.is_flat_error() %}
 unsafe fn {{ en.self_type.lower_fn_rs() }}(
     uniffi_env: *mut uniffi_jni::JNIEnv,
     uniffi_value: {{ type_name }},
@@ -169,3 +170,46 @@ unsafe fn {{ en.self_type.read_fn_rs() }}(
         }
     }
 }
+
+{%- else %}
+unsafe fn {{ en.self_type.lower_fn_rs() }}(
+    uniffi_env: *mut uniffi_jni::JNIEnv,
+    value: {{ type_name }},
+) -> uniffi::Result<{{ en.self_type.lowered_type_rs() }}> {
+    unsafe {
+        let msg = <{{ type_name }} as ::std::string::ToString>::to_string(&value);
+        let jstring = uniffi_jni::lower_string(uniffi_env, msg)?;
+        match value {
+            {%- for v in en.variants %}
+            {{ type_name }}::{{ v.name_rs() }} { .. } => {
+                uniffi::Result::Ok(({{ loop.index0 }}, jstring))
+            }
+            {%- endfor %}
+        }
+    }
+}
+
+unsafe fn {{ en.self_type.write_fn_rs() }}(
+    ptr: *mut ::std::primitive::u8,
+    value: {{ type_name }},
+) -> uniffi::Result<()> {
+    unsafe {
+        let msg = <{{ type_name }} as ::std::string::ToString>::to_string(&value);
+        match value {
+            {%- for v in en.variants %}
+            {{ type_name }}::{{ v.name_rs() }} { .. } => {
+                uniffi::ffibuffer::write_i32(ptr, {{ loop.index0 }})?;
+                uniffi::ffibuffer::write_string(ptr.add(8), msg)?;
+                uniffi::Result::Ok(())
+            }
+            {%- endfor %}
+        }
+    }
+}
+
+{#
+ # No lift/read functions for flat errors.
+ # We only support passing them from Rust -> Kotlin.
+ #}
+
+{%- endif %}

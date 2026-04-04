@@ -96,7 +96,12 @@ impl FfiTypeOracle {
                 }
                 general::TypeDefinition::Enum(en) => {
                     if matches!(en.shape, EnumShape::Error { flat: true }) {
-                        todo!()
+                        // Flat enums always lower to a discriminant plus a string value
+                        self.user_type_map.insert(
+                            en.self_type.ty.clone(),
+                            vec![FfiType::Int32, FfiType::String],
+                        );
+                        continue;
                     }
                     // Start with just a i32 for the variant index, we'll add to this as we process each
                     // variant

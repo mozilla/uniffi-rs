@@ -1,6 +1,7 @@
 {%- let type_name = en.self_type.type_kt %}
 
-{%- if let KotlinEnumKind::EnumClass { .. } = en.kotlin_kind %}
+{%- match en.kotlin_kind %}
+{%- when KotlinEnumKind::EnumClass { .. } %}
 @JvmName("{{ en.self_type.lower_fn_kt() }}")
 fun {{ en.self_type.lower_fn_kt() }}(value: {{ type_name }}): kotlin.Int {
     return value.ordinal
@@ -22,8 +23,8 @@ fun {{ en.self_type.write_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.In
 fun {{ en.self_type.read_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int): {{ type_name }} {
     return {{ en.self_type.lift_fn_kt() }}(readInt(buf, offset))
 }
-{%- else %}
 
+{%- when KotlinEnumKind::SealedClass %}
 {%- if !en.self_type.lowers_to_primitive() %}
 // Deconstructed version of {{ en.name }}
 class {{ en.self_type.lowered_type_kt() }}(
@@ -134,4 +135,28 @@ fun {{ en.self_type.read_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int
         }
     }
 }
-{%- endif %}
+
+{%- when KotlinEnumKind::FlatError %}
+@JvmName("{{ en.self_type.lift_fn_kt() }}")
+fun {{ en.self_type.lift_fn_kt() }}(v0: kotlin.Int, v1: kotlin.String): {{ type_name }} {
+    return when(v0) {
+        {%- for v in en.variants %}
+        {{ loop.index0 }} -> {{ type_name }}.{{ v.name_kt }}(v1)
+        {%- endfor %}
+        else -> throw uniffi.InternalException("{{ en.self_type.lift_fn_kt() }}: Invalid enum value: ${v0}")
+    }
+}
+
+
+fun {{ en.self_type.read_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int): {{ type_name }} {
+    val uniffiDiscriminent = uniffi.readInt(buf, offset)
+    return when(uniffiDiscriminent) {
+        {%- for v in en.variants %}
+        {{ loop.index0 }} -> {{ type_name }}.{{ v.name_kt }}(readString(buf, offset + 8))
+        {%- endfor %}
+        else -> throw uniffi.InternalException("{{ en.self_type.read_fn_kt() }}: Invalid enum value: ${uniffiDiscriminent}")
+    }
+}
+
+{# No lower/write functions, passing flat errors back to Rust is not supported #}
+{%- endmatch %}
