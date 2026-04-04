@@ -37,6 +37,13 @@ struct Cli {
     /// What frameworks to link against when generating the modulemap file.
     #[arg(long)]
     link_frameworks: Vec<String>,
+    /// Path to optional uniffi config file. This config is merged with the `uniffi.toml` config present in each crate, with its values taking precedence.
+    #[clap(long, short)]
+    config: Option<Utf8PathBuf>,
+
+    /// Path to optional crate config file
+    #[clap(long)]
+    crate_metadata: Option<Utf8PathBuf>,
 }
 
 #[derive(Debug, Args)]
@@ -73,6 +80,8 @@ impl From<Cli> for SwiftBindingsOptions {
             modulemap_filename: cli.modulemap_filename,
             metadata_no_deps: cli.metadata_no_deps,
             link_frameworks: cli.link_frameworks,
+            config_override: cli.config,
+            crate_metadata: cli.crate_metadata,
         }
     }
 }

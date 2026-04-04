@@ -57,6 +57,10 @@ pub fn generate_with_bindgen_paths(
         paths.add_config_override_layer(path.clone());
     }
 
+    if let Some(path) = &options.crate_metadata {
+        paths.add_crate_metadata_layer(path)?;
+    }
+
     #[cfg(feature = "cargo-metadata")]
     paths.add_cargo_metadata_layer(options.metadata_no_deps)?;
 
@@ -93,6 +97,8 @@ pub struct GenerateOptions {
     /// Path to the config file to use, if None bindings generators will load
     /// `[crate-root]/uniffi.toml`
     pub config_override: Option<Utf8PathBuf>,
+    /// Path to an optional config file with metadata about each crate.
+    pub crate_metadata: Option<Utf8PathBuf>,
     /// Run the generated code through a source code formatter
     pub format: bool,
     /// Limit binding generate to a single crate
