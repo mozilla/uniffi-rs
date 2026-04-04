@@ -23,6 +23,9 @@ pub fn standard_ffi_type_mapping(ty: &Type) -> Option<Vec<FfiType>> {
         Type::Boolean => Some(vec![FfiType::Boolean]),
         Type::String => Some(vec![FfiType::String]),
         Type::Bytes => Some(vec![FfiType::ByteArray]),
+        Type::Sequence { .. } | Type::Map { .. } | Type::Set { .. } => {
+            Some(vec![FfiType::ByteBuffer])
+        }
         // Interfaces are passed as 64-bit handle
         Type::Interface { .. } | Type::CallbackInterface { .. } => Some(vec![FfiType::Int64]),
         Type::Optional { inner_type } => match &**inner_type {
@@ -139,6 +142,7 @@ impl FfiType {
             // value.
             Self::String => "String?",
             Self::ByteArray => "kotlin.ByteArray?",
+            Self::ByteBuffer => "java.nio.ByteBuffer?",
         }
     }
 
@@ -154,6 +158,7 @@ impl FfiType {
             // JNI uses the `jstring` type, we convert to `String` in the lift/lower functions.
             Self::String => "uniffi_jni::jstring",
             Self::ByteArray => "uniffi_jni::jbyteArray",
+            Self::ByteBuffer => "uniffi_jni::jobject",
         }
     }
 
@@ -167,7 +172,7 @@ impl FfiType {
             Self::Float32 => "0.0f",
             Self::Float64 => "0.0",
             Self::Boolean => "false",
-            Self::String | Self::ByteArray => "null",
+            Self::String | Self::ByteArray | Self::ByteBuffer => "null",
         }
     }
 
@@ -182,6 +187,7 @@ impl FfiType {
             Self::Float64 => "D",
             Self::Boolean => "Z",
             Self::String => "Ljava/lang/String;",
+            Self::ByteBuffer => "Ljava/nio/ByteBuffer;",
             Self::ByteArray => "[B",
         }
     }
@@ -196,7 +202,7 @@ impl FfiType {
             Self::Float32 => "f",
             Self::Float64 => "d",
             Self::Boolean => "z",
-            Self::String | Self::ByteArray => "l",
+            Self::String | Self::ByteArray | Self::ByteBuffer => "l",
         }
     }
 }

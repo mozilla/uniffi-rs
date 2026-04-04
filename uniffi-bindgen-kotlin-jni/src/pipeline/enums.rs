@@ -77,6 +77,8 @@ fn map_fields(
     field_alloc: &mut VariantFieldAllocator,
     context: &Context,
 ) -> Result<Vec<Field>> {
+    let mut layout_builder = FfiBufferLayoutBuilder::new();
+    layout_builder.extend(&Type::Int32, context)?; // discriminant
     input
         .into_iter()
         .enumerate()
@@ -87,6 +89,7 @@ fn map_fields(
                 .iter()
                 .map(|ffi_type| field_alloc.alloc(ffi_type))
                 .collect::<Result<Vec<_>>>()?;
+            let offset = layout_builder.extend(&ty.ty, context)?;
 
             Ok(Field {
                 name: input.name,
@@ -95,6 +98,7 @@ fn map_fields(
                 default: input.default.map_node(context)?,
                 docstring: input.docstring,
                 ffi_fields,
+                offset,
             })
         })
         .collect::<Result<Vec<_>>>()

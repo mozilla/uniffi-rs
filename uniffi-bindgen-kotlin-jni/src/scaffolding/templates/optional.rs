@@ -47,3 +47,37 @@ unsafe fn {{ opt.self_type.lift_fn_rs() }}(
     })
 }
 {%- endif %}
+
+unsafe fn {{ opt.self_type.write_fn_rs() }}(
+    ptr: *mut ::std::primitive::u8,
+    value: {{ type_name }},
+) -> uniffi::Result<()> {
+    unsafe {
+        match value {
+            None => {
+                uniffi::ffibuffer::write_bool(ptr, false)?;
+            }
+            Some(inner_value) => {
+                uniffi::ffibuffer::write_bool(ptr, true)?;
+                {{ opt.inner.write_fn_rs() }}(ptr.add({{ opt.some_offset }}), inner_value)?;
+            }
+        }
+        uniffi::Result::Ok(())
+    }
+}
+
+unsafe fn {{ opt.self_type.read_fn_rs() }}(
+    ptr: *mut ::std::primitive::u8,
+) -> uniffi::Result<{{ type_name }}> {
+    unsafe {
+        uniffi::Result::Ok(match uniffi::ffibuffer::read_bool(ptr)? {
+            false => {
+                None
+            }
+            true => {
+                Some({{ opt.inner.read_fn_rs() }}(ptr.add({{ opt.some_offset }}))?)
+            },
+            n => uniffi::deps::anyhow::bail!("{{ opt.self_type.read_fn_rs() }}: invalid discriminent: {n}"),
+        })
+    }
+}

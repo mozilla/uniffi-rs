@@ -57,6 +57,43 @@ See notes on "Returning deconstructed types" below for details.
 
 Note: if a type deconstructs to exactly 1 FFI type, then we simply return it as a primitive.
 
+## FFI buffers
+
+As described above, Vecs, HashMaps, and HashSets get passed as a nio ByteBuffer.
+Here's how values are packed into those buffers.
+
+* Primitive values are packed using native-endian.
+  Container types ensure that primitive values are packed with
+  the proper alignment.
+* Pointers are packed as `u64` values to simplify the layout calculations.
+* Records are packed field-by-field.
+  The `FfiBufferLayout` class is used to track the current size of the buffer
+  and the offsets needed to properly align fields.
+* Enums variants are packed as a `i32` discriminant, followed by all variant fields.
+  The packing algorithm is the same as for records.
+  The size of the enum is the max size of all variants.
+* Vecs, Hashmaps and HashSets are packed as nested buffers.
+  The data/size fields are written as 2 `u64` values.
+  `std::mem::forget` is used to avoid freeing the data until it's read.
+  Both sides of the FFI must free these buffers immediately after reading from them.
+* Strings are packed in a similar manner, except they're packed as 3 `u64` values
+  (data/length/capacity).
+* Box is also packed as a nested buffer.
+  In this case we only need to pack a `u64` value for the pointer.
+
+This strategy ensures that all types occupy a fixed size in the buffer,
+which makes size calculations easy.
+For example to allocate a vec, we calculate `item_size * length`.
+
+As mentioned above Box values are packed as nested buffers.
+This helps us implement the 2 main use-cases they're used for:
+* Enable recursive types.
+* Reduce wasted space when one enum variant is larger than the others.
+  If you box the variant, then it will only contribute 8 bytes to the size of the enum.
+
+All buffers are allocated by the Rust code, `ByteBuffer.allocateDirect` is never used.
+This allows us to control when buffers get freed rather than rely on the garbage collector.
+
 ## Call details
 
 ### Kotlin -> Rust sync call
