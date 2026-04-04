@@ -32,6 +32,22 @@ fn type_rs(ty: &Type, context: &Context) -> Result<String> {
         Type::Float64 => "f64".into(),
         Type::Boolean => "bool".into(),
         Type::String => "::std::string::String".into(),
+        Type::Optional { inner_type } => {
+            format!("::std::option::Option<{}>", type_rs(inner_type, context)?)
+        }
+        Type::Sequence { inner_type } => {
+            format!("::std::vec::Vec<{}>", type_rs(inner_type, context)?)
+        }
+        Type::Map {
+            key_type,
+            value_type,
+        } => {
+            format!(
+                "::std::collections::HashMap<{}, {}>",
+                type_rs(key_type, context)?,
+                type_rs(value_type, context)?,
+            )
+        }
         Type::Record {
             namespace,
             orig_name,
@@ -65,6 +81,22 @@ pub fn type_kt(ty: &Type, context: &Context) -> Result<String> {
         Type::Float64 => "Double".into(),
         Type::Boolean => "Boolean".into(),
         Type::String => "String".into(),
+        Type::Optional { inner_type } => {
+            format!("{}?", type_kt(inner_type, context)?)
+        }
+        Type::Sequence { inner_type } => {
+            format!("List<{}>", type_kt(inner_type, context)?)
+        }
+        Type::Map {
+            key_type,
+            value_type,
+        } => {
+            format!(
+                "Map<{}, {}>",
+                type_kt(key_type, context)?,
+                type_kt(value_type, context)?,
+            )
+        }
         Type::Record {
             namespace, name, ..
         }
@@ -91,6 +123,9 @@ pub fn read_fn_rs(ty: &Type, canonical_name: &str) -> Result<String> {
         Type::Float64 => "uniffi::FfiBufferCursor::read_f64".into(),
         Type::Boolean => "uniffi::FfiBufferCursor::read_bool".into(),
         Type::String => "uniffi::FfiBufferCursor::read_string".into(),
+        Type::Optional { .. } | Type::Sequence { .. } | Type::Map { .. } => {
+            format!("uniffi_read_compound_{}", canonical_name.to_snake_case(),)
+        }
         Type::Record { namespace, .. } | Type::Enum { namespace, .. } => {
             format!(
                 "uniffi_read_type_{}_{}",
@@ -116,6 +151,9 @@ pub fn write_fn_rs(ty: &Type, canonical_name: &str) -> Result<String> {
         Type::Float64 => "uniffi::FfiBufferCursor::write_f64".into(),
         Type::Boolean => "uniffi::FfiBufferCursor::write_bool".into(),
         Type::String => "uniffi::FfiBufferCursor::write_string".into(),
+        Type::Optional { .. } | Type::Sequence { .. } | Type::Map { .. } => {
+            format!("uniffi_write_compound_{}", canonical_name.to_snake_case(),)
+        }
         Type::Record { namespace, .. } | Type::Enum { namespace, .. } => {
             format!(
                 "uniffi_write_type_{}_{}",
@@ -141,9 +179,12 @@ pub fn read_fn_kt(ty: &Type, canonical_name: &str) -> String {
         Type::Float64 => "readDouble".into(),
         Type::Boolean => "readBool".into(),
         Type::String => "readString".into(),
+        Type::Optional { .. } | Type::Sequence { .. } | Type::Map { .. } => {
+            format!("readCompound{}", canonical_name.to_upper_camel_case(),)
+        }
         Type::Record { namespace, .. } | Type::Enum { namespace, .. } => {
             format!(
-                "read{}{}",
+                "readType{}{}",
                 namespace.to_upper_camel_case(),
                 canonical_name.to_upper_camel_case()
             )
@@ -166,9 +207,12 @@ pub fn write_fn_kt(ty: &Type, canonical_name: &str) -> String {
         Type::Float64 => "writeDouble".into(),
         Type::Boolean => "writeBool".into(),
         Type::String => "writeString".into(),
+        Type::Optional { .. } | Type::Sequence { .. } | Type::Map { .. } => {
+            format!("writeCompound{}", canonical_name.to_upper_camel_case(),)
+        }
         Type::Record { namespace, .. } | Type::Enum { namespace, .. } => {
             format!(
-                "write{}{}",
+                "writeType{}{}",
                 namespace.to_upper_camel_case(),
                 canonical_name.to_upper_camel_case()
             )

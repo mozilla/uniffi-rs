@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::collections::HashSet;
+
 use super::*;
 
 uniffi_pipeline::use_prev_node!(general::EnumShape);
@@ -35,6 +37,9 @@ pub struct Package {
 pub enum TypeDefinition {
     Record(Record),
     Enum(Enum),
+    Optional(OptionalType),
+    Sequence(SequenceType),
+    Map(MapType),
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -135,6 +140,28 @@ pub struct Argument {
     pub optional: bool,
 }
 
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::OptionalType))]
+pub struct OptionalType {
+    pub inner: TypeNode,
+    pub self_type: TypeNode,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::SequenceType))]
+pub struct SequenceType {
+    pub inner: TypeNode,
+    pub self_type: TypeNode,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::MapType))]
+pub struct MapType {
+    pub key: TypeNode,
+    pub value: TypeNode,
+    pub self_type: TypeNode,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Node, MapNode)]
 #[map_node(from(general::TypeNode))]
 #[map_node(types::map_type_node)]
@@ -207,6 +234,26 @@ impl Root {
             1 => config_names.into_iter().next().unwrap().to_string(),
             _ => bail!("Conflicting cdylib names in `uniffi.toml` files: {:?}", Vec::from_iter(config_names)),
         })
+    }
+
+    /// Type definitions to generate FFI functions for
+    ///
+    /// This de-dupes the type definitions for all packages so we only don't generate duplicate
+    /// functions for types that may be used in multiple packages like `Vec<u32>`.
+    pub fn ffi_type_definitions(&self) -> impl Iterator<Item = &TypeDefinition> {
+        let mut seen = HashSet::new();
+        self.packages
+            .iter()
+            .flat_map(|p| &p.type_definitions)
+            .filter(move |type_def| {
+                seen.insert(match type_def {
+                    TypeDefinition::Record(r) => &r.self_type,
+                    TypeDefinition::Enum(e) => &e.self_type,
+                    TypeDefinition::Optional(o) => &o.self_type,
+                    TypeDefinition::Sequence(s) => &s.self_type,
+                    TypeDefinition::Map(m) => &m.self_type,
+                })
+            })
     }
 }
 

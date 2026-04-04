@@ -5,13 +5,17 @@ class InternalException(message: String) : Exception(message)
 {% include "FfiBuffer.kt" %}
 {% include "Scaffolding.kt" %}
 
-{%- for package in root.packages %}
-{%- for type_def in package.type_definitions %}
+{%- for type_def in root.ffi_type_definitions() %}
 {%- match type_def %}
 {%- when TypeDefinition::Record(rec) %}
 {% include "RecordFfi.kt" %}
 {%- when TypeDefinition::Enum(en) %}
 {% include "EnumFfi.kt" %}
+{%- when TypeDefinition::Optional(opt) %}
+{% include "OptionalFfi.kt" %}
+{%- when TypeDefinition::Sequence(seq) %}
+{% include "SequenceFfi.kt" %}
+{%- when TypeDefinition::Map(map) %}
+{% include "MapFfi.kt" %}
 {%- endmatch %}
-{%- endfor %}
 {%- endfor %}

@@ -8,16 +8,22 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
 
     {% filter indent(4) %}{% include "shared.rs" %}{% endfilter %}
 
-    {%- for package in root.packages %}
-    {%- for type_def in package.type_definitions %}
+    {%- for type_def in root.ffi_type_definitions() %}
     {%- match type_def %}
     {%- when TypeDefinition::Record(rec) %}
     {%- filter indent(4) %}{% include "record.rs" %}{% endfilter %}
     {%- when TypeDefinition::Enum(en) %}
     {%- filter indent(4) %}{% include "enum.rs" %}{% endfilter %}
+    {%- when TypeDefinition::Optional(opt) %}
+    {%- filter indent(4) %}{% include "optional.rs" %}{% endfilter %}
+    {%- when TypeDefinition::Sequence(seq) %}
+    {%- filter indent(4) %}{% include "sequence.rs" %}{% endfilter %}
+    {%- when TypeDefinition::Map(map) %}
+    {%- filter indent(4) %}{% include "map.rs" %}{% endfilter %}
     {%- endmatch %}
     {%- endfor %}
 
+    {%- for package in root.packages %}
     {%- for func in package.functions %}
     {%- filter indent(4) %}{% include "function.rs" %}{% endfilter %}
     {%- endfor %}
