@@ -42,3 +42,27 @@ unsafe fn {{ rec.self_type.lift_fn_rs() }}(
         })
     }
 }
+
+unsafe fn {{ rec.self_type.write_fn_rs() }}(
+    ptr: *mut ::std::primitive::u8,
+    value: {{ type_name }},
+) -> uniffi::Result<()> {
+    unsafe {
+        {%- for f in rec.fields %}
+        {{ f.ty.write_fn_rs() }}(ptr.add({{ f.offset }}), value.{{ f.name_rs() }})?;
+        {%- endfor %}
+        uniffi::Result::Ok(())
+    }
+}
+
+unsafe fn {{ rec.self_type.read_fn_rs() }}(
+    ptr: *mut ::std::primitive::u8,
+) -> uniffi::Result<{{ type_name }}> {
+    unsafe {
+        uniffi::Result::Ok({{ type_name }} {
+            {%- for f in rec.fields %}
+            {{ f.name_rs() }}: {{ f.ty.read_fn_rs() }}(ptr.add({{ f.offset }}))?,
+            {%- endfor %}
+        })
+    }
+}

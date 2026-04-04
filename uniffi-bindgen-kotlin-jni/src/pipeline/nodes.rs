@@ -36,6 +36,9 @@ pub enum TypeDefinition {
     Record(Record),
     Enum(Enum),
     Optional(OptionalType),
+    Sequence(SequenceType),
+    Map(MapType),
+    Set(SetType),
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -95,6 +98,8 @@ pub struct Field {
     pub default: Option<DefaultValueNode>,
     pub docstring: Option<String>,
     pub ffi_fields: Vec<FfiField>,
+    // Offset of the field, when packed in a FFI buffer
+    pub offset: usize,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -146,9 +151,46 @@ pub struct Argument {
 
 #[derive(Debug, Clone, Node, MapNode)]
 #[map_node(from(general::OptionalType))]
+#[map_node(compounds::map_optional)]
 pub struct OptionalType {
     pub inner: TypeNode,
     pub self_type: TypeNode,
+    // Offset of the `Some` value, when packed in a FFI buffer
+    pub some_offset: usize,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::SequenceType))]
+#[map_node(compounds::map_sequence)]
+pub struct SequenceType {
+    pub inner: TypeNode,
+    pub self_type: TypeNode,
+    // Size of each item, when packed in a FFI buffer
+    pub item_size: usize,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::MapType))]
+#[map_node(compounds::map_map)]
+pub struct MapType {
+    pub key: TypeNode,
+    pub value: TypeNode,
+    pub self_type: TypeNode,
+    // Offset of the value data, when packed in a FFI buffer.
+    // This is relative to the start of the current_item.
+    pub value_offset: usize,
+    // Size of each item, when packed in a FFI buffer
+    pub item_size: usize,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::SetType))]
+#[map_node(compounds::map_set)]
+pub struct SetType {
+    pub inner: TypeNode,
+    pub self_type: TypeNode,
+    // Size of each item, when packed in a FFI buffer
+    pub item_size: usize,
 }
 
 /// Wrap `Type` so that we can add extra fields that are set for all variants.
@@ -206,6 +248,7 @@ pub enum FfiType {
     Boolean,
     String,
     ByteArray,
+    ByteBuffer,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]

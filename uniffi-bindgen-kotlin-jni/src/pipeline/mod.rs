@@ -3,9 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 mod callables;
+mod compounds;
 mod context;
 mod defaults;
 mod enums;
+mod ffi_buffer;
 mod ffi_types;
 mod names;
 mod nodes;
@@ -18,6 +20,7 @@ use std::collections::{HashMap, HashSet};
 
 use anyhow::{anyhow, bail, Result};
 use context::Context;
+use ffi_buffer::FfiBufferLayoutBuilder;
 use ffi_types::FfiTypeOracle;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use indexmap::IndexSet;

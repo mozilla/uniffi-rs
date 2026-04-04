@@ -49,6 +49,9 @@ impl Root {
                     TypeDefinition::Record(r) => r.self_type.id,
                     TypeDefinition::Enum(e) => e.self_type.id,
                     TypeDefinition::Optional(o) => o.self_type.id,
+                    TypeDefinition::Sequence(s) => s.self_type.id,
+                    TypeDefinition::Map(m) => m.self_type.id,
+                    TypeDefinition::Set(s) => s.self_type.id,
                 })
             })
     }

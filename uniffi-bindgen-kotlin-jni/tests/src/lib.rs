@@ -35,6 +35,11 @@ mod test {
         run_tests(test_dir(), "tests/enums.kts");
     }
 
+    #[test]
+    fn test_compound_types() {
+        run_tests(test_dir(), "tests/compound_types.kts");
+    }
+
     fn test_dir() -> &'static Utf8Path {
         static TEST_TEMPDIR: OnceLock<Utf8PathBuf> = OnceLock::new();
         TEST_TEMPDIR.get_or_init(|| {

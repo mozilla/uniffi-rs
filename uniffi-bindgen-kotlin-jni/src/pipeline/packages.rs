@@ -30,6 +30,18 @@ pub fn map_type_definitions(
             general::TypeDefinition::Enum(en) => {
                 mapped.push(TypeDefinition::Enum(en.map_node(context)?));
             }
+            general::TypeDefinition::Optional(opt) => {
+                mapped.push(TypeDefinition::Optional(opt.map_node(context)?));
+            }
+            general::TypeDefinition::Sequence(seq) => {
+                mapped.push(TypeDefinition::Sequence(seq.map_node(context)?));
+            }
+            general::TypeDefinition::Map(map) => {
+                mapped.push(TypeDefinition::Map(map.map_node(context)?));
+            }
+            general::TypeDefinition::Set(set) => {
+                mapped.push(TypeDefinition::Set(set.map_node(context)?));
+            }
             // All other variants are still TODO
             _ => (),
         }
