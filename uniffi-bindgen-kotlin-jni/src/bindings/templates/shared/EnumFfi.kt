@@ -14,6 +14,14 @@ fun {{ en.self_type.lift_fn_kt() }}(value: kotlin.Int): {{ type_name }} {
     return {{ type_name }}.values()[value]
     {%- endif %}
 }
+
+fun {{ en.self_type.write_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int, value: {{ type_name }}) {
+    writeInt(buf, offset, value.ordinal)
+}
+
+fun {{ en.self_type.read_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int): {{ type_name }} {
+    return {{ en.self_type.lift_fn_kt() }}(readInt(buf, offset))
+}
 {%- else %}
 
 {%- if !en.self_type.lowers_to_primitive() %}
@@ -88,6 +96,41 @@ fun {{ en.self_type.lift_fn_kt() }}(
         {%- endfor %}
         else -> {
             throw uniffi.InternalException("{{ en.self_type.lift_fn_kt() }}: Invalid enum discriminant: ${v0}")
+        }
+    }
+}
+
+fun {{ en.self_type.write_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int, value: {{ type_name }}) {
+    when (value) {
+        {%- for v in en.variants %}
+        is {{ type_name }}.{{ v.name_kt }} -> {
+            writeInt(buf, offset, {{ loop.index0 }});
+            {%- for f in v.fields %}
+            {{ f.ty.write_fn_kt() }}(buf, offset + {{ f.offset }}, value.{{ f.name_kt() }})
+            {%- endfor %}
+        }
+        {%- endfor %}
+    }
+}
+
+fun {{ en.self_type.read_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int): {{ type_name }} {
+    val discriminant = readInt(buf, offset);
+    return when (discriminant) {
+        {%- for v in en.variants %}
+        {{ loop.index0 }} -> {
+            {%- if v.fields.is_empty() && !en.self_type.is_used_as_error %}
+            {{ type_name }}.{{ v.name_kt }}
+            {%- else %}
+            {{ type_name }}.{{ v.name_kt }}(
+                {%- for f in v.fields %}
+                {{ f.ty.read_fn_kt() }}(buf, offset + {{ f.offset }}),
+                {%- endfor %}
+            )
+            {%- endif %}
+        }
+        {%- endfor %}
+        else -> {
+            throw uniffi.InternalException("{{ en.self_type.lift_fn_kt() }}: Invalid enum discriminant: ${discriminant}")
         }
     }
 }

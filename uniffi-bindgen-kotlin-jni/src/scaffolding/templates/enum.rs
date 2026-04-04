@@ -98,3 +98,74 @@ unsafe fn {{ en.self_type.lift_fn_rs() }}(
         }
     }
 }
+
+unsafe fn {{ en.self_type.write_fn_rs() }}(
+    ptr: *mut ::std::primitive::u8,
+    value: {{ type_name }},
+) -> uniffi::Result<()> {
+    unsafe {
+        match value {
+            {%- for v in en.variants %}
+            {%- match v.fields_kind %}
+            {%- when FieldsKind::Unit %}
+            {{ type_name }}::{{ v.name_rs() }} => {
+            {%- when FieldsKind::Named %}
+            {{ type_name }}::{{ v.name_rs() }} {
+                {%- for f in v.fields %}
+                {{ f.name_rs() }}: uniffi_field{{ f.index}},
+                {%- endfor %}
+            } => {
+            {%- when FieldsKind::Unnamed %}
+            {{ type_name }}::{{ v.name_rs() }} (
+                {%- for f in v.fields %}
+                uniffi_field{{ f.index }},
+                {%- endfor %}
+            ) => {
+            {%- endmatch %}
+                uniffi::ffibuffer::write_i32(ptr, {{ loop.index0 }})?;
+                {%- for f in v.fields %}
+                {{ f.ty.write_fn_rs() }}(ptr.add({{ f.offset }}), uniffi_field{{ f.index }})?;
+                {%- endfor %}
+                uniffi::Result::Ok(())
+            }
+            {%- endfor %}
+        }
+    }
+}
+
+unsafe fn {{ en.self_type.read_fn_rs() }}(
+    ptr: *mut ::std::primitive::u8,
+) -> uniffi::Result<{{ type_name }}> {
+    unsafe {
+        let discriminant = uniffi::ffibuffer::read_i32(ptr)?;
+        match discriminant {
+            {%- for v in en.variants %}
+            {{ loop.index0 }} => {
+                {%- for field in v.fields %}
+                let uniffi_field{{ field.index }} = {{ field.ty.read_fn_rs() }}(
+                    ptr.add({{ field.offset }}),
+                )?;
+                {%- endfor %}
+
+                {%- match v.fields_kind %}
+                {%- when FieldsKind::Unit %}
+                uniffi::Result::Ok({{ type_name }}::{{ v.name_rs() }})
+                {%- when FieldsKind::Named %}
+                uniffi::Result::Ok({{ type_name }}::{{ v.name_rs() }} {
+                    {%- for field in v.fields %}
+                    {{ field.name_rs() }}: uniffi_field{{ field.index }},
+                    {%- endfor %}
+                })
+                {%- when FieldsKind::Unnamed %}
+                uniffi::Result::Ok({{ type_name }}::{{ v.name_rs() }}(
+                    {%- for field in v.fields %}
+                    uniffi_field{{ field.index }},
+                    {%- endfor %}
+                ))
+                {%- endmatch %}
+            }
+            {%- endfor %}
+            d => uniffi::deps::anyhow::bail!("{{ en.self_type.read_fn_rs() }}: invalid discriminent: {d}"),
+        }
+    }
+}
