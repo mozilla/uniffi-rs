@@ -630,6 +630,25 @@ pub struct UniffiTraitMethods {
     pub ord_cmp: Option<Method>,
 }
 
+impl TypeDefinition {
+    pub fn self_type(&self) -> &Type {
+        match self {
+            Self::Interface(int) => &int.self_type.ty,
+            Self::CallbackInterface(cbi) => &cbi.self_type.ty,
+            Self::Record(rec) => &rec.self_type.ty,
+            Self::Enum(en) => &en.self_type.ty,
+            Self::Custom(custom) => &custom.self_type.ty,
+            Self::Simple(type_node) => &type_node.ty,
+            Self::Box(boxed) => &boxed.self_type.ty,
+            Self::Optional(opt) => &opt.self_type.ty,
+            Self::Sequence(seq) => &seq.self_type.ty,
+            Self::Map(map) => &map.self_type.ty,
+            Self::Set(set) => &set.self_type.ty,
+            Self::External(ext) => &ext.self_type.ty,
+        }
+    }
+}
+
 impl FfiDefinition {
     pub fn name(&self) -> &str {
         match self {

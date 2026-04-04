@@ -48,3 +48,19 @@ fun {{ opt.self_type.lift_fn_kt() }}(
     }
 }
 {%- endif %}
+
+fun {{ opt.self_type.write_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int, value: {{ type_name }}) {
+    if (value == null) {
+        writeBoolean(buf, offset, false)
+    } else {
+        writeBoolean(buf, offset, true)
+        {{ opt.inner.write_fn_kt() }}(buf, offset + {{ opt.some_offset }}, value)
+    }
+}
+
+fun {{ opt.self_type.read_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int): {{ type_name }} {
+    return when (readBoolean(buf, offset)) {
+        false -> null
+        true -> {{ opt.inner.read_fn_kt() }}(buf, offset + {{ opt.some_offset }})
+    }
+}

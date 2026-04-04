@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use jni_sys::*;
 
 use super::{decode_jni_string, JniString};
@@ -52,6 +52,28 @@ pub unsafe fn lift_string(env: *mut JNIEnv, value: jstring) -> Result<String> {
 /// env must point to a valid JNIEnv
 pub unsafe fn lower_string(env: *mut JNIEnv, value: String) -> Result<jstring> {
     Ok(JniString::from(value).into_jstring(env))
+}
+
+/// Lift a FFI Buffer
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lift_buffer(env: *mut JNIEnv, buf: jobject) -> Result<(*mut u8, usize)> {
+    let ptr = ((**env).v1_4.GetDirectBufferAddress)(env, buf);
+    let capacity = ((**env).v1_4.GetDirectBufferCapacity)(env, buf);
+    Ok((ptr.cast(), capacity as usize))
+}
+
+/// Lower a FFI Buffer
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lower_buffer(env: *mut JNIEnv, ptr: *mut u8, capacity: usize) -> Result<jobject> {
+    Ok(((**env).v1_4.NewDirectByteBuffer)(
+        env,
+        ptr.cast(),
+        capacity as i64,
+    ))
 }
 
 /// Lift/lower functions for Option<T> where T is an int small than 64-bits

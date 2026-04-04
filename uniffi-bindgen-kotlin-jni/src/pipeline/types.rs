@@ -38,6 +38,25 @@ pub fn type_rs(ty: &Type, context: &Context) -> Result<String> {
         Type::Optional { inner_type } => {
             format!("::std::option::Option::<{}>", type_rs(inner_type, context)?)
         }
+        Type::Sequence { inner_type } => {
+            format!("::std::vec::Vec::<{}>", type_rs(inner_type, context)?)
+        }
+        Type::Map {
+            key_type,
+            value_type,
+        } => {
+            format!(
+                "::std::collections::HashMap::<{}, {}>",
+                type_rs(key_type, context)?,
+                type_rs(value_type, context)?,
+            )
+        }
+        Type::Set { inner_type } => {
+            format!(
+                "::std::collections::HashSet::<{}>",
+                type_rs(inner_type, context)?,
+            )
+        }
         Type::Record { orig_name, .. }
         | Type::Enum { orig_name, .. }
         | Type::Custom { orig_name, .. } => {
@@ -63,6 +82,22 @@ pub fn type_kt(ty: &Type, context: &Context) -> Result<String> {
         Type::String => "kotlin.String".into(),
         Type::Optional { inner_type } => {
             format!("{}?", type_kt(inner_type, context)?)
+        }
+        Type::Sequence { inner_type } => {
+            format!("kotlin.collections.List<{}>", type_kt(inner_type, context)?)
+        }
+        Type::Map {
+            key_type,
+            value_type,
+        } => {
+            format!(
+                "kotlin.collections.Map<{}, {}>",
+                type_kt(key_type, context)?,
+                type_kt(value_type, context)?,
+            )
+        }
+        Type::Set { inner_type } => {
+            format!("kotlin.collections.Set<{}>", type_kt(inner_type, context)?)
         }
         Type::Record {
             namespace, name, ..
@@ -154,6 +189,46 @@ impl TypeNode {
         }
     }
 
+    /// Function to write this type from a FFI buffer
+    pub fn write_fn_rs(&self) -> String {
+        let id = self.id;
+        match &self.ty {
+            Type::Int8 => "uniffi::ffibuffer::write_i8".into(),
+            Type::Int16 => "uniffi::ffibuffer::write_i16".into(),
+            Type::Int32 => "uniffi::ffibuffer::write_i32".into(),
+            Type::Int64 => "uniffi::ffibuffer::write_i64".into(),
+            Type::UInt8 => "uniffi::ffibuffer::write_u8".into(),
+            Type::UInt16 => "uniffi::ffibuffer::write_u16".into(),
+            Type::UInt32 => "uniffi::ffibuffer::write_u32".into(),
+            Type::UInt64 => "uniffi::ffibuffer::write_u64".into(),
+            Type::Float32 => "uniffi::ffibuffer::write_f32".into(),
+            Type::Float64 => "uniffi::ffibuffer::write_f64".into(),
+            Type::Boolean => "uniffi::ffibuffer::write_bool".into(),
+            Type::String => "uniffi::ffibuffer::write_string".into(),
+            _ => format!("write_type_{id}"),
+        }
+    }
+
+    /// Function to read this type from a FFI buffer
+    pub fn read_fn_rs(&self) -> String {
+        let id = self.id;
+        match &self.ty {
+            Type::Int8 => "uniffi::ffibuffer::read_i8".into(),
+            Type::Int16 => "uniffi::ffibuffer::read_i16".into(),
+            Type::Int32 => "uniffi::ffibuffer::read_i32".into(),
+            Type::Int64 => "uniffi::ffibuffer::read_i64".into(),
+            Type::UInt8 => "uniffi::ffibuffer::read_u8".into(),
+            Type::UInt16 => "uniffi::ffibuffer::read_u16".into(),
+            Type::UInt32 => "uniffi::ffibuffer::read_u32".into(),
+            Type::UInt64 => "uniffi::ffibuffer::read_u64".into(),
+            Type::Float32 => "uniffi::ffibuffer::read_f32".into(),
+            Type::Float64 => "uniffi::ffibuffer::read_f64".into(),
+            Type::Boolean => "uniffi::ffibuffer::read_bool".into(),
+            Type::String => "uniffi::ffibuffer::read_string".into(),
+            _ => format!("read_type_{id}"),
+        }
+    }
+
     /// Function to lower this type
     ///
     /// This converts the high-level type into one or more FfiTypes.
@@ -225,6 +300,46 @@ impl TypeNode {
                 _ => format!("liftType{id}"),
             },
             _ => format!("liftType{id}"),
+        }
+    }
+
+    /// Function to write this type from a FFI buffer
+    pub fn write_fn_kt(&self) -> String {
+        let id = self.id;
+        match &self.ty {
+            Type::Int8 => "writeByte".into(),
+            Type::Int16 => "writeShort".into(),
+            Type::Int32 => "writeInt".into(),
+            Type::Int64 => "writeLong".into(),
+            Type::UInt8 => "writeUByte".into(),
+            Type::UInt16 => "writeUShort".into(),
+            Type::UInt32 => "writeUInt".into(),
+            Type::UInt64 => "writeULong".into(),
+            Type::Float32 => "writeFloat".into(),
+            Type::Float64 => "writeDouble".into(),
+            Type::Boolean => "writeBoolean".into(),
+            Type::String => "writeString".into(),
+            _ => format!("writeType{id}"),
+        }
+    }
+
+    /// Function to read this type from a FFI buffer
+    pub fn read_fn_kt(&self) -> String {
+        let id = self.id;
+        match &self.ty {
+            Type::Int8 => "readByte".into(),
+            Type::Int16 => "readShort".into(),
+            Type::Int32 => "readInt".into(),
+            Type::Int64 => "readLong".into(),
+            Type::UInt8 => "readUByte".into(),
+            Type::UInt16 => "readUShort".into(),
+            Type::UInt32 => "readUInt".into(),
+            Type::UInt64 => "readULong".into(),
+            Type::Float32 => "readFloat".into(),
+            Type::Float64 => "readDouble".into(),
+            Type::Boolean => "readBoolean".into(),
+            Type::String => "readString".into(),
+            _ => format!("readType{id}"),
         }
     }
 
@@ -342,6 +457,10 @@ impl TypeNode {
             "kotlin.Float" => "F".into(),
             "kotlin.Double" => "D".into(),
             "kotlin.Boolean" => "Z".into(),
+            // Signatures for generics use the java class and don't include the inner type
+            t if t.starts_with("kotlin.collections.List") => "Ljava/util/List;".into(),
+            t if t.starts_with("kotlin.collections.Map") => "Ljava/util/Map;".into(),
+            t if t.starts_with("kotlin.collections.Set") => "Ljava/util/Set;".into(),
             type_name => format!("L{};", type_name.replace(".", "/").replace("`", "")),
         }
     }

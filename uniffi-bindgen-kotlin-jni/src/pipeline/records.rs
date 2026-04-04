@@ -18,6 +18,7 @@ pub fn map_record(input: general::Record, context: &Context) -> Result<Record> {
 
 fn map_fields(input: Vec<general::Field>, context: &Context) -> Result<Vec<Field>> {
     let mut ffi_field_counter = 0..;
+    let mut layout_builder = FfiBufferLayoutBuilder::new();
     input
         .into_iter()
         .enumerate()
@@ -31,6 +32,7 @@ fn map_fields(input: Vec<general::Field>, context: &Context) -> Result<Vec<Field
                     ty: *ffi_type,
                 })
                 .collect();
+            let offset = layout_builder.extend(&ty.ty, context)?;
 
             Ok(Field {
                 name: input.name,
@@ -39,6 +41,7 @@ fn map_fields(input: Vec<general::Field>, context: &Context) -> Result<Vec<Field
                 default: input.default.map_node(context)?,
                 docstring: input.docstring,
                 ffi_fields,
+                offset,
             })
         })
         .collect::<Result<Vec<_>>>()

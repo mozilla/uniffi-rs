@@ -45,3 +45,17 @@ fun {{ rec.self_type.lift_fn_kt() }}(
         {%- endfor %}
     )
 }
+
+fun {{ rec.self_type.write_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int, value: {{ type_name }}) {
+    {%- for f in rec.fields %}
+    {{ f.ty.write_fn_kt() }}(buf, offset + {{ f.offset }}, value.{{ f.name_kt() }})
+    {%- endfor %}
+}
+
+fun {{ rec.self_type.read_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int): {{ type_name }} {
+    return {{ type_name }}(
+        {%- for f in rec.fields %}
+        {{ f.ty.read_fn_kt() }}(buf, offset + {{ f.offset }}),
+        {%- endfor %}
+    )
+}
