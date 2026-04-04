@@ -6,7 +6,7 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
     {{ ffi_arg.name_rs() }}: {{ ffi_arg.ty.type_rs() }},
     {%- endfor %}
 )
-{%- match callable.return_ffi %}
+{%- match callable.return_ffi() %}
 {%- when ReturnFfi::Primitive { ffi_type, .. } %} -> {{ ffi_type.type_rs() }}
 {%- when ReturnFfi::Deconstruct { .. } %} -> uniffi_jni::jobject
 {%- when ReturnFfi::Void %}
@@ -37,7 +37,31 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
                 {%- endfor %}
             );
             {%- endif %}
-            {%- match callable.return_ffi %}
+
+            {%- if let Some(throws_type) = callable.throws_type() %}
+            let uniffi_return = match uniffi_return {
+                uniffi::Result::Ok(v) => v,
+                uniffi::Result::Err(uniffi_err) => {
+                    let uniffi_err_deconstructed = {{ throws_type.lower_fn_rs() }}(uniffi_env, uniffi_err)?;
+                    let uniffi_err_obj = {{ throws_type.lift_kt_from_rust_var() }}.call_object(
+                        uniffi_env,
+                        [
+                            {%- for (var, ffi_type) in throws_type.ffi_values_rs("uniffi_err_deconstructed") %}
+                            uniffi_jni::jvalue {
+                                {{ ffi_type.jvalue_field() }}: {{ var }},
+                            },
+                            {%- endfor %}
+                        ]
+                    ).to_anyhow_result(uniffi_env, "{{ throws_type.lift_fn_kt() }}")?;
+                    if ((**uniffi_env).v1_4.Throw)(uniffi_env, uniffi_err_obj) != 0 {
+                        uniffi::deps::anyhow::bail!("Failed to throw exception for {{ jni_method_name }}");
+                    }
+                    return uniffi::Result::Ok(::std::default::Default::default());
+                }
+            };
+            {%- endif %}
+
+            {%- match callable.return_ffi() %}
             {%- when ReturnFfi::Primitive { type_node, .. } %}
             uniffi::Result::Ok({{ type_node.lower_fn_rs() }}(uniffi_env, uniffi_return)?)
 

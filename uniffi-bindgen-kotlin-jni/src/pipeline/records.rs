@@ -49,7 +49,7 @@ fn map_fields(input: Vec<general::Field>, context: &Context) -> Result<Vec<Field
 
 impl Record {
     pub fn name_kt(&self) -> String {
-        format!("`{}`", self.name.to_upper_camel_case())
+        names::class_name_kt(&self.name, self.self_type.is_used_as_error)
     }
 
     pub fn name_rs(&self) -> String {
