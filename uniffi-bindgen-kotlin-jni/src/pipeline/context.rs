@@ -21,6 +21,7 @@ pub struct Context {
     pub ffi_type_oracle: FfiTypeOracle,
     pub layout_oracle: ffi_buffer::FfiBufferLayoutOracle,
     pub current_enum: Option<general::Enum>,
+    pub types_used_as_error: HashSet<Type>,
 }
 
 impl Context {
@@ -28,6 +29,7 @@ impl Context {
         self.populate_type_id_map(root);
         self.populate_type_module_path_map(root);
         self.populate_fields_from_type_definitions(root)?;
+        self.populate_types_used_as_error(root);
 
         for namespace in root.namespaces.values() {
             let config = Config::from_toml(namespace.config_toml.as_deref())?;
@@ -49,6 +51,14 @@ impl Context {
         root.visit(|ty: &Type| {
             if !self.type_id_map.contains_key(ty) {
                 self.type_id_map.insert(ty.clone(), counter.next().unwrap());
+            }
+        });
+    }
+
+    fn populate_types_used_as_error(&mut self, root: &general::Root) {
+        root.visit(|type_node: &general::TypeNode| {
+            if type_node.is_used_as_error && !self.types_used_as_error.contains(&type_node.ty) {
+                self.types_used_as_error.insert(type_node.ty.clone());
             }
         });
     }

@@ -50,6 +50,11 @@ mod test {
         run_tests(test_dir(), "tests/custom_types.kts");
     }
 
+    #[test]
+    fn test_errors() {
+        run_tests(test_dir(), "tests/errors.kts");
+    }
+
     fn test_dir() -> &'static Utf8Path {
         static TEST_TEMPDIR: OnceLock<Utf8PathBuf> = OnceLock::new();
         TEST_TEMPDIR.get_or_init(|| {

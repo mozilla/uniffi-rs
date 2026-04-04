@@ -176,9 +176,7 @@ pub struct Callable {
     pub fully_qualified_name_rs: String,
     pub receiver: Option<Argument>,
     pub arguments: Vec<Argument>,
-    pub return_type: Option<TypeNode>,
-    pub throws_type: Option<TypeNode>,
-    pub return_ffi: ReturnFfi,
+    pub result: CallableResult,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -197,6 +195,13 @@ pub enum CallableKind {
         self_type: TypeNode,
         for_callback_interface: bool,
     },
+}
+
+#[derive(Debug, Clone, Node)]
+pub struct CallableResult {
+    pub return_type: Option<TypeNode>,
+    pub throws_type: Option<TypeNode>,
+    pub return_ffi: ReturnFfi,
 }
 
 #[derive(Debug, Clone, Node)]

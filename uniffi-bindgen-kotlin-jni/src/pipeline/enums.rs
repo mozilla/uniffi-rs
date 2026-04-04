@@ -143,20 +143,27 @@ impl<'a> VariantFieldAllocator<'a> {
 }
 
 pub fn variant_name_kt(variant: &general::Variant, context: &Context) -> Result<String> {
-    Ok(if context.current_enum()?.is_flat {
-        format!("`{}`", variant.name.to_shouty_snake_case())
-    } else {
-        format!("`{}`", variant.name.to_upper_camel_case())
-    })
+    let en = context.current_enum()?;
+    Ok(
+        if !en.is_flat || matches!(en.shape, EnumShape::Error { flat: true }) {
+            names::class_name_kt(&variant.name, en.self_type.is_used_as_error)
+        } else {
+            format!("`{}`", variant.name.to_shouty_snake_case())
+        },
+    )
 }
 
 impl Enum {
     pub fn name_kt(&self) -> String {
-        format!("`{}`", self.name.to_upper_camel_case())
+        names::class_name_kt(&self.name, self.self_type.is_used_as_error)
     }
 
     pub fn name_rs(&self) -> String {
         names::escape_rust(&self.name)
+    }
+
+    pub fn is_flat_error(&self) -> bool {
+        matches!(self.shape, EnumShape::Error { flat: true })
     }
 }
 
