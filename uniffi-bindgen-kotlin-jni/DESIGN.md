@@ -111,6 +111,12 @@ This allows us to control when buffers get freed rather than rely on the garbage
     * Return the resulting `jobject` back to Kotlin.
 * Error handling: Rust constructs and throws an exception as described in `Errors/exceptions`
 
+# Errors/exceptions
+
+Errors/exceptions are handled using JNI rather than `uniffi::RustCallStatus`.
+Rust constructs the error value by calling the Kotlin lift function.
+Rust then calls the JNI `Throw` function to cause the current call to throw.
+
 # Kotlin `uniffi` package
 
 This is a generated package that contains all the FFI functions.
