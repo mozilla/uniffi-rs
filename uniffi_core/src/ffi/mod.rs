@@ -5,6 +5,7 @@
 //! Types that can cross the FFI boundary.
 
 pub mod callbackinterface;
+pub mod ffibuffer;
 pub mod ffidefault;
 #[cfg(feature = "scaffolding-ffi-buffer-fns")]
 pub mod ffiserialize;

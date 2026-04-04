@@ -2,6 +2,7 @@ package uniffi
 
 class InternalException(message: kotlin.String) : Exception(message)
 
+{% include "FfiBuffer.kt" %}
 {% include "LiftLower.kt" %}
 {% include "Scaffolding.kt" %}
 
@@ -13,5 +14,11 @@ class InternalException(message: kotlin.String) : Exception(message)
 {% include "EnumFfi.kt" %}
 {%- when TypeDefinition::Optional(opt) %}
 {% include "OptionalFfi.kt" %}
+{%- when TypeDefinition::Sequence(seq) %}
+{% include "SequenceFfi.kt" %}
+{%- when TypeDefinition::Map(map) %}
+{% include "MapFfi.kt" %}
+{%- when TypeDefinition::Set(set) %}
+{% include "SetFfi.kt" %}
 {%- endmatch %}
 {%- endfor %}

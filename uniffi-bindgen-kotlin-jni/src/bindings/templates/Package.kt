@@ -7,6 +7,9 @@ package {{ package.name }}
 {%- when TypeDefinition::Enum(en) %}
 {% include "Enum.kt" %}
 {%- when TypeDefinition::Optional(_) %}
+{%- when TypeDefinition::Sequence(_) %}
+{%- when TypeDefinition::Map(_) %}
+{%- when TypeDefinition::Set(_) %}
 {%- endmatch %}
 {%- endfor %}
 

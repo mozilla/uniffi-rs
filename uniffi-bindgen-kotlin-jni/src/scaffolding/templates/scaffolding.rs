@@ -12,6 +12,7 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
     use ::uniffi_bindgen_kotlin_jni_runtime::uniffi;
     use ::uniffi_bindgen_kotlin_jni_runtime::JniResultExt;
 
+    {%- filter indent(4) %}{% include "ffi_buffer.rs" %}{% endfilter %}
     {%- filter indent(4) %}{% include "lift_lower.rs" %}{% endfilter %}
 
     {%- for (jni_method_name, callable) in root.jni_methods() %}
@@ -26,6 +27,12 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
     {%- filter indent(4) %}{% include "enum.rs" %}{% endfilter %}
     {%- when TypeDefinition::Optional(opt) %}
     {%- filter indent(4) %}{% include "optional.rs" %}{% endfilter %}
+    {%- when TypeDefinition::Sequence(seq) %}
+    {%- filter indent(4) %}{% include "sequence.rs" %}{% endfilter %}
+    {%- when TypeDefinition::Map(map) %}
+    {%- filter indent(4) %}{% include "map.rs" %}{% endfilter %}
+    {%- when TypeDefinition::Set(set) %}
+    {%- filter indent(4) %}{% include "set.rs" %}{% endfilter %}
     {%- endmatch %}
     {%- endfor %}
 }

@@ -18,6 +18,7 @@ pub struct Context {
     pub type_module_path_map: HashMap<Type, String>,
     pub package_map: HashMap<String, String>,
     pub ffi_type_oracle: FfiTypeOracle,
+    pub layout_oracle: ffi_buffer::FfiBufferLayoutOracle,
     pub current_enum: Option<general::Enum>,
 }
 
@@ -88,6 +89,9 @@ impl Context {
         self.ffi_type_oracle
             .add_type_definitions(&sorted_type_definitions)
             .context("while building the type ffi oracle")?;
+        self.layout_oracle
+            .add_type_definitions(&sorted_type_definitions)
+            .context("while building the ffi buffer layout oracle")?;
         Ok(())
     }
 
