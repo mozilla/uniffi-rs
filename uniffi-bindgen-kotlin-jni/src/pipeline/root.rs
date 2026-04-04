@@ -67,12 +67,12 @@ impl Root {
         let mut seen = HashSet::new();
         let mut type_nodes = vec![];
         self.visit(|callable: &Callable| {
-            if let Some(return_type) = &callable.return_type {
+            if let Some(return_type) = callable.return_type() {
                 if !return_type.lowers_to_primitive() && seen.insert(return_type.id) {
                     type_nodes.push(return_type);
                 }
             }
-            if let Some(throws_type) = &callable.throws_type {
+            if let Some(throws_type) = callable.throws_type() {
                 if seen.insert(throws_type.id) {
                     type_nodes.push(throws_type);
                 }

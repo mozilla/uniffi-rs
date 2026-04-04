@@ -12,7 +12,7 @@ val uniffiReturn = uniffi.Scaffolding.{{ jni_method_name }}(
 {%- if callable.is_primary_constructor() %}
 this.uniffiHandle = uniffiReturn
 {%- else %}
-{%- match callable.return_ffi %}
+{%- match callable.return_ffi() %}
 {%- when ReturnFfi::Primitive { type_node, .. } %}
 return uniffi.{{ type_node.lift_fn_kt() }}(uniffiReturn)
 {%- when ReturnFfi::Deconstruct { .. } %}
