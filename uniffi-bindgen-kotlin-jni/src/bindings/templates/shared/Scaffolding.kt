@@ -14,7 +14,7 @@ object Scaffolding {
         {{ ffi_arg.name_kt() }}: {{ ffi_arg.ty.type_kt() }},
         {%- endfor %}
     )
-    {%- match callable.return_ffi %}
+    {%- match callable.return_ffi() %}
     {%- when ReturnFfi::Primitive { ffi_type, .. } %} : {{ ffi_type.type_kt() }}
     {%- when ReturnFfi::Deconstruct { type_node, .. } %} : {{ type_node.type_kt }}
     {%- when ReturnFfi::Void %}

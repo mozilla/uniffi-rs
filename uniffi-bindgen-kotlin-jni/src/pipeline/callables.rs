@@ -137,9 +137,11 @@ fn map_callable(
         name: input.name,
         receiver,
         arguments,
-        return_type,
-        throws_type,
-        return_ffi,
+        result: CallableResult {
+            return_type,
+            throws_type,
+            return_ffi,
+        },
     })
 }
 
@@ -219,7 +221,7 @@ impl Callable {
     }
 
     pub fn return_type_kt(&self) -> &str {
-        match &self.return_type {
+        match self.return_type() {
             None => "Unit",
             Some(ty) => &ty.type_kt,
         }
@@ -235,6 +237,35 @@ impl Callable {
             .map(|a| format!("{}: {}", a.name_kt(), a.ty.type_kt))
             .collect::<Vec<_>>()
             .join(", ")
+    }
+
+    pub fn is_for_rust_function(&self) -> bool {
+        matches!(
+            self.kind,
+            CallableKind::Function
+                | CallableKind::Method { .. }
+                | CallableKind::Constructor { .. }
+                | CallableKind::VTableMethod {
+                    for_callback_interface: false,
+                    ..
+                }
+        )
+    }
+
+    pub fn is_for_kotlin_function(&self) -> bool {
+        matches!(self.kind, CallableKind::VTableMethod { .. })
+    }
+
+    pub fn return_type(&self) -> Option<&TypeNode> {
+        self.result.return_type.as_ref()
+    }
+
+    pub fn throws_type(&self) -> Option<&TypeNode> {
+        self.result.throws_type.as_ref()
+    }
+
+    pub fn return_ffi(&self) -> &ReturnFfi {
+        &self.result.return_ffi
     }
 }
 
