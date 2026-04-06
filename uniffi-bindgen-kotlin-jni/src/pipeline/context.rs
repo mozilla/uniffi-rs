@@ -47,7 +47,9 @@ impl Context {
     }
 
     fn populate_type_id_map(&mut self, root: &general::Root) {
-        let mut counter = 0..;
+        // Start from 1 to make the `CallableResult.id()` method simpler,
+        // we can use `0` for no return type / throws type.
+        let mut counter = 1..;
         root.visit(|ty: &Type| {
             if !self.type_id_map.contains_key(ty) {
                 self.type_id_map.insert(ty.clone(), counter.next().unwrap());
