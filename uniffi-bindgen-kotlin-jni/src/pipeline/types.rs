@@ -16,6 +16,7 @@ pub fn map_type_node(type_node: general::TypeNode, context: &Context) -> Result<
         id: type_node.id,
         type_rs: type_rs(ty, context)?,
         type_kt: type_kt(ty, context)?,
+        has_from_unexpected_callback_error_impl: type_node.has_from_unexpected_callback_error_impl,
         ty: type_node.ty.map_node(context)?,
         ffi_types,
     })
@@ -68,6 +69,12 @@ pub fn type_rs(ty: &Type, context: &Context) -> Result<String> {
                 context.rust_module_path_for_type(ty)?
             )
         }
+        Type::CallbackInterface { orig_name, .. } => {
+            format!(
+                "::std::boxed::Box<dyn {}::{orig_name}>",
+                context.rust_module_path_for_type(ty)?
+            )
+        }
         _ => todo!(),
     })
 }
@@ -115,6 +122,9 @@ pub fn type_kt(ty: &Type, context: &Context) -> Result<String> {
             namespace, name, ..
         }
         | Type::Interface {
+            namespace, name, ..
+        }
+        | Type::CallbackInterface {
             namespace, name, ..
         } => format!(
             "{}.{}",

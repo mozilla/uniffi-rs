@@ -54,6 +54,7 @@ impl Root {
                     TypeDefinition::Set(s) => s.self_type.id,
                     TypeDefinition::Class(c) => c.self_type.id,
                     TypeDefinition::Custom(c) => c.self_type.id,
+                    TypeDefinition::CallbackInterface(c) => c.self_type.id,
                     TypeDefinition::Interface(_) => return false,
                 })
             })
@@ -79,6 +80,24 @@ impl Root {
             }
         });
         type_nodes.into_iter()
+    }
+
+    pub fn kotlin_sync_callable_results(&self) -> impl Iterator<Item = &CallableResult> {
+        self.iter_callable_results_that_match(|c| c.is_for_kotlin_function() && !c.is_async)
+    }
+
+    fn iter_callable_results_that_match(
+        &self,
+        filter: impl Fn(&Callable) -> bool,
+    ) -> impl Iterator<Item = &CallableResult> {
+        let mut seen = HashSet::new();
+        let mut results = vec![];
+        self.visit(|callable: &Callable| {
+            if filter(callable) && seen.insert(callable.result.id()) {
+                results.push(&callable.result);
+            }
+        });
+        results.into_iter()
     }
 
     pub fn classes(&self) -> impl Iterator<Item = &Class> {

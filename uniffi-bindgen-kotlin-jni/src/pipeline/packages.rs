@@ -47,6 +47,12 @@ pub fn map_type_definitions(
                 }
                 ObjectImpl::Trait(_) => todo!(),
             },
+            general::TypeDefinition::CallbackInterface(cbi) => {
+                mapped.push(TypeDefinition::Interface(
+                    callbacks::interface_for_callback_interface(&cbi, context)?,
+                ));
+                mapped.push(TypeDefinition::CallbackInterface(cbi.map_node(context)?));
+            }
             general::TypeDefinition::Custom(c) => {
                 mapped.push(TypeDefinition::Custom(c.map_node(context)?));
             }
