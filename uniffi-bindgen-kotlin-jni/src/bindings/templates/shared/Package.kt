@@ -5,6 +5,7 @@ class InternalException(message: String) : Exception(message)
 {% include "FfiBuffer.kt" %}
 {% include "Scaffolding.kt" %}
 {% include "Interfaces.kt" %}
+{% include "CallbackInterfaces.kt" %}
 
 {%- for type_def in root.ffi_type_definitions() %}
 {%- match type_def %}
@@ -26,6 +27,8 @@ class InternalException(message: String) : Exception(message)
 {%- let error_type = cls.self_type %}
 {% include "ThrowErrorFun.kt" %}
 {%- endif %}
+{%- when TypeDefinition::CallbackInterface(cbi) %}
+{% include "CallbackInterfaceFfi.kt" %}
 {%- when TypeDefinition::Custom(custom) %}
 {% include "CustomFfi.kt" %}
 {%- when TypeDefinition::Optional(opt) %}

@@ -78,6 +78,16 @@ fn type_rs(ty: &Type, context: &Context) -> Result<String> {
                 context.module_path_for_type(namespace, orig_name)?
             )
         }
+        Type::CallbackInterface {
+            namespace,
+            orig_name,
+            ..
+        } => {
+            format!(
+                "::std::boxed::Box<dyn ::{}::{orig_name}>",
+                context.module_path_for_type(namespace, orig_name)?
+            )
+        }
         _ => todo!(),
     })
 }
@@ -121,6 +131,9 @@ pub fn type_kt(ty: &Type, context: &Context) -> Result<String> {
         | Type::Interface {
             namespace, name, ..
         }
+        | Type::CallbackInterface {
+            namespace, name, ..
+        }
         | Type::Custom {
             namespace, name, ..
         } => {
@@ -154,6 +167,7 @@ pub fn read_fn_rs(ty: &Type, canonical_name: &str) -> Result<String> {
         Type::Record { namespace, .. }
         | Type::Enum { namespace, .. }
         | Type::Interface { namespace, .. }
+        | Type::CallbackInterface { namespace, .. }
         | Type::Custom { namespace, .. } => {
             format!(
                 "uniffi_read_type_{}_{}",
@@ -185,6 +199,7 @@ pub fn write_fn_rs(ty: &Type, canonical_name: &str) -> Result<String> {
         Type::Record { namespace, .. }
         | Type::Enum { namespace, .. }
         | Type::Interface { namespace, .. }
+        | Type::CallbackInterface { namespace, .. }
         | Type::Custom { namespace, .. } => {
             format!(
                 "uniffi_write_type_{}_{}",
@@ -216,6 +231,7 @@ pub fn read_fn_kt(ty: &Type, canonical_name: &str) -> String {
         Type::Record { namespace, .. }
         | Type::Enum { namespace, .. }
         | Type::Interface { namespace, .. }
+        | Type::CallbackInterface { namespace, .. }
         | Type::Custom { namespace, .. } => {
             format!(
                 "readType{}{}",
@@ -247,6 +263,7 @@ pub fn write_fn_kt(ty: &Type, canonical_name: &str) -> String {
         Type::Record { namespace, .. }
         | Type::Enum { namespace, .. }
         | Type::Interface { namespace, .. }
+        | Type::CallbackInterface { namespace, .. }
         | Type::Custom { namespace, .. } => {
             format!(
                 "writeType{}{}",

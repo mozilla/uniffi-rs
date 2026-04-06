@@ -63,6 +63,23 @@ Note: this is one place where wheree we need the macros to generate code.
 This is because the `into` and `try_from` expressions need to be executed
 where they're defined rather than in the crate where we're generating scaffolding.
 
+# Callback interfaces
+
+Callabck interfaces are implemented by defining a Kotlin dispatch method
+for each callback interface method.
+This is responsible for finding the object in the handle map,
+reading/converting all arguments from the FFI buffer,
+calling the real method,
+then writing the return value back to the FFI buffer.
+We don't need an `init` function or a vtable,
+since we can just lookup and call the methods directly from JNI.
+
+Callback interfaces have essentially the same FFI as Rust functions,
+except the calling direction is reversed and they also input the callback object handle.
+
+In the future, we could explore more radical ideas,
+like storing the callback object pointer directly in Rust.
+
 # JNI
 
 This crate uses the low-level `jni_sys` crate rather than the high-level `jni` crate.

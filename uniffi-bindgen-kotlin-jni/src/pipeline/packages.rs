@@ -77,6 +77,9 @@ pub fn map_type_definitions(
                 ObjectImpl::CallbackTrait => todo!(),
                 ObjectImpl::Trait => todo!(),
             },
+            general::TypeDefinition::CallbackInterface(cbi) => {
+                mapped.push(TypeDefinition::CallbackInterface(cbi.map_node(context)?));
+            }
             general::TypeDefinition::Custom(c) => {
                 mapped.push(TypeDefinition::Custom(c.map_node(context)?));
             }

@@ -6,12 +6,16 @@
 //!
 //! Shared/generic code used by uniffi-bindgen-kotlin-jni consumers
 
+mod attach;
 mod caching;
 mod calls;
+mod errors;
 mod strings;
 
+pub use attach::*;
 pub use caching::*;
 pub use calls::*;
+pub use errors::*;
 pub use jni_sys::*;
 pub use strings::*;
 // Re-export for consumers

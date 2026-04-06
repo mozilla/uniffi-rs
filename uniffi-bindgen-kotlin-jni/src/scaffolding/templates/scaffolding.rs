@@ -28,6 +28,8 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
     {%- let type_node = cls.self_type %}
     {%- filter indent(4) %}{% include "throw_error_fn.rs" %}{% endfilter %}
     {%- endif %}
+    {%- when TypeDefinition::CallbackInterface(cbi) %}
+    {%- filter indent(4) %}{% include "callback_interface.rs" %}{% endfilter %}
     {%- when TypeDefinition::Custom(custom) %}
     {%- filter indent(4) %}{% include "custom.rs" %}{% endfilter %}
     {%- when TypeDefinition::Optional(opt) %}

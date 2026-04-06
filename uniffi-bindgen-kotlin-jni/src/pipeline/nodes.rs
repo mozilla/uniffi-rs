@@ -41,6 +41,7 @@ pub enum TypeDefinition {
     Enum(Enum),
     Interface(Interface),
     Class(Class),
+    CallbackInterface(CallbackInterface),
     Custom(CustomType),
     Optional(OptionalType),
     Sequence(SequenceType),
@@ -101,6 +102,25 @@ pub struct Interface {
     pub name: String,
     pub methods: Vec<Method>,
     pub docstring: Option<String>,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::CallbackInterface))]
+#[map_node(callbacks::map_callback_interface)]
+pub struct CallbackInterface {
+    pub self_type: TypeNode,
+    pub name: String,
+    pub module_path: String,
+    pub docstring: Option<String>,
+    pub methods: Vec<CallbackMethod>,
+    pub crate_name: String,
+}
+
+/// Single method in a vtable
+#[derive(Debug, Clone, Node, MapNode)]
+pub struct CallbackMethod {
+    pub callable: Callable,
+    pub dispatch_fn_kt: String,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -329,6 +349,7 @@ impl Root {
                     TypeDefinition::Map(m) => &m.self_type,
                     TypeDefinition::Class(c) => &c.self_type,
                     TypeDefinition::Custom(c) => &c.self_type,
+                    TypeDefinition::CallbackInterface(c) => &c.self_type,
                     TypeDefinition::Interface(_) => return false,
                 })
             })
@@ -407,6 +428,17 @@ impl Callable {
             .join(" , ")
     }
 
+    pub fn return_type_rs(&self) -> String {
+        match (&self.return_type, &self.throws_type) {
+            (None, None) => "()".into(),
+            (Some(ty), None) => ty.type_rs.clone(),
+            (None, Some(err_ty)) => format!("::std::result::Result<(), {}>", err_ty.type_rs),
+            (Some(ty), Some(err_ty)) => {
+                format!("::std::result::Result<{}, {}>", ty.type_rs, err_ty.type_rs)
+            }
+        }
+    }
+
     pub fn return_type_kt(&self) -> &str {
         match &self.return_type {
             None => "Unit",
@@ -462,6 +494,40 @@ impl Class {
 impl Interface {
     pub fn name_kt(&self) -> String {
         format!("`{}`", self.name.to_upper_camel_case())
+    }
+}
+
+impl CallbackInterface {
+    pub fn name_kt(&self) -> String {
+        format!("`{}`", self.name.to_upper_camel_case())
+    }
+
+    pub fn name_rs(&self) -> String {
+        names::escape_rust(&self.name)
+    }
+
+    pub fn free_fn_kt(&self) -> String {
+        format!(
+            "callbackInterfaceFree{}{}",
+            self.crate_name.to_upper_camel_case(),
+            self.name.to_upper_camel_case(),
+        )
+    }
+
+    pub fn handle_map_kt(&self) -> String {
+        format!(
+            "callbackInterfaceHandleMap{}{}",
+            self.crate_name.to_upper_camel_case(),
+            self.name.to_upper_camel_case(),
+        )
+    }
+
+    pub fn impl_struct_rs(&self) -> String {
+        format!(
+            "UniffiCallbackImpl{}{}",
+            self.crate_name.to_upper_camel_case(),
+            self.name.to_upper_camel_case(),
+        )
     }
 }
 
