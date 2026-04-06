@@ -26,6 +26,28 @@ object Scaffolding {
     @JvmStatic external fun {{ cls.jni_free_name() }}(handle: kotlin.Long)
     {%- endfor  %}
 
+    {%- for result in root.kotlin_sync_callable_results() %}
+    {%- if let Some(return_type) = result.return_type %}
+    {%- if !return_type.lowers_to_primitive() %}
+    @JvmStatic external fun {{ result.set_callback_return_fn() }}(
+        resultPtr: kotlin.Long,
+        {%- for ffi_type in return_type.ffi_types %}
+        v{{ loop.index0 }}: {{ ffi_type.type_kt() }},
+        {%- endfor %}
+    )
+    {%- endif %}
+    {%- endif %}
+
+    {%- if let Some(throws_type) = result.throws_type %}
+    @JvmStatic external fun {{ result.set_callback_err_fn() }}(
+        resultPtr: kotlin.Long,
+        {%- for ffi_type in throws_type.ffi_types %}
+        v{{ loop.index0 }}: {{ ffi_type.type_kt() }},
+        {%- endfor %}
+    )
+    {%- endif %}
+    {%- endfor %}
+
     init {
         System.loadLibrary("{{ cdylib }}")
         Scaffolding.ffiBufferCheckSupport()

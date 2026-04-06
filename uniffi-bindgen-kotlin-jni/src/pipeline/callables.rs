@@ -84,7 +84,7 @@ pub fn map_constructor(input: general::Constructor, context: &Context) -> Result
     })
 }
 
-fn map_callable(
+pub fn map_callable(
     input: general::Callable,
     fully_qualified_name_rs: String,
     context: &Context,
@@ -266,6 +266,43 @@ impl Callable {
 
     pub fn return_ffi(&self) -> &ReturnFfi {
         &self.result.return_ffi
+    }
+}
+
+impl CallableResult {
+    pub fn return_type_rs(&self) -> String {
+        match (&self.return_type, &self.throws_type) {
+            (None, None) => "()".into(),
+            (Some(ty), None) => ty.type_rs.clone(),
+            (None, Some(err_ty)) => format!("::std::result::Result<(), {}>", err_ty.type_rs),
+            (Some(ty), Some(err_ty)) => {
+                format!("::std::result::Result<{}, {}>", ty.type_rs, err_ty.type_rs)
+            }
+        }
+    }
+
+    /// Unique id for the return/throws combination
+    pub fn id(&self) -> u64 {
+        let return_id = match &self.return_type {
+            Some(type_node) => type_node.id + 1,
+            None => 0,
+        };
+        let throws_id = match &self.throws_type {
+            Some(type_node) => type_node.id + 1,
+            None => 0,
+        };
+        // One billion return values ought to be enough for everyone.
+        (throws_id * 1_000_000_000) + return_id
+    }
+
+    pub fn set_callback_return_fn(&self) -> String {
+        let id = self.id();
+        format!("setCallbackReturn{id}")
+    }
+
+    pub fn set_callback_err_fn(&self) -> String {
+        let id = self.id();
+        format!("setCallbackError{id}")
     }
 }
 

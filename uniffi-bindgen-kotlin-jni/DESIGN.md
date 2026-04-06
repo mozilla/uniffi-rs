@@ -111,6 +111,22 @@ This allows us to control when buffers get freed rather than rely on the garbage
     * Return the resulting `jobject` back to Kotlin.
 * Error handling: Rust constructs and throws an exception as described in `Errors/exceptions`
 
+### Rust -> Kotlin sync calls
+
+* Returning deconstructed types:
+    * Rust passes a pointer to a stack-allocated `Option<T>` value (casted to a `Long`).
+    * Before Kotlin returns, it calls a Rust function passing back the pointer
+      plus the FFI values needed to reconstruct the value.
+      The Rust function initializes the `Option` from the passed values.
+    * The Kotlin function returns void
+    * The Rust function unwraps and returns the `Option` value.
+* Errors/unexpected error handling:
+    * Expected errors (the `E` side of a Result) use the same mechanism as regular returns,
+      but a different JNI function.
+      The Kotlin code passes Rust the return pointer plus the FFI values for the error.
+    * For unexpected errors, Kotlin throws an exception and Rust catches it
+
+
 # Errors/exceptions
 
 Errors/exceptions are handled using JNI rather than `uniffi::RustCallStatus`.
@@ -140,6 +156,16 @@ The `custom_type!` macro implements it for the custom type.
 Note: this is one place where we need the macros to generate code.
 This is because the `into` and `try_from` expressions need to be executed
 where they're defined rather than in the crate where we're generating scaffolding.
+
+# Callback interfaces
+
+Callback interfaces are implemented by defining a Kotlin dispatch method
+for each callback interface method.
+We don't need an `init` function or a vtable,
+since we can just lookup and call the methods directly from JNI.
+
+In the future, we could explore more radical ideas,
+like storing the callback object pointer directly in Rust.
 
 # JNI
 
