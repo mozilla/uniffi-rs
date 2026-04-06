@@ -38,6 +38,7 @@ pub enum TypeDefinition {
     Enum(Enum),
     Interface(Interface),
     Class(Class),
+    CallbackInterface(CallbackInterface),
     Custom(CustomType),
     Optional(OptionalType),
     Sequence(SequenceType),
@@ -97,6 +98,26 @@ pub struct Interface {
     pub name: String,
     pub methods: Vec<Method>,
     pub docstring: Option<String>,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::CallbackInterface))]
+#[map_node(callbacks::map_callback_interface)]
+pub struct CallbackInterface {
+    pub self_type: TypeNode,
+    pub name: String,
+    pub module_path: String,
+    pub docstring: Option<String>,
+    pub methods: Vec<CallbackMethod>,
+    pub crate_name: String,
+}
+
+/// Single method in a vtable
+#[derive(Debug, Clone, Node, MapNode)]
+pub struct CallbackMethod {
+    pub callable: Callable,
+    pub dispatch_fn_rs: String,
+    pub dispatch_fn_kt: String,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -281,6 +302,7 @@ pub struct SetType {
 #[map_node(types::map_type_node)]
 pub struct TypeNode {
     pub id: u64,
+    pub has_from_unexpected_callback_error_impl: bool,
     pub ty: Type,
     pub type_rs: String,
     pub type_kt: String,

@@ -7,6 +7,7 @@ class InternalException(message: kotlin.String) : Exception(message)
 {% include "LiftLower.kt" %}
 {% include "Scaffolding.kt" %}
 {% include "Interfaces.kt" %}
+{% include "CallbackInterfaces.kt" %}
 
 {%- for type_def in root.ffi_type_definitions() %}
 {%- match type_def %}
@@ -16,6 +17,8 @@ class InternalException(message: kotlin.String) : Exception(message)
 {% include "EnumFfi.kt" %}
 {%- when TypeDefinition::Class(cls) %}
 {% include "ClassFfi.kt" %}
+{%- when TypeDefinition::CallbackInterface(cbi) %}
+{% include "CallbackInterfaceFfi.kt" %}
 {%- when TypeDefinition::Custom(custom) %}
 {% include "CustomFfi.kt" %}
 {%- when TypeDefinition::Optional(opt) %}
