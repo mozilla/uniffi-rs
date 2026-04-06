@@ -12,7 +12,9 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
     use ::uniffi_bindgen_kotlin_jni_runtime::uniffi;
     use ::uniffi_bindgen_kotlin_jni_runtime::JniResultExt;
 
+    {%- filter indent(4) %}{% include "callback_interface_shared.rs" %}{% endfilter %}
     {%- filter indent(4) %}{% include "ffi_buffer.rs" %}{% endfilter %}
+    {%- filter indent(4) %}{% include "jni_support.rs" %}{% endfilter %}
     {%- filter indent(4) %}{% include "lift_lower.rs" %}{% endfilter %}
 
     {%- for (jni_method_name, callable) in root.jni_methods() %}
@@ -27,6 +29,8 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
     {%- filter indent(4) %}{% include "enum.rs" %}{% endfilter %}
     {%- when TypeDefinition::Class(cls) %}
     {%- filter indent(4) %}{% include "class.rs" %}{% endfilter %}
+    {%- when TypeDefinition::CallbackInterface(cbi) %}
+    {%- filter indent(4) %}{% include "callback_interface.rs" %}{% endfilter %}
     {%- when TypeDefinition::Custom(custom) %}
     {%- filter indent(4) %}{% include "custom.rs" %}{% endfilter %}
     {%- when TypeDefinition::Optional(opt) %}
