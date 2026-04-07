@@ -69,6 +69,10 @@ impl CallbackInterface {
         names::escape_rust(&self.name)
     }
 
+    pub fn has_async_method(&self) -> bool {
+        self.methods.iter().any(|m| m.callable.is_async)
+    }
+
     pub fn free_fn_kt(&self) -> String {
         format!("callbackInterfaceFree{}", self.self_type.id)
     }

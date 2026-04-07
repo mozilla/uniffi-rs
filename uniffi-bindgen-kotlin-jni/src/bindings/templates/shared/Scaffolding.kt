@@ -14,11 +14,14 @@ object Scaffolding {
         {{ ffi_arg.name_kt() }}: {{ ffi_arg.ty.type_kt() }},
         {%- endfor %}
     )
+    {%- if callable.is_async %} : kotlin.Long
+    {%- else %}
     {%- match callable.return_ffi() %}
     {%- when ReturnFfi::Primitive { ffi_type, .. } %} : {{ ffi_type.type_kt() }}
     {%- when ReturnFfi::Deconstruct { type_node, .. } %} : {{ type_node.type_kt }}
     {%- when ReturnFfi::Void %}
     {%- endmatch %}
+    {%- endif %}
     {%- endfor %}
 
     {%- for cls in root.classes() %}
@@ -46,6 +49,18 @@ object Scaffolding {
         {%- endfor %}
     )
     {%- endif %}
+    {%- endfor %}
+
+    {%- for rust_result in root.rust_async_callable_results() %}
+    @JvmStatic external fun {{ rust_result.async_poll_fn() }}(
+        rustFuture: kotlin.Long,
+        continuation: kotlin.coroutines.Continuation<kotlin.Boolean>,
+        {%- if rust_result.return_type.is_some() %}
+        completion: {{ rust_result.async_complete_class() }},
+        {%- endif %}
+    ): Int
+    @JvmStatic external fun {{ rust_result.async_cancel_fn() }}(rustFuture: kotlin.Long)
+    @JvmStatic external fun {{ rust_result.async_free_fn() }}(rustFuture: kotlin.Long)
     {%- endfor %}
 
     init {

@@ -126,6 +126,20 @@ This allows us to control when buffers get freed rather than rely on the garbage
       The Kotlin code passes Rust the return pointer plus the FFI values for the error.
     * For unexpected errors, Kotlin throws an exception and Rust catches it
 
+ ### Kotlin -> Rust async call
+
+ * The FFI function returns a Rust future handle
+ * Kotlin calls the future poll function until the future is ready
+     * Kotlin calls a poll function with the future handle, passing it a continuation object
+     * If the future is ready, the function returns `UNIFFI_RUST_FUTURE_COMPLETE`
+       and we move to the next step.
+     * If the future is pending, then the poll function stores the continuation
+     * When the future is woken up it then calls a Kotlin method to resume the continuation, restarting this loop
+ * Returning async values:
+     * Kotlin passes a `Completion` object to the poll function.
+     * Before returning `UNIFFI_RUST_FUTURE_COMPLETE`, Rust calls `completion.complete()`, passing it
+       the FFI values for the return value.
+ * Error handling: Rust constructs and throws an exception from the poll function, as described in `Errors/exceptions`
 
 # Errors/exceptions
 
