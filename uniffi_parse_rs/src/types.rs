@@ -39,7 +39,7 @@ pub struct SelfType {
 ///
 /// This is similar to `uniffi_meta::Type`, but it matches the Rust type system more closely.
 #[derive(Clone, Debug, PartialEq, Eq)]
-enum Type {
+pub enum Type {
     // Primitive types.
     Unit,
     UInt8,
@@ -96,6 +96,7 @@ enum Type {
         ty: Box<Type>,
     },
     SelfTy,
+    UnexpectedUniFFICallbackError,
     Udl(uniffi_meta::Type),
 }
 
@@ -104,7 +105,7 @@ impl Type {
         matches!(self, Self::SelfTy)
     }
 
-    fn try_into_uniffi_meta(
+    pub fn try_into_uniffi_meta(
         self,
         source: FileId,
         span: Span,
@@ -376,7 +377,7 @@ impl<'ir> RPath<'ir> {
                 let path_to_type = self.resolve(ir, cache, &ty_path.path, Namespace::Type)?;
                 // We can use `mem::take` to remove the generic_params and use them for this lookup.
                 // If we need to recurse another level, we want a new set of generic params anyways.
-                let generics = GenericArgs::new(
+                let generics = GenericArgs::new_with_context_params(
                     self.file_id(),
                     &ty_path.path,
                     mem::take(&mut context.generic_params),
@@ -444,6 +445,9 @@ impl<'ir> RPath<'ir> {
                             BuiltinItem::Float64 => Type::Float64,
                             BuiltinItem::SystemTime => Type::SystemTime,
                             BuiltinItem::Duration => Type::Duration,
+                            BuiltinItem::UnexpectedUniFFICallbackError => {
+                                Type::UnexpectedUniFFICallbackError
+                            }
                             BuiltinItem::Option => {
                                 let inner = generics.resolve1(ir, cache, self)?;
                                 Type::Option(Box::new(inner))
@@ -554,13 +558,21 @@ struct ResolveTypeContext {
     generic_params: HashMap<Ident, Type>,
 }
 
-struct GenericArgs<'a> {
+pub struct GenericArgs<'a> {
     args: Option<&'a AngleBracketedGenericArguments>,
     generic_params: HashMap<Ident, Type>,
 }
 
 impl<'a> GenericArgs<'a> {
-    fn new(source: FileId, path: &'a Path, generic_params: HashMap<Ident, Type>) -> Result<Self> {
+    pub fn new(source: FileId, path: &'a Path) -> Result<Self> {
+        Self::new_with_context_params(source, path, HashMap::default())
+    }
+
+    fn new_with_context_params(
+        source: FileId,
+        path: &'a Path,
+        generic_params: HashMap<Ident, Type>,
+    ) -> Result<Self> {
         for seg in path.segments.iter().take(path.segments.len() - 1) {
             if !seg.arguments.is_empty() {
                 return Err(Error::new(source, seg.span(), InvalidGenericArg));
@@ -582,14 +594,14 @@ impl<'a> GenericArgs<'a> {
         }
     }
 
-    fn check_empty(&self, source: FileId) -> Result<()> {
+    pub fn check_empty(&self, source: FileId) -> Result<()> {
         match &self.args {
             Some(_) => Err(Error::new(source, self.args.span(), InvalidGenericArg)),
             None => Ok(()),
         }
     }
 
-    fn resolve1<'ir>(
+    pub fn resolve1<'ir>(
         &self,
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
@@ -599,7 +611,7 @@ impl<'a> GenericArgs<'a> {
         self.resolve_arg(ir, cache, path, args[0])
     }
 
-    fn resolve2<'ir>(
+    pub fn resolve2<'ir>(
         &self,
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
@@ -612,7 +624,7 @@ impl<'a> GenericArgs<'a> {
         ))
     }
 
-    fn args(&self) -> Vec<&GenericArgument> {
+    pub fn args(&self) -> Vec<&GenericArgument> {
         match &self.args {
             None => vec![],
             Some(args) => args.args.iter().collect(),

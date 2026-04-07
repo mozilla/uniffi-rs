@@ -80,8 +80,21 @@ impl {{ trait_name }} for {{ cbi.impl_struct_rs() }} {
         uniffi_buf.free();
         match uniffi_result {
             Ok(v) => v,
-            // TODO: try to map unexpected callback errors to Rust errors
-            Err(e) => panic!("Error calling UniFFI callback method: {e}"),
+            Err(e) => {
+                {%- if let Some(throws_type) = callable.throws_type %}
+                {%- if throws_type.has_from_unexpected_callback_error_impl %}
+                Err(<{{ throws_type.type_rs }} as ::std::convert::From<uniffi::UnexpectedUniFFICallbackError>>::from(
+                    uniffi::UnexpectedUniFFICallbackError {
+                        reason: e.to_string(),
+                    }
+                ))
+                {%- else %}
+                panic!("Error calling UniFFI callback method: {e}")
+                {%- endif %}
+                {%- else %}
+                panic!("Error calling UniFFI callback method: {e}")
+                {%- endif %}
+            }
         }
     }
     {%- endfor %}

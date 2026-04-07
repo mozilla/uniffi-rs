@@ -137,6 +137,10 @@ impl<'ir> RPath<'ir> {
                     BuiltinItem::HashMap => path.push_str("HashMap"),
                     BuiltinItem::Option => path.push_str("Option"),
                     BuiltinItem::Result => path.push_str("Result"),
+                    BuiltinItem::From => path.push_str("From"),
+                    BuiltinItem::UnexpectedUniFFICallbackError => {
+                        path.push_str("UnexpectedUniFFICallbackError")
+                    }
                     BuiltinItem::UniffiMacro(name) => path.push_str(name),
                 }
             } else {
@@ -700,12 +704,16 @@ fn get_builtin_item(path: &Path) -> Option<&'static Item> {
         "std::time::Duration" => Some(&Item::Builtin(BuiltinItem::Duration)),
         "String" | "std::string::String" => Some(&Item::Builtin(BuiltinItem::String)),
         "str" | "std::primitive::str" => Some(&Item::Builtin(BuiltinItem::Str)),
+        "From" | "std::convert::From" => Some(&Item::Builtin(BuiltinItem::From)),
         "uniffi::custom_type" => Some(&Item::Builtin(BuiltinItem::UniffiMacro("custom_type"))),
         "uniffi::custom_newtype" => {
             Some(&Item::Builtin(BuiltinItem::UniffiMacro("custom_newtype")))
         }
         "uniffi::use_remote_type" => {
             Some(&Item::Builtin(BuiltinItem::UniffiMacro("use_remote_type")))
+        }
+        "uniffi::UnexpectedUniFFICallbackError" => {
+            Some(&Item::Builtin(BuiltinItem::UnexpectedUniFFICallbackError))
         }
         _ => None,
     }

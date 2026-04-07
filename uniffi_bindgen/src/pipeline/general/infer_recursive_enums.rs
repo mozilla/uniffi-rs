@@ -203,6 +203,7 @@ mod tests {
         TypeNode {
             canonical_name: "Test".to_string(),
             is_used_as_error: false,
+            has_from_unexpected_callback_error_impl: false,
             ffi_type: FfiType::RustBuffer(None),
             ty,
         }

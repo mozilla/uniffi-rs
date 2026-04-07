@@ -16,6 +16,8 @@ pub struct Root {
     pub namespaces: IndexMap<String, Namespace>,
     /// The library path the user passed to us, if we're in library mode
     pub cdylib: Option<String>,
+    // Types that implement `From<uniffi::UnexpectedUniFFICallbackError>`
+    pub from_unexpected_callback_error_impls: Vec<Type>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]

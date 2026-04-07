@@ -419,6 +419,7 @@ pub struct TypeNode {
     ///   - Creating a unique key for a type
     pub canonical_name: String,
     pub is_used_as_error: bool,
+    pub has_from_unexpected_callback_error_impl: bool,
     pub ffi_type: FfiType,
     pub ty: Type,
 }

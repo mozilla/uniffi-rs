@@ -263,6 +263,7 @@ pub struct MapType {
 pub struct TypeNode {
     pub canonical_name: String,
     pub is_used_as_error: bool,
+    pub has_from_unexpected_callback_error_impl: bool,
     pub ty: Type,
     pub type_kt: String,
     pub type_rs: String,

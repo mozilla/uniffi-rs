@@ -7,6 +7,7 @@ use super::*;
 pub fn map_type_node(type_node: general::TypeNode, context: &Context) -> Result<TypeNode> {
     Ok(TypeNode {
         is_used_as_error: type_node.is_used_as_error,
+        has_from_unexpected_callback_error_impl: type_node.has_from_unexpected_callback_error_impl,
         type_rs: type_rs(&type_node.ty, context)?,
         type_kt: type_kt(&type_node.ty, context)?,
         read_fn_rs: read_fn_rs(&type_node.ty, &type_node.canonical_name)?,

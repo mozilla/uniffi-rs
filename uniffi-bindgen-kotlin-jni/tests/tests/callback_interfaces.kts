@@ -13,7 +13,9 @@ class CallbackImpl(var value: UInt) : TestCallbackInterface {
     }
 
     override fun throwIfEqual(numbers: CallbackInterfaceNumbers): CallbackInterfaceNumbers {
-        if (numbers.a == numbers.b) {
+        if (numbers.a == 6u && numbers.b == 7u) {
+            throw RuntimeException("unexpected failure")
+        } else if (numbers.a == numbers.b) {
             throw TestException.Failure1()
         } else {
             return numbers
@@ -36,4 +38,12 @@ try {
     throw RuntimeException("Expected TestException.Failure1 to be thrown")
 } catch(e: TestException.Failure1) {
     // Expected
+}
+
+// Test unexpected errors
+try {
+    invokeTestCallbackInterfaceThrowIfEqual(cbi, CallbackInterfaceNumbers(6u, 7u))
+    throw RuntimeException("Expected RuntimeException to be caught, converted to TestException.Failure2, and thrown")
+} catch(e: TestException.Failure2) {
+    assert(e.data.contains("unexpected failure"))
 }
