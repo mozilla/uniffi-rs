@@ -304,6 +304,26 @@ impl CallableResult {
         let id = self.id();
         format!("setCallbackError{id}")
     }
+
+    pub fn async_poll_fn(&self) -> String {
+        format!("rustFuturePoll{}", self.id())
+    }
+
+    pub fn async_cancel_fn(&self) -> String {
+        format!("rustFutureCancel{}", self.id())
+    }
+
+    pub fn async_free_fn(&self) -> String {
+        format!("rustFutureFree{}", self.id())
+    }
+
+    pub fn async_await_future_fn(&self) -> String {
+        format!("awaitRustFuture{}", self.id())
+    }
+
+    pub fn async_complete_class(&self) -> String {
+        format!("CompleteRustFuture{}", self.id())
+    }
 }
 
 impl Argument {
