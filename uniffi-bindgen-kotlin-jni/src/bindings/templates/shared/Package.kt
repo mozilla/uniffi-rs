@@ -3,6 +3,7 @@ package uniffi
 
 class InternalException(message: kotlin.String) : Exception(message)
 
+{% include "Async.kt" %}
 {% include "FfiBuffer.kt" %}
 {% include "LiftLower.kt" %}
 {% include "Scaffolding.kt" %}
