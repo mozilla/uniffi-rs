@@ -3,6 +3,7 @@
 private val {{ cbi.handle_map_kt() }} = HandleMap<{{ type_name }}>();
 
 {%- for meth in cbi.methods %}
+{%- if !meth.callable.is_async %}
 fun {{ meth.dispatch_fn_kt }}(
     uniffiHandle: kotlin.Long,
     {%- if meth.has_return_pointer() %}
@@ -67,6 +68,16 @@ fun {{ meth.dispatch_fn_kt }}(
     {%- when ReturnFfi::Void %}
     {%- endmatch %}
 }
+{%- else %}
+fun {{ meth.dispatch_fn_kt }}(
+    uniffiHandle: kotlin.Long,
+    {%- for ffi_arg in meth.callable.ffi_arguments() %}
+    {{ ffi_arg.name_kt() }}: {{ ffi_arg.ty.type_kt() }},
+    {%- endfor %}
+) {
+    throw RuntimeException("TODO: async callback functions")
+}
+{%- endif %}
 {%- endfor %}
 
 fun {{ cbi.free_fn_kt() }}(handle: kotlin.Long) {

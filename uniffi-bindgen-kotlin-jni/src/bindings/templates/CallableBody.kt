@@ -9,6 +9,10 @@ val uniffiReturn = uniffi.Scaffolding.{{ jni_method_name }}(
     {%- endfor %}
     {%- endfor %}
 )
+
+{%- if callable.is_async %}
+return uniffi.{{ callable.result.async_await_future_fn() }}(uniffiReturn)
+{%- else %}
 {%- if callable.is_primary_constructor() %}
 this.uniffiHandle = uniffiReturn
 {%- else %}
@@ -19,4 +23,5 @@ return uniffi.{{ type_node.lift_fn_kt() }}(uniffiReturn)
 return uniffiReturn
 {% when ReturnFfi::Void %}
 {%- endmatch %}
+{%- endif %}
 {%- endif %}
