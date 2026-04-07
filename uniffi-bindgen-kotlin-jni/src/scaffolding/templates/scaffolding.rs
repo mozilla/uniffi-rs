@@ -12,6 +12,7 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
     use ::uniffi_bindgen_kotlin_jni_runtime::uniffi;
     use ::uniffi_bindgen_kotlin_jni_runtime::JniResultExt;
 
+    {%- filter indent(4) %}{% include "async.rs" %}{% endfilter %}
     {%- filter indent(4) %}{% include "callback_interface_shared.rs" %}{% endfilter %}
     {%- filter indent(4) %}{% include "ffi_buffer.rs" %}{% endfilter %}
     {%- filter indent(4) %}{% include "jni_support.rs" %}{% endfilter %}

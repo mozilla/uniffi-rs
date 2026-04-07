@@ -103,6 +103,7 @@ pub mod deps {
     pub use anyhow;
     #[cfg(feature = "tokio")]
     pub use async_compat;
+    pub use async_trait;
     pub use bytes;
     pub use static_assertions;
 }

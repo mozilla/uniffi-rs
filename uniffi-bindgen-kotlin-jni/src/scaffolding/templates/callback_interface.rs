@@ -5,9 +5,10 @@ struct {{ cbi.impl_struct_rs() }} {
     handle: i64,
 }
 
+{%- if cbi.has_async_method() %}#[uniffi::deps::async_trait::async_trait]{% endif %}
 impl {{ trait_name }} for {{ cbi.impl_struct_rs() }} {
     {%- for meth in cbi.methods %}
-    fn {{ meth.callable.name_rs() }}(
+    {%- if meth.callable.is_async %}async {% endif %}fn {{ meth.callable.name_rs() }}(
         &self,
         {%- for a in meth.callable.arguments %}
         {{ a.name_rs() }}: {{ a.ty.type_rs }},
@@ -19,7 +20,7 @@ impl {{ trait_name }} for {{ cbi.impl_struct_rs() }} {
                 {%- for a in meth.callable.arguments %}
                 {{ a.name_rs() }},
                 {%- endfor %}
-            );
+            ){% if meth.callable.is_async %}.await{% endif %};
             match uniffi_result {
                 Ok(v) => v,
                 Err(e) => {
