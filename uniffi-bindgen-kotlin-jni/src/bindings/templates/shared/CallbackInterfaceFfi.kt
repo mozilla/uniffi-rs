@@ -3,6 +3,7 @@
 private val {{ cbi.handle_map_kt() }} = HandleMap<{{ type_name }}>();
 
 {%- for meth in cbi.methods %}
+{%- if !meth.callable.is_async %}
 fun {{ meth.dispatch_fn_kt }}(uniffiHandle: Long, uniffiBuffer: Long) {
     val uniffiObj = {{ cbi.handle_map_kt() }}.get(uniffiHandle)
     {% for a in meth.callable.arguments %}
@@ -36,6 +37,11 @@ fun {{ meth.dispatch_fn_kt }}(uniffiHandle: Long, uniffiBuffer: Long) {
     {{ return_ty.write_fn_kt }}(uniffiWriter, uniffiReturn)
     {%- endif %}
 }
+{%- else %}
+fun {{ meth.dispatch_fn_kt }}(uniffiHandle: Long, uniffiBuffer: Long) {
+    throw RuntimeException("TODO")
+}
+{%- endif %}
 {%- endfor %}
 
 fun {{ cbi.free_fn_kt() }}(handle: Long) {

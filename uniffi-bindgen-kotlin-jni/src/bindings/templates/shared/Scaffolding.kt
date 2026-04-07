@@ -19,7 +19,11 @@ object Scaffolding {
 
     {%- for package in root.packages %}
     {%- for scaffolding_function in package.scaffolding_functions %}
+    {% if !scaffolding_function.callable.is_async %}
     @JvmStatic external fun {{ scaffolding_function.jni_method_name }}(uniffiBufferHandle: Long)
+    {% else %}
+    @JvmStatic external fun {{ scaffolding_function.jni_method_name }}(uniffiBufferHandle: Long): Long
+    {% endif %}
     {%- endfor %}
 
     {%- for cls in package.classes() %}
@@ -27,6 +31,13 @@ object Scaffolding {
     @JvmStatic external fun {{ cls.jni_addref_name() }}(handle: Long)
     {%- endfor  %}
     {%- endfor  %}
+
+    @JvmStatic external fun uniffiRustFuturePoll(
+        rustFuture: Long,
+        continuation: kotlin.coroutines.Continuation<Int>,
+    ): Int
+    @JvmStatic external fun uniffiRustFutureFree(rustFuture: Long)
+    @JvmStatic external fun uniffiRustFutureCancel(rustFuture: Long)
 
     // access `uniffiLibrary` to make sure the cdylib is loaded
     init {

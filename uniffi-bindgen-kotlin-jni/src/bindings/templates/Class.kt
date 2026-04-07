@@ -178,7 +178,7 @@ open class {{ cls.name_kt() }} : {{ cls.base_classes|join(", ") }} {
     }
 
     {% for meth in cls.methods -%}
-    override public fun {{ meth.callable.name_kt() }}({{ meth.callable.arg_list() }}): {{ meth.callable.return_type_kt() }} {
+    override public {% if meth.callable.is_async %}suspend {% endif %}fun {{ meth.callable.name_kt() }}({{ meth.callable.arg_list() }}): {{ meth.callable.return_type_kt() }} {
         {%- let jni_method_name = meth.jni_method_name %}
         {%- let callable = meth.callable %}
         {% filter indent(4) %}{%- include "CallableBody.kt" %}{% endfilter %}
@@ -187,7 +187,7 @@ open class {{ cls.name_kt() }} : {{ cls.base_classes|join(", ") }} {
 
     companion object {
         {% for cons in cls.secondary_constructors() -%}
-        public fun {{ cons.callable.name_kt() }}({{ cons.callable.arg_list() }}): {{ cons.callable.return_type_kt() }} {
+        public {% if cons.callable.is_async %}suspend {% endif %}fun {{ cons.callable.name_kt() }}({{ cons.callable.arg_list() }}): {{ cons.callable.return_type_kt() }} {
             {%- let jni_method_name = cons.jni_method_name %}
             {%- let callable = cons.callable %}
             {% filter indent(8) %}{%- include "CallableBody.kt" %}{% endfilter %}

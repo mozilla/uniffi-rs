@@ -5,9 +5,11 @@ struct {{ cbi.impl_struct_rs() }} {
     handle: i64,
 }
 
+{% if cbi.has_async_method() %}#[uniffi::deps::async_trait::async_trait]{% endif %}
 impl {{ trait_name }} for {{ cbi.impl_struct_rs() }} {
     {%- for meth in cbi.methods %}
     {%- let callable = meth.callable %}
+    {% if !callable.is_async %}
     fn {{ callable.name_rs() }}(
         &self,
         {%- for a in callable.arguments %}
@@ -97,6 +99,16 @@ impl {{ trait_name }} for {{ cbi.impl_struct_rs() }} {
             }
         }
     }
+    {%- else %}
+    async fn {{ callable.name_rs() }}(
+        &self,
+        {%- for a in callable.arguments %}
+        {{ a.name_rs() }}: {{ a.ty.type_rs }},
+        {%- endfor %}
+    ) -> {{ callable.return_type_rs() }} {
+        todo!()
+    }
+    {%- endif %}
     {%- endfor %}
 }
 

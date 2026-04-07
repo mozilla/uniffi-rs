@@ -204,6 +204,7 @@ pub struct ScaffoldingFunction {
 pub struct Callable {
     pub kind: CallableKind,
     pub name: String,
+    pub is_async: bool,
     pub arguments: Vec<Argument>,
     pub return_type: Option<TypeNode>,
     pub throws_type: Option<TypeNode>,
@@ -505,6 +506,10 @@ impl CallbackInterface {
 
     pub fn name_rs(&self) -> String {
         names::escape_rust(&self.name)
+    }
+
+    pub fn has_async_method(&self) -> bool {
+        self.methods.iter().any(|m| m.callable.is_async)
     }
 
     pub fn free_fn_kt(&self) -> String {

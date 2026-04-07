@@ -106,6 +106,10 @@ impl FfiBuffer {
     }
 }
 
+/// FFI buffers are safe to pass between threads as long as they're not accessed at the same time.
+/// So we implement `Send` but not `Sync` for them.
+unsafe impl Send for FfiBuffer {}
+
 /// Allocate a new FFI buffer
 ///
 /// This is the low-level API for managing FFI buffers.

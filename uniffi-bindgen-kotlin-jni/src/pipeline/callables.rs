@@ -9,6 +9,7 @@ pub fn map_callable(input: general::Callable, context: &Context) -> Result<Calla
     Ok(Callable {
         kind: input.kind.map_node(context)?,
         name: input.name,
+        is_async: input.async_data.is_some(),
         arguments: input.arguments.map_node(context)?,
         return_type: input.return_type.ty.map_node(context)?,
         throws_type: input.throws_type.ty.map_node(context)?,
