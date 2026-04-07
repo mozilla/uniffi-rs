@@ -2500,6 +2500,7 @@ version = "0.32.0"
 dependencies = [
  "anyhow",
  "async-compat",
+ "async-trait",
  "bytes",
  "once_cell",
  "static_assertions",

@@ -82,6 +82,10 @@ impl Root {
         type_nodes.into_iter()
     }
 
+    pub fn rust_async_callable_results(&self) -> impl Iterator<Item = &CallableResult> {
+        self.iter_callable_results_that_match(|c| c.is_for_rust_function() && c.is_async)
+    }
+
     pub fn kotlin_sync_callable_results(&self) -> impl Iterator<Item = &CallableResult> {
         self.iter_callable_results_that_match(|c| c.is_for_kotlin_function() && !c.is_async)
     }

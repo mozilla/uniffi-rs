@@ -99,7 +99,7 @@ impl AsyncInterface {
 
 #[derive(uniffi::Record)]
 pub struct AsyncRecord {
-    name: String,
+    pub name: String,
 }
 
 #[uniffi::export]
