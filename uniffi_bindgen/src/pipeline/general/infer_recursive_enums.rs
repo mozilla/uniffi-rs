@@ -216,6 +216,7 @@ mod tests {
         });
         TypeDefinition::Enum(Enum {
             name: name.to_string(),
+            orig_name: name.to_string(),
             is_flat: false,
             self_type,
             discr_type: discr_type_node.clone(),
@@ -248,6 +249,7 @@ mod tests {
         });
         TypeDefinition::Enum(Enum {
             name: name.to_string(),
+            orig_name: name.to_string(),
             is_flat: true,
             self_type,
             discr_type: discr_type_node.clone(),
@@ -306,6 +308,7 @@ mod tests {
             .collect();
         TypeDefinition::Enum(Enum {
             name: name.to_string(),
+            orig_name: name.to_string(),
             is_flat: false,
             self_type,
             discr_type: discr_type_node,
@@ -326,6 +329,7 @@ mod tests {
         });
         TypeDefinition::Record(Record {
             name: name.to_string(),
+            orig_name: name.to_string(),
             self_type,
             fields_kind: FieldsKind::Named,
             uniffi_trait_methods: UniffiTraitMethods::default(),
