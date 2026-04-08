@@ -1,8 +1,6 @@
 # The UniFFI Bindings IR
 
-**Note:** the Bindings IR is currently an experiment.
-It's checked in so that we can use it for the gecko-js external binding generator.
-Our current recommendation for other external bindings authors is to avoid using it for now since we haven't fully committed to this new system and expect it to change.
+**Note:** The Bindings IR is still unstable and subject to breaking changes. However, for authors of new external bindings, we recommend using the pipeline over the ComponentInterface - while you should expect to deal with breakage as things evolve, migrating from ComponentInterface later is likely to be more work overall. For existing bindings already built on ComponentInterface, it's reasonable to stay with that for now and wait for the pipeline to stabilize, unless there's a specific feature that's hard to implement with ComponentInterface.
 
 UniFFI models foreign bindings generation as a compiler pipeline:
 
