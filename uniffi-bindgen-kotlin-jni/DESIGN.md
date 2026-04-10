@@ -141,6 +141,21 @@ This allows us to control when buffers get freed rather than rely on the garbage
        the FFI values for the return value.
  * Error handling: Rust constructs and throws an exception from the poll function, as described in `Errors/exceptions`
 
+### Rust -> Kotlin async call
+
+* Rust creates a oneshot sender/receiver
+* Rust passes the oneshot sender handle as an extra argument to the Kotlin function.
+* The Kotlin function schedules the async call, then returns
+* Rust awaits the oneshot receiver
+* When the Kotlin async function completes:
+    * Kotlin calls a Rust completion function
+    * Kotlin passes the oneshot sender handle, plus the return FFI values.
+    * Rust constructs the return value and sends it via the oneshot sender
+* Error handling:
+    * Rust defines separate completion functions to handle errors/unexpected errors.
+    * These functions input the oneshot handle just like the success completion function.
+      They construct an `Err` value and send it via the oneshot sender.
+
 # Errors/exceptions
 
 Errors/exceptions are handled using JNI rather than `uniffi::RustCallStatus`.

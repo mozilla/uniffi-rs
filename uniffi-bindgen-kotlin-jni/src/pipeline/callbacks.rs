@@ -93,14 +93,21 @@ impl CallbackMethod {
         if self.has_return_pointer() {
             args.push('J');
         }
+        if self.callable.is_async {
+            args.push('J'); // oneshot handle
+        }
         args.extend(
             self.callable
                 .ffi_arguments()
                 .map(|ffi_arg| ffi_arg.ty.jni_signature()),
         );
-        let ret = match self.callable.return_ffi() {
-            ReturnFfi::Primitive { ffi_type, .. } => ffi_type.jni_signature(),
-            _ => "V",
+        let ret = if !self.callable.is_async {
+            match self.callable.return_ffi() {
+                ReturnFfi::Primitive { ffi_type, .. } => ffi_type.jni_signature(),
+                _ => "V",
+            }
+        } else {
+            "V"
         };
 
         format!("({args}){ret}")
@@ -110,10 +117,14 @@ impl CallbackMethod {
     //
     // The return pointer is used to return non-primitive values and/or to return err values
     pub fn has_return_pointer(&self) -> bool {
-        self.callable
-            .return_type()
-            .is_some_and(|return_type| !return_type.lowers_to_primitive())
-            || self.callable.throws_type().is_some()
+        if self.callable.is_async {
+            false
+        } else {
+            self.callable
+                .return_type()
+                .is_some_and(|return_type| !return_type.lowers_to_primitive())
+                || self.callable.throws_type().is_some()
+        }
     }
 
     pub fn jni_method_call_name(&self) -> &'static str {
