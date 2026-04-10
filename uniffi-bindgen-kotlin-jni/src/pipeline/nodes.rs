@@ -120,6 +120,7 @@ pub struct CallbackInterface {
 #[derive(Debug, Clone, Node, MapNode)]
 pub struct CallbackMethod {
     pub callable: Callable,
+    pub dispatch_fn_rs: String,
     pub dispatch_fn_kt: String,
 }
 

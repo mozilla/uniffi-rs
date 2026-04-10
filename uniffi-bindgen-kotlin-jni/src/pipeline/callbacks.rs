@@ -28,6 +28,12 @@ fn map_methods(
         .into_iter()
         .map(|m| {
             Ok(CallbackMethod {
+                dispatch_fn_rs: format!(
+                    "uniffi_callback_dispatch_{}_{}_{}",
+                    context.namespace_name()?.to_snake_case(),
+                    interface_name.to_snake_case(),
+                    m.callable.name.to_snake_case(),
+                ),
                 dispatch_fn_kt: format!(
                     "callbackInterface{}{}{}",
                     context.namespace_name()?.to_upper_camel_case(),

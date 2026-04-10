@@ -72,12 +72,20 @@ fn type_rs(ty: &Type, context: &Context) -> Result<String> {
         Type::Interface {
             namespace,
             orig_name,
+            imp,
             ..
         } => {
-            format!(
-                "::std::sync::Arc<::{}::{orig_name}>",
-                context.module_path_for_type(namespace, orig_name)?
-            )
+            if imp.is_trait_interface() {
+                format!(
+                    "::std::sync::Arc<dyn ::{}::{orig_name}>",
+                    context.module_path_for_type(namespace, orig_name)?
+                )
+            } else {
+                format!(
+                    "::std::sync::Arc<::{}::{orig_name}>",
+                    context.module_path_for_type(namespace, orig_name)?
+                )
+            }
         }
         Type::CallbackInterface {
             namespace,

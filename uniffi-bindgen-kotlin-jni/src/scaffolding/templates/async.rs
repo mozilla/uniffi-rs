@@ -4,6 +4,9 @@ const UNIFFI_RUST_FUTURE_COMPLETE: i32 = 2;
 const UNIFFI_RUST_FUTURE_ERROR: i32 = 3;
 const UNIFFI_RUST_FUTURE_FAILED: i32 = 4;
 
+const UNIFFI_KOTLIN_FUTURE_OK: i32 = 0;
+const UNIFFI_KOTLIN_FUTURE_ERR: i32 = 1;
+
 /// Stores a future and scheduler for a Kotlin -> Rust call
 ///
 /// The future should either write to the FFI buffer it inputted and return
@@ -51,7 +54,7 @@ impl uniffi::RustFutureCallback for UniffiRustFutureContinutation {
         static UNIFFI_CONTINUATION_RESUME: uniffi_jni::CachedStaticMethod = uniffi_jni::CachedStaticMethod::new(
             c"uniffi/UniffiKt",
             c"uniffiContinuationResume",
-            c"(Lkotlin.coroutines.Continuation;)V",
+            c"(Lkotlin/coroutines/Continuation;)V",
         );
         // Safety:
         //
@@ -146,4 +149,22 @@ pub unsafe extern "system" fn Java_uniffi_Scaffolding_uniffiRustFutureFree(
         let ptr = ::std::ptr::with_exposed_provenance::<UniffiRustFuture>(uniffi_future_handle as usize);
         ::std::sync::Arc::decrement_strong_count(ptr);
     };
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn Java_uniffi_Scaffolding_uniffiKotlinFutureComplete(
+    _: *mut uniffi_jni::JNIEnv,
+    _: *mut uniffi_jni::jclass,
+    uniffi_kotlin_future_handle: i64,
+    uniffi_kotlin_future_result: i32,
+) {
+    uniffi::trace!("KotlinFuture::complete: {uniffi_kotlin_future_handle:x} {uniffi_kotlin_future_result}");
+    // Safety:
+    // We assume the Kotlin side of the FFI sent us a valid future handle
+    let sender = unsafe {
+        uniffi::oneshot::Sender::from_raw(
+            ::std::ptr::with_exposed_provenance::<_>(uniffi_kotlin_future_handle as usize)
+        )
+    };
+    sender.send(uniffi_kotlin_future_result)
 }

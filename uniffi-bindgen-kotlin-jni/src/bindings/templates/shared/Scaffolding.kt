@@ -39,6 +39,8 @@ object Scaffolding {
     @JvmStatic external fun uniffiRustFutureFree(rustFuture: Long)
     @JvmStatic external fun uniffiRustFutureCancel(rustFuture: Long)
 
+    @JvmStatic external fun uniffiKotlinFutureComplete(kotlinFuture: Long, resultCode: Int)
+
     // access `uniffiLibrary` to make sure the cdylib is loaded
     init {
         System.loadLibrary("{{ cdylib }}")

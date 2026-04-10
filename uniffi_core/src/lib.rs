@@ -82,7 +82,7 @@ pub mod ffi;
 mod ffi_converter_impls;
 mod ffi_converter_traits;
 pub mod metadata;
-mod oneshot;
+pub mod oneshot;
 
 pub use arc_or_owned::ArcOrOwned;
 pub use custom_types::CustomType;
