@@ -167,6 +167,7 @@ pub enum CallableKind {
     /// Callables inside `Interface::methods` will still be `Callable::Method`.
     VTableMethod {
         self_type: TypeNode,
+        takes_self_by_arc: bool,
         for_callback_interface: bool,
     },
 }

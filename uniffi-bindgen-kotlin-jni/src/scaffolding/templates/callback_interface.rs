@@ -8,8 +8,13 @@ struct {{ cbi.impl_struct_rs() }} {
 {%- if cbi.has_async_method() %}#[uniffi::deps::async_trait::async_trait]{% endif %}
 impl {{ trait_name }} for {{ cbi.impl_struct_rs() }} {
     {%- for meth in cbi.methods %}
-    {%- if meth.callable.is_async %}async {% endif %}fn {{ meth.callable.name_rs() }}(
+    {%- let receiver = meth.callable.receiver.as_ref().expect("Callback interface receiver not set") %}
+    {% if meth.callable.is_async %}async {% endif %}fn {{ meth.callable.name_rs() }}(
+        {%- if receiver.by_ref %}
         &self,
+        {%- else %}
+        self: ::std::sync::Arc<Self>,
+        {%- endif %}
         {%- for a in meth.callable.arguments %}
         {{ a.name_rs() }}: {{ a.ty.type_rs }},
         {%- endfor %}
@@ -197,6 +202,7 @@ impl Drop for {{ cbi.impl_struct_rs() }} {
     }
 }
 
+{% if !cbi.for_trait_interface %}
 unsafe fn {{ cbi.self_type.lift_fn_rs() }}(
     uniffi_env: *mut uniffi_jni::JNIEnv,
     v0: ::std::primitive::i64,
@@ -216,3 +222,5 @@ unsafe fn {{ cbi.self_type.read_fn_rs() }}(
 }
 
 // Note: no write or lower function, since passing callback interfaces from Rust to Kotlin is not allowed
+
+{%- endif %}

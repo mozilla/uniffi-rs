@@ -139,8 +139,9 @@ pub fn callback_interface_methods(
     context: &Context,
 ) -> Result<Vec<Method>> {
     let self_type = context.self_type()?;
-    methods_with_kind(methods, context, |_| CallableKind::VTableMethod {
+    methods_with_kind(methods, context, |meth| CallableKind::VTableMethod {
         self_type: self_type.clone(),
+        takes_self_by_arc: meth.takes_self_by_arc,
         for_callback_interface: true,
     })
 }
