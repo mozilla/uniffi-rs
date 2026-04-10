@@ -112,7 +112,7 @@ pub fn map_callable(
         } => Some(Argument {
             ty: self_type.clone(),
             by_ref: !takes_self_by_arc,
-            ffi: argument_ffi(self_type, !takes_self_by_arc, &mut allocator),
+            ffi: argument_ffi(self_type, !takes_self_by_arc, true, &mut allocator),
             index: allocator.next_arg_index(),
             name: "".into(),
             optional: false,
@@ -120,7 +120,7 @@ pub fn map_callable(
         CallableKind::VTableMethod { self_type, .. } => Some(Argument {
             ty: self_type.clone(),
             by_ref: true,
-            ffi: argument_ffi(self_type, true, &mut allocator),
+            ffi: argument_ffi(self_type, true, true, &mut allocator),
             index: allocator.next_arg_index(),
             name: "".into(),
             optional: false,
@@ -159,7 +159,7 @@ fn map_arguments(
                 name: arg.name,
                 index: allocator.next_arg_index(),
                 optional: arg.optional,
-                ffi: argument_ffi(&ty, arg.by_ref, allocator),
+                ffi: argument_ffi(&ty, arg.by_ref, false, allocator),
                 ty,
                 by_ref: arg.by_ref,
             })
@@ -167,15 +167,37 @@ fn map_arguments(
         .collect()
 }
 
-fn argument_ffi(ty: &TypeNode, by_ref: bool, allocator: &mut ArgAllocator) -> ArgumentFfi {
+fn argument_ffi(
+    ty: &TypeNode,
+    by_ref: bool,
+    receiver: bool,
+    allocator: &mut ArgAllocator,
+) -> ArgumentFfi {
     let id = ty.id;
     match (&ty.ty, by_ref) {
-        (Type::Interface { .. }, true) => {
+        (Type::Interface { imp, .. }, true) if !imp.has_callback_interface() => {
             ArgumentFfi::Custom {
                 ffi_args: allocator.create_ffi_args(&[FfiType::Int64]),
                 // Kotlin -> Rust uses optimized lower/lift functions that avoid a clone
                 lower_fn_kt: format!("lowerObjectRef{id}"),
                 lift_fn_rs: format!("lift_object_ref_{id}"),
+                // Rust -> Kotlin use the normal functions, since there's no way to ensure that
+                // Kotlin won't keep a reference to the argument.
+                lift_fn_kt: ty.lift_fn_kt(),
+                lower_fn_rs: ty.lower_fn_rs(),
+            }
+        }
+        (Type::Interface { imp, .. }, true) if imp.has_callback_interface() && receiver => {
+            // For trait interface that can be implemented in Kotlin,
+            // it's tricky to optimize passing refs in general.
+            //
+            // However, we can implement it for method receivers since they're always Rust-implemented
+            // (otherwise Kotlin would have just called the Kotlin method directly).
+            ArgumentFfi::Custom {
+                ffi_args: allocator.create_ffi_args(&[FfiType::Int64]),
+                // Kotlin -> Rust uses optimized lower/lift functions that avoid a clone
+                lower_fn_kt: format!("lowerObjectReceiverRef{id}"),
+                lift_fn_rs: format!("lift_object_receiver_ref_{id}"),
                 // Rust -> Kotlin use the normal functions, since there's no way to ensure that
                 // Kotlin won't keep a reference to the argument.
                 lift_fn_kt: ty.lift_fn_kt(),

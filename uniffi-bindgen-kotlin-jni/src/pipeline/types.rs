@@ -67,11 +67,18 @@ pub fn type_rs(ty: &Type, context: &Context) -> Result<String> {
         | Type::Custom { orig_name, .. } => {
             format!("{}::{orig_name}", context.rust_module_path_for_type(ty)?)
         }
-        Type::Interface { orig_name, .. } => {
-            format!(
-                "::std::sync::Arc<{}::{orig_name}>",
-                context.rust_module_path_for_type(ty)?
-            )
+        Type::Interface { orig_name, imp, .. } => {
+            if !imp.is_trait_interface() {
+                format!(
+                    "::std::sync::Arc<{}::{orig_name}>",
+                    context.rust_module_path_for_type(ty)?
+                )
+            } else {
+                format!(
+                    "::std::sync::Arc<dyn {}::{orig_name}>",
+                    context.rust_module_path_for_type(ty)?
+                )
+            }
         }
         Type::CallbackInterface { orig_name, .. } => {
             format!(
