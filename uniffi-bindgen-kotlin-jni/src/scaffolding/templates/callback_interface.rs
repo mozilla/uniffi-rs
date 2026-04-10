@@ -136,7 +136,36 @@ async unsafe fn {{ meth.dispatch_fn_rs }}(
     {{ a.name_rs() }}: {{ a.ty.type_rs }},
     {%- endfor %}
 ) -> uniffi::Result<{{ meth.callable.result.return_type_rs() }}> {
-    todo!("async callback methods")
+    static METHOD: uniffi_jni::CachedStaticMethod = uniffi_jni::CachedStaticMethod::new(
+        c"uniffi/UniffiKt",
+        c"{{ meth.dispatch_fn_kt }}",
+        c"{{ meth.jni_signature() }}",
+    );
+
+    let (uniffi_sender, uniffi_receiver) = uniffi::oneshot::channel::<uniffi::Result<{{ meth.callable.result.return_type_rs() }}>>();
+    uniffi_jni::attach_current_thread(uniffi_get_global_jvm(), |uniffi_env| -> uniffi::Result<()> {
+        {%- for arg in meth.callable.arguments %}
+        let uniffi_arg_lowered_{{ arg.index }} = {{ arg.ty.lower_fn_rs() }}(uniffi_env, {{ arg.name_rs() }})?;
+        {%- endfor %}
+
+        METHOD.{{ meth.jni_method_call_name() }}(uniffi_env, [
+            uniffi_jni::jvalue {
+                j: uniffi_handle,
+            },
+            uniffi_jni::jvalue {
+                j: uniffi_sender.into_raw().expose_provenance() as ::std::primitive::i64,
+            },
+            {%- for arg in meth.callable.arguments %}
+            {%- for (var, ffi_type) in arg.ty.ffi_values_rs(format!("uniffi_arg_lowered_{}", arg.index)) %}
+            uniffi_jni::jvalue {
+                {{ ffi_type.jvalue_field() }}: {{ var }},
+            },
+            {%- endfor %}
+            {%- endfor %}
+        ]).to_anyhow_result(uniffi_env, "{{ meth.jni_method_call_name() }}")?;
+        uniffi::Result::Ok(())
+    })?;
+    uniffi_receiver.await
 }
 {% endif %}
 {% endfor %}
