@@ -36,6 +36,7 @@ pub fn vtable(methods: &[initial::Method], context: &Context) -> Result<VTable> 
                         meth,
                         CallableKind::VTableMethod {
                             self_type: context.self_type()?,
+                            takes_self_by_arc: meth.takes_self_by_arc,
                             for_callback_interface: true,
                         },
                         context,

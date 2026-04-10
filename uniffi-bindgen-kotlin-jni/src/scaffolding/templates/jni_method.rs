@@ -99,19 +99,30 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
     unsafe {
         uniffi_jni::rust_call_with_env(uniffi_env, |uniffi_env| {
             {%- for arg in callable.arguments_including_receiver() %}
-            let uniffi_arg_lifted_{{ loop.index0 }} = {{ arg.lift_fn_rs() }}(
+            let uniffi_arg_lifted_{{ arg.index }} = {{ arg.lift_fn_rs() }}(
                 uniffi_env,
                 {%- for ffi_arg in arg.ffi_args() %}
                 {{ ffi_arg.name_rs() }},
                 {%- endfor %}
             )?;
             {%- endfor %}
-            let uniffi_future = {{ callable.fully_qualified_name_rs }}(
-                {%- for arg in callable.arguments_including_receiver() %}
-                uniffi_arg_lifted_{{ loop.index0 }},
-                {%- endfor %}
-            );
-            Ok(UniffiRustFuture::new(uniffi_future).into_handle())
+
+            let uniffi_future = async move {
+                {%- if !callable.has_receiver() %}
+                {{ callable.fully_qualified_name_rs }}(
+                    {%- for arg in callable.arguments %}
+                    uniffi_arg_lifted_{{ arg.index }},
+                    {%- endfor %}
+                ).await
+                {%- else %}
+                uniffi_arg_lifted_0.{{ callable.name_rs() }}(
+                    {%- for arg in callable.arguments %}
+                    uniffi_arg_lifted_{{ arg.index }},
+                    {%- endfor %}
+                ).await
+                {%- endif %}
+            };
+            Ok(UniffiRustFuture::<{{ callable.result.return_type_rs() }}>::new(uniffi_future).into_handle())
         })
     }
 }
