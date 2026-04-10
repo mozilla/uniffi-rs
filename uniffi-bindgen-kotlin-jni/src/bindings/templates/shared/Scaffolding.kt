@@ -27,8 +27,13 @@ object Scaffolding {
     {%- endfor %}
 
     {%- for cls in package.classes() %}
+    {%- if !cls.imp.is_trait_interface() %}
     @JvmStatic external fun {{ cls.jni_free_name() }}(handle: Long)
     @JvmStatic external fun {{ cls.jni_addref_name() }}(handle: Long)
+    {%- else %}
+    @JvmStatic external fun {{ cls.jni_free_name() }}(handle: Long, handle2: Long)
+    @JvmStatic external fun {{ cls.jni_addref_name() }}(handle: Long, handle2: Long)
+    {%- endif %}
     {%- endfor  %}
     {%- endfor  %}
 

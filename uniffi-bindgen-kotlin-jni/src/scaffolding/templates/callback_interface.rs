@@ -15,7 +15,9 @@ impl {{ trait_name }} for {{ cbi.impl_struct_rs() }} {
         {{ a.name_rs() }}: {{ a.ty.type_rs }},
         {%- endfor %}
     ) -> {{ callable.return_type_rs() }} {
+        uniffi::trace!("Callback call: {{ callable.name }}");
         let mut uniffi_buf = uniffi::FfiBuffer::new();
+        uniffi::trace!("{{ callable.name }}: new buffer {uniffi_buf:?}");
         let uniffi_result = {{ meth.dispatch_fn_rs }}(
             self.handle,
             &mut uniffi_buf,
@@ -23,6 +25,7 @@ impl {{ trait_name }} for {{ cbi.impl_struct_rs() }} {
             {{ a.name_rs() }},
             {%- endfor %}
         ){% if callable.is_async %}.await{% endif %};
+        uniffi::trace!("{{ callable.name }}: free buffer {uniffi_buf:?}");
         uniffi_buf.free();
         match uniffi_result {
             Ok(v) => v,
@@ -211,6 +214,7 @@ impl Drop for {{ cbi.impl_struct_rs() }} {
     }
 }
 
+{% if !cbi.for_trait_interface %}
 /// Read a {{ type_name }} from a `FfiBufferCursor`
 pub fn {{ cbi.self_type.read_fn_rs }}(
     cursor: &mut uniffi::FfiBufferCursor,
@@ -222,3 +226,5 @@ pub fn {{ cbi.self_type.read_fn_rs }}(
 }
 
 // Note: no write function, since passing callback interfaces from Rust to Kotlin is not allowed
+
+{%- endif %}

@@ -81,7 +81,9 @@ pub struct Enum {
     pub recursive: bool,
 }
 
-/// Kotlin class
+/// Kotlin class that implements an interface by calling into Rust
+///
+/// This is generated for Objects and trait interfaces
 #[derive(Debug, Clone, Node, MapNode)]
 #[map_node(from(general::Interface))]
 #[map_node(interfaces::map_class)]
@@ -89,14 +91,20 @@ pub struct Class {
     pub name: String,
     pub module_path: String,
     pub self_type: TypeNode,
+    pub package_name: String,
     pub base_classes: Vec<String>,
     pub constructors: Vec<Constructor>,
     pub methods: Vec<Method>,
     pub docstring: Option<String>,
     pub crate_name: String,
+    pub imp: ObjectImpl,
+    /// Callback interface for trait interfaces
+    pub callback_interface: Option<CallbackInterface>,
 }
 
 /// Kotlin Interface
+///
+/// This is generated for Objects, trait interfaces and callback interfaces
 #[derive(Debug, Clone, Node)]
 pub struct Interface {
     pub name: String,
@@ -104,6 +112,10 @@ pub struct Interface {
     pub docstring: Option<String>,
 }
 
+/// Kotlin Callback interface
+///
+/// This implements a Rust trait by calling into Kotlin.
+/// This is generated for trait interfaces and callback interfaces
 #[derive(Debug, Clone, Node, MapNode)]
 #[map_node(from(general::CallbackInterface))]
 #[map_node(callbacks::map_callback_interface)]
@@ -114,6 +126,7 @@ pub struct CallbackInterface {
     pub docstring: Option<String>,
     pub methods: Vec<CallbackMethod>,
     pub crate_name: String,
+    pub for_trait_interface: bool,
 }
 
 /// Single method in a vtable
@@ -452,7 +465,11 @@ impl Callable {
 
 impl Class {
     pub fn name_kt(&self) -> String {
-        names::class_name_kt(&self.name, self.self_type.is_used_as_error)
+        if self.imp.has_callback_interface() {
+            format!("{}Impl", self.name.to_upper_camel_case())
+        } else {
+            names::class_name_kt(&self.name, self.self_type.is_used_as_error)
+        }
     }
 
     pub fn name_rs(&self) -> String {
@@ -470,6 +487,22 @@ impl Class {
     pub fn jni_addref_name(&self) -> String {
         format!(
             "objectAddReff{}{}",
+            self.crate_name.to_upper_camel_case(),
+            self.name.to_upper_camel_case(),
+        )
+    }
+
+    pub fn handle_map_kt(&self) -> String {
+        format!(
+            "callbackInterfaceHandleMap{}{}",
+            self.crate_name.to_upper_camel_case(),
+            self.name.to_upper_camel_case(),
+        )
+    }
+
+    pub fn impl_struct_rs(&self) -> String {
+        format!(
+            "UniffiCallbackImpl{}{}",
             self.crate_name.to_upper_camel_case(),
             self.name.to_upper_camel_case(),
         )
@@ -565,6 +598,12 @@ impl Enum {
 impl CustomType {
     pub fn name_kt(&self) -> String {
         names::class_name_kt(&self.name, self.self_type.is_used_as_error)
+    }
+}
+
+impl CallableKind {
+    pub fn is_vtable_method(&self) -> bool {
+        matches!(self, CallableKind::VTableMethod { .. })
     }
 }
 

@@ -167,6 +167,20 @@ pub(crate) fn expand_export(
     }
 }
 
+pub(crate) fn is_trait_interface(
+    item: Item,
+    all_args: proc_macro::TokenStream,
+) -> syn::Result<bool> {
+    match ExportItem::new(item, all_args)? {
+        ExportItem::Trait {
+            with_foreign,
+            callback_interface_only,
+            ..
+        } => Ok(with_foreign && !callback_interface_only),
+        _ => Ok(false),
+    }
+}
+
 /// Rewrite Self type alias usage in an impl block to the type itself.
 ///
 /// For example,

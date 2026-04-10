@@ -80,6 +80,16 @@ except the calling direction is reversed and they also input the callback object
 In the future, we could explore more radical ideas,
 like storing the callback object pointer directly in Rust.
 
+# Trait interfaces
+
+Trait interfaces are passed across the FFI using 2 64-bit handles.
+For Rust-implemented traits, this is casted from the `Arc<dyn Trait>` wide pointer.
+For Kotlin-implemented traits, the first handle is always `0`
+and the second is the callback interface handle.
+
+This avoids creating extra Box wrapper that we currently create and also gives us a simple way
+to check which side of the FFI implements a trait.
+
 # JNI
 
 This crate uses the low-level `jni_sys` crate rather than the high-level `jni` crate.

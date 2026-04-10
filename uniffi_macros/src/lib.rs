@@ -83,8 +83,13 @@ pub fn export(attr_args: TokenStream, input: TokenStream) -> TokenStream {
 
 #[cfg(not(feature = "scaffolding"))]
 #[proc_macro_attribute]
-pub fn export(_attr_args: TokenStream, input: TokenStream) -> TokenStream {
-    input
+pub fn export(attr_args: TokenStream, input: TokenStream) -> TokenStream {
+    let input2 = input.clone();
+    match export::is_trait_interface(parse_macro_input!(input2), attr_args) {
+        Ok(true) => export::alter_trait(&parse_macro_input!(input)).into(),
+        Ok(false) => input,
+        Err(e) => e.into_compile_error().into(),
+    }
 }
 
 #[cfg(feature = "scaffolding")]

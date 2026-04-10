@@ -56,6 +56,7 @@ use crate::Result;
 const BASE_MINI_BUFFER_SIZE: usize = 256;
 
 /// FFI buffer wrapper
+#[derive(Debug)]
 pub struct FfiBuffer {
     head: *mut u8,
 }

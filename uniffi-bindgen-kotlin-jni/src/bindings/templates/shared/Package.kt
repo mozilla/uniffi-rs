@@ -29,6 +29,9 @@ class InternalException(message: String) : Exception(message)
 {%- endif %}
 {%- when TypeDefinition::Class(cls) %}
 {% include "ClassFfi.kt" %}
+{%- if let Some(cbi) = cls.callback_interface %}
+{% include "CallbackInterfaceFfi.kt" %}
+{%- endif %}
 {%- if cls.self_type.is_used_as_error %}
 {%- let error_type = cls.self_type %}
 {% include "ThrowErrorFun.kt" %}

@@ -67,17 +67,16 @@ pub fn map_type_definitions(
             general::TypeDefinition::Enum(en) => {
                 mapped.push(TypeDefinition::Enum(en.map_node(context)?));
             }
-            general::TypeDefinition::Interface(int) => match int.imp {
-                ObjectImpl::Struct => {
-                    mapped.push(TypeDefinition::Interface(interfaces::map_interface(
-                        &int, context,
-                    )?));
-                    mapped.push(TypeDefinition::Class(int.map_node(context)?));
-                }
-                ObjectImpl::CallbackTrait => todo!(),
-                ObjectImpl::Trait => todo!(),
-            },
+            general::TypeDefinition::Interface(int) => {
+                mapped.push(TypeDefinition::Interface(interfaces::map_interface(
+                    &int, context,
+                )?));
+                mapped.push(TypeDefinition::Class(int.map_node(context)?));
+            }
             general::TypeDefinition::CallbackInterface(cbi) => {
+                mapped.push(TypeDefinition::Interface(
+                    callbacks::interface_for_callback_interface(&cbi, context)?,
+                ));
                 mapped.push(TypeDefinition::CallbackInterface(cbi.map_node(context)?));
             }
             general::TypeDefinition::Custom(c) => {

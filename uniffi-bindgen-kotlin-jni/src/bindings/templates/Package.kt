@@ -14,10 +14,9 @@ import {{ import }}
 {% include "Interface.kt" %}
 {%- when TypeDefinition::Class(cls) %}
 {% include "Class.kt" %}
-{%- when TypeDefinition::CallbackInterface(cbi) %}
-{% include "CallbackInterface.kt" %}
 {%- when TypeDefinition::Custom(custom) %}
 {% include "Custom.kt" %}
+{%- when TypeDefinition::CallbackInterface(_) %}
 {%- when TypeDefinition::Optional(_) %}
 {%- when TypeDefinition::Sequence(_) %}
 {%- when TypeDefinition::Map(_) %}

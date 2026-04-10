@@ -5,14 +5,19 @@
 use super::*;
 
 pub fn map_class(int: general::Interface, context: &Context) -> Result<Class> {
-    let methods = int.methods.map_node(context)?;
-    let self_type = int.self_type.map_node(context)?;
-    let interface_name = format!("{}Interface", int.name.to_upper_camel_case());
     let mut base_classes = vec![
-        interface_name.clone(),
+        interface_name(&int),
         "uniffi.Disposable".to_string(),
         "AutoCloseable".to_string(),
     ];
+    let callback_interface = int
+        .imp
+        .is_trait_interface()
+        .then(|| callbacks::map_trait_interface(int.clone(), context))
+        .transpose()?;
+
+    let methods = int.methods.map_node(context)?;
+    let self_type = int.self_type.map_node(context)?;
     if self_type.is_used_as_error {
         base_classes.push("kotlin.Exception".into());
     }
@@ -20,19 +25,30 @@ pub fn map_class(int: general::Interface, context: &Context) -> Result<Class> {
     Ok(Class {
         self_type,
         base_classes,
+        package_name: context.current_package_name()?.to_string(),
         constructors: int.constructors.map_node(context)?,
         methods,
-        name: int.name.map_node(context)?,
+        name: int.name,
         module_path: int.module_path,
         docstring: int.docstring.map_node(context)?,
         crate_name: context.current_crate_name()?.to_string(),
+        imp: int.imp,
+        callback_interface,
     })
 }
 
 pub fn map_interface(int: &general::Interface, context: &Context) -> Result<Interface> {
     Ok(Interface {
-        name: format!("{}Interface", int.name.to_upper_camel_case()),
+        name: interface_name(int),
         methods: int.methods.clone().map_node(context)?,
         docstring: int.docstring.clone(),
     })
+}
+
+fn interface_name(int: &general::Interface) -> String {
+    if int.imp.has_callback_interface() {
+        int.name.to_upper_camel_case()
+    } else {
+        format!("{}Interface", int.name.to_upper_camel_case())
+    }
 }

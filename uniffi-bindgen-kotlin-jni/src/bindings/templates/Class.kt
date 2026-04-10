@@ -98,9 +98,21 @@ open class {{ cls.name_kt() }} : {{ cls.base_classes|join(", ") }} {
     /**
      * @suppress
      */
-    constructor(withHandle: uniffi.WithHandle, uniffiHandle: Long) {
+    constructor(
+        withHandle: uniffi.WithHandle,
+        uniffiHandle: Long,
+        {%- if cls.imp.is_trait_interface() %}
+        uniffiHandle2: Long,
+        {%- endif %}
+    ) {
+        {%- if !cls.imp.is_trait_interface() %}
         this.uniffiHandle = uniffiHandle
         this.uniffiCleanable = uniffi.CLEANER.register(this, UniffiCleanAction(uniffiHandle))
+        {%- else %}
+        this.uniffiHandle = uniffiHandle
+        this.uniffiHandle2 = uniffiHandle2
+        this.uniffiCleanable = uniffi.CLEANER.register(this, UniffiCleanAction(uniffiHandle, uniffiHandle2))
+        {%- endif %}
     }
 
     /**
@@ -114,6 +126,9 @@ open class {{ cls.name_kt() }} : {{ cls.base_classes|join(", ") }} {
     constructor(noHandle: uniffi.NoHandle) {
         this.uniffiHandle = 0
         this.uniffiCleanable = null
+        {%- if cls.imp.is_trait_interface() %}
+        this.uniffiHandle2 = 0
+        {%- endif %}
     }
 
     {%- if let Some(cons) = cls.primary_constructor() %}
@@ -129,8 +144,15 @@ open class {{ cls.name_kt() }} : {{ cls.base_classes|join(", ") }} {
      * @suppress
      */
     public val uniffiHandle: Long
-    protected val uniffiCleanable: uniffi.Cleanable?
+ 
+    {%- if cls.imp.is_trait_interface() %}
+    /**
+     * @suppress
+     */
+    public val uniffiHandle2: Long
+    {%- endif %}
 
+    protected val uniffiCleanable: uniffi.Cleanable?
     private val wasDestroyed = java.util.concurrent.atomic.AtomicBoolean(false)
     private val callCounter = java.util.concurrent.atomic.AtomicLong(1)
 
@@ -157,6 +179,7 @@ open class {{ cls.name_kt() }} : {{ cls.base_classes|join(", ") }} {
 
     // Use a static inner class instead of a closure so as not to accidentally
     // capture `this` as part of the cleanable's action.
+    {%- if !cls.imp.is_trait_interface() %}
     private class UniffiCleanAction(private val uniffiHandle: Long) : Runnable {
         override fun run() {
             if (uniffiHandle == 0.toLong()) {
@@ -166,6 +189,17 @@ open class {{ cls.name_kt() }} : {{ cls.base_classes|join(", ") }} {
             uniffi.Scaffolding.{{ cls.jni_free_name() }}(uniffiHandle)
         }
     }
+    {%- else %}
+    private class UniffiCleanAction(private val uniffiHandle: Long, private val uniffiHandle2: Long) : Runnable {
+        override fun run() {
+            if (uniffiHandle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffi.Scaffolding.{{ cls.jni_free_name() }}(uniffiHandle, uniffiHandle2)
+        }
+    }
+    {%- endif %}
 
     /**
      * @suppress
@@ -174,7 +208,11 @@ open class {{ cls.name_kt() }} : {{ cls.base_classes|join(", ") }} {
         if (uniffiHandle == 0.toLong()) {
             throw uniffi.InternalException("uniffiAddRef() called on NoHandle object");
         }
+        {%- if !cls.imp.is_trait_interface() %}
         uniffi.Scaffolding.{{ cls.jni_addref_name() }}(uniffiHandle)
+        {%- else %}
+        uniffi.Scaffolding.{{ cls.jni_addref_name() }}(uniffiHandle, uniffiHandle2)
+        {%- endif %}
     }
 
     {% for meth in cls.methods -%}
