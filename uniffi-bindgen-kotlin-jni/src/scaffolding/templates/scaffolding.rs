@@ -30,6 +30,9 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
     {%- filter indent(4) %}{% include "enum.rs" %}{% endfilter %}
     {%- when TypeDefinition::Class(cls) %}
     {%- filter indent(4) %}{% include "class.rs" %}{% endfilter %}
+    {%- if let Some(cbi) = cls.callback_interface %}
+    {%- filter indent(4) %}{% include "callback_interface.rs" %}{% endfilter %}
+    {%- endif %}
     {%- when TypeDefinition::CallbackInterface(cbi) %}
     {%- filter indent(4) %}{% include "callback_interface.rs" %}{% endfilter %}
     {%- when TypeDefinition::Custom(custom) %}

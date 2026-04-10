@@ -23,6 +23,9 @@ class InternalException(message: kotlin.String) : Exception(message)
 {% include "EnumFfi.kt" %}
 {%- when TypeDefinition::Class(cls) %}
 {% include "ClassFfi.kt" %}
+{%- if let Some(cbi) = cls.callback_interface %}
+{% include "CallbackInterfaceFfi.kt" %}
+{%- endif %}
 {%- when TypeDefinition::CallbackInterface(cbi) %}
 {% include "CallbackInterfaceFfi.kt" %}
 {%- when TypeDefinition::Custom(custom) %}

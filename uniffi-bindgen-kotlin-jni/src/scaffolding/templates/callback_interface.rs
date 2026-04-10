@@ -197,6 +197,7 @@ impl Drop for {{ cbi.impl_struct_rs() }} {
     }
 }
 
+{% if !cbi.for_trait_interface %}
 unsafe fn {{ cbi.self_type.lift_fn_rs() }}(
     uniffi_env: *mut uniffi_jni::JNIEnv,
     v0: ::std::primitive::i64,
@@ -216,3 +217,5 @@ unsafe fn {{ cbi.self_type.read_fn_rs() }}(
 }
 
 // Note: no write or lower function, since passing callback interfaces from Rust to Kotlin is not allowed
+
+{%- endif %}

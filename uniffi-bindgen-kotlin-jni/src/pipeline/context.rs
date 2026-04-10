@@ -168,6 +168,10 @@ impl Context {
             .ok_or_else(|| anyhow!("config not found: {namespace_name}"))
     }
 
+    pub fn current_package_name(&self) -> Result<&str> {
+        self.package_name_for_namespace(self.namespace_name()?)
+    }
+
     pub fn crate_name(&self, namespace_name: &str) -> Result<&str> {
         self.crate_map
             .get(namespace_name)

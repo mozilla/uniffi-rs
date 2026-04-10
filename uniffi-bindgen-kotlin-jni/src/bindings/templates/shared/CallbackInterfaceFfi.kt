@@ -143,6 +143,7 @@ fun {{ cbi.free_fn_kt() }}(handle: kotlin.Long) {
     {{ cbi.handle_map_kt() }}.remove(handle)
 }
 
+{%- if !cbi.for_trait_interface %}
 fun {{ cbi.self_type.lower_fn_kt() }}(value: {{ type_name }}): kotlin.Long {
     return {{ cbi.handle_map_kt() }}.insert(value)
 }
@@ -152,3 +153,4 @@ fun {{ cbi.self_type.write_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.I
 }
 
 // Note: no read/lift function, since callback interfaces can't be passed back from Rust to Kotlin
+{%- endif %}
