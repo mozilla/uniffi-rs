@@ -36,3 +36,49 @@ runBlocking {
     val obj2 = asyncRoundtripObj(obj)
     assert(obj2.name() == "Alice")
 }
+
+
+// Async callback interfaces
+class AsyncCallbackImpl(var value: UInt) : TestAsyncCallbackInterface {
+    override suspend fun noop() { }
+
+    override suspend fun getValue(): UInt {
+        return this.value
+    }
+
+    override suspend fun setValue(value: UInt) {
+        this.value = value
+    }
+
+    override suspend fun throwIfEqual(numbers: CallbackInterfaceNumbers): CallbackInterfaceNumbers {
+        if (numbers.a == numbers.b) {
+            throw TestException.Failure1()
+        }
+        return numbers
+    }
+}
+
+runBlocking {
+    val cbi = AsyncCallbackImpl(42u)
+    invokeTestAsyncCallbackInterfaceNoop(cbi)
+
+    assert(invokeTestAsyncCallbackInterfaceGetValue(cbi) == 42u)
+
+    invokeTestAsyncCallbackInterfaceSetValue(cbi, 43u)
+    assert(invokeTestAsyncCallbackInterfaceGetValue(cbi) == 43u)
+
+    try {
+       invokeTestAsyncCallbackInterfaceThrowIfEqual(
+            cbi,
+            CallbackInterfaceNumbers(a=10u, b=10u)
+        )
+        throw RuntimeException("Expected TestException.Failure1")
+    } catch (e: TestException.Failure1) {
+        // expected
+    }
+
+    assert(invokeTestAsyncCallbackInterfaceThrowIfEqual(
+        cbi,
+        CallbackInterfaceNumbers(a=10u, b=11u)
+    ) == CallbackInterfaceNumbers(a=10u, b=11u))
+}

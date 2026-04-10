@@ -324,6 +324,18 @@ impl CallableResult {
     pub fn async_complete_class(&self) -> String {
         format!("CompleteRustFuture{}", self.id())
     }
+
+    pub fn async_complete_success_fn(&self) -> String {
+        format!("completeKotlinFuture{}", self.id())
+    }
+
+    pub fn async_complete_error_fn(&self) -> String {
+        format!("completeKotlinFutureErr{}", self.id())
+    }
+
+    pub fn async_complete_unexpected_error_fn(&self) -> String {
+        format!("completeKotlinFutureUnexpectedErr{}", self.id())
+    }
 }
 
 impl Argument {

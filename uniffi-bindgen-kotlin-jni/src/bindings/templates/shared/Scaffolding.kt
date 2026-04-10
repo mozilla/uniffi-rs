@@ -63,6 +63,29 @@ object Scaffolding {
     @JvmStatic external fun {{ rust_result.async_free_fn() }}(rustFuture: kotlin.Long)
     {%- endfor %}
 
+    {%- for result in root.kotlin_async_callable_results() %}
+    @JvmStatic external fun {{ result.async_complete_success_fn() }}(
+        oneshotHandle: kotlin.Long,
+        {%- if let Some(return_type) = result.return_type %}
+        {%- for ffi_type in return_type.ffi_types %}
+        v{{ loop.index0 }}: {{ ffi_type.type_kt() }},
+        {%- endfor %}
+        {%- endif %}
+    )
+    {%- if let Some(throws_type) = result.throws_type %}
+    @JvmStatic external fun {{ result.async_complete_error_fn() }}(
+        oneshotHandle: kotlin.Long,
+        {%- for ffi_type in throws_type.ffi_types %}
+        v{{ loop.index0 }}: {{ ffi_type.type_kt() }},
+        {%- endfor %}
+    )
+    {%- endif %}
+    @JvmStatic external fun {{ result.async_complete_unexpected_error_fn() }}(
+        oneshotHandle: kotlin.Long,
+    )
+    {%- endfor %}
+    @JvmStatic external fun uniffiKotlinFutureComplete(kotlinFuture: kotlin.Long, resultCode: kotlin.Int)
+
     init {
         System.loadLibrary("{{ cdylib }}")
         Scaffolding.ffiBufferCheckSupport()

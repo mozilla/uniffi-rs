@@ -188,3 +188,93 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ rust_result.async_free_fn()
     };
 }
 {%- endfor %}
+
+{%- for callback_result in root.kotlin_async_callable_results() %}
+
+#[unsafe(no_mangle)]
+unsafe extern "system" fn Java_uniffi_Scaffolding_{{ callback_result.async_complete_success_fn() }}(
+    uniffi_env: *mut uniffi_jni::JNIEnv,
+    _: *mut uniffi_jni::jclass,
+    future_handle: i64,
+    {%- if let Some(return_type) = callback_result.return_type %}
+    {%- for ffi_type in return_type.ffi_types %}
+    v{{ loop.index0 }}: {{ ffi_type.type_rs() }},
+    {%- endfor %}
+    {%- endif %}
+) {
+    uniffi::trace!("{{ callback_result.async_complete_success_fn() }}: {future_handle:x}");
+    unsafe {
+        let sender = uniffi::oneshot::Sender::<uniffi::Result<{{ callback_result.return_type_rs() }}>>::from_raw(
+            ::std::ptr::with_exposed_provenance::<_>(future_handle as usize)
+        );
+        // Use `rust_call` rather than `rust_call_with_env`.  This way unexpected errors get sent
+        // via the oneshot channel rather than turning into Kotlin exceptions.
+        let return_result = uniffi_jni::rust_call(move || {
+            {%- if let Some(return_type) = callback_result.return_type %}
+            let uniffi_return = {{ return_type.lift_fn_rs() }}(
+                uniffi_env,
+                {%- for ffi_type in return_type.ffi_types %}
+                v{{ loop.index0 }},
+                {%- endfor %}
+            )?;
+            {%- else %}
+            let uniffi_return = ();
+            {%- endif %}
+            {%- if callback_result.throws_type.is_some() %}
+            uniffi::Result::Ok(::std::result::Result::Ok(uniffi_return))
+            {%- else %}
+            uniffi::Result::Ok(uniffi_return)
+            {%- endif %}
+        });
+        sender.send(return_result.map_err(|msg| uniffi::deps::anyhow::anyhow!("{msg}")));
+    }
+}
+
+{%- if let Some(throws_type) = callback_result.throws_type %}
+#[unsafe(no_mangle)]
+unsafe extern "system" fn Java_uniffi_Scaffolding_{{ callback_result.async_complete_error_fn() }}(
+    uniffi_env: *mut uniffi_jni::JNIEnv,
+    _: *mut uniffi_jni::jclass,
+    future_handle: i64,
+    {%- for ffi_type in throws_type.ffi_types %}
+    v{{ loop.index0 }}: {{ ffi_type.type_rs() }},
+    {%- endfor %}
+) {
+    uniffi::trace!("{{ callback_result.async_complete_error_fn() }}: {future_handle:x}");
+    unsafe {
+        let sender = uniffi::oneshot::Sender::<uniffi::Result<{{ callback_result.return_type_rs() }}>>::from_raw(
+            ::std::ptr::with_exposed_provenance::<_>(future_handle as usize)
+        );
+        // Use `rust_call` rather than `rust_call_with_env`.  This way unexpected errors get sent
+        // via the oneshot channel rather than turning into Kotlin exceptions.
+        let return_result = uniffi_jni::rust_call(|| {
+            let err = {{ throws_type.lift_fn_rs() }}(
+                uniffi_env,
+                {%- for ffi_type in throws_type.ffi_types %}
+                v{{ loop.index0 }},
+                {%- endfor %}
+            )?;
+            uniffi::Result::Ok(::std::result::Result::Err(err))
+        });
+        sender.send(return_result.map_err(|msg| uniffi::deps::anyhow::anyhow!("{msg}")));
+    }
+}
+{%- endif %}
+
+#[unsafe(no_mangle)]
+unsafe extern "system" fn Java_uniffi_Scaffolding_{{ callback_result.async_complete_unexpected_error_fn() }}(
+    _: *mut uniffi_jni::JNIEnv,
+    _: *mut uniffi_jni::jclass,
+    future_handle: i64,
+) {
+    uniffi::trace!("{{ callback_result.async_complete_unexpected_error_fn() }}: {future_handle:x}");
+    // Safety:
+    // * We assume the Kotlin side sent us valid future handles
+    let sender = unsafe {
+        uniffi::oneshot::Sender::<uniffi::Result<{{ callback_result.return_type_rs() }}>>::from_raw(
+            ::std::ptr::with_exposed_provenance::<_>(future_handle as usize)
+        )
+    };
+    sender.send(uniffi::Result::Err(uniffi::deps::anyhow::anyhow!("Unexpected callback error")));
+}
+{%- endfor %}
