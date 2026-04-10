@@ -71,11 +71,70 @@ fun {{ meth.dispatch_fn_kt }}(
 {%- else %}
 fun {{ meth.dispatch_fn_kt }}(
     uniffiHandle: kotlin.Long,
+    uniffiOneshotHandle: kotlin.Long,
     {%- for ffi_arg in meth.callable.ffi_arguments() %}
     {{ ffi_arg.name_kt() }}: {{ ffi_arg.ty.type_kt() }},
     {%- endfor %}
 ) {
-    throw RuntimeException("TODO: async callback functions")
+    // Using `GlobalScope` is labeled as a "delicate API" and generally discouraged in Kotlin programs, since it breaks structured concurrency.
+    // However, our parent task is a Rust future, so we're going to need to break structure concurrency in any case.
+    //
+    // Uniffi does its best to support structured concurrency across the FFI.
+    // If the Rust future is dropped, `uniffiForeignFutureDroppedCallbackImpl` is called, which will cancel the Kotlin coroutine if it's still running.
+    @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
+    kotlinx.coroutines.GlobalScope.launch uniffiCoroutineBlock@ {
+        try {
+            val uniffiObj = {{ cbi.handle_map_kt() }}.get(uniffiHandle)
+
+            {%- for arg in meth.callable.arguments %}
+            val {{ arg.name_kt() }} = uniffi.{{ arg.ty.lift_fn_kt() }}(
+                {%- for ffi_arg in arg.ffi_args() %}
+                {{ ffi_arg.name_kt() }},
+                {%- endfor %}
+            )
+            {%- endfor %}
+
+            {%- match meth.callable.throws_type() %}
+            {%- when None %}
+            val uniffiReturn = uniffiObj.{{ meth.callable.name_kt() }}(
+                {%- for a in meth.callable.arguments %}
+                {{ a.name_kt() }},
+                {%- endfor %}
+            )
+            {%- when Some(throws_type) %}
+            val uniffiReturn = try {
+                uniffiObj.{{ meth.callable.name_kt() }}(
+                    {%- for a in meth.callable.arguments %}
+                    {{ a.name_kt() }},
+                    {%- endfor %}
+                )
+            } catch(uniffiErr: {{ throws_type.type_kt }}) {
+                val uniffiErrLowered = {{ throws_type.lower_fn_kt() }}(uniffiErr)
+                Scaffolding.{{ meth.callable.result.async_complete_error_fn() }}(
+                    uniffiOneshotHandle,
+                    {%- for (var, _) in throws_type.ffi_values_kt("uniffiErrLowered") %}
+                    {{ var }},
+                    {%- endfor %}
+                )
+                return@uniffiCoroutineBlock {{ meth.default_return_kt() }}
+            }
+            {%- endmatch %}
+
+            {%- if let Some(return_type) = meth.callable.return_type() %}
+            val uniffiReturnLowered = {{ return_type.lower_fn_kt() }}(uniffiReturn)
+            Scaffolding.{{ meth.callable.result.async_complete_success_fn() }}(
+                uniffiOneshotHandle,
+                {%- for (var, _) in return_type.ffi_values_kt("uniffiReturnLowered") %}
+                {{ var }},
+                {%- endfor %}
+            )
+            {%- else %}
+            Scaffolding.{{ meth.callable.result.async_complete_success_fn() }}(uniffiOneshotHandle)
+            {%- endif %}
+        } catch(e: Throwable) {
+            Scaffolding.{{ meth.callable.result.async_complete_unexpected_error_fn() }}(uniffiOneshotHandle)
+        }
+    }
 }
 {%- endif %}
 {%- endfor %}
