@@ -4,13 +4,13 @@
 
 <!-- next-header -->
 
-## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.1...NEXT_HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.1...HEAD).
 
-## [[UnreleasedUniFFIVersion]] (backend crates: v0.31.1) - (_2026-04-10_)
+## v0.31.1 (backend crates: v0.31.1) - (_2026-04-10_)
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.0...HEAD).
+[All changes in v0.31.1](https://github.com/mozilla/uniffi-rs/compare/v0.31.0...v0.31.1).
 
 ## v0.31.0 (backend crates: v0.31.0) - (_2026-01-14_)
 
