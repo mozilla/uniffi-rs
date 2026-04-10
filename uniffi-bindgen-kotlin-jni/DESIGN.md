@@ -196,6 +196,18 @@ since we can just lookup and call the methods directly from JNI.
 In the future, we could explore more radical ideas,
 like storing the callback object pointer directly in Rust.
 
+# Trait interfaces
+
+Trait interfaces are passed across the FFI using a 64-bit handle.
+
+For Rust-implemented traits, the object gets wrapped with an extra Arc (`Arc<Arc<dyn Trait>>`).
+This effectively converts the wide pointer into a normal pointer so it fits in 64-bits.
+For Kotlin-implemented traits, we use a handle map which only generates odd-numbered handles.
+
+This way we can check the lowest bit to know which side of the FFI the object came from.
+If it's `0` then it's Rust-implemented trait otherwise it's Kotlin-implemented.
+This relies on the fact that the Arc will have alignment > 1.
+
 # JNI
 
 This crate uses the low-level `jni_sys` crate rather than the high-level `jni` crate.

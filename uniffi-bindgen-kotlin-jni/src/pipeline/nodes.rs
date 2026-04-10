@@ -78,6 +78,8 @@ pub struct Enum {
 }
 
 /// Kotlin class for an exported interface
+///
+/// This is generated for objects and trait interfaces
 #[derive(Debug, Clone, Node, MapNode)]
 #[map_node(from(general::Interface))]
 #[map_node(interfaces::map_class)]
@@ -85,14 +87,20 @@ pub struct Class {
     pub name: String,
     pub module_path: String,
     pub self_type: TypeNode,
+    pub package_name: String,
     pub base_classes: Vec<String>,
     pub constructors: Vec<Constructor>,
     pub methods: Vec<Method>,
     pub docstring: Option<String>,
     pub crate_name: String,
+    pub imp: ObjectImpl,
+    /// Callback interface for trait interfaces
+    pub callback_interface: Option<CallbackInterface>,
 }
 
 /// Kotlin Interface
+///
+/// This is generated for objects, trait interfaces and callback interfaces
 #[derive(Debug, Clone, Node)]
 pub struct Interface {
     pub name: String,
@@ -100,6 +108,10 @@ pub struct Interface {
     pub docstring: Option<String>,
 }
 
+/// Kotlin Callback interface
+///
+/// This implements a Rust trait by calling into Kotlin.
+/// This is generated for trait interfaces and callback interfaces
 #[derive(Debug, Clone, Node, MapNode)]
 #[map_node(from(general::CallbackInterface))]
 #[map_node(callbacks::map_callback_interface)]
@@ -110,6 +122,7 @@ pub struct CallbackInterface {
     pub docstring: Option<String>,
     pub methods: Vec<CallbackMethod>,
     pub crate_name: String,
+    pub for_trait_interface: bool,
 }
 
 /// Single method in a vtable

@@ -16,6 +16,29 @@ pub fn map_callback_interface(
         name: input.name,
         docstring: input.docstring,
         crate_name: context.current_crate_name()?.to_string(),
+        for_trait_interface: false,
+    })
+}
+
+pub fn map_trait_interface(
+    input: general::Interface,
+    context: &Context,
+) -> Result<CallbackInterface> {
+    let self_type = input.self_type.map_node(context)?;
+    Ok(CallbackInterface {
+        methods: map_methods(
+            &self_type,
+            input.vtable.ok_or_else(|| {
+                anyhow!("UniFFI internal error in map_trait_interface: vtable is None")
+            })?,
+            context,
+        )?,
+        self_type,
+        name: input.name,
+        module_path: context.normalize_rust_module_path(&input.module_path)?,
+        docstring: input.docstring,
+        crate_name: context.current_crate_name()?.to_string(),
+        for_trait_interface: true,
     })
 }
 
