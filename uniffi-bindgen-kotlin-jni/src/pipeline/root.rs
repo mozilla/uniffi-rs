@@ -90,6 +90,10 @@ impl Root {
         self.iter_callable_results_that_match(|c| c.is_for_kotlin_function() && !c.is_async)
     }
 
+    pub fn kotlin_async_callable_results(&self) -> impl Iterator<Item = &CallableResult> {
+        self.iter_callable_results_that_match(|c| c.is_for_kotlin_function() && c.is_async)
+    }
+
     fn iter_callable_results_that_match(
         &self,
         filter: impl Fn(&Callable) -> bool,
