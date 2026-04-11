@@ -23,7 +23,7 @@ fun {{ cls.self_type.read_fn_kt }}(cursor: uniffi.FfiBufferCursor): {{ type_name
     return {{ impl_class_name }}(uniffi.WithHandle, uniffi.readLong(cursor), uniffi.readLong(cursor))
 }
 
-fun {{ cls.self_type.write_fn_kt }}(cursor: uniffi.FfiBufferCursor, value: {{ type_name }}) {
+fun {{ cls.self_type.write_fn_kt }}(cursor: uniffi.FfiBufferCursor, value: {{ impl_class_name }}) {
     value.uniffiAddRef()
     uniffi.writeLong(cursor, value.uniffiHandle)
     uniffi.writeLong(cursor, value.uniffiHandle2)

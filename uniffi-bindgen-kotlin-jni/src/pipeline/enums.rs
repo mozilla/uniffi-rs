@@ -27,6 +27,7 @@ pub fn map_enum(en: general::Enum, context: &Context) -> Result<Enum> {
         discr_specified: en.discr_specified,
         variants: en.variants.map_node(&context)?,
         name: en.name,
+        orig_name: en.orig_name,
         shape: en.shape,
         kotlin_kind,
         docstring: en.docstring,
@@ -46,6 +47,7 @@ pub fn map_variant(variant: general::Variant, context: &Context) -> Result<Varia
     Ok(Variant {
         name_kt,
         name: variant.name,
+        orig_name: variant.orig_name,
         discr,
         fields_kind: variant.fields_kind,
         fields: records::map_fields(variant.fields, context)?,

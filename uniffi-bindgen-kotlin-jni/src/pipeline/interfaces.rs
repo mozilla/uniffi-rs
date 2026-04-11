@@ -29,6 +29,7 @@ pub fn map_class(int: general::Interface, context: &Context) -> Result<Class> {
         constructors: int.constructors.map_node(context)?,
         methods,
         name: int.name,
+        orig_name: int.orig_name,
         module_path: int.module_path,
         docstring: int.docstring.map_node(context)?,
         crate_name: context.current_crate_name()?.to_string(),

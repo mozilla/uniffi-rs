@@ -11,6 +11,7 @@ pub fn map_fields(fields: Vec<general::Field>, context: &Context) -> Result<Vec<
         .map(|(i, f)| {
             Ok(Field {
                 name: f.name,
+                orig_name: f.orig_name,
                 index: i,
                 ty: f.ty.map_node(context)?,
                 default: f.default.map_node(context)?,

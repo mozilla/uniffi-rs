@@ -9,6 +9,7 @@ pub fn map_callable(input: general::Callable, context: &Context) -> Result<Calla
     Ok(Callable {
         kind: input.kind.map_node(context)?,
         name: input.name,
+        orig_name: input.orig_name,
         is_async: input.async_data.is_some(),
         arguments: input.arguments.map_node(context)?,
         return_type: input.return_type.ty.map_node(context)?,
@@ -24,7 +25,7 @@ fn fully_qualified_name_rs(callable: &general::Callable, context: &Context) -> R
                 context.module_path_for_func(context.namespace_name()?, &callable.orig_name)?;
             return Ok(format!(
                 "{module_path}::{}",
-                names::escape_rust(&callable.name)
+                names::escape_rust(&callable.orig_name)
             ));
         }
         general::CallableKind::Method { self_type }
@@ -43,17 +44,17 @@ fn fully_qualified_method_name_rs(
     let Some(namespace) = self_ty.namespace() else {
         bail!("Invalid callable self type: {self_ty:?}");
     };
-    let Some(name) = self_ty.name() else {
+    let Some(name) = self_ty.orig_name() else {
         bail!("Invalid callable self type: {self_ty:?}");
     };
     let module_path = context.module_path_for_type(namespace, name)?;
-    let Some(self_name) = self_ty.name() else {
+    let Some(self_name) = self_ty.orig_name() else {
         bail!("Invalid Callable self type: {:?}", callable.kind);
     };
     Ok(format!(
         "{module_path}::{}::{}",
         names::escape_rust(self_name),
-        names::escape_rust(&callable.name)
+        names::escape_rust(&callable.orig_name)
     ))
 }
 
