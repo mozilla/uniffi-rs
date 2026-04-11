@@ -33,12 +33,12 @@ pub fn ffi_type(ty: &Type, context: &Context) -> Result<FfiType> {
             ..
         } => interface_ffi_type(namespace, name, imp)?,
         // Callback interfaces are passed as opaque integer handles.
-        Type::CallbackInterface { namespace, name } => {
-            FfiType::Handle(HandleKind::TraitInterface {
-                namespace: namespace.clone(),
-                interface_name: name.clone(),
-            })
-        }
+        Type::CallbackInterface {
+            namespace, name, ..
+        } => FfiType::Handle(HandleKind::TraitInterface {
+            namespace: namespace.clone(),
+            interface_name: name.clone(),
+        }),
         // Other types are serialized into a bytebuffer and deserialized on the other side.
         Type::Enum { namespace, .. } | Type::Record { namespace, .. } => FfiType::RustBuffer(
             (*namespace != context.namespace_name()?).then_some(namespace.clone()),

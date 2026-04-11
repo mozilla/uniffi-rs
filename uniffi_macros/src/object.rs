@@ -6,7 +6,8 @@ use crate::{
     ffiops,
     util::{
         create_metadata_items, either_attribute_arg, extract_docstring, ident_to_string, kw,
-        mod_path, wasm_single_threaded_annotation, AttributeSliceExt, UniffiAttributeArgs,
+        mod_path, orig_name_metadata, wasm_single_threaded_annotation, AttributeSliceExt,
+        UniffiAttributeArgs,
     },
     DeriveOptions,
 };
@@ -93,8 +94,13 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
         Span::call_site(),
     );
     let meta_static_var = options.generate_metadata.then(|| {
-        interface_meta_static_var(name, ObjectImpl::Struct, object.docstring())
-            .unwrap_or_else(syn::Error::into_compile_error)
+        interface_meta_static_var(
+            name,
+            orig_name_metadata(object.attr.name.is_some(), ident),
+            ObjectImpl::Struct,
+            object.docstring(),
+        )
+        .unwrap_or_else(syn::Error::into_compile_error)
     });
     let interface_impl = interface_impl(&object, &options);
 
@@ -249,6 +255,7 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
 
 pub(crate) fn interface_meta_static_var(
     name: &str,
+    orig_name_metadata: TokenStream,
     imp: ObjectImpl,
     docstring: &str,
 ) -> syn::Result<TokenStream> {
@@ -265,6 +272,7 @@ pub(crate) fn interface_meta_static_var(
             ::uniffi::MetadataBuffer::from_code(#code)
                 .concat_str(module_path!())
                 .concat_str(#name)
+                #orig_name_metadata
                 .concat_long_str(#docstring)
         },
         None,

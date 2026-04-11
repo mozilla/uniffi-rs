@@ -214,6 +214,7 @@ mod tests {
         let self_type = make_type_node(Type::Enum {
             namespace: "test".to_string(),
             name: name.to_string(),
+            orig_name: name.to_string(),
         });
         TypeDefinition::Enum(Enum {
             name: name.to_string(),
@@ -229,10 +230,12 @@ mod tests {
             recursive: false,
             variants: vec![Variant {
                 name: "Variant0".to_string(),
+                orig_name: "Variant0".to_string(),
                 discr: Literal::Int(0, Radix::Decimal, discr_type_node),
                 fields_kind: FieldsKind::Unnamed,
                 fields: vec![Field {
                     name: "value".to_string(),
+                    orig_name: "value".to_string(),
                     ty: make_type_node(field_ty),
                     default: None,
                     docstring: None,
@@ -247,6 +250,7 @@ mod tests {
         let self_type = make_type_node(Type::Enum {
             namespace: "test".to_string(),
             name: name.to_string(),
+            orig_name: name.to_string(),
         });
         TypeDefinition::Enum(Enum {
             name: name.to_string(),
@@ -262,6 +266,7 @@ mod tests {
             recursive: false,
             variants: vec![Variant {
                 name: "Unit".to_string(),
+                orig_name: "Unit".to_string(),
                 discr: Literal::Int(0, Radix::Decimal, discr_type_node),
                 fields_kind: FieldsKind::Unit,
                 fields: vec![],
@@ -274,6 +279,7 @@ mod tests {
         Type::Enum {
             namespace: "test".to_string(),
             name: name.to_string(),
+            orig_name: name.to_string(),
         }
     }
 
@@ -281,6 +287,7 @@ mod tests {
         Type::Record {
             namespace: "test".to_string(),
             name: name.to_string(),
+            orig_name: name.to_string(),
         }
     }
 
@@ -290,16 +297,19 @@ mod tests {
         let self_type = make_type_node(Type::Enum {
             namespace: "test".to_string(),
             name: name.to_string(),
+            orig_name: name.to_string(),
         });
         let variants = field_types
             .into_iter()
             .enumerate()
             .map(|(i, field_ty)| Variant {
                 name: format!("Variant{i}"),
+                orig_name: format!("Variant{i}"),
                 discr: Literal::Int(i as i64, Radix::Decimal, discr_type_node.clone()),
                 fields_kind: FieldsKind::Unnamed,
                 fields: vec![Field {
                     name: "value".to_string(),
+                    orig_name: "value".to_string(),
                     ty: make_type_node(field_ty),
                     default: None,
                     docstring: None,
@@ -327,6 +337,7 @@ mod tests {
         let self_type = make_type_node(Type::Record {
             namespace: "test".to_string(),
             name: name.to_string(),
+            orig_name: name.to_string(),
         });
         TypeDefinition::Record(Record {
             name: name.to_string(),
@@ -340,6 +351,7 @@ mod tests {
             recursive: false,
             fields: vec![Field {
                 name: "value".to_string(),
+                orig_name: "value".to_string(),
                 ty: make_type_node(field_ty),
                 default: None,
                 docstring: None,
@@ -429,6 +441,7 @@ mod tests {
                 Type::Interface {
                     namespace: "test".to_string(),
                     name: "Judge".to_string(),
+                    orig_name: "Judge".to_string(),
                     imp: ObjectImpl::Struct,
                 },
             ),

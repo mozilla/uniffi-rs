@@ -34,6 +34,7 @@ pub fn ffi_definitions(
         let self_type = Type::Interface {
             namespace: namespace_name.to_string(),
             name: int.name.clone(),
+            orig_name: int.orig_name.clone(),
             imp: int.imp,
         };
         int.try_visit(|meth: &initial::Method| {
@@ -55,6 +56,7 @@ pub fn ffi_definitions(
         let self_type = Type::Record {
             namespace: namespace_name.to_string(),
             name: record.name.clone(),
+            orig_name: record.orig_name.clone(),
         };
         record.try_visit(|meth: &initial::Method| {
             ffi_definitions.push(method_ffi_def(meth, &crate_name, &self_type, context)?);
@@ -62,12 +64,13 @@ pub fn ffi_definitions(
         })?;
         Ok(())
     })?;
-    namespace.try_visit(|record: &initial::Enum| {
+    namespace.try_visit(|en: &initial::Enum| {
         let self_type = Type::Enum {
             namespace: namespace_name.to_string(),
-            name: record.name.clone(),
+            name: en.name.clone(),
+            orig_name: en.orig_name.clone(),
         };
-        record.try_visit(|meth: &initial::Method| {
+        en.try_visit(|meth: &initial::Method| {
             ffi_definitions.push(method_ffi_def(meth, &crate_name, &self_type, context)?);
             Ok(())
         })?;

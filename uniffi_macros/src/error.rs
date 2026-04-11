@@ -7,8 +7,8 @@ use crate::{
     enum_::{rich_error_ffi_converter_impl, variant_metadata, EnumItem, VariantAttr},
     ffiops,
     util::{
-        create_metadata_items, extract_docstring, ident_to_string, try_metadata_value_from_usize,
-        AttributeSliceExt,
+        create_metadata_items, extract_docstring, ident_to_string, orig_name_metadata,
+        try_metadata_value_from_usize, AttributeSliceExt,
     },
     DeriveOptions,
 };
@@ -172,6 +172,7 @@ fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> To
 
 pub(crate) fn error_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream> {
     let name = &item.foreign_name();
+    let orig_name_calls = &item.orig_name_metadata();
     let non_exhaustive = item.is_non_exhaustive();
     let docstring = item.docstring();
     let flat = item.is_flat_error();
@@ -180,6 +181,7 @@ pub(crate) fn error_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream>
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
                 .concat_str(module_path!())
                 .concat_str(#name)
+                #orig_name_calls
                 .concat_value(#shape)
                 .concat_bool(false) // discr_type: None
     };
@@ -202,11 +204,13 @@ pub fn flat_error_variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStre
     std::iter::once(Ok(quote! { .concat_value(#variants_len) }))
         .chain(enum_.variants.iter().map(|v| {
             let attrs = v.attrs.parse_uniffi_attr_args::<VariantAttr>()?;
+            let orig_name = orig_name_metadata(attrs.name.is_some(), &v.ident);
             let name = attrs.name.unwrap_or(ident_to_string(&v.ident));
 
             let docstring = extract_docstring(&v.attrs)?;
             Ok(quote! {
                 .concat_str(#name)
+                #orig_name
                 .concat_long_str(#docstring)
             })
         }))
