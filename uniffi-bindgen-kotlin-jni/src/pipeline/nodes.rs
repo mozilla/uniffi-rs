@@ -248,6 +248,7 @@ pub struct Argument {
     pub name: String,
     pub ty: TypeNode,
     pub optional: bool,
+    pub default: Option<DefaultValueNode>,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -436,7 +437,22 @@ impl Callable {
         matches!(self.kind, CallableKind::Constructor { primary: true, .. })
     }
 
+    /// Get an argument list for the function/method
     pub fn arg_list(&self) -> String {
+        self.arguments
+            .iter()
+            .map(|a| match &a.default {
+                None => format!("{}: {}", a.name_kt(), a.ty.type_kt),
+                Some(d) => format!("{}: {} = {}", a.name_kt(), a.ty.type_kt, d.default_kt),
+            })
+            .collect::<Vec<_>>()
+            .join(" , ")
+    }
+
+    /// Get an argument list without any defaults
+    ///
+    /// Used when implementing a method for an interface, in that case you can't specify a default.
+    pub fn arg_list_no_defaults(&self) -> String {
         self.arguments
             .iter()
             .map(|a| format!("{}: {}", a.name_kt(), a.ty.type_kt))
