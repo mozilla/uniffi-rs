@@ -14,6 +14,7 @@ pub fn map_callback_interface(
         module_path: context.rust_module_path_for_type(&self_type.ty)?,
         self_type,
         name: input.name,
+        orig_name: input.orig_name,
         docstring: input.docstring,
         crate_name: context.current_crate_name()?.to_string(),
         for_trait_interface: false,
@@ -29,12 +30,16 @@ pub fn map_trait_interface(
         methods: map_methods(
             &self_type,
             input.vtable.ok_or_else(|| {
-                anyhow!("UniFFI internal error in map_trait_interface: vtable is None")
+                anyhow!(
+                    "UniFFI internal error in map_trait_interface: vtable is None ({})",
+                    input.name
+                )
             })?,
             context,
         )?,
         self_type,
         name: input.name,
+        orig_name: input.orig_name,
         module_path: context.normalize_rust_module_path(&input.module_path)?,
         docstring: input.docstring,
         crate_name: context.current_crate_name()?.to_string(),
@@ -89,7 +94,7 @@ impl CallbackInterface {
     }
 
     pub fn name_rs(&self) -> String {
-        names::escape_rust(&self.name)
+        names::escape_rust(&self.orig_name)
     }
 
     pub fn has_async_method(&self) -> bool {
