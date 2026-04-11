@@ -27,7 +27,7 @@ pub fn map_method(input: general::Method, context: &Context) -> Result<Method> {
         | general::CallableKind::VTableMethod { self_type, .. } => self_type,
         _ => bail!("Invalid method callable kind: {:?}", input.callable.kind),
     };
-    let Some(self_name) = self_ty.ty.name() else {
+    let Some(self_name) = self_ty.ty.orig_name() else {
         bail!("Invalid Callable self type: {self_ty:?}")
     };
     let module_path = context.rust_module_path_for_type(&self_ty.ty)?;
@@ -58,7 +58,7 @@ pub fn map_constructor(input: general::Constructor, context: &Context) -> Result
             input.callable.kind
         ),
     };
-    let Some(self_name) = self_ty.ty.name() else {
+    let Some(self_name) = self_ty.ty.orig_name() else {
         bail!(
             "Invalid constructor callable kind: {:?}",
             input.callable.kind
@@ -115,6 +115,7 @@ pub fn map_callable(
             ffi: argument_ffi(self_type, !takes_self_by_arc, true, &mut allocator),
             index: allocator.next_arg_index(),
             name: "".into(),
+            orig_name: "".into(),
             optional: false,
             default: None,
         }),
@@ -128,6 +129,7 @@ pub fn map_callable(
             ffi: argument_ffi(self_type, true, true, &mut allocator),
             index: allocator.next_arg_index(),
             name: "".into(),
+            orig_name: "".into(),
             optional: false,
             default: None,
         }),
@@ -141,6 +143,7 @@ pub fn map_callable(
         kind,
         is_async: input.async_data.is_some(),
         name: input.name,
+        orig_name: input.orig_name,
         receiver,
         arguments,
         result: CallableResult {
@@ -163,6 +166,7 @@ fn map_arguments(
 
             Ok(Argument {
                 name: arg.name,
+                orig_name: arg.orig_name,
                 index: allocator.next_arg_index(),
                 optional: arg.optional,
                 ffi: argument_ffi(&ty, arg.by_ref, false, allocator),
@@ -219,7 +223,7 @@ fn argument_ffi(
 
 impl Callable {
     pub fn name_rs(&self) -> String {
-        names::escape_rust(&self.name)
+        names::escape_rust(&self.orig_name)
     }
 
     pub fn name_kt(&self) -> String {
@@ -388,7 +392,7 @@ impl Argument {
     }
 
     pub fn name_rs(&self) -> String {
-        names::escape_rust(&self.name)
+        names::escape_rust(&self.orig_name)
     }
 
     pub fn lowers_to_primitive(&self) -> bool {
