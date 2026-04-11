@@ -9,6 +9,7 @@ pub fn map_record(input: general::Record, context: &Context) -> Result<Record> {
         self_type: input.self_type.map_node(context)?,
         immutable: context.config()?.record_is_immutable(&input.name),
         name: input.name,
+        orig_name: input.orig_name,
         fields_kind: input.fields_kind,
         fields: map_fields(input.fields, context)?,
         docstring: input.docstring,
@@ -36,6 +37,7 @@ fn map_fields(input: Vec<general::Field>, context: &Context) -> Result<Vec<Field
 
             Ok(Field {
                 name: input.name,
+                orig_name: input.orig_name,
                 index,
                 ty,
                 default: input.default.map_node(context)?,
@@ -53,7 +55,7 @@ impl Record {
     }
 
     pub fn name_rs(&self) -> String {
-        names::escape_rust(&self.name)
+        names::escape_rust(&self.orig_name)
     }
 
     pub fn ffi_types(&self) -> impl Iterator<Item = &FfiType> {
@@ -74,7 +76,7 @@ impl Field {
         if self.name.is_empty() {
             self.index.to_string()
         } else {
-            names::escape_rust(&self.name)
+            names::escape_rust(&self.orig_name)
         }
     }
 
