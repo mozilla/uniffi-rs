@@ -148,6 +148,7 @@ impl Context {
         self.current_type = Some(Type::Record {
             namespace: self.namespace_name()?,
             name: rec.name.clone(),
+            orig_name: rec.orig_name.clone(),
         });
         Ok(())
     }
@@ -156,6 +157,7 @@ impl Context {
         self.current_type = Some(Type::Enum {
             namespace: self.namespace_name()?,
             name: en.name.clone(),
+            orig_name: en.orig_name.clone(),
         });
         Ok(())
     }
@@ -175,6 +177,7 @@ impl Context {
         self.current_type = Some(Type::Interface {
             namespace: self.namespace_name()?,
             name: int.name.clone(),
+            orig_name: int.orig_name.clone(),
             imp: int.imp,
         });
         Ok(())
@@ -187,6 +190,7 @@ impl Context {
         self.current_type = Some(Type::CallbackInterface {
             namespace: self.namespace_name()?,
             name: cbi.name.clone(),
+            orig_name: cbi.orig_name.clone(),
         });
         Ok(())
     }
@@ -195,6 +199,7 @@ impl Context {
         self.current_type = Some(Type::Custom {
             namespace: self.namespace_name()?,
             name: custom.name.clone(),
+            orig_name: custom.orig_name.clone(),
             builtin: Box::new(custom.builtin.clone()),
         });
         Ok(())

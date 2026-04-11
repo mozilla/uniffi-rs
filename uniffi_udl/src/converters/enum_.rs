@@ -22,6 +22,7 @@ impl APIConverter<EnumMetadata> for weedle::EnumDefinition<'_> {
         Ok(EnumMetadata {
             module_path: ci.module_path(),
             name: self.identifier.0.to_string(),
+            orig_name: None,
             shape,
             remote: attributes.contains_remote(),
             discr_type: None,
@@ -33,6 +34,7 @@ impl APIConverter<EnumMetadata> for weedle::EnumDefinition<'_> {
                 .map::<Result<_>, _>(|v| {
                     Ok(VariantMetadata {
                         name: v.value.0.to_string(),
+                        orig_name: None,
                         discr: None,
                         fields: vec![],
                         docstring: v.docstring.as_ref().map(|v| convert_docstring(&v.0)),
@@ -73,6 +75,7 @@ impl APIConverter<EnumMetadata> for weedle::InterfaceDefinition<'_> {
         Ok(EnumMetadata {
             module_path: ci.module_path(),
             name: self.identifier.0.to_string(),
+            orig_name: None,
             shape,
             remote: attributes.contains_remote(),
             variants: self

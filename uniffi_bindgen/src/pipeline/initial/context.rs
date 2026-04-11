@@ -26,6 +26,7 @@ pub struct Context {
         (String, String),
         BTreeMap<uniffi_meta::Type, uniffi_meta::ObjectTraitImplMetadata>,
     >,
+    pub orig_names: BTreeMap<(String, String), String>,
 }
 
 impl Context {
@@ -35,6 +36,14 @@ impl Context {
             .get(crate_name)
             .cloned()
             .ok_or_else(|| anyhow!("module lookup failed: {module_path:?}"))
+    }
+
+    pub fn get_orig_name(&self, module_path: &str, type_name: &str) -> String {
+        let key = (module_path.to_string(), type_name.to_string());
+        match self.orig_names.get(&key) {
+            Some(orig_name) => orig_name.to_string(),
+            None => type_name.to_string(),
+        }
     }
 
     pub fn methods_for_type(&self, module_path: &str, type_name: &str) -> Result<Vec<Method>> {

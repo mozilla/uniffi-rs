@@ -100,6 +100,7 @@ pub struct Method {
 #[derive(Debug, Clone, Node, MapNode)]
 pub struct Callable {
     pub name: String,
+    pub orig_name: String,
     pub async_data: Option<AsyncData>,
     pub kind: CallableKind,
     pub arguments: Vec<Argument>,
@@ -152,6 +153,7 @@ pub struct AsyncData {
 #[derive(Debug, Clone, Node)]
 pub struct Argument {
     pub name: String,
+    pub orig_name: String,
     pub ty: TypeNode,
     pub optional: bool,
     pub default: Option<DefaultValue>,
@@ -198,7 +200,6 @@ pub struct Record {
     pub fields_kind: FieldsKind,
     #[map_node(context.self_type()?)]
     pub self_type: TypeNode,
-    #[map_node(self.name.clone())]
     pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
@@ -225,6 +226,7 @@ pub enum FieldsKind {
 #[map_node(from(initial::Field))]
 #[map_node(update_context(context.update_from_field(&self)?))]
 pub struct Field {
+    pub orig_name: String,
     #[map_node(rename::field(self.name, context)?)]
     pub name: String,
     pub ty: TypeNode,
@@ -248,7 +250,6 @@ pub struct Enum {
     pub discr_type: TypeNode,
     #[map_node(enums::map_variants(&self.discr_type, self.variants, context)?)]
     pub variants: Vec<Variant>,
-    #[map_node(self.name.clone())]
     pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
@@ -268,6 +269,7 @@ pub struct Enum {
 #[derive(Debug, Clone, Node, MapNode)]
 pub struct Variant {
     pub name: String,
+    pub orig_name: String,
     /// Actual discriminant value.  If the source code doesn't specify a discriminant,
     /// this is determined using the Rust's rules for implicit discriminants:
     /// <https://doc.rust-lang.org/reference/items/enumerations.html#implicit-discriminants>
@@ -289,7 +291,6 @@ pub struct Interface {
     pub ffi_func_clone: RustFfiFunctionName,
     #[map_node(objects::ffi_free_name(&self.name, context)?)]
     pub ffi_func_free: RustFfiFunctionName,
-    #[map_node(self.name.clone())]
     pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
@@ -313,7 +314,6 @@ pub struct CallbackInterface {
     pub vtable: VTable,
     #[map_node(context.self_type()?)]
     pub self_type: TypeNode,
-    #[map_node(self.name.clone())]
     pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
@@ -359,7 +359,6 @@ pub struct ObjectTraitImpl {
 pub struct CustomType {
     #[map_node(context.self_type()?)]
     pub self_type: TypeNode,
-    #[map_node(self.name.clone())]
     pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
@@ -402,6 +401,7 @@ pub struct ExternalType {
 /// Wrap `Type` so that we can add extra fields that are set for all variants.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Node, MapNode)]
 #[map_node(from(Type))]
+#[map_node(types::map_type_node)]
 pub struct TypeNode {
     /// Unique UpperCamelCase name for the type
     ///
@@ -409,13 +409,9 @@ pub struct TypeNode {
     ///   - Defining classes to handle things related to the type.
     ///     Many bindings will create a `UniffiConverter[canonical_name]` class.
     ///   - Creating a unique key for a type
-    #[map_node(types::canonical_name(&self))]
     pub canonical_name: String,
-    #[map_node(context.type_is_used_as_error(&self))]
     pub is_used_as_error: bool,
-    #[map_node(ffi_types::ffi_type(&self, context)?)]
     pub ffi_type: FfiType,
-    #[map_node(self.map_node(context)?)]
     pub ty: Type,
 }
 

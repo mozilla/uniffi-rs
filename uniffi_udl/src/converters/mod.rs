@@ -78,6 +78,7 @@ impl APIConverter<VariantMetadata> for weedle::interface::OperationInterfaceMemb
         };
         Ok(VariantMetadata {
             name,
+            orig_name: None,
             discr: None,
             fields: self
                 .args
@@ -113,6 +114,7 @@ impl APIConverter<RecordMetadata> for weedle::DictionaryDefinition<'_> {
         Ok(RecordMetadata {
             module_path: ci.module_path(),
             name: self.identifier.0.to_string(),
+            orig_name: None,
             remote: attributes.contains_remote(),
             fields: self.members.body.convert(ci)?,
             docstring: self.docstring.as_ref().map(|v| convert_docstring(&v.0)),
@@ -134,6 +136,7 @@ impl APIConverter<FieldMetadata> for weedle::dictionary::DictionaryMember<'_> {
         };
         Ok(FieldMetadata {
             name: self.identifier.0.to_string(),
+            orig_name: None,
             ty: type_,
             default,
             docstring: self.docstring.as_ref().map(|v| convert_docstring(&v.0)),
@@ -194,6 +197,7 @@ fn make_uniffi_traits(
             module_path: module_path.to_string(),
             self_name: self_name.to_string(),
             name: name.to_string(),
+            orig_name: None,
             is_async: false,
             inputs,
             return_type,
