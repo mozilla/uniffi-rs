@@ -14,6 +14,7 @@ pub fn function_callable(func: &initial::Function, context: &Context) -> Result<
 
     Ok(Callable {
         name,
+        orig_name: func.orig_name.clone(),
         async_data: function_async_data(func, context)?,
         kind,
         arguments,
@@ -51,6 +52,7 @@ pub fn method_callable_with_kind(
 
     Ok(Callable {
         name,
+        orig_name: meth.orig_name.clone(),
         arguments,
         return_type: ReturnType {
             ty: meth.return_type.clone().map_node(context)?,
@@ -85,6 +87,7 @@ pub fn constructor_callable(cons: &initial::Constructor, context: &Context) -> R
 
     Ok(Callable {
         name,
+        orig_name: cons.orig_name.clone(),
         async_data: constructor_async_data(cons, interface_name, imp, context)?,
         arguments,
         return_type: ReturnType {
@@ -113,6 +116,7 @@ pub fn map_func_args(
 
             context.update_from_arg(&arg)?;
             Ok(Argument {
+                orig_name: arg.name.clone(),
                 name: rename::func_arg(arg.name, fn_name, context)?,
                 ty: arg.ty.map_node(context)?,
                 optional: arg.optional,
@@ -136,6 +140,7 @@ pub fn map_method_args(
 
             context.update_from_arg(&arg)?;
             Ok(Argument {
+                orig_name: arg.name.clone(),
                 name: rename::method_arg(arg.name, fn_name, context)?,
                 ty: arg.ty.map_node(context)?,
                 optional: arg.optional,

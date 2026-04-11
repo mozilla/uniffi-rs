@@ -27,6 +27,7 @@ pub fn map_variants(
             Ok(Variant {
                 fields_kind: records::fields_kind(&v.fields),
                 discr,
+                orig_name: v.orig_name,
                 name: rename::variant(v.name, context)?,
                 fields: v.fields.map_node(context)?,
                 docstring: v.docstring,

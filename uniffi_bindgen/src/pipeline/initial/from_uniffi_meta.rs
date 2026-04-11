@@ -38,6 +38,7 @@ pub struct UniffiMetaConverter {
         (String, String),
         BTreeMap<uniffi_meta::Type, uniffi_meta::ObjectTraitImplMetadata>,
     >,
+    orig_names: BTreeMap<(String, String), String>,
 }
 
 /// Utility trait used to insert metadata items into a BTreeMap, but bail on duplicates
@@ -90,36 +91,43 @@ impl UniffiMetaConverter {
                 )?;
             }
             uniffi_meta::Metadata::Func(func) => {
+                self.update_orig_names(&func.module_path, &func.orig_name, &func.name);
                 self.functions
                     .entry(module_path_to_crate_name(&func.module_path))
                     .or_default()
                     .insert_unique(func.name.clone(), func)?;
             }
             uniffi_meta::Metadata::Record(rec) => {
+                self.update_orig_names(&rec.module_path, &rec.orig_name, &rec.name);
                 self.records
                     .entry(module_path_to_crate_name(&rec.module_path))
                     .or_default()
                     .insert_unique(rec.name.clone(), rec)?;
             }
             uniffi_meta::Metadata::Enum(en) => {
+                self.update_orig_names(&en.module_path, &en.orig_name, &en.name);
                 self.enums
                     .entry(module_path_to_crate_name(&en.module_path))
                     .or_default()
                     .insert_unique(en.name.clone(), en)?;
             }
             uniffi_meta::Metadata::Object(int) => {
+                self.update_orig_names(&int.module_path, &int.orig_name, &int.name);
                 self.interfaces
                     .entry(module_path_to_crate_name(&int.module_path))
                     .or_default()
                     .insert_unique(int.name.clone(), int)?;
             }
             uniffi_meta::Metadata::CallbackInterface(cbi) => {
+                // No `update_orig_names` call, since callback interfaces don't support renaming
+                // yet
                 self.callback_interfaces
                     .entry(module_path_to_crate_name(&cbi.module_path))
                     .or_default()
                     .insert_unique(cbi.name.clone(), cbi)?;
             }
             uniffi_meta::Metadata::CustomType(custom) => {
+                // No `update_orig_names` call, since custom types don't support renaming yet
                 let by_crate = self
                     .custom_types
                     .entry(module_path_to_crate_name(&custom.module_path))
@@ -221,6 +229,15 @@ impl UniffiMetaConverter {
         Ok(())
     }
 
+    fn update_orig_names(&mut self, module_path: &str, orig_name: &Option<String>, name: &str) {
+        if let Some(orig_name) = orig_name {
+            self.orig_names.insert(
+                (module_path_to_crate_name(module_path), name.to_string()),
+                orig_name.clone(),
+            );
+        }
+    }
+
     pub fn add_module_config_toml(
         &mut self,
         module_name: String,
@@ -246,6 +263,7 @@ impl UniffiMetaConverter {
             trait_methods: self.trait_methods,
             uniffi_traits: self.uniffi_traits,
             trait_impls: self.trait_impls,
+            orig_names: self.orig_names,
         };
 
         let mut root = Root {

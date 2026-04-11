@@ -136,6 +136,20 @@ pub fn create_metadata_items(
     }
 }
 
+pub fn orig_name_metadata(name_from_attrs: bool, ident: &Ident) -> TokenStream {
+    if name_from_attrs {
+        let orig_name = ident_to_string(ident);
+        quote! {
+            .concat_bool(true)
+            .concat_str(#orig_name)
+        }
+    } else {
+        quote! {
+            .concat_bool(false)
+        }
+    }
+}
+
 pub fn try_metadata_value_from_usize(value: usize, error_message: &str) -> syn::Result<u8> {
     value
         .try_into()

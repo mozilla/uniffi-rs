@@ -6,7 +6,10 @@ use crate::{
     default::{default_value_metadata_calls, DefaultValue},
     export::{AsyncRuntime, DefaultMap, ExportFnArgs},
     ffiops,
-    util::{create_metadata_items, ident_to_string, mod_path, try_metadata_value_from_usize},
+    util::{
+        create_metadata_items, ident_to_string, mod_path, orig_name_metadata,
+        try_metadata_value_from_usize,
+    },
 };
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
@@ -20,6 +23,8 @@ pub(crate) struct FnSignature {
     pub ident: Ident,
     // The foreign name for this function, usually == ident.
     pub name: String,
+    // Did `self.name` come from an attribute
+    pub name_from_attrs: bool,
     pub is_async: bool,
     pub async_runtime: Option<AsyncRuntime>,
     pub receiver: Option<ReceiverArg>,
@@ -151,6 +156,7 @@ impl FnSignature {
             kind,
             span,
             mod_path: mod_path()?,
+            name_from_attrs: export_fn_args.name.is_some(),
             name: export_fn_args
                 .name
                 .unwrap_or_else(|| ident_to_string(&ident)),
@@ -256,6 +262,7 @@ impl FnSignature {
     pub(crate) fn metadata_expr(&self) -> syn::Result<TokenStream> {
         let Self {
             name,
+            name_from_attrs,
             return_ty,
             is_async,
             docstring,
@@ -275,11 +282,13 @@ impl FnSignature {
 
         let type_id_meta = ffiops::type_id_meta(return_ty);
 
+        let orig_name = orig_name_metadata(*name_from_attrs, &self.ident);
         match &self.kind {
             FnKind::Function => Ok(quote! {
                 ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::FUNC)
                     .concat_str(module_path!())
                     .concat_str(#name)
+                    #orig_name
                     .concat_bool(#is_async)
                     .concat_value(#args_len)
                     #(#arg_metadata_calls)*
@@ -296,6 +305,7 @@ impl FnSignature {
                         .concat_str(module_path!())
                         .concat_str(#object_name)
                         .concat_str(#name)
+                        #orig_name
                         .concat_bool(#is_async)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
@@ -312,6 +322,7 @@ impl FnSignature {
                         .concat_str(#object_name)
                         .concat_u32(#index)
                         .concat_str(#name)
+                        #orig_name
                         .concat_bool(#is_async)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
@@ -329,6 +340,7 @@ impl FnSignature {
                         .concat_str(module_path!())
                         .concat_str(#object_name)
                         .concat_str(#name)
+                        #orig_name
                         .concat_bool(#is_async)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*

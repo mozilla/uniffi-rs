@@ -10,8 +10,9 @@ use uniffi_meta::*;
 
 mod person {
     #[derive(uniffi::Record, Debug)]
+    #[uniffi(name = "PersonRenamed")]
     pub struct Person {
-        #[uniffi(default = "test")]
+        #[uniffi(default = "test", name = "name_renamed")]
         name: String,
         #[uniffi(default)]
         preferred_name: String,
@@ -21,9 +22,11 @@ mod person {
 
 mod weapon {
     #[derive(uniffi::Enum, Debug)]
+    #[uniffi(name = "WeaponRenamed")]
     pub enum Weapon {
         Rock,
         Paper,
+        #[uniffi(name = "ScissorsRenamed")]
         Scissors,
     }
 }
@@ -40,6 +43,7 @@ mod state {
 
     #[uniffi::export]
     impl State {
+        #[uniffi::method(name = "state_method_renamed")]
         fn state_method(&self) {}
     }
 }
@@ -85,6 +89,7 @@ mod error {
 
 mod calc {
     #[derive(uniffi::Object)]
+    #[uniffi(name = "CalculatorRenamed")]
     pub struct Calculator {}
 }
 
@@ -162,15 +167,15 @@ mod test_type_ids {
     fn test_user_types() {
         check_type_id::<Person>(Type::Record {
             module_path: "uniffi_fixture_metadata::tests::person".into(),
-            name: "Person".into(),
+            name: "PersonRenamed".into(),
         });
         check_type_id::<Weapon>(Type::Enum {
             module_path: "uniffi_fixture_metadata::tests::weapon".into(),
-            name: "Weapon".into(),
+            name: "WeaponRenamed".into(),
         });
         check_type_id::<Arc<Calculator>>(Type::Object {
             module_path: "uniffi_fixture_metadata::tests::calc".into(),
-            name: "Calculator".into(),
+            name: "CalculatorRenamed".into(),
             imp: ObjectImpl::Struct,
         });
     }
@@ -207,14 +212,16 @@ mod test_metadata {
     #[test]
     fn test_record() {
         check_metadata(
-            &person::UNIFFI_META_UNIFFI_FIXTURE_METADATA_RECORD_PERSON,
+            &person::UNIFFI_META_UNIFFI_FIXTURE_METADATA_RECORD_PERSONRENAMED,
             RecordMetadata {
                 module_path: "uniffi_fixture_metadata::tests::person".into(),
-                name: "Person".into(),
+                name: "PersonRenamed".into(),
+                orig_name: Some("Person".into()),
                 remote: false,
                 fields: vec![
                     FieldMetadata {
-                        name: "name".into(),
+                        name: "name_renamed".into(),
+                        orig_name: Some("name".into()),
                         ty: Type::String,
                         default: Some(DefaultValueMetadata::Literal(LiteralMetadata::String(
                             "test".to_owned(),
@@ -223,12 +230,14 @@ mod test_metadata {
                     },
                     FieldMetadata {
                         name: "preferred_name".into(),
+                        orig_name: None,
                         ty: Type::String,
                         default: Some(DefaultValueMetadata::Default),
                         docstring: None,
                     },
                     FieldMetadata {
                         name: "age".into(),
+                        orig_name: None,
                         ty: Type::Box {
                             inner_type: Box::new(Type::UInt16),
                         },
@@ -244,28 +253,32 @@ mod test_metadata {
     #[test]
     fn test_simple_enum() {
         check_metadata(
-            &weapon::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ENUM_WEAPON,
+            &weapon::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ENUM_WEAPONRENAMED,
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata::tests::weapon".into(),
-                name: "Weapon".into(),
+                name: "WeaponRenamed".into(),
+                orig_name: Some("Weapon".into()),
                 shape: EnumShape::Enum,
                 remote: false,
                 discr_type: None,
                 variants: vec![
                     VariantMetadata {
                         name: "Rock".into(),
+                        orig_name: None,
                         discr: None,
                         fields: vec![],
                         docstring: None,
                     },
                     VariantMetadata {
                         name: "Paper".into(),
+                        orig_name: None,
                         discr: None,
                         fields: vec![],
                         docstring: None,
                     },
                     VariantMetadata {
-                        name: "Scissors".into(),
+                        name: "ScissorsRenamed".into(),
+                        orig_name: Some("Scissors".into()),
                         discr: None,
                         fields: vec![],
                         docstring: None,
@@ -284,21 +297,25 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata::tests::state".into(),
                 name: "State".into(),
+                orig_name: None,
                 shape: EnumShape::Enum,
                 remote: false,
                 discr_type: None,
                 variants: vec![
                     VariantMetadata {
                         name: "Uninitialized".into(),
+                        orig_name: None,
                         discr: None,
                         fields: vec![],
                         docstring: None,
                     },
                     VariantMetadata {
                         name: "Initialized".into(),
+                        orig_name: None,
                         discr: None,
                         fields: vec![FieldMetadata {
                             name: "data".into(),
+                            orig_name: None,
                             ty: Type::String,
                             default: None,
                             docstring: None,
@@ -307,12 +324,14 @@ mod test_metadata {
                     },
                     VariantMetadata {
                         name: "Complete".into(),
+                        orig_name: None,
                         discr: None,
                         fields: vec![FieldMetadata {
                             name: "result".into(),
+                            orig_name: None,
                             ty: Type::Record {
                                 module_path: "uniffi_fixture_metadata::tests::person".into(),
-                                name: "Person".into(),
+                                name: "PersonRenamed".into(),
                             },
                             default: None,
                             docstring: None,
@@ -333,24 +352,28 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata::tests::enum_repr".into(),
                 name: "ReprU8".into(),
+                orig_name: None,
                 shape: EnumShape::Enum,
                 remote: false,
                 discr_type: Some(Type::UInt8),
                 variants: vec![
                     VariantMetadata {
                         name: "One".into(),
+                        orig_name: None,
                         discr: Some(LiteralMetadata::new_uint(1)),
                         fields: vec![],
                         docstring: None,
                     },
                     VariantMetadata {
                         name: "Three".into(),
+                        orig_name: None,
                         discr: Some(LiteralMetadata::new_uint(3)),
                         fields: vec![],
                         docstring: None,
                     },
                     VariantMetadata {
                         name: "Fifteen".into(),
+                        orig_name: None,
                         discr: Some(LiteralMetadata::new_uint(15)),
                         fields: vec![],
                         docstring: None,
@@ -369,11 +392,13 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata::tests::enum_repr".into(),
                 name: "NoRepr".into(),
+                orig_name: None,
                 shape: EnumShape::Enum,
                 remote: false,
                 discr_type: None,
                 variants: vec![VariantMetadata {
                     name: "One".into(),
+                    orig_name: None,
                     discr: Some(LiteralMetadata::new_uint(1)),
                     fields: vec![],
                     docstring: None,
@@ -387,18 +412,19 @@ mod test_metadata {
     #[test]
     fn test_enum_method() {
         check_metadata(
-            &state::UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_STATE_STATE_METHOD,
+            &state::UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_STATE_STATE_METHOD_RENAMED,
             MethodMetadata {
                 module_path: "uniffi_fixture_metadata::tests::state".into(),
                 self_name: "State".into(),
-                name: "state_method".into(),
+                name: "state_method_renamed".into(),
+                orig_name: Some("state_method".into()),
                 is_async: false,
                 inputs: vec![],
                 return_type: None,
                 throws: None,
                 takes_self_by_arc: false,
                 checksum: Some(
-                    state::uniffi_uniffi_fixture_metadata_checksum_method_state_state_method(),
+                    state::uniffi_uniffi_fixture_metadata_checksum_method_state_state_method_renamed(),
                 ),
                 docstring: None,
             },
@@ -412,18 +438,21 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata::tests::error".into(),
                 name: "FlatError".into(),
+                orig_name: None,
                 shape: EnumShape::Error { flat: true },
                 remote: false,
                 discr_type: None,
                 variants: vec![
                     VariantMetadata {
                         name: "Overflow".into(),
+                        orig_name: None,
                         discr: None,
                         fields: vec![],
                         docstring: None,
                     },
                     VariantMetadata {
                         name: "DivideByZero".into(),
+                        orig_name: None,
                         discr: None,
                         fields: vec![],
                         docstring: None,
@@ -442,21 +471,25 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata::tests::error".into(),
                 name: "ComplexError".into(),
+                orig_name: None,
                 shape: EnumShape::Error { flat: false },
                 remote: false,
                 discr_type: None,
                 variants: vec![
                     VariantMetadata {
                         name: "NotFound".into(),
+                        orig_name: None,
                         discr: None,
                         fields: vec![],
                         docstring: None,
                     },
                     VariantMetadata {
                         name: "PermissionDenied".into(),
+                        orig_name: None,
                         discr: None,
                         fields: vec![FieldMetadata {
                             name: "reason".into(),
+                            orig_name: None,
                             ty: Type::String,
                             default: None,
                             docstring: None,
@@ -465,12 +498,14 @@ mod test_metadata {
                     },
                     VariantMetadata {
                         name: "InvalidWeapon".into(),
+                        orig_name: None,
                         discr: None,
                         fields: vec![FieldMetadata {
                             name: "weapon".into(),
+                            orig_name: None,
                             ty: Type::Enum {
                                 module_path: "uniffi_fixture_metadata::tests::weapon".into(),
-                                name: "Weapon".into(),
+                                name: "WeaponRenamed".into(),
                             },
                             default: None,
                             docstring: None,
@@ -487,10 +522,11 @@ mod test_metadata {
     #[test]
     fn test_interface() {
         check_metadata(
-            &calc::UNIFFI_META_UNIFFI_FIXTURE_METADATA_INTERFACE_CALCULATOR,
+            &calc::UNIFFI_META_UNIFFI_FIXTURE_METADATA_INTERFACE_CALCULATORRENAMED,
             ObjectMetadata {
                 module_path: "uniffi_fixture_metadata::tests::calc".into(),
-                name: "Calculator".into(),
+                name: "CalculatorRenamed".into(),
+                orig_name: Some("Calculator".into()),
                 remote: false,
                 imp: ObjectImpl::Struct,
                 docstring: None,
@@ -575,7 +611,7 @@ mod test_function_metadata {
     use super::*;
     use std::sync::Arc;
 
-    #[uniffi::export]
+    #[uniffi::export(name = "test_func_renamed")]
     #[allow(unused)]
     pub fn test_func(person: Person, weapon: Weapon) -> String {
         unimplemented!()
@@ -609,11 +645,22 @@ mod test_function_metadata {
 
     #[uniffi::export]
     pub trait CalculatorDisplay: Send + Sync {
+        #[uniffi::method(name = "display_result_renamed")]
         fn display_result(&self, val: String);
     }
 
-    #[uniffi::export]
+    #[uniffi::export(name = "CalculatorRenamed")]
     impl Calculator {
+        #[uniffi::constructor]
+        pub fn new() -> Self {
+            Self {}
+        }
+
+        #[uniffi::constructor(name = "new_renamed")]
+        pub fn new2() -> Self {
+            Self {}
+        }
+
         #[allow(unused)]
         pub fn add(&self, a: u8, b: u8) -> u8 {
             unimplemented!()
@@ -642,30 +689,33 @@ mod test_function_metadata {
     #[test]
     fn test_function() {
         check_metadata(
-            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC,
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_RENAMED,
             FnMetadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
-                name: "test_func".into(),
+                name: "test_func_renamed".into(),
+                orig_name: Some("test_func".into()),
                 is_async: false,
                 inputs: vec![
                     FnParamMetadata::simple(
                         "person",
                         Type::Record {
                             module_path: "uniffi_fixture_metadata::tests::person".into(),
-                            name: "Person".into(),
+                            name: "PersonRenamed".into(),
                         },
                     ),
                     FnParamMetadata::simple(
                         "weapon",
                         Type::Enum {
                             module_path: "uniffi_fixture_metadata::tests::weapon".into(),
-                            name: "Weapon".into(),
+                            name: "WeaponRenamed".into(),
                         },
                     ),
                 ],
                 return_type: Some(Type::String),
                 throws: None,
-                checksum: Some(UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC.checksum()),
+                checksum: Some(
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_RENAMED.checksum(),
+                ),
                 docstring: None,
             },
         );
@@ -678,6 +728,7 @@ mod test_function_metadata {
             FnMetadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "test_func_no_return".into(),
+                orig_name: None,
                 is_async: false,
                 inputs: vec![],
                 return_type: None,
@@ -697,6 +748,7 @@ mod test_function_metadata {
             FnMetadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "test_func_that_throws".into(),
+                orig_name: None,
                 is_async: false,
                 inputs: vec![],
                 return_type: Some(Type::Enum {
@@ -722,6 +774,7 @@ mod test_function_metadata {
             FnMetadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "test_func_no_return_that_throws".into(),
+                orig_name: None,
                 is_async: false,
                 inputs: vec![],
                 return_type: None,
@@ -741,11 +794,12 @@ mod test_function_metadata {
     #[test]
     fn test_method() {
         check_metadata(
-            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ADD,
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORRENAMED_ADD,
             MethodMetadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
-                self_name: "Calculator".into(),
+                self_name: "CalculatorRenamed".into(),
                 name: "add".into(),
+                orig_name: None,
                 is_async: false,
                 inputs: vec![
                     FnParamMetadata::simple("a", Type::UInt8),
@@ -755,7 +809,46 @@ mod test_function_metadata {
                 throws: None,
                 takes_self_by_arc: false,
                 checksum: Some(
-                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ADD.checksum(),
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORRENAMED_ADD
+                        .checksum(),
+                ),
+                docstring: None,
+            },
+        );
+    }
+
+    #[test]
+    fn test_constructor() {
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_CONSTRUCTOR_CALCULATORRENAMED_NEW,
+            ConstructorMetadata {
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
+                self_name: "CalculatorRenamed".into(),
+                name: "new".into(),
+                orig_name: None,
+                is_async: false,
+                inputs: vec![],
+                throws: None,
+                checksum: Some(
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_CONSTRUCTOR_CALCULATORRENAMED_NEW
+                        .checksum(),
+                ),
+                docstring: None,
+            },
+        );
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_CONSTRUCTOR_CALCULATORRENAMED_NEW_RENAMED,
+            ConstructorMetadata {
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
+                self_name: "CalculatorRenamed".into(),
+                name: "new_renamed".into(),
+                orig_name: Some("new2".into()),
+                is_async: false,
+                inputs: vec![],
+                throws: None,
+                checksum: Some(
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_CONSTRUCTOR_CALCULATORRENAMED_NEW_RENAMED
+                        .checksum(),
                 ),
                 docstring: None,
             },
@@ -769,20 +862,21 @@ mod test_function_metadata {
             FnMetadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "test_async_func".into(),
+                orig_name: None,
                 is_async: true,
                 inputs: vec![
                     FnParamMetadata::simple(
                         "person",
                         Type::Record {
                             module_path: "uniffi_fixture_metadata::tests::person".into(),
-                            name: "Person".into(),
+                            name: "PersonRenamed".into(),
                         },
                     ),
                     FnParamMetadata::simple(
                         "weapon",
                         Type::Enum {
                             module_path: "uniffi_fixture_metadata::tests::weapon".into(),
-                            name: "Weapon".into(),
+                            name: "WeaponRenamed".into(),
                         },
                     ),
                 ],
@@ -803,6 +897,7 @@ mod test_function_metadata {
             FnMetadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "test_async_func_that_throws".into(),
+                orig_name: None,
                 is_async: true,
                 inputs: vec![],
                 return_type: Some(Type::Enum {
@@ -825,11 +920,12 @@ mod test_function_metadata {
     #[test]
     fn test_async_method() {
         check_metadata(
-            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ASYNC_SUB,
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORRENAMED_ASYNC_SUB,
             MethodMetadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
-                self_name: "Calculator".into(),
+                self_name: "CalculatorRenamed".into(),
                 name: "async_sub".into(),
+                orig_name: None,
                 is_async: true,
                 inputs: vec![
                     FnParamMetadata::simple("a", Type::UInt8),
@@ -839,7 +935,7 @@ mod test_function_metadata {
                 throws: None,
                 takes_self_by_arc: false,
                 checksum: Some(
-                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ASYNC_SUB
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORRENAMED_ASYNC_SUB
                         .checksum(),
                 ),
                 docstring: None,
@@ -854,6 +950,7 @@ mod test_function_metadata {
             ObjectMetadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "CalculatorDisplay".into(),
+                orig_name: None,
                 remote: false,
                 imp: ObjectImpl::Trait,
                 docstring: None,
@@ -868,6 +965,7 @@ mod test_function_metadata {
             ObjectMetadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "TraitWithForeign".into(),
+                orig_name: None,
                 remote: false,
                 imp: ObjectImpl::CallbackTrait,
                 docstring: None,
@@ -878,7 +976,7 @@ mod test_function_metadata {
     #[test]
     fn test_trait_type_data() {
         check_metadata(
-            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_GET_DISPLAY,
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORRENAMED_GET_DISPLAY,
             MethodMetadata {
                 // The main point of this test is to check the `Type` value for a trait interface
                 return_type: Some(Type::Object {
@@ -887,14 +985,15 @@ mod test_function_metadata {
                     imp: ObjectImpl::Trait,
                 }),
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
-                self_name: "Calculator".into(),
+                self_name: "CalculatorRenamed".into(),
                 name: "get_display".into(),
+                orig_name: None,
                 is_async: false,
                 inputs: vec![],
                 throws: None,
                 takes_self_by_arc: false,
                 checksum: Some(
-                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_GET_DISPLAY
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORRENAMED_GET_DISPLAY
                         .checksum(),
                 ),
                 docstring: None,
@@ -905,12 +1004,13 @@ mod test_function_metadata {
     #[test]
     fn test_trait_method() {
         check_metadata(
-            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORDISPLAY_DISPLAY_RESULT,
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORDISPLAY_DISPLAY_RESULT_RENAMED,
             TraitMethodMetadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 trait_name: "CalculatorDisplay".into(),
                 index: 0,
-                name: "display_result".into(),
+                name: "display_result_renamed".into(),
+                orig_name: Some("display_result".into()),
                 is_async: false,
                 inputs: vec![
                     FnParamMetadata::simple("val", Type::String),
@@ -918,7 +1018,7 @@ mod test_function_metadata {
                 return_type: None,
                 throws: None,
                 takes_self_by_arc: false,
-                checksum: Some(UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORDISPLAY_DISPLAY_RESULT
+                checksum: Some(UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORDISPLAY_DISPLAY_RESULT_RENAMED
                     .checksum()),
                 docstring: None,
             },
@@ -946,6 +1046,7 @@ mod test_function_metadata {
                 return_type: None,
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "input_trait_with_foreign".into(),
+                orig_name: None,
                 is_async: false,
                 throws: None,
                 checksum: Some(
@@ -974,6 +1075,7 @@ mod test_function_metadata {
                 trait_name: "Logger".into(),
                 index: 0,
                 name: "log".into(),
+                orig_name: None,
                 is_async: false,
                 inputs: vec![FnParamMetadata::simple("message", Type::String)],
                 return_type: None,
@@ -994,6 +1096,7 @@ mod test_function_metadata {
             ObjectMetadata {
                 module_path: "uniffi_fixture_metadata::tests".into(),
                 name: "RealLogger".into(),
+                orig_name: None,
                 imp: ObjectImpl::Struct,
                 remote: false,
                 docstring: None,
@@ -1033,6 +1136,7 @@ mod test_custom_types {
             CustomTypeMetadata {
                 module_path: "uniffi_fixture_metadata::tests::test_custom_types".into(),
                 name: "CustomString".into(),
+                orig_name: None,
                 builtin: Type::String,
                 docstring: None,
             },
@@ -1043,9 +1147,10 @@ mod test_custom_types {
             CustomTypeMetadata {
                 module_path: "uniffi_fixture_metadata::tests::test_custom_types".into(),
                 name: "CustomPerson".into(),
+                orig_name: None,
                 builtin: Type::Record {
                     module_path: "uniffi_fixture_metadata::tests::person".into(),
-                    name: "Person".into(),
+                    name: "PersonRenamed".into(),
                 },
                 docstring: None,
             },

@@ -102,8 +102,18 @@ pub(super) fn gen_trait_scaffolding(
         } else {
             ObjectImpl::Trait
         };
-        interface_meta_static_var(&ident_to_string(&self_ident), imp, docstring.as_str())
-            .unwrap_or_else(syn::Error::into_compile_error)
+        // We don't support renaming traits, so this is always false
+        let orig_name_metadata = quote! {
+            .concat_bool(false)
+        };
+
+        interface_meta_static_var(
+            &ident_to_string(&self_ident),
+            orig_name_metadata,
+            imp,
+            docstring.as_str(),
+        )
+        .unwrap_or_else(syn::Error::into_compile_error)
     });
     let ffi_converter_tokens = ffi_converter(&self_ident, with_foreign);
 

@@ -35,6 +35,7 @@ impl APIConverter<FieldMetadata> for weedle::argument::SingleArgument<'_> {
         }
         Ok(FieldMetadata {
             name: self.identifier.0.to_string(),
+            orig_name: None,
             ty: type_,
             default: None,
             docstring: None,
@@ -99,6 +100,7 @@ impl APIConverter<FnMetadata> for weedle::namespace::OperationNamespaceMember<'_
         Ok(FnMetadata {
             module_path: ci.module_path(),
             name,
+            orig_name: None,
             is_async,
             return_type,
             inputs: self.args.body.list.convert(ci)?,
@@ -121,6 +123,7 @@ impl APIConverter<ConstructorMetadata> for weedle::interface::ConstructorInterfa
         Ok(ConstructorMetadata {
             module_path: ci.module_path(),
             name: String::from(attributes.get_name().unwrap_or("new")),
+            orig_name: None,
             // We don't know the name of the containing `Object` at this point, fill it in later.
             self_name: Default::default(),
             is_async: attributes.is_async(),
@@ -168,6 +171,7 @@ impl APIConverter<MethodMetadata> for weedle::interface::OperationInterfaceMembe
                     name
                 }
             },
+            orig_name: None,
             is_async,
             inputs: self.args.body.list.convert(ci)?,
             return_type,
@@ -214,6 +218,7 @@ impl APIConverter<TraitMethodMetadata> for weedle::interface::OperationInterface
                     name
                 }
             },
+            orig_name: None,
             is_async,
             inputs: self.args.body.list.convert(ci)?,
             return_type,
