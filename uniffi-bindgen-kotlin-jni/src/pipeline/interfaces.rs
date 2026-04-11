@@ -30,6 +30,7 @@ pub fn map_class(int: general::Interface, context: &Context) -> Result<Class> {
         methods,
         name: int.name,
         module_path: context.normalize_rust_module_path(&int.module_path)?,
+        orig_name: int.orig_name,
         docstring: int.docstring.map_node(context)?,
         crate_name: context.current_crate_name()?.to_string(),
         imp: int.imp,
@@ -69,7 +70,7 @@ impl Class {
     }
 
     pub fn name_rs(&self) -> String {
-        names::escape_rust(&self.name)
+        names::escape_rust(&self.orig_name)
     }
 
     pub fn inner_type_name(&self) -> String {

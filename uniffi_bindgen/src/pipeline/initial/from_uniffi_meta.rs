@@ -236,7 +236,7 @@ impl UniffiMetaConverter {
     fn update_orig_names(&mut self, module_path: &str, orig_name: &Option<String>, name: &str) {
         if let Some(orig_name) = orig_name {
             self.orig_names.insert(
-                (module_path_to_crate_name(module_path), name.to_string()),
+                (module_path.to_string(), name.to_string()),
                 orig_name.clone(),
             );
         }

@@ -53,6 +53,7 @@ pub struct Record {
     pub self_type: TypeNode,
     pub immutable: bool,
     pub name: String,
+    pub orig_name: String,
     pub fields_kind: FieldsKind,
     pub fields: Vec<Field>,
     pub docstring: Option<String>,
@@ -70,6 +71,7 @@ pub struct Enum {
     pub discr_specified: bool,
     pub variants: Vec<Variant>,
     pub name: String,
+    pub orig_name: String,
     pub shape: EnumShape,
     pub kotlin_kind: KotlinEnumKind,
     pub docstring: Option<String>,
@@ -85,6 +87,7 @@ pub struct Enum {
 #[map_node(interfaces::map_class)]
 pub struct Class {
     pub name: String,
+    pub orig_name: String,
     pub module_path: String,
     pub self_type: TypeNode,
     pub package_name: String,
@@ -118,6 +121,7 @@ pub struct Interface {
 pub struct CallbackInterface {
     pub self_type: TypeNode,
     pub name: String,
+    pub orig_name: String,
     pub module_path: String,
     pub docstring: Option<String>,
     pub methods: Vec<CallbackMethod>,
@@ -156,6 +160,7 @@ pub enum KotlinEnumKind {
 pub struct Variant {
     pub name_kt: String,
     pub name: String,
+    pub orig_name: String,
     pub discr: LiteralNode,
     pub fields_kind: FieldsKind,
     pub fields: Vec<Field>,
@@ -166,6 +171,7 @@ pub struct Variant {
 #[derive(Debug, Clone, Node)]
 pub struct Field {
     pub name: String,
+    pub orig_name: String,
     pub index: usize,
     pub ty: TypeNode,
     pub default: Option<DefaultValueNode>,
@@ -206,6 +212,7 @@ pub struct Function {
 pub struct Callable {
     pub kind: CallableKind,
     pub name: String,
+    pub orig_name: String,
     pub is_async: bool,
     pub fully_qualified_name_rs: String,
     pub receiver: Option<Argument>,
@@ -242,6 +249,7 @@ pub struct CallableResult {
 #[derive(Debug, Clone, Node)]
 pub struct Argument {
     pub name: String,
+    pub orig_name: String,
     pub index: usize,
     pub ty: TypeNode,
     pub by_ref: bool,
