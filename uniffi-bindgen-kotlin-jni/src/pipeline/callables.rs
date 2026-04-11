@@ -116,6 +116,7 @@ pub fn map_callable(
             index: allocator.next_arg_index(),
             name: "".into(),
             optional: false,
+            default: None,
         }),
         CallableKind::VTableMethod { self_type, .. } => Some(Argument {
             ty: self_type.clone(),
@@ -124,6 +125,7 @@ pub fn map_callable(
             index: allocator.next_arg_index(),
             name: "".into(),
             optional: false,
+            default: None,
         }),
         _ => None,
     };
@@ -162,6 +164,7 @@ fn map_arguments(
                 ffi: argument_ffi(&ty, arg.by_ref, false, allocator),
                 ty,
                 by_ref: arg.by_ref,
+                default: arg.default.map_node(context)?,
             })
         })
         .collect()
@@ -254,6 +257,17 @@ impl Callable {
     }
 
     pub fn arg_list_kt(&self) -> String {
+        self.arguments
+            .iter()
+            .map(|a| match &a.default {
+                None => format!("{}: {}", a.name_kt(), a.ty.type_kt),
+                Some(d) => format!("{}: {} = {}", a.name_kt(), a.ty.type_kt, d.default_kt),
+            })
+            .collect::<Vec<_>>()
+            .join(" , ")
+    }
+
+    pub fn arg_list_no_defaults_kt(&self) -> String {
         self.arguments
             .iter()
             .map(|a| format!("{}: {}", a.name_kt(), a.ty.type_kt))
