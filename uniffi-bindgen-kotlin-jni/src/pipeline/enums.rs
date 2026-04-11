@@ -44,6 +44,7 @@ pub fn map_enum(input: general::Enum, context: &Context) -> Result<Enum> {
         discr_specified: input.discr_specified,
         variants,
         name: input.name,
+        orig_name: input.orig_name,
         shape: input.shape,
         docstring: input.docstring,
         recursive: input.recursive,
@@ -64,6 +65,7 @@ pub fn map_variant(
     Ok(Variant {
         name_kt,
         name: input.name,
+        orig_name: input.orig_name,
         discr: input.discr.map_node(context)?,
         fields_kind: input.fields_kind,
         fields,
@@ -93,6 +95,7 @@ fn map_fields(
 
             Ok(Field {
                 name: input.name,
+                orig_name: input.orig_name,
                 index,
                 ty,
                 default: input.default.map_node(context)?,
@@ -159,7 +162,7 @@ impl Enum {
     }
 
     pub fn name_rs(&self) -> String {
-        names::escape_rust(&self.name)
+        names::escape_rust(&self.orig_name)
     }
 
     pub fn is_flat_error(&self) -> bool {
@@ -169,6 +172,6 @@ impl Enum {
 
 impl Variant {
     pub fn name_rs(&self) -> String {
-        names::escape_rust(&self.name)
+        names::escape_rust(&self.orig_name)
     }
 }
