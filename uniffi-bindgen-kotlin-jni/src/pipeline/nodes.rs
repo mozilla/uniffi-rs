@@ -247,6 +247,7 @@ pub struct Argument {
     pub by_ref: bool,
     pub optional: bool,
     pub ffi: ArgumentFfi,
+    pub default: Option<DefaultValueNode>,
 }
 
 /// How an argument is passed across the FFI
