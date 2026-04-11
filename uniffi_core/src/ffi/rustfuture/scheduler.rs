@@ -4,7 +4,7 @@
 
 use std::mem;
 
-use crate::{RustFutureContinuationCallback, RustFuturePoll};
+use crate::{RustFutureContinuationBoundCallback, RustFuturePoll};
 
 /// Schedules a [crate::RustFuture] by managing the continuation data
 ///
@@ -20,7 +20,7 @@ use crate::{RustFutureContinuationCallback, RustFuturePoll};
 ///   state, invoking any future callbacks as soon as they're stored.
 
 #[derive(Debug)]
-pub(crate) enum Scheduler<Callback = RustFutureContinuationCallback> {
+pub enum Scheduler<Callback = RustFutureContinuationBoundCallback> {
     /// No continuations set, neither wake() nor cancel() called.
     Empty,
     /// `wake()` was called when there was no continuation set.  The next time `store` is called,
@@ -30,59 +30,63 @@ pub(crate) enum Scheduler<Callback = RustFutureContinuationCallback> {
     /// continuation being called with `RustFuturePoll::Ready`.
     Cancelled,
     /// Continuation set, the next time `wake()`  is called is called, we should invoke it.
-    Set(Callback, u64),
+    Set(Callback),
 }
 
 /// Callback function that the scheduler stores
 pub trait RustFutureCallback {
-    fn invoke(self, data: u64, poll: RustFuturePoll);
+    fn invoke(self, poll: RustFuturePoll);
 }
 
-impl RustFutureCallback for RustFutureContinuationCallback {
-    fn invoke(self, data: u64, poll: RustFuturePoll) {
-        self(data, poll)
+impl RustFutureCallback for RustFutureContinuationBoundCallback {
+    fn invoke(self, poll: RustFuturePoll) {
+        (self.callback)(self.data, poll)
+    }
+}
+
+impl<Callback: RustFutureCallback> Default for Scheduler<Callback> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
 impl<Callback: RustFutureCallback> Scheduler<Callback> {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self::Empty
     }
 
     /// Store new continuation data if we are in the `Empty` state.  If we are in the `Waked` or
     /// `Cancelled` state, call the continuation immediately with the data.
-    pub(crate) fn store(&mut self, callback: Callback, data: u64) {
+    pub fn store(&mut self, callback: Callback) {
         match self {
-            Self::Empty => *self = Self::Set(callback, data),
-            Self::Set(_, _) => {
+            Self::Empty => *self = Self::Set(callback),
+            Self::Set(_) => {
                 trace!(
                     "store: observed `Self::Set` state.  Is poll() being called from multiple threads at once?"
                 );
-                let Self::Set(old_callback, old_data) =
-                    mem::replace(self, Self::Set(callback, data))
-                else {
+                let Self::Set(old_callback) = mem::replace(self, Self::Set(callback)) else {
                     unreachable!();
                 };
-                old_callback.invoke(old_data, RustFuturePoll::Ready);
+                old_callback.invoke(RustFuturePoll::Wake);
             }
             Self::Waked => {
                 *self = Self::Empty;
-                callback.invoke(data, RustFuturePoll::Wake);
+                callback.invoke(RustFuturePoll::Wake);
             }
             Self::Cancelled => {
-                callback.invoke(data, RustFuturePoll::Ready);
+                callback.invoke(RustFuturePoll::Ready);
             }
         }
     }
 
-    pub(crate) fn wake(&mut self) {
+    pub fn wake(&mut self) {
         match self {
             // If we had a continuation set, then call it and transition to the `Empty` state.
-            Self::Set(_, _) => {
-                let Self::Set(callback, old_data) = mem::replace(self, Self::Empty) else {
+            Self::Set(_) => {
+                let Self::Set(callback) = mem::replace(self, Self::Empty) else {
                     unreachable!();
                 };
-                callback.invoke(old_data, RustFuturePoll::Wake);
+                callback.invoke(RustFuturePoll::Wake);
             }
             // If we were in the `Empty` state, then transition to `Waked`.  The next time `store`
             // is called, we will immediately call the continuation.
@@ -92,20 +96,13 @@ impl<Callback: RustFutureCallback> Scheduler<Callback> {
         }
     }
 
-    pub(crate) fn cancel(&mut self) {
-        if let Self::Set(callback, old_data) = mem::replace(self, Self::Cancelled) {
-            callback.invoke(old_data, RustFuturePoll::Ready);
+    pub fn cancel(&mut self) {
+        if let Self::Set(callback) = mem::replace(self, Self::Cancelled) {
+            callback.invoke(RustFuturePoll::Ready);
         }
     }
 
-    pub(crate) fn is_cancelled(&self) -> bool {
+    pub fn is_cancelled(&self) -> bool {
         matches!(self, Self::Cancelled)
     }
 }
-
-// The `*const ()` data pointer references an object on the foreign side.
-// This object must be `Sync` in Rust terminology -- it must be safe for us to pass the pointer to the continuation callback from any thread.
-// If the foreign side upholds their side of the contract, then `Scheduler` is Send + Sync.
-
-unsafe impl Send for Scheduler {}
-unsafe impl Sync for Scheduler {}

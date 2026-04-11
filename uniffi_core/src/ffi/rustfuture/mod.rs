@@ -6,14 +6,13 @@ use std::{future::Future, sync::Arc};
 
 mod future;
 mod scheduler;
-use scheduler::*;
 
 #[cfg(test)]
 mod tests;
 
 use crate::{FfiDefault, Handle, LiftArgsError, LowerReturn, RustCallStatus};
 pub(crate) use future::RustFuture;
-pub(crate) use scheduler::RustFutureCallback;
+pub use scheduler::{RustFutureCallback, Scheduler};
 
 /// Result code for [rust_future_poll].  This is passed to the continuation function.
 #[repr(i8)]
@@ -30,6 +29,12 @@ pub enum RustFuturePoll {
 /// The Rust side of things calls this when the foreign side should call [rust_future_poll] again
 /// to continue progress on the future.
 pub type RustFutureContinuationCallback = extern "C" fn(callback_data: u64, RustFuturePoll);
+
+/// RustFutureContinuationCallback and data bound together
+pub struct RustFutureContinuationBoundCallback {
+    callback: RustFutureContinuationCallback,
+    data: u64,
+}
 
 /// This marker trait allows us to put different bounds on the `Future`s we
 /// support, based on `#[cfg(..)]` configuration.
@@ -111,7 +116,7 @@ where
     F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
     T: FutureLowerReturn<UT> + 'static,
 {
-    let rust_future = Arc::new(RustFuture::<_, RustFutureContinuationCallback>::new(
+    let rust_future = Arc::new(RustFuture::<_, RustFutureContinuationBoundCallback>::new(
         future, tag,
     ));
     let handle = Handle::from_arc(rust_future);
@@ -129,13 +134,14 @@ where
 /// The [Handle] must not previously have been passed to [rust_future_free]
 pub unsafe fn rust_future_poll<FfiType>(
     handle: Handle,
-    callback: RustFutureContinuationCallback,
+    callback: extern "C" fn(callback_data: u64, RustFuturePoll),
     data: u64,
 ) {
     #[cfg(feature = "ffi-trace")]
     let raw_handle = handle.as_raw();
     trace!("rust_future_poll: {raw_handle:x}");
-    Handle::into_arc_borrowed::<RustFuture<FfiType>>(handle).poll(callback, data);
+    Handle::into_arc_borrowed::<RustFuture<FfiType>>(handle)
+        .poll(RustFutureContinuationBoundCallback { callback, data });
     trace!("rust_future_poll returning: {raw_handle:x}");
 }
 

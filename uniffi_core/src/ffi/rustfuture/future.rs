@@ -76,7 +76,7 @@
 //! [`RawWaker`]: https://doc.rust-lang.org/std/task/struct.RawWaker.html
 
 use super::{
-    FutureLowerReturn, RustFutureCallback, RustFutureContinuationCallback, RustFuturePoll,
+    FutureLowerReturn, RustFutureCallback, RustFutureContinuationBoundCallback, RustFuturePoll,
     Scheduler, UniffiCompatibleFuture,
 };
 use crate::{try_rust_call, FfiDefault, LiftArgsError, RustCallResult, RustCallStatus};
@@ -180,7 +180,7 @@ impl<FfiType> WrappedFuture<FfiType> {
 }
 
 /// Future that the foreign code is awaiting
-pub struct RustFuture<FfiType, Callback = RustFutureContinuationCallback> {
+pub struct RustFuture<FfiType, Callback = RustFutureContinuationBoundCallback> {
     // This Mutex should never block if our code is working correctly, since there should not be
     // multiple threads calling [Self::poll] and/or [Self::complete] at the same time.
     future: Mutex<WrappedFuture<FfiType>>,
@@ -202,7 +202,7 @@ where
         }
     }
 
-    pub fn poll(self: Arc<Self>, callback: Callback, data: u64) {
+    pub fn poll(self: Arc<Self>, callback: Callback) {
         let cancelled = self.is_cancelled();
         let ready = cancelled || {
             let mut locked = self.future.lock().unwrap();
@@ -211,9 +211,9 @@ where
         };
         if ready {
             trace!("RustFuture::poll is ready (cancelled: {cancelled})");
-            callback.invoke(data, RustFuturePoll::Ready)
+            callback.invoke(RustFuturePoll::Ready)
         } else {
-            self.scheduler.lock().unwrap().store(callback, data);
+            self.scheduler.lock().unwrap().store(callback);
         }
     }
 
