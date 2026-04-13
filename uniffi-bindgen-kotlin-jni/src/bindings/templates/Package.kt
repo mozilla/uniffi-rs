@@ -17,6 +17,7 @@ import {{ import }}
 {%- when TypeDefinition::Custom(custom) %}
 {% include "Custom.kt" %}
 {%- when TypeDefinition::CallbackInterface(_) %}
+{%- when TypeDefinition::Box(_) %}
 {%- when TypeDefinition::Optional(_) %}
 {%- when TypeDefinition::Sequence(_) %}
 {%- when TypeDefinition::Map(_) %}

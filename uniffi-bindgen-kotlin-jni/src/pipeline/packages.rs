@@ -82,6 +82,9 @@ pub fn map_type_definitions(
             general::TypeDefinition::Custom(c) => {
                 mapped.push(TypeDefinition::Custom(c.map_node(context)?));
             }
+            general::TypeDefinition::Box(inner) => {
+                mapped.push(TypeDefinition::Box(inner.map_node(context)?));
+            }
             general::TypeDefinition::Optional(inner) => {
                 mapped.push(TypeDefinition::Optional(inner.map_node(context)?));
             }

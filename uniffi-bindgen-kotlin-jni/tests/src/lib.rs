@@ -85,6 +85,11 @@ mod test {
         run_tests(test_dir(), "tests/renames.kts");
     }
 
+    #[test]
+    fn test_recursive_types() {
+        run_tests(test_dir(), "tests/recursive_types.kts");
+    }
+
     fn test_dir() -> &'static Utf8Path {
         static TEST_TEMPDIR: OnceLock<Utf8PathBuf> = OnceLock::new();
         TEST_TEMPDIR.get_or_init(|| {

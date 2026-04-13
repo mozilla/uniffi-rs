@@ -40,6 +40,8 @@ class InternalException(message: String) : Exception(message)
 {% include "CallbackInterfaceFfi.kt" %}
 {%- when TypeDefinition::Custom(custom) %}
 {% include "CustomFfi.kt" %}
+{%- when TypeDefinition::Box(box_) %}
+{% include "BoxFfi.kt" %}
 {%- when TypeDefinition::Optional(opt) %}
 {% include "OptionalFfi.kt" %}
 {%- when TypeDefinition::Sequence(seq) %}

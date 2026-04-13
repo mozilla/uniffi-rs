@@ -35,6 +35,8 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
     {%- filter indent(4) %}{% include "callback_interface.rs" %}{% endfilter %}
     {%- when TypeDefinition::Custom(custom) %}
     {%- filter indent(4) %}{% include "custom.rs" %}{% endfilter %}
+    {%- when TypeDefinition::Box(box_) %}
+    {%- filter indent(4) %}{% include "box.rs" %}{% endfilter %}
     {%- when TypeDefinition::Optional(opt) %}
     {%- filter indent(4) %}{% include "optional.rs" %}{% endfilter %}
     {%- when TypeDefinition::Sequence(seq) %}

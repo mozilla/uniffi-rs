@@ -97,6 +97,9 @@ fn type_rs(ty: &Type, context: &Context) -> Result<String> {
                 context.module_path_for_type(namespace, orig_name)?
             )
         }
+        Type::Box { inner_type } => {
+            format!("::std::boxed::Box<{}>", type_rs(inner_type, context)?,)
+        }
         _ => todo!(),
     })
 }
@@ -152,6 +155,7 @@ pub fn type_kt(ty: &Type, context: &Context) -> Result<String> {
                 names::class_name_kt(name, context.types_used_as_error.contains(&ty)),
             )
         }
+        Type::Box { inner_type } => type_kt(inner_type, context)?,
         _ => todo!(),
     })
 }
@@ -170,7 +174,7 @@ pub fn read_fn_rs(ty: &Type, canonical_name: &str) -> Result<String> {
         Type::Float64 => "uniffi::FfiBufferCursor::read_f64".into(),
         Type::Boolean => "uniffi::FfiBufferCursor::read_bool".into(),
         Type::String => "uniffi::FfiBufferCursor::read_string".into(),
-        Type::Optional { .. } | Type::Sequence { .. } | Type::Map { .. } => {
+        Type::Box { .. } | Type::Optional { .. } | Type::Sequence { .. } | Type::Map { .. } => {
             format!("uniffi_read_compound_{}", canonical_name.to_snake_case(),)
         }
         Type::Record { namespace, .. }
@@ -202,7 +206,7 @@ pub fn write_fn_rs(ty: &Type, canonical_name: &str) -> Result<String> {
         Type::Float64 => "uniffi::FfiBufferCursor::write_f64".into(),
         Type::Boolean => "uniffi::FfiBufferCursor::write_bool".into(),
         Type::String => "uniffi::FfiBufferCursor::write_string".into(),
-        Type::Optional { .. } | Type::Sequence { .. } | Type::Map { .. } => {
+        Type::Box { .. } | Type::Optional { .. } | Type::Sequence { .. } | Type::Map { .. } => {
             format!("uniffi_write_compound_{}", canonical_name.to_snake_case(),)
         }
         Type::Record { namespace, .. }
@@ -234,7 +238,7 @@ pub fn read_fn_kt(ty: &Type, canonical_name: &str) -> String {
         Type::Float64 => "readDouble".into(),
         Type::Boolean => "readBool".into(),
         Type::String => "readString".into(),
-        Type::Optional { .. } | Type::Sequence { .. } | Type::Map { .. } => {
+        Type::Box { .. } | Type::Optional { .. } | Type::Sequence { .. } | Type::Map { .. } => {
             format!("readCompound{}", canonical_name.to_upper_camel_case(),)
         }
         Type::Record { namespace, .. }
@@ -266,7 +270,7 @@ pub fn write_fn_kt(ty: &Type, canonical_name: &str) -> String {
         Type::Float64 => "writeDouble".into(),
         Type::Boolean => "writeBool".into(),
         Type::String => "writeString".into(),
-        Type::Optional { .. } | Type::Sequence { .. } | Type::Map { .. } => {
+        Type::Box { .. } | Type::Optional { .. } | Type::Sequence { .. } | Type::Map { .. } => {
             format!("writeCompound{}", canonical_name.to_upper_camel_case(),)
         }
         Type::Record { namespace, .. }
