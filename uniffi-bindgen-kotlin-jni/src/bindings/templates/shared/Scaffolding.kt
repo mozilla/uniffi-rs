@@ -29,6 +29,15 @@ object Scaffolding {
     @JvmStatic external fun {{ cls.jni_free_name() }}(handle: kotlin.Long)
     {%- endfor  %}
 
+    {%- for box_ in root.boxes() %}
+    @JvmStatic external fun {{ box_.jni_from_ffi_values_name() }}(
+        {%- for ffi_type in box_.inner.ffi_types %}
+        v{{ loop.index0 }}: {{ ffi_type.type_kt() }},
+        {%- endfor %}
+    ): kotlin.Long
+    @JvmStatic external fun {{ box_.jni_into_inner_name() }}(handle: kotlin.Long): {{ box_.inner.type_kt }}
+    {%- endfor  %}
+
     {%- for result in root.kotlin_sync_callable_results() %}
     {%- if let Some(return_type) = result.return_type %}
     {%- if !return_type.lowers_to_primitive() %}
