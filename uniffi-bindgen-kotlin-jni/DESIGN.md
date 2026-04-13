@@ -101,6 +101,16 @@ This helps us implement the 2 main use-cases they're used for:
 All buffers are allocated by the Rust code, `ByteBuffer.allocateDirect` is never used.
 This allows us to control when buffers get freed rather than rely on the garbage collector.
 
+## Boxes
+
+Boxed values are passed across the FFI using an i64 handle,
+which is just a raw Box pointer casted to an int.
+
+Kotlin creates box handles by calling a Rust JNI function,
+passing it the FFI values needed to create the inner type.
+There's also a JNI function to consume a box handle
+and return the inner value.
+
 ## Call details
 
 ### Kotlin -> Rust sync call

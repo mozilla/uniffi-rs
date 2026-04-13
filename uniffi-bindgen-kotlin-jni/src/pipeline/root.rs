@@ -55,6 +55,7 @@ impl Root {
                     TypeDefinition::Class(c) => c.self_type.id,
                     TypeDefinition::Custom(c) => c.self_type.id,
                     TypeDefinition::CallbackInterface(c) => c.self_type.id,
+                    TypeDefinition::Box(b) => b.self_type.id,
                     TypeDefinition::Interface(_) => return false,
                 })
             })
@@ -62,8 +63,10 @@ impl Root {
 
     /// Types where we need to call the Kotlin lift function from Rust
     ///
-    /// We need to do this for non-primitive types that are returned
-    /// and any error types that get thrown from Rust functions.
+    /// We need to do this for:
+    ///  * non-primitive types that are returned
+    ///  * error types that get thrown from Rust functions.
+    ///  * the inner type of boxed types
     pub fn lift_kt_from_rust_types(&self) -> impl Iterator<Item = &TypeNode> {
         let mut seen = HashSet::new();
         let mut type_nodes = vec![];
@@ -77,6 +80,11 @@ impl Root {
                 if seen.insert(throws_type.id) {
                     type_nodes.push(throws_type);
                 }
+            }
+        });
+        self.visit(|b: &BoxedType| {
+            if seen.insert(b.inner.id) {
+                type_nodes.push(&b.inner);
             }
         });
         type_nodes.into_iter()
@@ -110,6 +118,10 @@ impl Root {
 
     pub fn classes(&self) -> impl Iterator<Item = &Class> {
         self.packages.iter().flat_map(Package::classes)
+    }
+
+    pub fn boxes(&self) -> impl Iterator<Item = &BoxedType> {
+        self.packages.iter().flat_map(Package::boxes)
     }
 
     pub fn disable_java_cleaner(&self) -> bool {

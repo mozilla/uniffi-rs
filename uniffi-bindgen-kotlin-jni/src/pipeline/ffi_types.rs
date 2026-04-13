@@ -35,6 +35,8 @@ pub fn standard_ffi_type_mapping(ty: &Type) -> Option<Vec<FfiType>> {
         Type::Map { .. } | Type::Set { .. } => Some(vec![FfiType::ByteBuffer]),
         // Interfaces are passed as 64-bit handle
         Type::Interface { .. } | Type::CallbackInterface { .. } => Some(vec![FfiType::Int64]),
+        // Boxes are also passed as a 64-bit handle
+        Type::Box { .. } => Some(vec![FfiType::Int64]),
         Type::Optional { inner_type } => match &**inner_type {
             // Ints with less than 64-bits get promoted to an `i64`
             // with `i64::MAX` as the None value.
