@@ -65,6 +65,9 @@ pub fn map_type_definitions(
             general::TypeDefinition::Set(set) => {
                 mapped.push(TypeDefinition::Set(set.map_node(context)?));
             }
+            general::TypeDefinition::Box(inner) => {
+                mapped.push(TypeDefinition::Box(inner.map_node(context)?));
+            }
             // All other variants are still TODO
             _ => (),
         }
@@ -104,6 +107,15 @@ impl Package {
             .iter()
             .filter_map(|type_def| match type_def {
                 TypeDefinition::Class(cls) => Some(cls),
+                _ => None,
+            })
+    }
+
+    pub fn boxes(&self) -> impl Iterator<Item = &BoxedType> {
+        self.type_definitions
+            .iter()
+            .filter_map(|type_def| match type_def {
+                TypeDefinition::Box(b) => Some(b),
                 _ => None,
             })
     }
