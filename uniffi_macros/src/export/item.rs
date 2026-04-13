@@ -13,6 +13,20 @@ use super::attributes::{
 use crate::util::extract_docstring;
 use uniffi_meta::UniffiTraitDiscriminants;
 
+/// Collect and sort traits deterministically.
+/// HashSet iteration order is random per process; sorting ensures reproducible builds.
+fn sorted_traits(args: ExportStructArgs) -> Vec<UniffiTraitDiscriminants> {
+    let mut traits: Vec<UniffiTraitDiscriminants> = args.traits.into_iter().collect();
+    traits.sort_by_key(|t| match t {
+        UniffiTraitDiscriminants::Debug => 0u8,
+        UniffiTraitDiscriminants::Display => 1,
+        UniffiTraitDiscriminants::Eq => 2,
+        UniffiTraitDiscriminants::Hash => 3,
+        UniffiTraitDiscriminants::Ord => 4,
+    });
+    traits
+}
+
 pub(super) enum ExportItem {
     Function {
         sig: FnSignature,
@@ -212,7 +226,7 @@ impl ExportItem {
 
     fn from_struct(item: syn::ItemStruct, attr_args: TokenStream) -> syn::Result<Self> {
         let args: ExportStructArgs = syn::parse(attr_args)?;
-        let uniffi_traits: Vec<UniffiTraitDiscriminants> = args.traits.into_iter().collect();
+        let uniffi_traits = sorted_traits(args);
         if uniffi_traits.is_empty() {
             Err(syn::Error::new(Span::call_site(),
                 "uniffi::export on a struct must supply a builtin trait name. Did you mean `#[derive(uniffi::Object)]`?"
@@ -227,7 +241,7 @@ impl ExportItem {
 
     fn from_enum(item: syn::ItemEnum, attr_args: TokenStream) -> syn::Result<Self> {
         let args: ExportStructArgs = syn::parse(attr_args)?;
-        let uniffi_traits: Vec<UniffiTraitDiscriminants> = args.traits.into_iter().collect();
+        let uniffi_traits = sorted_traits(args);
         if uniffi_traits.is_empty() {
             Err(syn::Error::new(Span::call_site(),
                 "uniffi::export on an enum must supply a builtin trait name. Did you mean `#[derive(uniffi::Enum)]`?"
