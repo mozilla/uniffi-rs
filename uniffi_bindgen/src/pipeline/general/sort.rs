@@ -136,6 +136,7 @@ impl DependencyLogic for TypeDefinitionDependencyLogic {
     fn item_name(&self, type_def: &TypeDefinition) -> String {
         match type_def {
             TypeDefinition::Simple(self_type)
+            | TypeDefinition::Box(BoxedType { self_type, .. })
             | TypeDefinition::Optional(OptionalType { self_type, .. })
             | TypeDefinition::Sequence(SequenceType { self_type, .. })
             | TypeDefinition::Map(MapType { self_type, .. })
@@ -153,7 +154,8 @@ impl DependencyLogic for TypeDefinitionDependencyLogic {
     fn dependency_names(&self, type_def: &TypeDefinition) -> Vec<String> {
         match type_def {
             TypeDefinition::Simple(_) => vec![],
-            TypeDefinition::Optional(OptionalType { inner, .. })
+            TypeDefinition::Box(BoxedType { inner, .. })
+            | TypeDefinition::Optional(OptionalType { inner, .. })
             | TypeDefinition::Sequence(SequenceType { inner, .. }) => {
                 vec![inner.canonical_name.clone()]
             }

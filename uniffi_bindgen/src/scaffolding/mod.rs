@@ -50,6 +50,9 @@ mod filters {
                 format!("::std::sync::Arc<{}>", imp.rust_name_for(name))
             }
             Type::CallbackInterface { name, .. } => format!("Box<dyn r#{name}>"),
+            Type::Box { inner_type } => {
+                format!("::std::boxed::Box<{}>", type_rs_inner(inner_type)?,)
+            }
             Type::Optional { inner_type } => {
                 format!("::std::option::Option<{}>", type_rs_inner(inner_type)?)
             }

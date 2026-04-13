@@ -72,6 +72,7 @@ pub fn canonical_name(t: &Type) -> String {
             canonical_name(value_type).to_upper_camel_case()
         ),
         Type::Custom { name, .. } => format!("Type{name}"),
+        Type::Box { inner_type } => canonical_name(inner_type),
     }
 }
 
@@ -281,6 +282,7 @@ mod filters {
                     )
                 }
             }
+            Type::Box { inner_type } => coerce_rb_inner(nm, ns, inner_type)?,
             Type::Custom { .. } => panic!("No support for custom types, yet"),
         })
     }
@@ -313,8 +315,11 @@ mod filters {
     pub fn lower_rb(
         nm: &str,
         _: &dyn askama::Values,
-        type_: &Type,
+        mut type_: &Type,
     ) -> Result<String, askama::Error> {
+        while let Type::Box { inner_type } = type_ {
+            type_ = &**inner_type;
+        }
         Ok(match type_ {
             Type::Int8
             | Type::UInt8
@@ -346,6 +351,7 @@ mod filters {
                 class_name_rb_inner(&canonical_name(type_))?,
                 nm
             ),
+            Type::Box { .. } => unreachable!(),
             Type::Custom { .. } => panic!("No support for lowering custom types, yet"),
         })
     }
@@ -354,8 +360,11 @@ mod filters {
     pub fn lift_rb(
         nm: &str,
         _: &dyn askama::Values,
-        type_: &Type,
+        mut type_: &Type,
     ) -> Result<String, askama::Error> {
+        while let Type::Box { inner_type } = type_ {
+            type_ = &**inner_type;
+        }
         Ok(match type_ {
             Type::Int8
             | Type::UInt8
@@ -392,6 +401,7 @@ mod filters {
                 nm,
                 class_name_rb_inner(&canonical_name(type_))?
             ),
+            Type::Box { .. } => unreachable!(),
             Type::Custom { .. } => panic!("No support for lifting custom types, yet"),
         })
     }

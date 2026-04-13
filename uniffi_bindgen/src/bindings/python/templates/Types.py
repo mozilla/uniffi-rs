@@ -63,6 +63,9 @@
 {# Type::Simple shouldn't hold any other Type variants #}
 {%- endmatch %}
 
+{%- when TypeDefinition::Box(box_) %}
+{%- include "BoxTemplate.py" %}
+
 {%- when TypeDefinition::Optional(opt) %}
 {%- include "OptionalTemplate.py" %}
 

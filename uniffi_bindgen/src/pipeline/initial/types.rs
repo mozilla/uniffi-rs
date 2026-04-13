@@ -21,6 +21,9 @@ pub fn map_type(ty: uniffi_meta::Type, context: &Context) -> Result<Type> {
         uniffi_meta::Type::Bytes => Type::Bytes,
         uniffi_meta::Type::Timestamp => Type::Timestamp,
         uniffi_meta::Type::Duration => Type::Duration,
+        uniffi_meta::Type::Box { inner_type } => Type::Box {
+            inner_type: inner_type.map_node(context)?,
+        },
         uniffi_meta::Type::Optional { inner_type } => Type::Optional {
             inner_type: inner_type.map_node(context)?,
         },

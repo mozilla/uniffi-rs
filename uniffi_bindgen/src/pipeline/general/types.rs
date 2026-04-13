@@ -43,6 +43,7 @@ pub fn canonical_name(ty: &Type) -> String {
             canonical_name(key_type),
             canonical_name(value_type),
         ),
+        Type::Box { inner_type } => format!("Box{}", canonical_name(inner_type)),
     }
 }
 

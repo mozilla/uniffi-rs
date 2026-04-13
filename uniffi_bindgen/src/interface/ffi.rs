@@ -154,6 +154,7 @@ impl From<&Type> for FfiType {
                     t => t,
                 }
             }
+            Type::Box { inner_type } => (&**inner_type).into(),
         }
     }
 }

@@ -186,6 +186,7 @@ fn normalize_type_module_path(ty: &Type) -> Type {
             name: name.clone(),
             builtin: Box::new(normalize_type_module_path(builtin)),
         },
+        Type::Box { inner_type } => normalize_type_module_path(inner_type),
     }
 }
 

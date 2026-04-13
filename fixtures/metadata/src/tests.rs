@@ -15,7 +15,7 @@ mod person {
         name: String,
         #[uniffi(default)]
         preferred_name: String,
-        age: u16,
+        age: Box<u16>,
     }
 }
 
@@ -180,6 +180,9 @@ mod test_type_ids {
         check_type_id::<Option<u8>>(Type::Optional {
             inner_type: Box::new(Type::UInt8),
         });
+        check_type_id::<Box<u8>>(Type::Box {
+            inner_type: Box::new(Type::UInt8),
+        });
         check_type_id::<Vec<u8>>(Type::Bytes);
         check_type_id::<Vec<u16>>(Type::Sequence {
             inner_type: Box::new(Type::UInt16),
@@ -226,7 +229,9 @@ mod test_metadata {
                     },
                     FieldMetadata {
                         name: "age".into(),
-                        ty: Type::UInt16,
+                        ty: Type::Box {
+                            inner_type: Box::new(Type::UInt16),
+                        },
                         default: None,
                         docstring: None,
                     },

@@ -68,6 +68,8 @@ pub enum TypeDefinition {
     Simple(TypeNode),
     /// Compound types
     #[map_node(added)]
+    Box(BoxedType),
+    #[map_node(added)]
     Optional(OptionalType),
     #[map_node(added)]
     Sequence(SequenceType),
@@ -360,6 +362,12 @@ pub struct CustomType {
     pub name: String,
     pub builtin: TypeNode,
     pub docstring: Option<String>,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+pub struct BoxedType {
+    pub inner: TypeNode,
+    pub self_type: TypeNode,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]

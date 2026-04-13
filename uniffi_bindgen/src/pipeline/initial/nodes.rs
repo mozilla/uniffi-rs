@@ -247,7 +247,9 @@ pub enum Type {
     Bytes,
     Timestamp,
     Duration,
-    // Structurally recursive types.
+    Box {
+        inner_type: Box<Type>,
+    },
     Optional {
         inner_type: Box<Type>,
     },

@@ -763,6 +763,7 @@ impl SwiftCodeOracle {
                 name,
                 self.create_code_type(*builtin),
             )),
+            Type::Box { inner_type } => self.create_code_type(*inner_type),
         }
     }
 
