@@ -69,3 +69,13 @@ pub fn map_set(input: general::SetType, context: &Context) -> Result<SetType> {
         item_size: layout_builder.size(),
     })
 }
+
+impl BoxedType {
+    pub fn jni_into_inner_name(&self) -> String {
+        format!("boxIntoInner{}", self.self_type.id)
+    }
+
+    pub fn jni_from_ffi_values_name(&self) -> String {
+        format!("boxFromFfiValues{}", self.self_type.id)
+    }
+}

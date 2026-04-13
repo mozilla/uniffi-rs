@@ -40,6 +40,7 @@ pub enum TypeDefinition {
     Class(Class),
     CallbackInterface(CallbackInterface),
     Custom(CustomType),
+    Box(BoxedType),
     Optional(OptionalType),
     Sequence(SequenceType),
     Map(MapType),
@@ -271,6 +272,13 @@ pub enum ArgumentFfi {
         lift_fn_kt: String,
         lower_fn_kt: String,
     },
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::BoxedType))]
+pub struct BoxedType {
+    pub inner: TypeNode,
+    pub self_type: TypeNode,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
