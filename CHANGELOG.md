@@ -26,7 +26,18 @@
 - Kotlin objects now have an `uniffiIsDestroyed` property that returns `true` if the Rust reference no longer exists ([#2825](https://github.com/mozilla/uniffi-rs/pull/2825))
 - Updated `askama` version to `0.15.6`
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.0...HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.1...HEAD).
+
+## v0.31.1 (backend crates: v0.31.1) - (_2026-04-10_)
+
+### What's Fixed
+
+- Swift: Fixed iOS crash when address sanitizer is enabled
+  [#2821](https://github.com/mozilla/uniffi-rs/pull/2821)
+- Swift: Fixed memory link in async code
+  [#2854](https://github.com/mozilla/uniffi-rs/pull/2854)
+
+[All changes in v0.31.1](https://github.com/mozilla/uniffi-rs/compare/v0.31.0...v0.31.1).
 
 ## v0.31.0 (backend crates: v0.31.0) - (_2026-01-14_)
 
