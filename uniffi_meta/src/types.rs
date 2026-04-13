@@ -98,7 +98,12 @@ pub enum Type {
         module_path: String,
         name: String,
     },
-    // Structurally recursive types.
+    /// Used for a Box<T> type.
+    /// This only matters for scaffolding generation.
+    /// Bindings can ignore this and just use the inner type.
+    Box {
+        inner_type: Box<Type>,
+    },
     Optional {
         inner_type: Box<Type>,
     },

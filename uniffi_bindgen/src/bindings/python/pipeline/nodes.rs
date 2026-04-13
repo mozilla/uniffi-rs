@@ -88,6 +88,7 @@ pub enum TypeDefinition {
     /// Type that doesn't contain any other type
     Simple(TypeNode),
     /// Compound types
+    Box(BoxedType),
     Optional(OptionalType),
     Sequence(SequenceType),
     Map(MapType),
@@ -373,6 +374,13 @@ pub struct CustomType {
     pub config: Option<CustomTypeConfig>,
     pub builtin: TypeNode,
     pub docstring: Option<String>,
+    pub self_type: TypeNode,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::BoxedType))]
+pub struct BoxedType {
+    pub inner: TypeNode,
     pub self_type: TypeNode,
 }
 

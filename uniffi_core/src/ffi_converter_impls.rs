@@ -321,7 +321,8 @@ unsafe impl<UT, T: Lift<UT>> Lift<UT> for Box<T> {
 }
 
 impl<UT, T: TypeId<UT>> TypeId<UT> for Box<T> {
-    const TYPE_ID_META: MetadataBuffer = T::TYPE_ID_META;
+    const TYPE_ID_META: MetadataBuffer =
+        MetadataBuffer::from_code(metadata::codes::TYPE_BOX).concat(T::TYPE_ID_META);
 }
 
 // Support for passing vectors of values via the FFI.

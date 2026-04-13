@@ -62,6 +62,7 @@ pub fn ffi_type(ty: &Type, context: &Context) -> Result<FfiType> {
                 ffi_type => ffi_type,
             }
         }
+        Type::Box { inner_type } => ffi_type(inner_type, context)?,
     })
 }
 

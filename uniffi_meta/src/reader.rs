@@ -182,6 +182,9 @@ impl<'a> MetadataReader<'a> {
             codes::TYPE_OPTION => Type::Optional {
                 inner_type: Box::new(self.read_type()?),
             },
+            codes::TYPE_BOX => Type::Box {
+                inner_type: Box::new(self.read_type()?),
+            },
             codes::TYPE_VEC => {
                 let inner_type = self.read_type()?;
                 if inner_type == Type::UInt8 {

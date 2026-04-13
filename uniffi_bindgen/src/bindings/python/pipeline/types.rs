@@ -5,7 +5,12 @@
 use super::*;
 
 pub fn map_type(mut ty: Type, _: &Context) -> Result<Type> {
-    match &mut ty {
+    rename_type(&mut ty);
+    Ok(ty)
+}
+
+fn rename_type(ty: &mut Type) {
+    match ty {
         Type::Enum { name, .. }
         | Type::Record { name, .. }
         | Type::Interface { name, .. }
@@ -13,9 +18,20 @@ pub fn map_type(mut ty: Type, _: &Context) -> Result<Type> {
         | Type::Custom { name, .. } => {
             *name = names::type_name(name);
         }
+        Type::Optional { inner_type }
+        | Type::Sequence { inner_type }
+        | Type::Box { inner_type } => {
+            rename_type(inner_type);
+        }
+        Type::Map {
+            key_type,
+            value_type,
+        } => {
+            rename_type(key_type);
+            rename_type(value_type);
+        }
         _ => (),
     }
-    Ok(ty)
 }
 
 pub fn map_return_type(return_type: general::ReturnType, context: &Context) -> Result<ReturnType> {
@@ -85,6 +101,7 @@ pub fn type_name(ty: &Type, context: &Context) -> Result<String> {
             type_name(key_type, context)?,
             type_name(value_type, context)?
         ),
+        Type::Box { inner_type } => type_name(inner_type, context)?,
     })
 }
 

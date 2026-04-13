@@ -42,6 +42,12 @@ pub fn type_definitions(
             | Type::Duration => {
                 type_definitions.push(TypeDefinition::Simple(ty.map_node(context)?));
             }
+            Type::Box { inner_type } => {
+                type_definitions.push(TypeDefinition::Box(BoxedType {
+                    inner: (*inner_type).map_node(context)?,
+                    self_type,
+                }));
+            }
             Type::Optional { inner_type } => {
                 type_definitions.push(TypeDefinition::Optional(OptionalType {
                     inner: (*inner_type).map_node(context)?,
