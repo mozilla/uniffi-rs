@@ -29,24 +29,30 @@ pub struct CallbackInterfaceNumbers {
 }
 
 #[uniffi::export]
-fn invoke_test_callback_interface_noop(cbi: Box<dyn TestCallbackInterface>) {
+pub fn invoke_test_callback_interface_noop(cbi: Box<dyn TestCallbackInterface>) {
     cbi.noop()
 }
 
 #[uniffi::export]
-fn invoke_test_callback_interface_get_value(cbi: Box<dyn TestCallbackInterface>) -> u32 {
+pub fn invoke_test_callback_interface_get_value(cbi: Box<dyn TestCallbackInterface>) -> u32 {
     cbi.get_value()
 }
 
 #[uniffi::export]
-fn invoke_test_callback_interface_set_value(cbi: Box<dyn TestCallbackInterface>, value: u32) {
+pub fn invoke_test_callback_interface_set_value(cbi: Box<dyn TestCallbackInterface>, value: u32) {
     cbi.set_value(value)
 }
 
 #[uniffi::export]
-fn invoke_test_callback_interface_throw_if_equal(
+pub fn invoke_test_callback_interface_throw_if_equal(
     cbi: Box<dyn TestCallbackInterface>,
     numbers: CallbackInterfaceNumbers,
 ) -> Result<CallbackInterfaceNumbers, TestError> {
     cbi.throw_if_equal(numbers)
+}
+
+impl From<uniffi::UnexpectedUniFFICallbackError> for TestError {
+    fn from(e: uniffi::UnexpectedUniFFICallbackError) -> Self {
+        Self::Failure2 { data: e.reason }
+    }
 }

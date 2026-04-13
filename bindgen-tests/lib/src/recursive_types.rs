@@ -39,7 +39,7 @@ pub enum LinkedList {
 }
 
 #[uniffi::export]
-fn list_sum(list: LinkedList) -> i32 {
+pub fn list_sum(list: LinkedList) -> i32 {
     match list {
         LinkedList::Nil => 0,
         LinkedList::Cons { head, tail } => head + tail.map(|t| list_sum(*t)).unwrap_or(0),
@@ -56,7 +56,7 @@ pub enum Trie {
 }
 
 #[uniffi::export]
-fn trie_sum(trie: Trie) -> i32 {
+pub fn trie_sum(trie: Trie) -> i32 {
     match trie {
         Trie::Leaf(v) => v,
         Trie::Branch { children } => children.into_values().map(|t| trie_sum(*t)).sum(),
@@ -77,7 +77,7 @@ pub struct RoseData {
 }
 
 #[uniffi::export]
-fn sum_rose_tree(tree: RoseTree) -> i32 {
+pub fn sum_rose_tree(tree: RoseTree) -> i32 {
     match tree {
         RoseTree::Leaf(v) => v,
         RoseTree::Branch(data) => {
@@ -87,7 +87,7 @@ fn sum_rose_tree(tree: RoseTree) -> i32 {
 }
 
 #[uniffi::export]
-fn sum_tree(tree: Tree) -> i32 {
+pub fn sum_tree(tree: Tree) -> i32 {
     match tree {
         Tree::Leaf(v) => v,
         Tree::Node { left, right } => sum_tree(*left) + sum_tree(*right),
@@ -95,7 +95,7 @@ fn sum_tree(tree: Tree) -> i32 {
 }
 
 #[uniffi::export]
-fn eval_expr(expr: Expr) -> i32 {
+pub fn eval_expr(expr: Expr) -> i32 {
     match expr {
         Expr::Lit(v) => v,
         Expr::If { cond, then_, else_ } => {
@@ -109,7 +109,7 @@ fn eval_expr(expr: Expr) -> i32 {
 }
 
 #[uniffi::export]
-fn eval_bool(expr: BoolExpr) -> bool {
+pub fn eval_bool(expr: BoolExpr) -> bool {
     match expr {
         BoolExpr::True_ => true,
         BoolExpr::False_ => false,
@@ -139,7 +139,7 @@ impl std::fmt::Display for EvalError {
 impl std::error::Error for EvalError {}
 
 #[uniffi::export]
-fn maybe_throw_error(should_throw: bool) -> Result<i32, EvalError> {
+pub fn maybe_throw_error(should_throw: bool) -> Result<i32, EvalError> {
     if should_throw {
         Err(EvalError::Nested {
             inner: Box::new(EvalError::Overflow),

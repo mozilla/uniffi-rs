@@ -178,6 +178,7 @@ pub fn sum_with_many_types(
     j: f64,
     negate: bool,
 ) -> f64 {
+    uniffi::trace!("sum_with_many_types: {a} {b} {c} {d} {e} {f} {g} {h} {i} {j} {negate}");
     let all_values = [
         a as f64, b as f64, c as f64, d as f64, e as f64, f as f64, g as f64, h as f64, i as f64, j,
     ];

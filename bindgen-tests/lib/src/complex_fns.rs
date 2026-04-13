@@ -16,8 +16,8 @@ pub fn func_with_multi_word_arg(the_argument: String) -> String {
     the_argument
 }
 
-#[derive(uniffi::Object)]
-struct ComplexMethods;
+#[derive(uniffi::Object, Default)]
+pub struct ComplexMethods;
 
 #[uniffi::export]
 impl ComplexMethods {

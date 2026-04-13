@@ -33,22 +33,22 @@ pub trait TestTraitInterface: Send + Sync {
 }
 
 #[uniffi::export]
-fn invoke_test_trait_interface_noop(interface: Arc<dyn TestTraitInterface>) {
+pub fn invoke_test_trait_interface_noop(interface: Arc<dyn TestTraitInterface>) {
     interface.noop()
 }
 
 #[uniffi::export]
-fn invoke_test_trait_interface_get_value(interface: Arc<dyn TestTraitInterface>) -> u32 {
+pub fn invoke_test_trait_interface_get_value(interface: Arc<dyn TestTraitInterface>) -> u32 {
     interface.get_value()
 }
 
 #[uniffi::export]
-fn invoke_test_trait_interface_set_value(interface: Arc<dyn TestTraitInterface>, value: u32) {
+pub fn invoke_test_trait_interface_set_value(interface: Arc<dyn TestTraitInterface>, value: u32) {
     interface.set_value(value)
 }
 
 #[uniffi::export]
-fn invoke_test_trait_interface_throw_if_equal(
+pub fn invoke_test_trait_interface_throw_if_equal(
     interface: Arc<dyn TestTraitInterface>,
     numbers: CallbackInterfaceNumbers,
 ) -> Result<CallbackInterfaceNumbers, TestError> {
@@ -57,13 +57,13 @@ fn invoke_test_trait_interface_throw_if_equal(
 
 /// Create an implementation of the interface in Rust
 #[uniffi::export]
-fn create_test_trait_interface(value: u32) -> Arc<dyn TestTraitInterface> {
+pub fn create_test_trait_interface(value: u32) -> Arc<dyn TestTraitInterface> {
     Arc::new(TestTraitInterfaceImpl {
         value: AtomicU32::new(value),
     })
 }
 
-struct TestTraitInterfaceImpl {
+pub struct TestTraitInterfaceImpl {
     value: AtomicU32,
 }
 
@@ -111,26 +111,26 @@ pub trait AsyncTestTraitInterface: Send + Sync {
 }
 
 #[uniffi::export]
-fn create_async_test_trait_interface(value: u32) -> Arc<dyn AsyncTestTraitInterface> {
+pub fn create_async_test_trait_interface(value: u32) -> Arc<dyn AsyncTestTraitInterface> {
     Arc::new(TestTraitInterfaceImpl {
         value: AtomicU32::new(value),
     })
 }
 
 #[uniffi::export]
-async fn invoke_async_test_trait_interface_noop(interface: Arc<dyn AsyncTestTraitInterface>) {
+pub async fn invoke_async_test_trait_interface_noop(interface: Arc<dyn AsyncTestTraitInterface>) {
     interface.noop().await
 }
 
 #[uniffi::export]
-async fn invoke_async_test_trait_interface_get_value(
+pub async fn invoke_async_test_trait_interface_get_value(
     interface: Arc<dyn AsyncTestTraitInterface>,
 ) -> u32 {
     interface.get_value().await
 }
 
 #[uniffi::export]
-async fn invoke_async_test_trait_interface_set_value(
+pub async fn invoke_async_test_trait_interface_set_value(
     interface: Arc<dyn AsyncTestTraitInterface>,
     value: u32,
 ) {
@@ -138,7 +138,7 @@ async fn invoke_async_test_trait_interface_set_value(
 }
 
 #[uniffi::export]
-async fn invoke_async_test_trait_interface_throw_if_equal(
+pub async fn invoke_async_test_trait_interface_throw_if_equal(
     interface: Arc<dyn AsyncTestTraitInterface>,
     numbers: CallbackInterfaceNumbers,
 ) -> Result<CallbackInterfaceNumbers, TestError> {
@@ -175,28 +175,28 @@ impl AsyncTestTraitInterface for TestTraitInterfaceImpl {
 // The list versions are there to test them being passed via a `RustBuffer`.
 
 #[uniffi::export]
-fn roundtrip_test_trait_interface(
+pub fn roundtrip_test_trait_interface(
     interface: Arc<dyn TestTraitInterface>,
 ) -> Arc<dyn TestTraitInterface> {
     interface
 }
 
 #[uniffi::export]
-fn roundtrip_test_trait_interface_list(
+pub fn roundtrip_test_trait_interface_list(
     interfaces: Vec<Arc<dyn TestTraitInterface>>,
 ) -> Vec<Arc<dyn TestTraitInterface>> {
     interfaces
 }
 
 #[uniffi::export]
-fn roundtrip_async_test_trait_interface(
+pub fn roundtrip_async_test_trait_interface(
     interface: Arc<dyn AsyncTestTraitInterface>,
 ) -> Arc<dyn AsyncTestTraitInterface> {
     interface
 }
 
 #[uniffi::export]
-fn roundtrip_async_test_trait_interface_list(
+pub fn roundtrip_async_test_trait_interface_list(
     interfaces: Vec<Arc<dyn AsyncTestTraitInterface>>,
 ) -> Vec<Arc<dyn AsyncTestTraitInterface>> {
     interfaces

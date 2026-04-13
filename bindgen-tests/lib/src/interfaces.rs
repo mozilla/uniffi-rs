@@ -36,8 +36,8 @@ pub fn clone_interface(interface: Arc<TestInterface>) -> Arc<TestInterface> {
 // Test interfaces in records
 #[derive(uniffi::Record)]
 pub struct TwoTestInterfaces {
-    first: Arc<TestInterface>,
-    second: Arc<TestInterface>,
+    pub first: Arc<TestInterface>,
+    pub second: Arc<TestInterface>,
 }
 
 #[uniffi::export]

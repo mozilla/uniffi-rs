@@ -11,14 +11,14 @@ async-trait = "0.1"
 camino = "1"
 glob = "0.3"
 thiserror = "2"
-uniffi = { workspace = true, features = ["bindgen", "ffi-trace"] }
+uniffi = { path = "../../uniffi", features = ["bindgen", "ffi-trace", "cargo-metadata"], default-features = false }
 url = "2.5"
 
 uniffi-bindgen-tests-external-types-source = { path = "../external-types" }
 
 [features]
 default = ["simple_fns", "primitive_types", "records", "enums", "compound_types", "interfaces",
-    "custom_types", "errors", "callback_interfaces", "trait_interfaces", "complex_fns", "futures",
+    "custom_types", "errors", "callback_interfaces", "futures", "trait_interfaces", "complex_fns",
     "external-types", "renames", "recursive_types"]
 simple_fns = []
 primitive_types = []
