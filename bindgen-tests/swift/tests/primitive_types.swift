@@ -46,3 +46,7 @@ assert(roundtripString(a: "ABC") == "ABC");
 // Test calling a function with lots of args
 // This function will sum up all the numbers, then negate the value since we passed in `true`
 assert(sumWithManyTypes(a: 1, b: -2, c: 3, d: -4, e: 5, f: -6, g: 7, h: -8, i: 9.5, j: -10.5, negate: true) == 5);
+
+// Test that the argument names get mapped to camelCase
+let _ = funcWithMultiWordArg(theArgument: 16)
+

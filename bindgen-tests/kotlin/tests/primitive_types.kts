@@ -54,3 +54,7 @@ assert(sumWithManyTypes(
     -10.5,
     true
 ) == 5.0)
+
+// Test argument name mapping
+// the following calls will fail if the argument name differs
+funcWithMultiWordArg(theArgument=16)

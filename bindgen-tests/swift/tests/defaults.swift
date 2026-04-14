@@ -4,16 +4,20 @@
 
 import uniffi_bindgen_tests
 
+// Records
+let r = RecWithDefault()
+assert(r.n == 42)
+assert(r.v == [])
+
+// Enums
+let e = EnumWithDefault.otherVariant()
+assert(e == EnumWithDefault.otherVariant(a: "default"))
+
 // Default arguments
 assert(funcWithDefault() == "DEFAULT");
 assert(funcWithDefault(arg: "NON-DEFAULT") == "NON-DEFAULT");
 
-let complexMethods = ComplexMethods();
-assert(complexMethods.methodWithDefault() == "DEFAULT")
-assert(complexMethods.methodWithDefault(arg: "NON-DEFAULT") == "NON-DEFAULT")
-
-
-// These just test that the argument names get mapped to camelCase
-let _ = complexMethods.methodWithMultiWordArg(theArgument: "test")
-let _ = funcWithMultiWordArg(theArgument: "test")
+let i = InterfaceWithDefaults();
+assert(i.methodWithDefault() == "DEFAULT")
+assert(i.methodWithDefault(arg: "NON-DEFAULT") == "NON-DEFAULT")
 

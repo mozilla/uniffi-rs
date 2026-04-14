@@ -64,8 +64,8 @@ mod test {
     }
 
     #[test]
-    fn test_complex_fns() {
-        run_tests(test_dir(), "tests/complex_fns.kts");
+    fn test_defaults() {
+        run_tests(test_dir(), "tests/defaults.kts");
     }
 
     #[test]
@@ -84,8 +84,23 @@ mod test {
     }
 
     #[test]
+    fn test_bytes() {
+        run_tests(test_dir(), "tests/bytes.kts");
+    }
+
+    #[test]
     fn test_recursive_types() {
         run_tests(test_dir(), "tests/recursive_types.kts");
+    }
+
+    #[test]
+    fn test_time() {
+        run_tests(test_dir(), "tests/time.kts");
+    }
+
+    #[test]
+    fn test_rust_traits() {
+        run_tests(test_dir(), "tests/rust_traits.kts");
     }
 
     fn test_dir() -> &'static Utf8Path {

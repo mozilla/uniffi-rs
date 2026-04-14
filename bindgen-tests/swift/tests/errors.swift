@@ -15,8 +15,17 @@ do {
 do {
     try funcWithError(input: 1);
     fatalError("funcWithError should have thrown")
-} catch TestError.Failure2 {
+} catch TestError.Failure2(let data) {
     // Expected
+    assert(data == "DATA")
+}
+
+do {
+    try funcWithError(input: 40);
+    fatalError("funcWithError should have thrown")
+} catch TestError.Failure3(let code) {
+    // Expected
+    assert(code == 40)
 }
 
 do {
@@ -27,5 +36,5 @@ do {
 }
 
 // These shouldn't throw
-try! funcWithError(input: 2);
+try! funcWithError(input: 200);
 try! funcWithFlatError(input: 1);

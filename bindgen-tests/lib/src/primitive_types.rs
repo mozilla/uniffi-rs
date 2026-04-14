@@ -189,3 +189,10 @@ pub fn sum_with_many_types(
         sum
     }
 }
+
+/// Test a multi-word argument.  `the_argument` should be normalized to the naming style of the
+/// foreign language.
+#[uniffi::export]
+pub fn func_with_multi_word_arg(the_argument: i32) -> i32 {
+    the_argument
+}

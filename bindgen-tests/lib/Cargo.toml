@@ -18,11 +18,11 @@ uniffi-bindgen-tests-external-types-source = { path = "../external-types" }
 
 [features]
 default = ["simple_fns", "primitive_types", "records", "enums", "compound_types", "interfaces",
-    "custom_types", "errors", "callback_interfaces", "futures", "trait_interfaces", "complex_fns",
-    "external-types", "renames", "recursive_types"]
+    "custom_types", "errors", "callback_interfaces", "futures", "trait_interfaces", "defaults",
+    "external-types", "renames", "bytes", "recursive_types", "time", "rust_traits"]
 simple_fns = []
 primitive_types = []
-complex_fns = []
+defaults = []
 compound_types = []
 records = []
 enums = []
@@ -34,4 +34,7 @@ trait_interfaces = []
 futures = []
 external-types = []
 renames = []
+bytes = []
 recursive_types = []
+time = []
+rust_traits = []

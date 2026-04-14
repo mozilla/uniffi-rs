@@ -16,6 +16,11 @@ impl TestInterface {
         Self { value }
     }
 
+    #[uniffi::constructor]
+    pub fn secondary_constructor(value: u32) -> Self {
+        Self { value: value * 2 }
+    }
+
     pub fn get_value(&self) -> u32 {
         self.value
     }
@@ -25,6 +30,12 @@ impl TestInterface {
     /// The count does not include the extra reference needed to call this method.
     pub fn ref_count(self: Arc<Self>) -> u32 {
         (Arc::strong_count(&self) - 1) as u32
+    }
+
+    /// Test a multi-word argument.  `the_argument` should be normalized to the naming style of the
+    /// foreign language.
+    pub fn method_with_multi_word_arg(&self, the_argument: String) -> String {
+        the_argument
     }
 }
 
@@ -46,4 +57,11 @@ pub fn swap_test_interfaces(interfaces: TwoTestInterfaces) -> TwoTestInterfaces 
         first: interfaces.second,
         second: interfaces.first,
     }
+}
+
+// Test interfaces in enums
+#[derive(uniffi::Enum)]
+pub enum TestInterfaceEnum {
+    One { i: Arc<TestInterface> },
+    Two { i: Arc<TestInterface> },
 }

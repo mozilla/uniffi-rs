@@ -11,6 +11,8 @@ pub enum TestError {
     Failure1,
     #[error("Failure2(data={data})")]
     Failure2 { data: String },
+    #[error("Failure3(code={0})")]
+    Failure3(u32),
 }
 
 /// Flat error enum
@@ -34,6 +36,7 @@ pub fn func_with_error(input: u32) -> Result<(), TestError> {
         1 => Err(TestError::Failure2 {
             data: "DATA".to_string(),
         }),
+        n if n < 100 => Err(TestError::Failure3(n)),
         _ => Ok(()),
     }
 }

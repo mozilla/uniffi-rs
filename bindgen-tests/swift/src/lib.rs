@@ -70,8 +70,8 @@ mod test {
     }
 
     #[test]
-    fn test_complex_fns() {
-        run_tests(test_dir(), "tests/complex_fns.swift");
+    fn test_defaults() {
+        run_tests(test_dir(), "tests/defaults.swift");
     }
 
     #[test]
@@ -90,8 +90,23 @@ mod test {
     }
 
     #[test]
+    fn test_bytes() {
+        run_tests(test_dir(), "tests/bytes.swift");
+    }
+
+    #[test]
     fn test_recursive_types() {
         run_tests(test_dir(), "tests/recursive_types.swift");
+    }
+
+    #[test]
+    fn test_time() {
+        run_tests(test_dir(), "tests/time.swift");
+    }
+
+    #[test]
+    fn test_rust_traits() {
+        run_tests(test_dir(), "tests/rust_traits.swift");
     }
 
     fn test_dir() -> &'static Utf8Path {

@@ -71,8 +71,8 @@ mod test {
     }
 
     #[test]
-    fn test_complex_fns() {
-        run_tests(test_dir(), "tests/complex_fns.py");
+    fn test_defaults() {
+        run_tests(test_dir(), "tests/defaults.py");
     }
 
     #[test]
@@ -91,8 +91,23 @@ mod test {
     }
 
     #[test]
+    fn test_bytes() {
+        run_tests(test_dir(), "tests/bytes.py");
+    }
+
+    #[test]
     fn test_recursive_types() {
         run_tests(test_dir(), "tests/recursive_types.py");
+    }
+
+    #[test]
+    fn test_time() {
+        run_tests(test_dir(), "tests/time.py");
+    }
+
+    #[test]
+    fn test_rust_traits() {
+        run_tests(test_dir(), "tests/rust_traits.py");
     }
 
     fn test_dir() -> &'static Utf8Path {

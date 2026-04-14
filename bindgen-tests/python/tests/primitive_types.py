@@ -47,5 +47,9 @@ class TestPrimitiveTypes(unittest.TestCase):
         # This function will sum up all the numbers, then negate the value since we passed in `true`
         self.assertEqual(sum_with_many_types(1, -2, 3, -4, 5, -6, 7, -8, 9.5, -10.5, True), 5)
 
+    def test_argument_name_mapping(self):
+        # the following calls will fail if the argument name differs
+        func_with_multi_word_arg(the_argument=16)
+
 if __name__ == '__main__':
     unittest.main()
