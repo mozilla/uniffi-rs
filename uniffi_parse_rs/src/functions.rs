@@ -8,7 +8,7 @@ use crate::{
     attrs::{DefaultMap, FunctionAttributes},
     paths::LookupCache,
     ErrorKind::*,
-    Ir, RPath, Result,
+    Ir, RPath, Result, Visibility,
 };
 
 #[derive(Clone)]
@@ -16,6 +16,7 @@ pub struct Function {
     pub attrs: FunctionAttributes,
     pub is_async: bool,
     pub ident: Ident,
+    pub vis: Visibility,
     pub args: Vec<Argument>,
     pub return_ty: ReturnType,
 }
@@ -36,6 +37,7 @@ impl Function {
         Ok(Self {
             attrs,
             ident: f.sig.ident,
+            vis: f.vis.into(),
             is_async: f.sig.asyncness.is_some(),
             args: f
                 .sig
@@ -51,28 +53,25 @@ impl Function {
         &self,
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
-        module_path: &RPath<'ir>,
+        item_path: RPath<'ir>,
     ) -> Result<uniffi_meta::FnMetadata> {
+        let module_path = item_path.parent()?;
+        let names = item_path.public_path_to_item(ir, cache)?;
         let (return_type, throws) =
             self.return_ty
-                .return_type_and_throws(ir, cache, module_path)?;
-        let item_name = self.ident.unraw().to_string();
-        let (name, orig_name) = match &self.attrs.name {
-            None => (item_name, None),
-            Some(name) => (name.clone(), Some(item_name)),
-        };
+                .return_type_and_throws(ir, cache, &module_path)?;
 
         Ok(uniffi_meta::FnMetadata {
-            module_path: module_path.path_string(),
-            name,
-            orig_name,
+            module_path: names.module_path,
+            name: names.name,
+            orig_name: names.orig_name,
             is_async: self.is_async,
             docstring: self.attrs.docstring.clone(),
             checksum: None,
             inputs: self
                 .args
                 .iter()
-                .map(|arg| arg.create_fn_metadata(ir, cache, module_path, &self.attrs.defaults))
+                .map(|arg| arg.create_fn_metadata(ir, cache, &module_path, &self.attrs.defaults))
                 .collect::<Result<Vec<_>>>()?,
             return_type,
             throws,

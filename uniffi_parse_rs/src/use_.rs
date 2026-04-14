@@ -5,9 +5,10 @@
 use proc_macro2::Span;
 use syn::{punctuated::Punctuated, spanned::Spanned, Ident, ItemUse, Token, UseTree};
 
-use crate::{ErrorKind::*, Item};
+use crate::{ErrorKind::*, Item, Visibility};
 
 pub struct UseItem {
+    pub vis: Visibility,
     // Path to the item being imported
     pub path: syn::Path,
     // Name of the import
@@ -16,6 +17,7 @@ pub struct UseItem {
 }
 
 pub struct UseGlob {
+    pub vis: Visibility,
     // Path to the module that's being imported
     pub module_path: syn::Path,
     pub star_token: Token![*],
@@ -27,11 +29,12 @@ pub fn parse_use(use_item: ItemUse) -> syn::Result<Vec<Item>> {
         segments: Punctuated::new(),
     };
     let mut items = vec![];
-    parse_use_recurse(&path, use_item.tree, &mut items)?;
+    parse_use_recurse(use_item.vis.into(), &path, use_item.tree, &mut items)?;
     Ok(items)
 }
 
 fn parse_use_recurse(
+    vis: Visibility,
     current_path: &syn::Path,
     mut tree: UseTree,
     items: &mut Vec<Item>,
@@ -59,6 +62,7 @@ fn parse_use_recurse(
                 use_name.ident
             };
             items.push(Item::UseItem(UseItem {
+                vis,
                 path: current_path,
                 ident,
                 span,
@@ -68,6 +72,7 @@ fn parse_use_recurse(
             let span = use_rename.span();
             current_path.segments.push(use_rename.ident.into());
             items.push(Item::UseItem(UseItem {
+                vis,
                 path: current_path,
                 ident: use_rename.rename,
                 span,
@@ -75,13 +80,14 @@ fn parse_use_recurse(
         }
         UseTree::Glob(use_glob) => {
             items.push(Item::UseGlob(UseGlob {
+                vis,
                 module_path: current_path,
                 star_token: use_glob.star_token,
             }));
         }
         UseTree::Group(use_group) => {
             for tree in use_group.items {
-                parse_use_recurse(&current_path, tree, items)?;
+                parse_use_recurse(vis, &current_path, tree, items)?;
             }
         }
         UseTree::Path(_) => unreachable!(),

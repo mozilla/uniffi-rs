@@ -93,6 +93,8 @@ pub enum ErrorKind {
     InvalidRepr,
     #[error("Invalid discriminant")]
     InvalidDiscr,
+    #[error("Can't find public path to item: {0}")]
+    NoPubPath(String),
     #[error("uniffi_parse_rs internal error: {0}")]
     InternalError(String),
     #[error("Invalid file path: {0}")]

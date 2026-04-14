@@ -34,6 +34,8 @@ mod submod {
     }
 }
 
+pub use submod::Enum;
+
 #[derive(uniffi::Enum)]
 #[repr(u8)]
 pub enum U8Enum {
@@ -52,8 +54,7 @@ pub enum i8Enum {
 
 #[uniffi::export(default(a=0), name="func_renamed")]
 /// Function docstring
-pub fn func(a: u8, r: Record, e: &submod::Enum, s: &str) {
-}
+pub fn func(a: u8, r: Record, e: &submod::Enum, s: &str) { }
 
 /// Object docstring
 #[derive(uniffi::Object)]
@@ -149,3 +150,5 @@ uniffi::custom_type!(
         try_from: |s| s.try_from(),
     }
 );
+
+pub struct CustomType(String);

@@ -11,13 +11,14 @@ use crate::{
     paths::LookupCache,
     Argument, Error,
     ErrorKind::*,
-    Ir, RPath, Result, ReturnType,
+    Ir, RPath, Result, ReturnType, Visibility,
 };
 
 #[derive(Clone)]
 pub struct Object {
     pub attrs: ObjectAttributes,
     pub ident: Ident,
+    pub vis: Visibility,
 }
 
 #[derive(Clone)]
@@ -45,21 +46,25 @@ pub struct SelfArg {
 }
 
 impl Object {
-    pub fn parse(attrs: ObjectAttributes, ident: Ident) -> syn::Result<Self> {
-        Ok(Self { attrs, ident })
+    pub fn parse(attrs: ObjectAttributes, ident: Ident, vis: syn::Visibility) -> syn::Result<Self> {
+        Ok(Self {
+            attrs,
+            ident,
+            vis: vis.into(),
+        })
     }
 
-    pub fn obj_metadata<'ir>(&self, path: &RPath<'ir>) -> Result<uniffi_meta::ObjectMetadata> {
-        let item_name = self.ident.unraw().to_string();
-        let (name, orig_name) = match &self.attrs.name {
-            None => (item_name, None),
-            Some(name) => (name.clone(), Some(item_name)),
-        };
-
+    pub fn obj_metadata<'ir>(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        item_path: RPath<'ir>,
+    ) -> Result<uniffi_meta::ObjectMetadata> {
+        let names = item_path.public_path_to_item(ir, cache)?;
         Ok(uniffi_meta::ObjectMetadata {
-            module_path: path.path_string(),
-            name,
-            orig_name,
+            module_path: names.module_path,
+            name: names.name,
+            orig_name: names.orig_name,
             remote: self.attrs.remote,
             docstring: self.attrs.docstring.clone(),
             imp: ObjectImpl::Struct,
