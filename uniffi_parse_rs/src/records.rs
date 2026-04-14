@@ -7,13 +7,14 @@ use syn::{ext::IdentExt, Ident, ItemStruct};
 use crate::{
     attrs::{FieldAttributes, RecordAttributes},
     paths::LookupCache,
-    CompileEnv, Ir, RPath, Result,
+    CompileEnv, Ir, RPath, Result, Visibility,
 };
 
 #[derive(Clone)]
 pub struct Record {
     pub attrs: RecordAttributes,
     pub ident: Ident,
+    pub vis: Visibility,
     pub fields: Vec<Field>,
 }
 
@@ -35,6 +36,7 @@ impl Record {
         Ok(Self {
             attrs,
             ident: st.ident,
+            vis: st.vis.into(),
             fields,
         })
     }
@@ -43,23 +45,19 @@ impl Record {
         &self,
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
-        path: &RPath<'ir>,
+        item_path: RPath<'ir>,
     ) -> Result<uniffi_meta::RecordMetadata> {
-        let item_name = self.ident.unraw().to_string();
-        let (name, orig_name) = match &self.attrs.name {
-            None => (item_name, None),
-            Some(name) => (name.clone(), Some(item_name)),
-        };
+        let names = item_path.public_path_to_item(ir, cache)?;
         Ok(uniffi_meta::RecordMetadata {
-            module_path: path.path_string(),
-            name,
-            orig_name,
+            module_path: names.module_path,
+            name: names.name,
+            orig_name: names.orig_name,
             remote: self.attrs.remote,
             docstring: self.attrs.docstring.clone(),
             fields: self
                 .fields
                 .iter()
-                .map(|f| f.create_field_metadata(ir, cache, path))
+                .map(|f| f.create_field_metadata(ir, cache, &item_path.parent()?))
                 .collect::<Result<Vec<_>>>()?,
         })
     }

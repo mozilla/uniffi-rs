@@ -51,3 +51,18 @@ use uniffi::custom_type as CustomTypeConflict;
 
 #[derive(Record)]
 pub struct CustomTypeConflict { }
+
+// Functions use the value namespace rather than the function namespace, so this actually isn't a
+// conflict
+#[uniffi::export]
+pub fn RenamedRecordConflict() { }
+
+// It also means you can have a function and a module with the same name
+mod mod_fn_same_name {
+    #[uniffi::export]
+    pub fn a_function() { }
+
+}
+
+#[uniffi::export]
+pub fn mod_fn_same_name() { }
