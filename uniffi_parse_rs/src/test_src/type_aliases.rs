@@ -3,9 +3,9 @@ pub struct Record { }
 
 pub type RecordAlias = Record;
 
-mod submod {
+pub mod submod {
     #[derive(uniffi::Record)]
-    pub struct Record { }
+    pub struct Record2 { }
 }
 
 mod submod2 {
@@ -13,7 +13,7 @@ mod submod2 {
     pub type SubmoduleRecordAlias = super::SubmoduleRecordAlias;
 }
 
-pub type SubmoduleRecordAlias = submod::Record;
+pub type SubmoduleRecordAlias = submod::Record2;
 
 pub type UnitAlias = ();
 

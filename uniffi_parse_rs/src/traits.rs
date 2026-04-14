@@ -8,12 +8,13 @@ use uniffi_meta::{CallbackInterfaceMetadata, ObjectMetadata};
 use crate::{
     attrs::{MethodAttributes, TraitAttributes, TraitExportType},
     paths::LookupCache,
-    Argument, CompileEnv, Ir, RPath, Result, ReturnType, SelfArg,
+    Argument, CompileEnv, Ir, RPath, Result, ReturnType, SelfArg, Visibility,
 };
 
 pub struct Trait {
     pub attrs: TraitAttributes,
     pub ident: Ident,
+    pub vis: Visibility,
     pub methods: Vec<TraitMethod>,
 }
 
@@ -41,6 +42,7 @@ impl Trait {
         Ok(Self {
             attrs,
             ident: tr.ident,
+            vis: tr.vis.into(),
             methods,
         })
     }
@@ -49,22 +51,19 @@ impl Trait {
         &self,
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
-        module_path: &RPath<'ir>,
+        item_path: RPath<'ir>,
     ) -> Result<Vec<uniffi_meta::Metadata>> {
+        let module_path = item_path.parent()?;
+        let names = item_path.public_path_to_item(ir, cache)?;
         let mut items = vec![];
 
-        let trait_name = self.ident.unraw().to_string();
-        let (trait_name, orig_name) = match &self.attrs.name {
-            None => (trait_name, None),
-            Some(name) => (name.clone(), Some(trait_name)),
-        };
         let self_ty = match self.attrs.export_ty {
             TraitExportType::TraitInterface => {
                 items.push(
                     ObjectMetadata {
-                        module_path: module_path.path_string(),
-                        name: trait_name.clone(),
-                        orig_name,
+                        module_path: names.module_path.clone(),
+                        name: names.name.clone(),
+                        orig_name: names.orig_name,
                         docstring: self.attrs.docstring.clone(),
                         imp: uniffi_meta::ObjectImpl::Trait,
                         remote: false,
@@ -72,17 +71,17 @@ impl Trait {
                     .into(),
                 );
                 uniffi_meta::Type::Object {
-                    module_path: module_path.path_string(),
-                    name: trait_name.clone(),
+                    module_path: names.module_path,
+                    name: names.name.clone(),
                     imp: uniffi_meta::ObjectImpl::Trait,
                 }
             }
             TraitExportType::TraitInterfaceWithForeign => {
                 items.push(
                     ObjectMetadata {
-                        module_path: module_path.path_string(),
-                        name: trait_name.clone(),
-                        orig_name,
+                        module_path: names.module_path.clone(),
+                        name: names.name.clone(),
+                        orig_name: names.orig_name,
                         docstring: self.attrs.docstring.clone(),
                         imp: uniffi_meta::ObjectImpl::CallbackTrait,
                         remote: false,
@@ -90,29 +89,29 @@ impl Trait {
                     .into(),
                 );
                 uniffi_meta::Type::Object {
-                    module_path: module_path.path_string(),
-                    name: trait_name.clone(),
+                    module_path: names.module_path,
+                    name: names.name.clone(),
                     imp: uniffi_meta::ObjectImpl::CallbackTrait,
                 }
             }
             TraitExportType::CallbackInterface => {
                 items.push(
                     CallbackInterfaceMetadata {
-                        module_path: module_path.path_string(),
-                        name: trait_name.clone(),
+                        module_path: names.module_path.clone(),
+                        name: names.name.clone(),
                         docstring: self.attrs.docstring.clone(),
                     }
                     .into(),
                 );
                 uniffi_meta::Type::CallbackInterface {
-                    module_path: module_path.path_string(),
-                    name: trait_name.clone(),
+                    module_path: names.module_path,
+                    name: names.name.clone(),
                 }
             }
         };
         for (i, m) in self.methods.iter().enumerate() {
             items.push(
-                m.to_trait_method_metadata(ir, cache, module_path, &trait_name, &self_ty, i)?
+                m.to_trait_method_metadata(ir, cache, &module_path, &names.name, &self_ty, i)?
                     .into(),
             );
         }

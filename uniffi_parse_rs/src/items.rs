@@ -6,7 +6,9 @@ use std::fmt;
 
 use syn::{ext::IdentExt, Ident, ItemMacro, ItemType, LitStr, Path};
 
-use crate::{CustomType, Enum, Function, Impl, Module, Object, Record, Trait, UseGlob, UseItem};
+use crate::{
+    CustomType, Enum, Function, Impl, Module, Object, Record, Trait, UseGlob, UseItem, Visibility,
+};
 
 /// Item enum
 ///
@@ -25,6 +27,9 @@ pub enum Item {
     UseGlob(UseGlob),
     UseRemoteType(Path),
     IncludeScaffolding(LitStr),
+    // syn::Item that's doesn't have a UniFFI attribute.
+    // These still can be used as custom types though.
+    NonUniffi(Visibility, Ident),
     /// Macro expression that we haven't evaluated in any way yet.
     ///
     /// `macros::resolve_macros` inspects these macros and converts them to other variants like
@@ -88,6 +93,7 @@ impl Item {
             Item::Trait(tr) => Some(tr.ident.unraw()),
             Item::Type(ty) => Some(ty.ident.unraw()),
             Item::CustomType(c) => Some(c.ident.unraw()),
+            Item::NonUniffi(_, ident) => Some(ident.unraw()),
             Item::UseRemoteType(p) => p.segments.last().map(|s| s.ident.unraw()),
             _ => None,
         }
@@ -100,6 +106,39 @@ impl Item {
                 Item::Udl(ty) => ty.name().unwrap_or("<unnamed>").to_string(),
                 _ => "<unnamed>".to_string(),
             },
+        }
+    }
+
+    pub fn name_from_attrs(&self) -> Option<&str> {
+        match self {
+            Item::Record(r) => r.attrs.name.as_deref(),
+            Item::Enum(e) => e.attrs.name.as_deref(),
+            Item::Object(o) => o.attrs.name.as_deref(),
+            Item::Fn(f) => f.attrs.name.as_deref(),
+            Item::Trait(t) => t.attrs.name.as_deref(),
+            _ => None,
+        }
+    }
+
+    pub fn vis(&self) -> Visibility {
+        match self {
+            Self::Module(m) => m.vis,
+            Self::Record(r) => r.vis,
+            Self::Enum(e) => e.vis,
+            Self::Object(o) => o.vis,
+            Self::Fn(f) => f.vis,
+            Self::Trait(t) => t.vis,
+            Self::UseItem(u) => u.vis,
+            Self::UseGlob(u) => u.vis,
+            Self::NonUniffi(vis, _) => *vis,
+            Self::Type(t) => t.vis.clone().into(),
+            Self::Builtin(_)
+            | Self::UseRemoteType(_)
+            | Self::CustomType(_)
+            | Self::Macro(_)
+            | Self::Udl(_) => Visibility::Public,
+            // "visibility" doesn't mean anything for these items, let's return `Private`
+            Self::Impl(_) | Self::IncludeScaffolding(_) => Visibility::Private,
         }
     }
 
@@ -116,6 +155,11 @@ impl Item {
             Item::CustomType(_) => true,
             _ => false,
         }
+    }
+
+    /// Check if two refs point to the same item
+    pub fn is(&self, other: &Self) -> bool {
+        std::ptr::eq(self, other)
     }
 }
 
@@ -154,6 +198,7 @@ impl fmt::Debug for Item {
                 .debug_tuple("UseGlob")
                 .field(&use_glob.module_path)
                 .finish(),
+            Self::NonUniffi(_, i) => f.debug_tuple("NonUniffi").field(&i.to_string()).finish(),
             Self::UseRemoteType(_) => f.debug_tuple("UseRemoteType").finish(),
             Self::IncludeScaffolding(_) => f.debug_tuple("IncludeScaffolding").finish(),
             Self::Builtin(builtin) => f.debug_tuple("Builtin").field(&builtin).finish(),

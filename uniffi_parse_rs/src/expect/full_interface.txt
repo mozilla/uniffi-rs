@@ -36,7 +36,7 @@
                 FnParamMetadata {
                     name: "e",
                     ty: Enum {
-                        module_path: "full_interface::submod",
+                        module_path: "full_interface",
                         name: "EnumRenamed",
                     },
                     by_ref: true,
@@ -214,6 +214,70 @@
     Enum(
         EnumMetadata {
             module_path: "full_interface",
+            name: "EnumRenamed",
+            orig_name: Some(
+                "Enum",
+            ),
+            shape: Enum,
+            remote: false,
+            variants: [
+                VariantMetadata {
+                    name: "One",
+                    orig_name: None,
+                    discr: None,
+                    fields: [
+                        FieldMetadata {
+                            name: "r",
+                            orig_name: None,
+                            ty: Record {
+                                module_path: "full_interface",
+                                name: "RecordRenamed",
+                            },
+                            default: None,
+                            docstring: None,
+                        },
+                    ],
+                    docstring: Some(
+                        "Variant docstring",
+                    ),
+                },
+                VariantMetadata {
+                    name: "TwoRenamed",
+                    orig_name: Some(
+                        "Two",
+                    ),
+                    discr: None,
+                    fields: [
+                        FieldMetadata {
+                            name: "",
+                            orig_name: None,
+                            ty: Int8,
+                            default: None,
+                            docstring: None,
+                        },
+                        FieldMetadata {
+                            name: "",
+                            orig_name: None,
+                            ty: UInt8,
+                            default: None,
+                            docstring: None,
+                        },
+                    ],
+                    docstring: Some(
+                        "Variant2 docstring",
+                    ),
+                },
+            ],
+            discr_type: None,
+            non_exhaustive: true,
+            docstring: Some(
+                "Enum docstring",
+            ),
+        },
+    ),
+    Enum(
+        EnumMetadata {
+            module_path: "full_interface",
             name: "Error",
             orig_name: None,
             shape: Error {
@@ -340,70 +404,6 @@
             ),
             non_exhaustive: false,
             docstring: None,
-        },
-    ),
-    Enum(
-        EnumMetadata {
-            module_path: "full_interface::submod",
-            name: "EnumRenamed",
-            orig_name: Some(
-                "Enum",
-            ),
-            shape: Enum,
-            remote: false,
-            variants: [
-                VariantMetadata {
-                    name: "One",
-                    orig_name: None,
-                    discr: None,
-                    fields: [
-                        FieldMetadata {
-                            name: "r",
-                            orig_name: None,
-                            ty: Record {
-                                module_path: "full_interface",
-                                name: "RecordRenamed",
-                            },
-                            default: None,
-                            docstring: None,
-                        },
-                    ],
-                    docstring: Some(
-                        "Variant docstring",
-                    ),
-                },
-                VariantMetadata {
-                    name: "TwoRenamed",
-                    orig_name: Some(
-                        "Two",
-                    ),
-                    discr: None,
-                    fields: [
-                        FieldMetadata {
-                            name: "",
-                            orig_name: None,
-                            ty: Int8,
-                            default: None,
-                            docstring: None,
-                        },
-                        FieldMetadata {
-                            name: "",
-                            orig_name: None,
-                            ty: UInt8,
-                            default: None,
-                            docstring: None,
-                        },
-                    ],
-                    docstring: Some(
-                        "Variant2 docstring",
-                    ),
-                },
-            ],
-            discr_type: None,
-            non_exhaustive: true,
-            docstring: Some(
-                "Enum docstring",
-            ),
         },
     ),
     Constructor(

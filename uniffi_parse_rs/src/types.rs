@@ -16,7 +16,7 @@ use uniffi_meta::ObjectImpl;
 
 use crate::{
     attrs::TraitExportType, files::FileId, paths::LookupCache, BuiltinItem, Error, ErrorContext,
-    ErrorKind::*, Ir, Item, RPath, Result,
+    ErrorKind::*, Ir, Item, Namespace, RPath, Result,
 };
 
 #[derive(Debug, PartialEq, Eq)]
@@ -373,7 +373,7 @@ impl<'ir> RPath<'ir> {
                 if ty_path.path.is_ident("Self") {
                     return Ok(Type::SelfTy);
                 }
-                let path_to_type = self.resolve(ir, cache, &ty_path.path)?;
+                let path_to_type = self.resolve(ir, cache, &ty_path.path, Namespace::Type)?;
                 // We can use `mem::take` to remove the generic_params and use them for this lookup.
                 // If we need to recurse another level, we want a new set of generic params anyways.
                 let generics = GenericArgs::new(
@@ -383,40 +383,35 @@ impl<'ir> RPath<'ir> {
                 )?;
 
                 match path_to_type.item()? {
-                    Item::Record(rec) => {
+                    Item::Record(_) => {
                         generics.check_empty(self.file_id())?;
+                        let names = path_to_type.public_path_to_item(ir, cache)?;
                         Ok(Type::Record {
-                            module_path: path_to_type.parent_module()?.path_string(),
-                            name: rec
-                                .attrs
-                                .name
-                                .clone()
-                                .unwrap_or_else(|| rec.ident.to_string()),
+                            module_path: names.module_path,
+                            name: names.name,
                         })
                     }
-                    Item::Enum(en) => {
+                    Item::Enum(_) => {
                         generics.check_empty(self.file_id())?;
+                        let names = path_to_type.public_path_to_item(ir, cache)?;
                         Ok(Type::Enum {
-                            module_path: path_to_type.parent_module()?.path_string(),
-                            name: en
-                                .attrs
-                                .name
-                                .clone()
-                                .unwrap_or_else(|| en.ident.to_string()),
+                            module_path: names.module_path,
+                            name: names.name,
                         })
                     }
-                    Item::Object(o) => {
+                    Item::Object(_) => {
                         generics.check_empty(self.file_id())?;
+                        let names = path_to_type.public_path_to_item(ir, cache)?;
                         Ok(Type::Object {
-                            module_path: path_to_type.parent_module()?.path_string(),
-                            name: o.attrs.name.clone().unwrap_or_else(|| o.ident.to_string()),
+                            module_path: names.module_path,
+                            name: names.name,
                         })
                     }
                     Item::Type(type_alias) => {
                         if !context.paths_seen.insert(path_to_type.path_string()) {
                             return Err(Error::new(self.file_id(), ty.span(), CycleDetected));
                         }
-                        let module_path = path_to_type.parent_module()?;
+                        let module_path = path_to_type.parent()?;
                         context.generic_params = generics
                             .resolve_generic_params(
                                 ir,
@@ -480,7 +475,7 @@ impl<'ir> RPath<'ir> {
                         Err(Error::new(self.file_id(), ty.span(), TraitWithoutDyn))
                     }
                     Item::CustomType(custom_type) => {
-                        let module_path = path_to_type.parent_module()?;
+                        let module_path = path_to_type.parent()?;
                         let builtin =
                             module_path._resolve_type(ir, cache, &custom_type.builtin, context)?;
                         Ok(Type::Custom {
@@ -505,7 +500,7 @@ impl<'ir> RPath<'ir> {
                 if trait_bounds.len() != 1 {
                     return Err(Error::new(self.file_id(), ty.span(), InvalidDynTrait));
                 }
-                let trait_path = self.resolve(ir, cache, trait_bounds[0])?;
+                let trait_path = self.resolve(ir, cache, trait_bounds[0], Namespace::Type)?;
                 match trait_path.item()? {
                     Item::Trait(tr) => Ok(Type::Trait {
                         module_path: self.path_string(),
@@ -1145,7 +1140,7 @@ pub mod tests {
             run_resolve_type(&ir, &mut cache, "type_aliases", "SubmoduleRecordAlias"),
             Ok(Type::Record {
                 module_path: "type_aliases::submod".into(),
-                name: "Record".into(),
+                name: "Record2".into(),
             })
         );
         assert_eq!(
@@ -1157,7 +1152,7 @@ pub mod tests {
             ),
             Ok(Type::Record {
                 module_path: "type_aliases::submod".into(),
-                name: "Record".into(),
+                name: "Record2".into(),
             })
         );
         assert_eq!(
@@ -1210,12 +1205,12 @@ pub mod tests {
                 &ir,
                 &mut cache,
                 "type_aliases::submod",
-                "super::FileResult2<Record>"
+                "super::FileResult2<Record2>"
             ),
             Ok(Type::Result(
                 Box::new(Type::Record {
                     module_path: "type_aliases::submod".into(),
-                    name: "Record".into(),
+                    name: "Record2".into(),
                 }),
                 Box::new(Type::Enum {
                     module_path: "type_aliases".into(),

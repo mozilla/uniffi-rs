@@ -7,13 +7,14 @@
 //! Also handles resolving types, which is closely related.
 
 use core::fmt;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use proc_macro2::Span;
 use syn::{ext::IdentExt, spanned::Spanned, Ident, Path};
 
 use crate::{
-    files::FileId, BuiltinItem, Error, ErrorKind::*, Ir, Item, Module, Result, UseGlob, UseItem,
+    files::FileId, BuiltinItem, Error, ErrorKind::*, Ir, Item, ItemNames, Module, Result, UseGlob,
+    UseItem,
 };
 
 // For tests only, print tracing info.
@@ -62,7 +63,7 @@ impl<'ir> RPath<'ir> {
         self.items.is_empty()
     }
 
-    pub fn parent_module(&self) -> Result<Self> {
+    pub fn parent(&self) -> Result<Self> {
         match self.items.as_slice() {
             [] => Err(Error::internal("Path::parent_module: items is empty")),
             [_] => Err(Error::internal(
@@ -148,7 +149,13 @@ impl<'ir> RPath<'ir> {
     /// Resolve a syn Path into an RPath
     ///
     /// This is an instance method, since paths are resolved relative to an existing path.
-    pub fn resolve(&self, ir: &'ir Ir, cache: &mut LookupCache<'ir>, path: &Path) -> Result<Self> {
+    pub fn resolve(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        path: &Path,
+        namespace: Namespace,
+    ) -> Result<Self> {
         trace!(
             "Path::resolve {} -- {}",
             self.path_string(),
@@ -156,7 +163,7 @@ impl<'ir> RPath<'ir> {
         );
 
         if path.leading_colon.is_some() || self.items.is_empty() {
-            return self.resolve_global_path(ir, cache, path);
+            return self.resolve_global_path(ir, cache, path, namespace);
         }
 
         let mut current_path = self.clone();
@@ -164,17 +171,24 @@ impl<'ir> RPath<'ir> {
             return Err(Error::new(self.file_id(), path.span(), NotFound));
         }
         for (i, seg) in path.segments.iter().enumerate() {
+            // Use the type namespace for all items except the last,
+            // since we always want to match modules
+            let child_namespace = if i < path.segments.len() - 1 {
+                Namespace::Type
+            } else {
+                namespace
+            };
             trace!(
-                "  resolve (path: {}, ident: {})",
+                "  resolve (path: {}, ident: {} namespace: {child_namespace:?})",
                 current_path.path_string(),
                 seg.ident
             );
-            current_path = match current_path.child(ir, cache, &seg.ident) {
-                Ok(p) => p,
+            current_path = match current_path.child(ir, cache, &seg.ident, child_namespace) {
+                Ok(child_item) => child_item.path,
                 // For the first segment only, try falling back to a global lookup on lookup errors
                 Err(e) if i == 0 && e.is_not_found() => {
                     trace!("  PathError::NotFound, try global lookup");
-                    return self.resolve_global_path(ir, cache, path);
+                    return self.resolve_global_path(ir, cache, path, namespace);
                 }
                 Err(e) => return Err(e),
             }
@@ -188,6 +202,7 @@ impl<'ir> RPath<'ir> {
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
         path: &Path,
+        namespace: Namespace,
     ) -> Result<Self> {
         trace!("Path::resolve_global_path {}", quote::quote! { #path });
         if path.segments.is_empty() {
@@ -210,13 +225,20 @@ impl<'ir> RPath<'ir> {
             Some(crate_root) => {
                 let mut rpath = RPath::new(crate_root);
                 trace!("  found crate root (path: {})", rpath.path_string());
-                for seg in path.segments.iter().skip(1) {
+                for (i, seg) in path.segments.iter().enumerate().skip(1) {
                     trace!(
                         "  resolve_global_path (path: {}, ident: {})",
                         rpath.path_string(),
                         seg.ident
                     );
-                    rpath = rpath.child(ir, cache, &seg.ident)?;
+                    // Use the type namespace for all items except the last,
+                    // since we always want to match modules
+                    let child_namespace = if i < path.segments.len() - 1 {
+                        Namespace::Type
+                    } else {
+                        namespace
+                    };
+                    rpath = rpath.child(ir, cache, &seg.ident, child_namespace)?.path;
                 }
                 trace!("  resolved: {}", rpath.path_string());
                 Ok(rpath)
@@ -239,34 +261,49 @@ impl<'ir> RPath<'ir> {
     /// The child item path will be the canonical path for the item.
     /// When looking up `SomeItem` from a module with a `use crate::foo::bar::SomeItem` statement,
     /// the returned path will be `foo::bar::SomeItem` instead of `[current_path]::SomeItem`
-    fn child(&self, ir: &'ir Ir, cache: &mut LookupCache<'ir>, ident: &Ident) -> Result<Self> {
+    pub fn child(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        ident: &Ident,
+        namespace: Namespace,
+    ) -> Result<ChildItem<'ir>> {
         // Special case `super` and `crate`, no need to check the cache for this one.
         if ident == "super" {
-            return self
-                .parent_module()
-                .map_err(|_| Error::new(self.file_id(), ident.span(), SuperInvalid));
+            return match self.parent() {
+                Ok(path) => Ok(ChildItem {
+                    path,
+                    vis: Visibility::Public,
+                }),
+                Err(_) => Err(Error::new(self.file_id(), ident.span(), SuperInvalid)),
+            };
         } else if ident == "crate" {
-            return self
-                .crate_root()
-                .map_err(|_| Error::new(self.file_id(), ident.span(), CrateInvalid));
+            return match self.crate_root() {
+                Ok(path) => Ok(ChildItem {
+                    path,
+                    vis: Visibility::Public,
+                }),
+                Err(_) => Err(Error::new(self.file_id(), ident.span(), CrateInvalid)),
+            };
         }
 
         let Item::Module(module) = self.item()? else {
             // We currently assume non-module items have no child items
             return Err(Error::new(self.file_id(), ident.span(), NotFound));
         };
-        let key = (module.id, ident.clone());
-        match cache.0.get(&key) {
-            Some(CacheEntry::Result(result)) => return result.clone(),
-            Some(CacheEntry::Resolving) => {
-                return Err(Error::new(self.file_id(), ident.span(), CycleDetected));
-            }
-            None => {
-                cache.0.insert(key.clone(), CacheEntry::Resolving);
-            }
+        let key = (module.id, ident.clone(), namespace);
+        if cache.children_resolving.contains(&key) {
+            return Err(Error::new(self.file_id(), ident.span(), CycleDetected));
         }
-        let result = self._child(ir, cache, module, ident);
-        cache.0.insert(key, CacheEntry::Result(result.clone()));
+
+        if let Some(result) = cache.children.get(&key) {
+            return result.clone();
+        }
+
+        cache.children_resolving.insert(key.clone());
+        let result = self._child(ir, cache, module, ident, namespace);
+        cache.children_resolving.remove(&key);
+        cache.children.insert(key, result.clone());
         result
     }
 
@@ -281,21 +318,25 @@ impl<'ir> RPath<'ir> {
         cache: &mut LookupCache<'ir>,
         module: &'ir Module,
         ident: &Ident,
-    ) -> Result<Self> {
+        namespace: Namespace,
+    ) -> Result<ChildItem<'ir>> {
         let ident = ident.unraw();
-        if let Some(child) = self.child_udl_item(module, &ident)? {
-            return Ok(child);
+        if let Some(path) = self.child_udl_item(module, &ident, namespace)? {
+            return Ok(ChildItem {
+                path,
+                vis: Visibility::Public,
+            });
         }
-        if let Some(child) = self.child_special_item(ir, cache, module, &ident)? {
+        if let Some(child) = self.child_special_item(ir, cache, module, &ident, namespace)? {
             return Ok(child);
         }
         let mut use_globs = vec![];
         if let Some(child) =
-            self.child_item_or_non_glob_use(ir, cache, module, &ident, &mut use_globs)?
+            self.child_item_or_non_glob_use(ir, cache, module, &ident, &mut use_globs, namespace)?
         {
             return Ok(child);
         }
-        if let Some(child) = self.child_glob_use(ir, cache, &ident, use_globs)? {
+        if let Some(child) = self.child_glob_use(ir, cache, &ident, use_globs, namespace)? {
             Ok(child)
         } else {
             Err(Error::new(self.file_id(), ident.span(), NotFound))
@@ -303,11 +344,15 @@ impl<'ir> RPath<'ir> {
     }
 
     /// Try to find a UDL item for [Self::child]
-    fn child_udl_item(&self, module: &'ir Module, ident: &Ident) -> Result<Option<Self>> {
-        if let Some(item) = module.lookup_udl_item(ident) {
-            Ok(Some(self.append_child(item)))
-        } else {
-            Ok(None)
+    fn child_udl_item(
+        &self,
+        module: &'ir Module,
+        ident: &Ident,
+        namespace: Namespace,
+    ) -> Result<Option<Self>> {
+        match module.lookup_udl_item(ident) {
+            Some(item) if namespace.matches(item) => Ok(Some(self.append_child(item))),
+            _ => Ok(None),
         }
     }
 
@@ -320,9 +365,14 @@ impl<'ir> RPath<'ir> {
         cache: &mut LookupCache<'ir>,
         module: &'ir Module,
         ident: &Ident,
-    ) -> Result<Option<Self>> {
+        namespace: Namespace,
+    ) -> Result<Option<ChildItem<'ir>>> {
         let mut found = None;
-        for item in module.items.iter().filter(|i| i.is_special()) {
+        for item in module
+            .items
+            .iter()
+            .filter(|i| i.is_special() && namespace.matches(i))
+        {
             if let Some(item_ident) = item.ident() {
                 if item_ident != *ident {
                     continue;
@@ -337,8 +387,14 @@ impl<'ir> RPath<'ir> {
             }
         }
         match found {
-            Some((_, Item::UseRemoteType(path))) => self.resolve(ir, cache, path).map(Some),
-            Some((_, item)) => Ok(Some(self.append_child(item))),
+            Some((_, Item::UseRemoteType(path))) => Ok(Some(ChildItem {
+                path: self.resolve(ir, cache, path, namespace)?,
+                vis: Visibility::Public,
+            })),
+            Some((_, item)) => Ok(Some(ChildItem {
+                path: self.append_child(item),
+                vis: Visibility::Public,
+            })),
             None => Ok(None),
         }
     }
@@ -353,7 +409,8 @@ impl<'ir> RPath<'ir> {
         module: &'ir Module,
         ident: &Ident,
         use_globs: &mut Vec<&'ir UseGlob>,
-    ) -> Result<Option<Self>> {
+        namespace: Namespace,
+    ) -> Result<Option<ChildItem<'ir>>> {
         enum FoundItem<'ir> {
             Use(&'ir UseItem, RPath<'ir>),
             Item(Ident, &'ir Item),
@@ -374,15 +431,8 @@ impl<'ir> RPath<'ir> {
         }
         let mut found: Option<FoundItem<'ir>> = None;
         for item in module.items.iter() {
-            // Functions live in a different namespace than modules and types, which can lead to
-            // incorrect NameConflict errors.  Luckily, the only reason we need to resolve paths is
-            // to lookup types so we can just ignore skip any functions
-            if matches!(item, Item::Fn(_)) {
-                continue;
-            }
-
             if let Some(item_ident) = item.ident() {
-                if &item_ident == ident {
+                if &item_ident == ident && namespace.matches(item) {
                     if let Some(found) = found {
                         return Err(Error::new(self.file_id(), item_ident.span(), NameConflict)
                             .context(self.file_id(), found.span(), "previous item"));
@@ -392,7 +442,7 @@ impl<'ir> RPath<'ir> {
             } else {
                 match item {
                     Item::UseItem(use_item) if use_item.ident == *ident => {
-                        let resolved = match self.resolve(ir, cache, &use_item.path) {
+                        let resolved = match self.resolve(ir, cache, &use_item.path, namespace) {
                             Ok(p) => p,
                             // ignore not found errors, maybe this is an item from another
                             // crate.
@@ -400,30 +450,31 @@ impl<'ir> RPath<'ir> {
                             Err(e) => {
                                 return Err(e.context(
                                     self.file_id(),
-                                    use_item.ident.span(),
+                                    use_item.span,
                                     "while resolving use",
                                 ))
                             }
                         };
-
-                        if let Some(found) = &found {
-                            if found.matches_use(resolved) {
-                                // If multiple use statements resolve to the same item, that's
-                                // okay just skip the extra ones.
-                                continue;
+                        if namespace.matches(resolved.item()?) {
+                            if let Some(found) = &found {
+                                if found.matches_use(resolved) {
+                                    // If multiple use statements resolve to the same item, that's
+                                    // okay just skip the extra ones.
+                                    continue;
+                                }
+                                return Err(Error::new(
+                                    self.file_id(),
+                                    use_item.span,
+                                    NameConflict,
+                                )
+                                .context(
+                                    self.file_id(),
+                                    found.span(),
+                                    "previous item",
+                                ));
                             }
-                            return Err(Error::new(
-                                self.file_id(),
-                                use_item.ident.span(),
-                                NameConflict,
-                            )
-                            .context(
-                                self.file_id(),
-                                found.span(),
-                                "previous item",
-                            ));
+                            found = Some(FoundItem::Use(use_item, resolved));
                         }
-                        found = Some(FoundItem::Use(use_item, resolved));
                     }
                     Item::UseGlob(use_glob) => {
                         // Not used now, but let's store for the next step
@@ -434,8 +485,14 @@ impl<'ir> RPath<'ir> {
             }
         }
         match found {
-            Some(FoundItem::Item(_, item)) => Ok(Some(self.append_child(item))),
-            Some(FoundItem::Use(_, path)) => Ok(Some(path.clone())),
+            Some(FoundItem::Item(_, item)) => Ok(Some(ChildItem {
+                path: self.append_child(item),
+                vis: item.vis(),
+            })),
+            Some(FoundItem::Use(use_item, path)) => Ok(Some(ChildItem {
+                path: path.clone(),
+                vis: use_item.vis,
+            })),
             None => Ok(None),
         }
     }
@@ -447,14 +504,15 @@ impl<'ir> RPath<'ir> {
         cache: &mut LookupCache<'ir>,
         ident: &Ident,
         use_globs: Vec<&'ir UseGlob>,
-    ) -> Result<Option<Self>> {
+        namespace: Namespace,
+    ) -> Result<Option<ChildItem<'ir>>> {
         let mut found = None;
 
         for use_glob in use_globs {
             let mut path = use_glob.module_path.clone();
             path.segments.push(ident.clone().into());
 
-            let path = match self.resolve(ir, cache, &path) {
+            let path = match self.resolve(ir, cache, &path, namespace) {
                 Ok(path) => path,
                 Err(e) if e.is_not_found() || e.is_cycle_detected() => continue,
                 Err(e) => {
@@ -486,7 +544,79 @@ impl<'ir> RPath<'ir> {
 
         match found {
             None => Ok(None),
-            Some((path, _)) => Ok(Some(path)),
+            Some((path, use_glob)) => Ok(Some(ChildItem {
+                vis: use_glob.vis,
+                path,
+            })),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ChildItem<'ir> {
+    pub vis: Visibility,
+    pub path: RPath<'ir>,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum Visibility {
+    Public,
+    Private,
+}
+
+impl Visibility {
+    pub fn is_pub(&self) -> bool {
+        matches!(self, Self::Public)
+    }
+}
+
+impl From<syn::Visibility> for Visibility {
+    fn from(vis: syn::Visibility) -> Self {
+        match vis {
+            syn::Visibility::Public(_) => Self::Public,
+            _ => Self::Private,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Namespace {
+    Value,
+    Type,
+    Macro,
+    // Special-cased namespace that only matches Item::NonUniffi types.
+    // This is used to find the concrete type for a custom type.
+    NonUniffiType,
+}
+
+impl Namespace {
+    pub fn matches(&self, item: &Item) -> bool {
+        match self {
+            Self::Type => match item {
+                Item::Module(_)
+                | Item::Record(_)
+                | Item::Enum(_)
+                | Item::Object(_)
+                | Item::Trait(_)
+                | Item::CustomType(_)
+                | Item::Udl(_)
+                | Item::Type(_)
+                | Item::Builtin(_)
+                | Item::UseRemoteType(_) => true,
+                _ => false,
+            },
+            Self::Value => match item {
+                Item::Fn(_) => true,
+                _ => false,
+            },
+            Self::Macro => match item {
+                Item::Builtin(BuiltinItem::UniffiMacro(_)) => true,
+                _ => false,
+            },
+            Self::NonUniffiType => match item {
+                Item::NonUniffi(_, _) => true,
+                _ => false,
+            },
         }
     }
 }
@@ -513,13 +643,15 @@ impl fmt::Display for RPath<'_> {
 
 /// Cache for path lookups
 #[derive(Default)]
-pub struct LookupCache<'ir>(HashMap<(usize, Ident), CacheEntry<'ir>>);
-
-enum CacheEntry<'ir> {
-    Result(Result<RPath<'ir>>),
-    /// We're currently resolving this item, if we try to resolve this again that means there's a
-    /// circular dependency somewhere
-    Resolving,
+pub struct LookupCache<'ir> {
+    // Cached results for `RPath::child`
+    // This maps module id / ident / namespaces to lookup results
+    pub children: HashMap<(usize, Ident, Namespace), Result<ChildItem<'ir>>>,
+    // Module children we're currently resolving, this is used to detect cycles
+    pub children_resolving: HashSet<(usize, Ident, Namespace)>,
+    // Cached results for `RPath::public_path_to_item()`
+    // This maps path strings to lookup results
+    pub public_paths: HashMap<String, Result<ItemNames>>,
 }
 
 fn get_builtin_item(path: &Path) -> Option<&'static Item> {
@@ -604,9 +736,25 @@ pub mod tests {
     ) -> Result<String, ErrorKind> {
         let rpath = path_for_module(ir, module_path);
         rpath
-            .resolve(ir, cache, &syn::parse_str(path).unwrap())
+            .resolve(ir, cache, &syn::parse_str(path).unwrap(), Namespace::Type)
             .map(|path| format!("{path}"))
             .map_err(|e| e.kind)
+    }
+
+    fn run_resolve_item_value_namespace<'ir>(
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &str,
+        path: &str,
+    ) -> Result<String, ErrorKind> {
+        let rpath = path_for_module(ir, module_path);
+        rpath
+            .resolve(ir, cache, &syn::parse_str(path).unwrap(), Namespace::Value)
+            .map(|path| format!("{path}"))
+            .map_err(|e| {
+                println!("{e}");
+                e.kind
+            })
     }
 
     pub fn path_for_module<'ir>(ir: &'ir Ir, module_path: &str) -> RPath<'ir> {
@@ -848,6 +996,27 @@ pub mod tests {
         assert_eq!(
             run_resolve_item(&ir, &mut cache, "name_conflicts", "CustomTypeConflict"),
             Err(ErrorKind::NameConflict),
+        );
+
+        // Check resolving paths to functions, which use the value namespace.
+        assert_eq!(
+            run_resolve_item_value_namespace(
+                &ir,
+                &mut cache,
+                "name_conflicts",
+                "RenamedRecordConflict"
+            ),
+            Ok("name_conflicts::RenamedRecordConflict".into()),
+        );
+
+        assert_eq!(
+            run_resolve_item_value_namespace(
+                &ir,
+                &mut cache,
+                "name_conflicts",
+                "mod_fn_same_name::a_function"
+            ),
+            Ok("name_conflicts::mod_fn_same_name::a_function".into()),
         );
     }
 

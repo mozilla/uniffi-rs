@@ -10,13 +10,14 @@ use crate::{
     paths::LookupCache,
     CompileEnv,
     ErrorKind::*,
-    Field, Ir, RPath, Result,
+    Field, Ir, RPath, Result, Visibility,
 };
 
 #[derive(Clone)]
 pub struct Enum {
     pub attrs: EnumAttributes,
     pub ident: Ident,
+    pub vis: Visibility,
     pub variants: Vec<Variant>,
 }
 
@@ -40,6 +41,7 @@ impl Enum {
         Ok(Self {
             attrs,
             ident: e.ident,
+            vis: e.vis.into(),
             variants,
         })
     }
@@ -48,19 +50,15 @@ impl Enum {
         &self,
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
-        path: &RPath<'ir>,
+        item_path: RPath<'ir>,
     ) -> Result<uniffi_meta::EnumMetadata> {
+        let module_path = item_path.parent()?;
+        let names = item_path.public_path_to_item(ir, cache)?;
         let is_flat = matches!(self.attrs.shape, EnumShape::Error { flat: true });
-        let item_name = self.ident.unraw().to_string();
-        let (name, orig_name) = match &self.attrs.name {
-            None => (item_name, None),
-            Some(name) => (name.clone(), Some(item_name)),
-        };
-
         Ok(uniffi_meta::EnumMetadata {
-            module_path: path.path_string(),
-            name,
-            orig_name,
+            module_path: names.module_path,
+            name: names.name,
+            orig_name: names.orig_name,
             remote: self.attrs.remote,
             non_exhaustive: self.attrs.non_exhaustive,
             discr_type: self.attrs.discr_type.clone(),
@@ -69,7 +67,7 @@ impl Enum {
             variants: self
                 .variants
                 .iter()
-                .map(|v| v.create_variant_metadata(ir, cache, path, is_flat))
+                .map(|v| v.create_variant_metadata(ir, cache, &module_path, is_flat))
                 .collect::<Result<Vec<_>>>()?,
         })
     }
