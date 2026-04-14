@@ -5,8 +5,7 @@
 import uniffi_bindgen_tests
 
 assert(roundtripSimpleRec(rec: SimpleRec(a: 42)) == SimpleRec(a: 42))
-assert(RecWithDefault().a == 42)
-assert(RecWithDefault(a: 10).a == 10)
+assert(UnitRec() == UnitRec())
 assert(
   roundtripComplexRec(
     rec: ComplexRec(
@@ -20,6 +19,7 @@ assert(
       fieldI64: -7,
       fieldF32: 8.5,
       fieldF64: 9.5,
+      fieldString: "test",
       fieldRec: SimpleRec(a: 42)
     )
   ) == ComplexRec(
@@ -33,6 +33,7 @@ assert(
     fieldI64: -7,
     fieldF32: 8.5,
     fieldF64: 9.5,
+    fieldString: "test",
     fieldRec: SimpleRec(a: 42)
   )
 )

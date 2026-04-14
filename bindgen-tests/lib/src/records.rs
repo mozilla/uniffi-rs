@@ -8,10 +8,9 @@ pub struct SimpleRec {
 }
 
 #[derive(uniffi::Record)]
-pub struct RecWithDefault {
-    #[uniffi(default = 42)]
-    pub a: u8,
-}
+pub struct UnitRec;
+
+// Note: tuple-style records are currently not supported
 
 #[derive(uniffi::Record)]
 pub struct ComplexRec {
@@ -25,7 +24,6 @@ pub struct ComplexRec {
     pub field_i64: i64,
     pub field_f32: f32,
     pub field_f64: f64,
-    #[uniffi(default = "DefaultString")]
     pub field_string: String,
     pub field_rec: SimpleRec,
 }

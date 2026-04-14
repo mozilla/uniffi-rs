@@ -10,9 +10,17 @@ try {
 
 try {
     funcWithError(1u)
-    throw RuntimeException("Should have thrown TestException.Failure1")
+    throw RuntimeException("Should have thrown TestException.Failure2")
 } catch (e: TestException.Failure2) {
     // Expected
+    assert(e.data == "DATA")
+}
+
+try {
+    funcWithError(50u)
+    throw RuntimeException("Should have thrown TestException.Failure3")
+} catch (e: TestException.Failure3) {
+    assert(e.v1 == 50u)
 }
 
 try {
@@ -23,5 +31,5 @@ try {
 }
 
 // These shouldn't throw
-funcWithError(2u)
+funcWithError(200u)
 funcWithFlatError(1u)

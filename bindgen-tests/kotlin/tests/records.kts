@@ -1,8 +1,7 @@
 import uniffi.uniffi_bindgen_tests.*
 
 assert(roundtripSimpleRec(SimpleRec(a=42.toUByte())) == SimpleRec(a=42.toUByte()))
-assert(RecWithDefault().a == 42.toUByte())
-assert(RecWithDefault(a=10.toUByte()).a == 10.toUByte())
+assert(UnitRec() == UnitRec())
 assert(
   roundtripComplexRec(
     ComplexRec(
@@ -16,6 +15,7 @@ assert(
       fieldI64=-7L,
       fieldF32=8.5.toFloat(),
       fieldF64=9.5,
+      fieldString="test",
       fieldRec=SimpleRec(a=42.toUByte())
     )
   ) == ComplexRec(
@@ -29,6 +29,7 @@ assert(
     fieldI64=-7L,
     fieldF32=8.5.toFloat(),
     fieldF64=9.5,
+    fieldString="test",
     fieldRec=SimpleRec(a=42.toUByte())
   )
 )

@@ -2,10 +2,13 @@ from test_package.uniffi_bindgen_tests import *
 import unittest
 
 class TestRecords(unittest.TestCase):
-    def test_records(self):
+    def test_simple_record(self):
         self.assertEqual(roundtrip_simple_rec(SimpleRec(a=42)), SimpleRec(a=42))
-        self.assertEqual(RecWithDefault().a, 42)
-        self.assertEqual(RecWithDefault(a=10).a, 10)
+
+    def test_unit_record(self):
+        self.assertEqual(UnitRec(), UnitRec())
+
+    def test_complex_record(self):
         self.assertEqual(
           roundtrip_complex_rec(
             ComplexRec(
@@ -19,6 +22,7 @@ class TestRecords(unittest.TestCase):
               field_i64=-7,
               field_f32=8.5,
               field_f64=9.5,
+              field_string="test",
               field_rec=SimpleRec(a=42)
             )
           ), ComplexRec(
@@ -32,6 +36,7 @@ class TestRecords(unittest.TestCase):
             field_i64=-7,
             field_f32=8.5,
             field_f64=9.5,
+            field_string="test",
             field_rec=SimpleRec(a=42)
           )
         )

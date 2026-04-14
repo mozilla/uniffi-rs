@@ -4,22 +4,31 @@ import unittest
 class TestEnums(unittest.TestCase):
     def test_simple_enums(self):
         self.assertEqual(
-            roundtrip_enum_with_data(EnumWithData.A(10)),
-            EnumWithData.A(10))
+            roundtrip_enum_with_data(EnumWithData.A(10, 20)),
+            EnumWithData.A(10, 20))
         self.assertEqual(
-            roundtrip_enum_with_data(EnumWithData.B("Ten")),
-            EnumWithData.B("Ten"))
+            roundtrip_enum_with_data(EnumWithData.B("Ten", 10)),
+            EnumWithData.B("Ten", 10))
         self.assertEqual(
             roundtrip_enum_with_data(EnumWithData.C()) ,
             EnumWithData.C())
+
+    def test_enum_fields(self):
+        a = EnumWithData.A(10, 20)
+        self.assertEqual(a.value, 10)
+        self.assertEqual(a.value2, 20)
+
+        b = EnumWithData.B("Ten", 10)
+        self.assertEqual(b[0], "Ten")
+        self.assertEqual(b[1], 10)
 
     def test_complex_enums(self):
         self.assertEqual(
             roundtrip_complex_enum(ComplexEnum.A(EnumNoData.C)),
             ComplexEnum.A(EnumNoData.C))
         self.assertEqual(
-            roundtrip_complex_enum(ComplexEnum.B(EnumWithData.A(20))),
-            ComplexEnum.B(EnumWithData.A(20)))
+            roundtrip_complex_enum(ComplexEnum.B(EnumWithData.A(20, 40))),
+            ComplexEnum.B(EnumWithData.A(20, 40)))
         self.assertEqual(
             roundtrip_complex_enum(ComplexEnum.C(SimpleRec(a=30))),
             ComplexEnum.C(SimpleRec(a=30)))

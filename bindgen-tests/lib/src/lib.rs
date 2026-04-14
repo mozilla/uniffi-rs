@@ -4,17 +4,20 @@
 
 uniffi::setup_scaffolding!("uniffi_bindgen_tests");
 
+#[cfg(feature = "bytes")]
+pub mod bytes;
+
 #[cfg(feature = "callback_interfaces")]
 pub mod callback_interfaces;
-
-#[cfg(feature = "complex_fns")]
-pub mod complex_fns;
 
 #[cfg(feature = "compound_types")]
 pub mod compound_types;
 
 #[cfg(feature = "custom_types")]
 pub mod custom_types;
+
+#[cfg(feature = "defaults")]
+pub mod defaults;
 
 #[cfg(feature = "enums")]
 pub mod enums;
@@ -43,8 +46,14 @@ pub mod recursive_types;
 #[cfg(feature = "renames")]
 pub mod renames;
 
+#[cfg(feature = "rust_traits")]
+pub mod rust_traits;
+
 #[cfg(feature = "simple_fns")]
 pub mod simple_fns;
+
+#[cfg(feature = "time")]
+pub mod time;
 
 #[cfg(feature = "trait_interfaces")]
 pub mod trait_interfaces;

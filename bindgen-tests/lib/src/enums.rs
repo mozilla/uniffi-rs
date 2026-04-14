@@ -13,8 +13,8 @@ pub enum EnumNoData {
 
 #[derive(uniffi::Enum)]
 pub enum EnumWithData {
-    A { value: u8 },
-    B { value: String },
+    A { value: u8, value2: u16 },
+    B(String, u32),
     C,
 }
 

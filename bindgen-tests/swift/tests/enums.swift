@@ -5,11 +5,11 @@
 import uniffi_bindgen_tests
 
 assert(
-    roundtripEnumWithData(en: EnumWithData.a(value: 10)) ==
-    EnumWithData.a(value: 10));
+    roundtripEnumWithData(en: EnumWithData.a(value: 10, value2: 20)) ==
+    EnumWithData.a(value: 10, value2: 20));
 assert(
-    roundtripEnumWithData(en: EnumWithData.b(value: "Ten")) ==
-    EnumWithData.b(value: "Ten"));
+    roundtripEnumWithData(en: EnumWithData.b("Ten", 10)) ==
+    EnumWithData.b("Ten", 10));
 assert(
     roundtripEnumWithData(en: EnumWithData.c) == 
     EnumWithData.c);
@@ -18,8 +18,8 @@ assert(
     roundtripComplexEnum(en: ComplexEnum.a(value: EnumNoData.c)) ==
     ComplexEnum.a(value: EnumNoData.c))
 assert(
-    roundtripComplexEnum(en: ComplexEnum.b(value: EnumWithData.a(value: 20))) ==
-    ComplexEnum.b(value: EnumWithData.a(value: 20)))
+    roundtripComplexEnum(en: ComplexEnum.b(value: EnumWithData.a(value: 20, value2: 40))) ==
+    ComplexEnum.b(value: EnumWithData.a(value: 20, value2: 40)))
 assert(
     roundtripComplexEnum(en: ComplexEnum.c(value: SimpleRec(a: 30))) ==
     ComplexEnum.c(value: SimpleRec(a: 30)))
