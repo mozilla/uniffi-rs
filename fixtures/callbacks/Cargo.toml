@@ -10,12 +10,12 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_fixture_callbacks"
 
 [dependencies]
-# Add the "scaffolding-ffi-buffer-fns" feature to make sure things can build correctly
-uniffi = { workspace = true, features=["scaffolding-ffi-buffer-fns"] }
+# Add the "pointer-ffi" feature to make sure things can build correctly
+uniffi = { workspace = true, features=["pointer-ffi"] }
 thiserror = "2"
 
 [build-dependencies]
-uniffi = { workspace = true, features = ["build"] }
+uniffi = { workspace = true, features = ["build", "pointer-ffi"] }
 
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }
