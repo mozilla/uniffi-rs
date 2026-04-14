@@ -34,11 +34,11 @@ uniffi::custom_newtype!(
     Guid, u64
 );
 
-mod mod1 {
+pub mod mod1 {
     use super::renamed_custom_type;
 
     #[derive(uniffi::Record)]
-    struct Mod1Record { }
+    pub struct Mod1Record { }
 
     #[uniffi::export]
     pub trait TraitInterface { }
