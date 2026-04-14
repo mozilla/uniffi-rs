@@ -14,7 +14,7 @@ use syn::{
 
 use crate::{
     attrs::extract_docstring, paths::LookupCache, BuiltinItem, CustomType, Error, Ir, Item, Module,
-    RPath, Result,
+    Namespace, RPath, Result,
 };
 
 /// Resolve Item::Macro to more specific items like Item::UseRemoteType
@@ -65,7 +65,7 @@ fn maybe_resolve_macro<'ir>(
     path: &RPath<'ir>,
     mac: &ItemMacro,
 ) -> Result<Option<Item>> {
-    let builtin = match path.resolve(ir, cache, &mac.mac.path) {
+    let builtin = match path.resolve(ir, cache, &mac.mac.path, Namespace::Macro) {
         // Ignore errors, maybe the macro comes from an unparsed crate.
         Err(_) => return Ok(None),
         Ok(path) => match path.item()? {

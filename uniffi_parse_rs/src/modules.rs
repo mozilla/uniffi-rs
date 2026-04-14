@@ -18,12 +18,13 @@ use crate::{
     paths::LookupCache,
     CompileEnv, Enum, Error,
     ErrorKind::*,
-    Function, Impl, Ir, Item, Object, RPath, Record, Result, Trait,
+    Function, Impl, Ir, Item, Object, RPath, Record, Result, Trait, Visibility,
 };
 
 #[derive(Debug)]
 pub struct Module {
     pub source: FileId,
+    pub vis: Visibility,
     pub crate_root: Utf8PathBuf,
     // Names of all ancestor modules, excluding the crate root, plus this module.
     //
@@ -45,7 +46,7 @@ impl Module {
             .to_path_buf();
         let (file_id, content) = read_to_string(file_path)?;
         let file = parse_file(file_id, content)?;
-        let mut module = Self::empty(ident, file_id, vec![], crate_root)?;
+        let mut module = Self::empty(ident, file_id, Visibility::Public, vec![], crate_root)?;
         module.add_items(file.attrs, file.items, env)?;
         Ok(module)
     }
@@ -54,6 +55,7 @@ impl Module {
         &self,
         source: FileId,
         ident: Ident,
+        vis: Visibility,
         crate_root: Utf8PathBuf,
         attrs: Vec<syn::Attribute>,
         items: Vec<syn::Item>,
@@ -61,7 +63,7 @@ impl Module {
     ) -> Result<Self> {
         let mut module_names = self.module_names.clone();
         module_names.push(ident.to_string());
-        let mut module = Self::empty(ident, source, module_names, crate_root)?;
+        let mut module = Self::empty(ident, source, vis, module_names, crate_root)?;
         module.add_items(attrs, items, env)?;
         Ok(module)
     }
@@ -69,6 +71,7 @@ impl Module {
     pub fn empty(
         ident: Ident,
         source: FileId,
+        vis: Visibility,
         module_names: Vec<String>,
         crate_root: Utf8PathBuf,
     ) -> Result<Self> {
@@ -76,6 +79,7 @@ impl Module {
 
         Ok(Self {
             source,
+            vis,
             crate_root,
             module_names,
             ident,
@@ -129,6 +133,7 @@ impl Module {
                                 self.items.push(Item::Module(self.new_child(
                                     file_id,
                                     ident.clone(),
+                                    submod.vis.into(),
                                     self.crate_root.clone(),
                                     file.attrs,
                                     file.items,
@@ -140,6 +145,7 @@ impl Module {
                             self.items.push(Item::Module(self.new_child(
                                 self.source,
                                 ident.clone(),
+                                submod.vis.into(),
                                 self.crate_root.clone(),
                                 submod.attrs,
                                 items,
@@ -170,15 +176,19 @@ impl Module {
                     self.items.push(Item::Record(r));
                 } else if let Some(attrs) = ObjectAttributes::parse(env, &st.attrs)? {
                     self.items
-                        .push(Item::Object(Object::parse(attrs, st.ident)?));
+                        .push(Item::Object(Object::parse(attrs, st.ident, st.vis)?));
+                } else {
+                    self.items.push(Item::NonUniffi(st.vis.into(), st.ident));
                 }
             }
             syn::Item::Enum(en) => {
                 if let Some(attrs) = ObjectAttributes::parse(env, &en.attrs)? {
                     self.items
-                        .push(Item::Object(Object::parse(attrs, en.ident)?));
+                        .push(Item::Object(Object::parse(attrs, en.ident, en.vis)?));
                 } else if let Some(attrs) = EnumAttributes::parse(env, &en.attrs)? {
                     self.items.push(Item::Enum(Enum::parse(env, attrs, en)?));
+                } else {
+                    self.items.push(Item::NonUniffi(en.vis.into(), en.ident));
                 }
             }
             syn::Item::Trait(tr) => {
@@ -226,22 +236,28 @@ impl Module {
         for item in self.items.iter() {
             match item {
                 Item::Fn(f) => {
-                    metadata
-                        .items
-                        .insert(f.fn_metadata(ir, cache, module_path)?.into());
+                    metadata.items.insert(
+                        f.fn_metadata(ir, cache, module_path.append_child(item))?
+                            .into(),
+                    );
                 }
                 Item::Record(rec) => {
-                    metadata
-                        .items
-                        .insert(rec.record_metadata(ir, cache, module_path)?.into());
+                    metadata.items.insert(
+                        rec.record_metadata(ir, cache, module_path.append_child(item))?
+                            .into(),
+                    );
                 }
                 Item::Enum(en) => {
-                    metadata
-                        .items
-                        .insert(en.enum_metadata(ir, cache, module_path)?.into());
+                    metadata.items.insert(
+                        en.enum_metadata(ir, cache, module_path.append_child(item))?
+                            .into(),
+                    );
                 }
                 Item::Object(o) => {
-                    metadata.items.insert(o.obj_metadata(module_path)?.into());
+                    metadata.items.insert(
+                        o.obj_metadata(ir, cache, module_path.append_child(item))?
+                            .into(),
+                    );
                 }
                 Item::Impl(imp) => {
                     metadata
@@ -249,14 +265,16 @@ impl Module {
                         .extend(imp.impl_metadata(ir, cache, module_path)?)
                 }
                 Item::Trait(tr) => {
-                    metadata
-                        .items
-                        .extend(tr.trait_metadata(ir, cache, module_path)?);
+                    metadata.items.extend(tr.trait_metadata(
+                        ir,
+                        cache,
+                        module_path.append_child(item),
+                    )?);
                 }
                 Item::CustomType(custom_type) => {
                     metadata.items.insert(
                         custom_type
-                            .custom_type_metadata(ir, cache, module_path)?
+                            .custom_type_metadata(ir, cache, module_path.append_child(item))?
                             .into(),
                     );
                 }
