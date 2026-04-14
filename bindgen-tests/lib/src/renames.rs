@@ -10,7 +10,7 @@ pub fn function_to_rename(record: RecordToRename) -> EnumToRename {
 #[derive(uniffi::Record)]
 #[uniffi(name = "RenamedRecord")]
 pub struct RecordToRename {
-    item: i32,
+    pub item: i32,
 }
 
 #[derive(uniffi::Enum)]
@@ -88,7 +88,7 @@ pub fn binding_function_to_rename(
 
 #[derive(uniffi::Record)]
 pub struct BindingRecordToRename {
-    item: i32,
+    pub item: i32,
 }
 
 #[derive(uniffi::Enum)]

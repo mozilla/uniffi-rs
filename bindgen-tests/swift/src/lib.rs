@@ -123,7 +123,8 @@ mod test {
         ];
         for filename in source_filenames {
             let path = tempdir.join(filename);
-            let contents = fs::read_to_string(path).unwrap();
+            let contents = fs::read_to_string(&path)
+                .unwrap_or_else(|e| panic!("Error reading modulemap: {path} ({e})"));
             write!(f, "{contents}").unwrap();
         }
     }

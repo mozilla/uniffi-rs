@@ -6,7 +6,7 @@ uniffi::setup_scaffolding!("uniffi_bindgen_tests_external_types_source");
 
 #[derive(uniffi::Record)]
 pub struct ExternalRec {
-    a: u8,
+    pub a: u8,
 }
 
 #[derive(uniffi::Enum)]
@@ -24,11 +24,11 @@ pub struct ExternalInterface {
 #[uniffi::export]
 impl ExternalInterface {
     #[uniffi::constructor]
-    fn new(value: u32) -> Self {
+    pub fn new(value: u32) -> Self {
         Self { value }
     }
 
-    fn get_value(&self) -> u32 {
+    pub fn get_value(&self) -> u32 {
         self.value
     }
 }
