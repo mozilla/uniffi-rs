@@ -17,13 +17,7 @@ use uniffi_meta::UniffiTraitDiscriminants;
 /// HashSet iteration order is random per process; sorting ensures reproducible builds.
 fn sorted_traits(args: ExportStructArgs) -> Vec<UniffiTraitDiscriminants> {
     let mut traits: Vec<UniffiTraitDiscriminants> = args.traits.into_iter().collect();
-    traits.sort_by_key(|t| match t {
-        UniffiTraitDiscriminants::Debug => 0u8,
-        UniffiTraitDiscriminants::Display => 1,
-        UniffiTraitDiscriminants::Eq => 2,
-        UniffiTraitDiscriminants::Hash => 3,
-        UniffiTraitDiscriminants::Ord => 4,
-    });
+    traits.sort_by_key(|t| *t as isize);
     traits
 }
 

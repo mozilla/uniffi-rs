@@ -478,7 +478,7 @@ impl UniffiTraitMetadata {
 }
 
 #[repr(u8)]
-#[derive(Debug, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum UniffiTraitDiscriminants {
     Debug,
     Display,
