@@ -1319,6 +1319,19 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Docstrings
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="docstrings.html" class="md-nav__link md-nav__link--active">
         
   
@@ -1330,6 +1343,34 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#custom-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Types
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -2241,6 +2282,23 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#custom-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Types
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -2267,6 +2325,14 @@
 </code></pre></div></p>
 <p>Will cause Python, Swift and Kotlin to all generate a wrapper for <code>MyObject</code> with appropriate docstrings for that language.</p>
 <p>You can see examples of how they are rendered in the <a href="../udl/docstrings.html">UDL docstrings documentation</a></p>
+<h2 id="custom-types">Custom Types</h2>
+<p>Note that <a href="../types/custom_types.html">Custom Types</a> need a different syntax - the docstring must be in the macro invocation. eg:</p>
+<div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">custom_newtype</span><span class="o">!</span><span class="p">(</span>
+<span class="w">    </span><span class="sd">/// This is a docstring for Handle</span>
+<span class="w">    </span><span class="n">Handle</span><span class="p">,</span><span class="w"> </span><span class="kt">i64</span>
+<span class="p">);</span>
+</code></pre></div>
+<p>For more info, see <a href="../types/custom_types.html#custom_type-docstrings">the custom types documentation</a></p>
 
 
 

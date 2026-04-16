@@ -821,6 +821,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#custom_type-docstrings" class="md-nav__link">
+    <span class="md-ellipsis">
+      custom_type! docstrings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#udl" class="md-nav__link">
     <span class="md-ellipsis">
       UDL
@@ -2438,6 +2447,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#custom_type-docstrings" class="md-nav__link">
+    <span class="md-ellipsis">
+      custom_type! docstrings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#udl" class="md-nav__link">
     <span class="md-ellipsis">
       UDL
@@ -2577,6 +2595,17 @@ for <a href="remote_ext_types.html#remote-custom-types">custom remote types</a><
 <span class="sd">/// `Handle` objects will be passed across the FFI the same way `i64` values are.</span>
 <span class="n">uniffi</span><span class="p">::</span><span class="n">custom_newtype</span><span class="o">!</span><span class="p">(</span><span class="n">Handle</span><span class="p">,</span><span class="w"> </span><span class="kt">i64</span><span class="p">);</span>
 </code></pre></div></p>
+<h3 id="custom_type-docstrings"><code>custom_type!</code> docstrings</h3>
+<p>You can add docstrings for custom types, but it's not particularly intuitive - you need to
+add them as a docstring at the start of the macro body. For example:</p>
+<p><div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">custom_type</span><span class="o">!</span><span class="p">(</span>
+<span class="w">    </span><span class="sd">/// This is a docstring for Handle</span>
+<span class="w">    </span><span class="n">Handle</span><span class="p">,</span><span class="w"> </span><span class="kt">i64</span>
+<span class="p">);</span>
+</code></pre></div>
+This also works with <code>custom_newtype</code>. Not all languages are able to associate the docstring
+with the alias - Python in particular renders the docstring after the alias, which may be
+picked up by some documentation systems, but it's not in <code>Handle.__doc__</code> - that remains <code>int.__doc__</code></p>
 <h3 id="udl">UDL</h3>
 <p>Define custom types in UDL via a <code>typedef</code> with a <code>Custom</code> attribute, specifying the UniFFI type
 followed by the custom type.</p>

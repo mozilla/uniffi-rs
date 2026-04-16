@@ -2412,6 +2412,9 @@ For example:</p>
   For example, renaming <code>my_func</code> to <code>renamed_func</code> would cause the final name to be <code>renamedFunc</code> in those languages.</li>
 <li>All builtin bindings support this but external bindings may not.</li>
 <li>Renaming the primary constructor "works", but will have no impact in bindings as the name isn't used.</li>
+<li>Renaming interacts inconsistently with other configuration options that use type names like the <a href="types/custom_types.html">custom types</a> configuration.</li>
+<li>On Python, use the original Rust name</li>
+<li>On Swift and Kotlin, use the renamed name</li>
 </ul>
 
 
