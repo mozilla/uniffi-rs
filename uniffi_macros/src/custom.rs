@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::util::{
-    create_metadata_items, either_attribute_arg, ident_to_string, kw, mod_path,
+    create_metadata_items, either_attribute_arg, extract_docstring, ident_to_string, kw,
     parse_comma_separated, UniffiAttributeArgs,
 };
 use proc_macro2::{Ident, TokenStream};
@@ -13,17 +13,20 @@ use syn::{
     parse::{Parse, ParseStream},
     spanned::Spanned,
     token::Brace,
-    Expr, ExprClosure, Pat, Token, Type,
+    Attribute, Expr, ExprClosure, Pat, Token, Type,
 };
 
 pub struct CustomTypeArgs {
     custom_type: Type,
     uniffi_type: Type,
+    docstring: String,
     options: CustomTypeOptions,
 }
 
 impl Parse for CustomTypeArgs {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        let attrs = input.call(Attribute::parse_outer)?;
+        let docstring = extract_docstring(&attrs)?;
         // Parse the custom / UniFFI type which are both required
         let custom_type = input.parse()?;
         input.parse::<Token![,]>()?;
@@ -44,6 +47,7 @@ impl Parse for CustomTypeArgs {
         Ok(Self {
             custom_type,
             uniffi_type,
+            docstring,
             options,
         })
     }
@@ -156,6 +160,7 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
     let CustomTypeArgs {
         custom_type,
         uniffi_type,
+        docstring,
         options,
     } = args;
 
@@ -168,7 +173,6 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
     }
     .map_err(|msg| syn::Error::new(custom_type.span(), msg))?;
 
-    let mod_path = mod_path()?;
     let (impl_spec, derive_ffi_traits) = if options.is_remote() {
         (
             quote! { unsafe impl ::uniffi::FfiConverter<crate::UniFfiTag> for #custom_type },
@@ -221,8 +225,7 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
         }
     };
 
-    let docstring = ""; // todo...
-    let meta_static_var = custom_type_meta_static_var(&name, &uniffi_type, docstring)?;
+    let meta_static_var = custom_type_meta_static_var(&name, &uniffi_type, &docstring)?;
 
     Ok(quote! {
         #[allow(non_camel_case_types)]
@@ -250,7 +253,7 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_CUSTOM)
-                .concat_str(#mod_path)
+                .concat_str(module_path!())
                 .concat_str(#name)
                 .concat(<#uniffi_type as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META);
         }
@@ -264,23 +267,41 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
 pub struct CustomNewtypeArgs {
     ident: Type,
     uniffi_type: Type,
+    docstring: String,
 }
 
 impl Parse for CustomNewtypeArgs {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        let attrs = input.call(Attribute::parse_outer)?;
+        let docstring = extract_docstring(&attrs)?;
         let ident = input.parse()?;
         input.parse::<Token![,]>()?;
         let uniffi_type = input.parse()?;
-        Ok(Self { ident, uniffi_type })
+        Ok(Self {
+            ident,
+            uniffi_type,
+            docstring,
+        })
     }
 }
 
 // Generate TypeConverter implementation for a newtype
 pub(crate) fn expand_custom_newtype(args: CustomNewtypeArgs) -> syn::Result<TokenStream> {
-    let CustomNewtypeArgs { ident, uniffi_type } = args;
+    let CustomNewtypeArgs {
+        ident,
+        uniffi_type,
+        docstring,
+    } = args;
 
+    let docstring = if docstring.is_empty() {
+        TokenStream::new()
+    } else {
+        quote! {#[doc = #docstring] }
+    };
     Ok(quote! {
-        uniffi::custom_type!(#ident, #uniffi_type, {
+        uniffi::custom_type!(
+            #docstring
+            #ident, #uniffi_type, {
             lower: |obj| obj.0,
             try_lift: |val| Ok(#ident(val)),
         });
@@ -292,11 +313,10 @@ pub(crate) fn custom_type_meta_static_var(
     builtin: &Type,
     docstring: &str,
 ) -> syn::Result<TokenStream> {
-    let module_path = mod_path()?;
     let builtin = crate::ffiops::type_id_meta(builtin);
     let metadata_expr = quote! {
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::CUSTOM_TYPE)
-                .concat_str(#module_path)
+                .concat_str(module_path!())
                 .concat_str(#name)
                 .concat(#builtin)
                 .concat_long_str(#docstring)

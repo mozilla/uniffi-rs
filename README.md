@@ -56,6 +56,8 @@ Other tools we know of which try and solve a similarly shaped problem are:
 * [C# bindings](https://github.com/NordSecurity/uniffi-bindgen-cs)
 * [Dart bindings](https://github.com/NiallBunting/uniffi-rs-dart)
 * [Java bindings](https://github.com/IronCoreLabs/uniffi-bindgen-java)
+* [Node bindings](https://github.com/livekit/uniffi-bindgen-node) (early development)
+* [Node bindings](https://github.com/criccomini/uniffi-bindgen-node-js)
 
 ### External resources
 

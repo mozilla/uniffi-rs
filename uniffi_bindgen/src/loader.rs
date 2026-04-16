@@ -15,20 +15,20 @@ use uniffi_meta::{
 };
 
 use crate::{
-    crate_name_from_cargo_toml, macro_metadata, BindgenCrateConfigSupplier, Component,
+    crate_name_from_cargo_toml, interface, macro_metadata, pipeline, BindgenPaths, Component,
     ComponentInterface, Result,
 };
 
 /// Load metadata, component interfaces, configuration, etc. for binding generators.
 ///
 /// Bindings generators use this to load all of the inputs they need to render their code.
-pub struct BindgenLoader<'a> {
-    config_supplier: &'a dyn BindgenCrateConfigSupplier,
+pub struct BindgenLoader {
+    bindgen_paths: BindgenPaths,
 }
 
-impl<'config> BindgenLoader<'config> {
-    pub fn new(config_supplier: &'config dyn BindgenCrateConfigSupplier) -> Self {
-        Self { config_supplier }
+impl BindgenLoader {
+    pub fn new(bindgen_paths: BindgenPaths) -> Self {
+        Self { bindgen_paths }
     }
 
     /// Load UniFFI metadata
@@ -58,33 +58,59 @@ impl<'config> BindgenLoader<'config> {
     where
         P: FnOnce(&Utf8Path, &[u8]) -> Result<Option<Vec<Metadata>>>,
     {
-        match source_path.extension() {
-            Some(ext) if ext.to_lowercase() == "udl" => {
-                let crate_name = crate_name_from_cargo_toml(source_path)?;
-                let group = uniffi_udl::parse_udl(&fs::read_to_string(source_path)?, &crate_name)?;
-                Ok(HashMap::from([(crate_name, group)]))
+        if self.is_udl(source_path) {
+            let crate_name = crate_name_from_cargo_toml(source_path)?;
+            let mut group = uniffi_udl::parse_udl(&fs::read_to_string(source_path)?, &crate_name)?;
+            Self::add_checksums_to_udl_group(&mut group);
+            Ok(HashMap::from([(crate_name, group)]))
+        } else {
+            let data = fs::read(source_path)?;
+            let items = match specialized_parser(source_path, &data)? {
+                Some(items) => items,
+                None => macro_metadata::extract_from_bytes(&data)?,
+            };
+            if items.is_empty() {
+                bail!("No UniFFI metadata found in {source_path}");
             }
-            _ => {
-                let data = fs::read(source_path)?;
-                let items = match specialized_parser(source_path, &data)? {
-                    Some(items) => items,
-                    None => macro_metadata::extract_from_bytes(&data)?,
-                };
-                let mut metadata_groups = create_metadata_groups(&items);
-                group_metadata(&mut metadata_groups, items)?;
+            let mut metadata_groups = create_metadata_groups(&items);
+            group_metadata(&mut metadata_groups, items)?;
 
-                for group in metadata_groups.values_mut() {
-                    let crate_name = group.namespace.crate_name.clone();
-                    if let Some(udl_group) = self.load_udl_metadata(group, &crate_name)? {
-                        let mut udl_items = udl_group.items.into_iter().collect();
-                        group.items.append(&mut udl_items);
-                        if group.namespace_docstring.is_none() {
-                            group.namespace_docstring = udl_group.namespace_docstring;
-                        }
-                    };
-                }
-                Ok(metadata_groups)
+            for group in metadata_groups.values_mut() {
+                let crate_name = group.namespace.crate_name.clone();
+                if let Some(mut udl_group) = self.load_udl_metadata(group, &crate_name)? {
+                    Self::add_checksums_to_udl_group(&mut udl_group);
+                    group.items.append(&mut udl_group.items);
+                    if group.namespace_docstring.is_none() {
+                        group.namespace_docstring = udl_group.namespace_docstring;
+                    }
+                };
             }
+            Ok(metadata_groups)
+        }
+    }
+
+    /// Add checksums for metadata parsed from UDL
+    fn add_checksums_to_udl_group(metadata_group: &mut MetadataGroup) {
+        // Need to temporarily take items BTree set, since we're technically mutating it's contents
+        // Each item will be added back at the bottom of the for loop.
+        let items = std::mem::take(&mut metadata_group.items);
+        for mut meta in items {
+            match &mut meta {
+                Metadata::Func(func) if func.checksum.is_none() => {
+                    func.checksum = Some(interface::Function::checksum_from_metadata(func.clone()))
+                }
+                Metadata::Method(meth) if meth.checksum.is_none() => {
+                    meth.checksum = Some(interface::Method::checksum_from_metadata(meth.clone()))
+                }
+                Metadata::Constructor(cons) if cons.checksum.is_none() => {
+                    cons.checksum =
+                        Some(interface::Constructor::checksum_from_metadata(cons.clone()))
+                }
+                // Note: UDL-based callbacks don't have checksum functions, don't set the
+                // checksum for those.
+                _ => (),
+            }
+            metadata_group.items.insert(meta);
         }
     }
 
@@ -143,7 +169,7 @@ impl<'config> BindgenLoader<'config> {
                     );
                 }
                 let udl = self
-                    .config_supplier
+                    .bindgen_paths
                     .get_udl(crate_name, &udl_items[0].file_stub)?;
                 let udl_group = uniffi_udl::parse_udl(&udl, crate_name)?;
                 Ok(Some(udl_group))
@@ -172,14 +198,40 @@ impl<'config> BindgenLoader<'config> {
     {
         cis.into_iter()
             .map(|ci| {
-                let toml = self
-                    .config_supplier
-                    .get_toml(ci.crate_name())?
-                    .unwrap_or_default();
+                let toml = self.bindgen_paths.get_config(ci.crate_name())?;
                 let config = parse_config(&ci, toml.into())?;
                 Ok(Component { ci, config })
             })
             .collect()
+    }
+
+    /// Load a [pipeline::initial::Root] value from the metadata
+    pub fn load_pipeline_initial_root(
+        &self,
+        source_path: &Utf8Path,
+        metadata: MetadataGroupMap,
+    ) -> Result<pipeline::initial::Root> {
+        let mut metadata_converter = pipeline::initial::UniffiMetaConverter::default();
+        for metadata_group in metadata.into_values() {
+            let table = self
+                .bindgen_paths
+                .get_config(&metadata_group.namespace.crate_name)?;
+            if !table.is_empty() {
+                metadata_converter
+                    .add_module_config_toml(metadata_group.namespace.name.clone(), table)?;
+            }
+            if let Some(docstring) = metadata_group.namespace_docstring {
+                metadata_converter
+                    .add_module_docstring(metadata_group.namespace.name.clone(), docstring)?;
+            }
+            metadata_converter.add_metadata_item(Metadata::Namespace(metadata_group.namespace))?;
+            for meta in metadata_group.items {
+                metadata_converter.add_metadata_item(meta)?;
+            }
+        }
+        let mut root = metadata_converter.try_into_initial_ir()?;
+        root.cdylib = self.library_name(source_path).map(str::to_string);
+        Ok(root)
     }
 
     /// Get the basename for a source file
@@ -205,5 +257,11 @@ impl<'config> BindgenLoader<'config> {
             source_path.extension(),
             Some(ext) if ext.to_lowercase() == "udl"
         )
+    }
+
+    /// This is the filename, without the extension and leading `lib`.
+    pub fn library_name<'a>(&self, source_path: &'a Utf8Path) -> Option<&'a str> {
+        let is_library = !self.is_udl(source_path);
+        is_library.then(|| self.source_basename(source_path))
     }
 }

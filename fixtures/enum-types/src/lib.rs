@@ -113,6 +113,35 @@ pub(crate) enum NamedEnumWithDefaults {
     },
 }
 
+#[derive(Clone, uniffi::Record)]
+pub struct BoxedContent {
+    value: String,
+}
+
+#[derive(uniffi::Enum)]
+pub enum EnumWithBoxedVariant {
+    Empty,
+    Boxed(Box<BoxedContent>),
+}
+
+#[uniffi::export]
+fn get_boxed_enum_value(e: EnumWithBoxedVariant) -> String {
+    match e {
+        EnumWithBoxedVariant::Empty => "empty".to_string(),
+        EnumWithBoxedVariant::Boxed(content) => content.value.clone(),
+    }
+}
+
+#[uniffi::export]
+fn create_boxed_enum(value: String) -> EnumWithBoxedVariant {
+    EnumWithBoxedVariant::Boxed(Box::new(BoxedContent { value }))
+}
+
+#[uniffi::export]
+fn roundtrip_boxed_record(boxed: Box<BoxedContent>) -> Box<BoxedContent> {
+    boxed
+}
+
 uniffi::include_scaffolding!("enum_types");
 
 #[cfg(test)]

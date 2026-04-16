@@ -1,0 +1,22 @@
+[package]
+name = "uniffi-fixture-mutable-records"
+version = "0.22.0"
+edition = "2021"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+name = "uniffi_mutable_records"
+
+[dependencies]
+uniffi = { workspace = true }
+
+[build-dependencies]
+uniffi = { workspace = true, features = ["build"] }
+
+[dev-dependencies]
+uniffi = { workspace = true, features = ["bindgen-tests"] }
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]

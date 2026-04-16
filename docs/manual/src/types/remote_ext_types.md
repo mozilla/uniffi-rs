@@ -8,7 +8,7 @@ They are grouped this section, since they're often used together.
 "Remote types" refer to types defined in other crates that do not use UniFFI.
 This normally means types from crates that you depend on but don't control.
 Remote types require extra handling to use them in UniFFI APIs, because of Rust's [orphan rule](https://doc.rust-lang.org/book/traits.html#rules-for-implementing-traits).
-See https://github.com/mozilla/uniffi-rs/tree/main/examples/log-formatter for example code.
+See https://github.com/mozilla/uniffi-rs/tree/main/examples/remote-types for example code.
 
 In general, using remote types in UniFFI requires writing a type definition that mirrors the real definition found in the remote crate.
 

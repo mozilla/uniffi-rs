@@ -154,6 +154,7 @@ impl From<&Type> for FfiType {
                     t => t,
                 }
             }
+            Type::Box { inner_type } => (&**inner_type).into(),
         }
     }
 }
@@ -162,6 +163,12 @@ impl From<&Type> for FfiType {
 pub struct ExternalFfiMetadata {
     pub name: String,
     pub module_path: String,
+}
+
+impl ExternalFfiMetadata {
+    pub fn crate_name(&self) -> &str {
+        self.module_path.split("::").next().unwrap()
+    }
 }
 
 // Needed for rust scaffolding askama template

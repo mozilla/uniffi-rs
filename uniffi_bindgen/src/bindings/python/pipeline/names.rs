@@ -52,85 +52,6 @@ static KEYWORDS: Lazy<HashSet<String>> = Lazy::new(|| {
     HashSet::from_iter(kwlist.into_iter().map(|s| s.to_string()))
 });
 
-/// Convert strings to follow Python naming guidelines
-pub fn pass(namespace: &mut Namespace) -> Result<()> {
-    namespace.visit_mut(|struct_name: &mut FfiStructName| {
-        struct_name.0 = format!("_Uniffi{}", struct_name.0.to_upper_camel_case())
-    });
-    namespace.visit_mut(|function_type: &mut FfiFunctionTypeName| {
-        function_type.0 = format!("_UNIFFI_{}", function_type.0.to_shouty_snake_case())
-    });
-    namespace.visit_mut(|rec: &mut Record| {
-        rec.name = fixup_keyword(rec.name.to_upper_camel_case());
-    });
-    namespace.visit_mut(|e: &mut Enum| {
-        e.name = fixup_keyword(e.name.to_upper_camel_case());
-        match &e.shape {
-            EnumShape::Error { .. } => {
-                e.visit_mut(|v: &mut Variant| {
-                    v.name = fixup_keyword(v.name.to_upper_camel_case());
-                });
-            }
-            _ => {
-                e.visit_mut(|v: &mut Variant| {
-                    v.name = fixup_keyword(v.name.to_shouty_snake_case());
-                });
-            }
-        }
-    });
-    namespace.visit_mut(|int: &mut Interface| {
-        int.name = fixup_keyword(int.name.to_upper_camel_case());
-    });
-    namespace.visit_mut(|cbi: &mut CallbackInterface| {
-        cbi.name = fixup_keyword(cbi.name.to_upper_camel_case());
-    });
-    namespace.visit_mut(|custom: &mut CustomType| {
-        custom.name = fixup_keyword(custom.name.to_upper_camel_case());
-    });
-    namespace.visit_mut(|arg: &mut Argument| {
-        arg.name = fixup_keyword(arg.name.to_snake_case());
-    });
-    namespace.visit_mut(|field: &mut Field| {
-        field.name = fixup_keyword(field.name.to_snake_case());
-    });
-    namespace.visit_mut(|callable: &mut Callable| {
-        if callable.is_primary_constructor() {
-            callable.name = "__init__".to_string()
-        } else {
-            callable.name = fixup_keyword(callable.name.to_snake_case());
-        }
-    });
-    namespace.visit_mut(|ty: &mut Type| {
-        match ty {
-            Type::Enum { name, .. }
-            | Type::Record { name, .. }
-            | Type::Interface { name, .. }
-            | Type::CallbackInterface { name, .. }
-            | Type::Custom { name, .. } => {
-                *name = fixup_keyword(name.to_upper_camel_case());
-            }
-            _ => (),
-        };
-    });
-    namespace.try_visit_mut(|lit: &mut Literal| {
-        if let Literal::Enum(variant, ty) = lit {
-            match &mut ty.ty {
-                Type::Enum { name, .. } => {
-                    *name = fixup_keyword(name.to_upper_camel_case());
-                    // Assume enum literals are not error types and use `to_shouty_snake_case()`
-                    // rather than `to_upper_camel_case()`
-                    *variant = fixup_keyword(variant.to_shouty_snake_case());
-                }
-                type_kind => {
-                    bail!("Invalid type for enum literal: {type_kind:?}")
-                }
-            }
-        }
-        Ok(())
-    })?;
-    Ok(())
-}
-
 /// Fixup a name by ensuring it's not a keyword
 fn fixup_keyword(name: String) -> String {
     if KEYWORDS.contains(&name) {
@@ -138,4 +59,42 @@ fn fixup_keyword(name: String) -> String {
     } else {
         name
     }
+}
+
+pub fn map_ffi_function_type_name(
+    ffi_function_type_name: FfiFunctionTypeName,
+    _: &Context,
+) -> Result<FfiFunctionTypeName> {
+    Ok(FfiFunctionTypeName(function_type_name(
+        &ffi_function_type_name.0,
+    )))
+}
+
+pub fn map_ffi_struct_name(ffi_struct_name: FfiStructName, _: &Context) -> Result<FfiStructName> {
+    Ok(FfiStructName(struct_name(&ffi_struct_name.0)))
+}
+
+pub fn function_type_name(name: &str) -> String {
+    format!("_UNIFFI_{}", name.to_shouty_snake_case())
+}
+
+pub fn struct_name(name: &str) -> String {
+    format!("_Uniffi{}", name.to_upper_camel_case())
+}
+
+pub fn type_name(name: &str) -> String {
+    fixup_keyword(name.to_upper_camel_case())
+}
+
+pub fn var_name(name: &str) -> String {
+    fixup_keyword(name.to_snake_case())
+}
+
+pub fn function_name(name: &str) -> String {
+    fixup_keyword(name.to_snake_case())
+}
+
+pub fn non_error_variant_name(name: &str) -> String {
+    // Non error variants get SHOUTY_CASE_NAMES
+    fixup_keyword(name.to_shouty_snake_case())
 }

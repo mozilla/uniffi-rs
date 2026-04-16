@@ -10,7 +10,7 @@ name = "uniffi_fixture_docstring_proc_macro"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-cargo_metadata = { version = "0.19" }
+cargo_metadata = "0.23.1"
 thiserror = "2"
 uniffi = { path = "../../uniffi" }
 

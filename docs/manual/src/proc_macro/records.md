@@ -37,6 +37,10 @@ pub struct OptionalRecord {
 
 Most types can have [default values](../types/defaults.md)
 
+You can use `#[uniffi::export]` on an `impl` block for a record,
+making the methods available to foreign bindings.
+You can also export some [standard Rust traits](../types/uniffi_traits.md).
+
 ## Renaming records
 
 Records can be renamed in foreign language bindings using the `name` parameter:

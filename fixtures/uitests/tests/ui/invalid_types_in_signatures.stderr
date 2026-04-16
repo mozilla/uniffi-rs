@@ -6,13 +6,13 @@ error[E0277]: the trait bound `Result<(), ErrorType>: Lift<UniFfiTag>` is not sa
    |
    = help: the following other types implement trait `Lift<UT>`:
              Arc<T>
+             Box<T>
              Duration
              ErrorType
              HashMap<K, V>
              Option<T>
              String
              SystemTime
-             Vec<T>
            and $N others
    = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
 
@@ -24,13 +24,13 @@ error[E0277]: the trait bound `Result<(), ErrorType>: uniffi::Lower<UniFfiTag>` 
    |
    = help: the following other types implement trait `uniffi::Lower<UT>`:
              Arc<T>
+             Box<T>
              Duration
              ErrorType
              HashMap<K, V>
              Option<T>
              String
              SystemTime
-             Vec<T>
            and $N others
    = note: required for `Option<Result<(), ErrorType>>` to implement `uniffi::Lower<UniFfiTag>`
    = note: required for `Option<Result<(), ErrorType>>` to implement `LowerReturn<UniFfiTag>`
@@ -44,13 +44,13 @@ error[E0277]: the trait bound `Result<(), ErrorType>: Lift<UniFfiTag>` is not sa
    |
    = help: the following other types implement trait `Lift<UT>`:
              Arc<T>
+             Box<T>
              Duration
              ErrorType
              HashMap<K, V>
              Option<T>
              String
              SystemTime
-             Vec<T>
            and $N others
 
 error[E0277]: the trait bound `Result<(), ErrorType>: Lift<UniFfiTag>` is not satisfied
@@ -61,13 +61,13 @@ error[E0277]: the trait bound `Result<(), ErrorType>: Lift<UniFfiTag>` is not sa
    |
    = help: the following other types implement trait `Lift<UT>`:
              Arc<T>
+             Box<T>
              Duration
              ErrorType
              HashMap<K, V>
              Option<T>
              String
              SystemTime
-             Vec<T>
            and $N others
 
 error[E0277]: the trait bound `Result<(), ErrorType>: uniffi::Lower<UniFfiTag>` is not satisfied
@@ -78,13 +78,13 @@ error[E0277]: the trait bound `Result<(), ErrorType>: uniffi::Lower<UniFfiTag>` 
    |
    = help: the following other types implement trait `uniffi::Lower<UT>`:
              Arc<T>
+             Box<T>
              Duration
              ErrorType
              HashMap<K, V>
              Option<T>
              String
              SystemTime
-             Vec<T>
            and $N others
    = note: required for `Option<Result<(), ErrorType>>` to implement `uniffi::Lower<UniFfiTag>`
    = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)

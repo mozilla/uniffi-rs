@@ -499,4 +499,16 @@ async fn cancel_delay_using_trait(obj: Arc<dyn AsyncParser>, delay_ms: i32) {
     assert_eq!(future.await, Err(Aborted));
 }
 
+/// A test object with no (async) methods.
+#[derive(uniffi::Object)]
+pub struct TestObject;
+
+#[uniffi::export(async_runtime = "tokio")]
+impl TestObject {
+    #[uniffi::constructor]
+    pub async fn new() -> Self {
+        Self
+    }
+}
+
 uniffi::include_scaffolding!("futures");

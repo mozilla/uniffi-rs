@@ -44,5 +44,21 @@ class TestErrorTypes(unittest.TestCase):
         self.assertEqual(e.d, 0)
         self.assertEqual(e.e, 2)
 
+    def test_eq(self):
+        self.assertNotEqual(get_animal_enum(Animal.DOG), {})
+
+    def test_boxed_types(self):
+        boxed_enum = create_boxed_enum("hello")
+        self.assertTrue(boxed_enum.is_BOXED())
+        self.assertEqual(get_boxed_enum_value(boxed_enum), "hello")
+
+        empty_enum = EnumWithBoxedVariant.EMPTY()
+        self.assertTrue(empty_enum.is_EMPTY())
+        self.assertEqual(get_boxed_enum_value(empty_enum), "empty")
+
+        content = BoxedContent(value="world")
+        result = roundtrip_boxed_record(content)
+        self.assertEqual(result.value, "world")
+
 if __name__=='__main__':
     unittest.main()

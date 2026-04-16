@@ -64,6 +64,17 @@ If you do not supply conversions to and from the bridge type, and assuming `Seri
 the `TryInto::Error` type can be anything that implements `Into<anyhow::Error>`.
 - `TryFrom<String>` and `From<SerializableStruct>` will also work, using the blanket impl from the core library.
 
+#### Custom remote types
+
+The above examples assume that the custom type is declared in the same crate as the type itself - but if
+`SerializableStruct` was in a different crate than the `uniffi::custom_type!` declaration,
+you'd get an error saying something like:
+
+> type parameter `UT` must be used as the type parameter for some local type
+
+We call these types defined in other crates "remote types" - see our documentation
+for [custom remote types](./remote_ext_types.md#remote-custom-types)
+
 ### `custom_newtype!`
 
 The `custom_newtype!` macro is able to handle Rust newtype-style structs which wrap a UniFFI type.
@@ -76,6 +87,21 @@ pub struct Handle(i64);
 /// `Handle` objects will be passed across the FFI the same way `i64` values are.
 uniffi::custom_newtype!(Handle, i64);
 ```
+
+### `custom_type!` docstrings
+
+You can add docstrings for custom types, but it's not particularly intuitive - you need to
+add them as a docstring at the start of the macro body. For example:
+
+```rust
+uniffi::custom_type!(
+    /// This is a docstring for Handle
+    Handle, i64
+);
+```
+This also works with `custom_newtype`. Not all languages are able to associate the docstring
+with the alias - Python in particular renders the docstring after the alias, which may be
+picked up by some documentation systems, but it's not in `Handle.__doc__` - that remains `int.__doc__`
 
 ### UDL
 

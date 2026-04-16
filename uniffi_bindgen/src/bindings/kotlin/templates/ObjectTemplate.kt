@@ -100,13 +100,12 @@
 {%- let methods = obj.methods() %}
 {%- let uniffi_trait_methods = obj.uniffi_trait_methods() %}
 {%- let interface_docstring = obj.docstring() %}
-//
 {%- let is_error = ci.is_name_used_as_error(name) %}
 {%- let ffi_converter_name = obj|ffi_converter_name %}
 
 {%- include "Interface.kt" %}
 
-{%- call kt::docstring(obj, 0) %}
+{%- call kt::docstring(obj, 0) %}{% endcall %}
 {% if (is_error) %}
 open class {{ impl_class_name }} : kotlin.Exception, Disposable, AutoCloseable, {{ interface_name }} {
 {% else -%}
@@ -139,26 +138,25 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
     @Suppress("UNUSED_PARAMETER")
     constructor(noHandle: NoHandle) {
         this.handle = 0
-        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+        this.cleanable = null
     }
 
-    {%- match obj.primary_constructor() %}
-    {%- when Some(cons) %}
-    {%-     if cons.is_async() %}
-    // Note no constructor generated for this object as it is async.
-    {%-     else %}
-    {%- call kt::docstring(cons, 4) %}
-    constructor({% call kt::arg_list(cons, true) -%}) :
-        this(UniffiWithHandle, {% call kt::to_ffi_call(cons) %})
-    {%-     endif %}
-    {%- when None %}
-    {%- endmatch %}
+    {%- if let Some(cons) = obj.primary_constructor() %}
+    {%- call kt::docstring(cons, 4) %}{% endcall %}
+    constructor({% call kt::arg_list(cons, true) -%}{% endcall -%}) :
+        this(UniffiWithHandle, {% call kt::to_ffi_call(cons) %}{% endcall %})
+    {%- endif %}
 
     protected val handle: Long
-    protected val cleanable: UniffiCleaner.Cleanable
+    protected val cleanable: UniffiCleaner.Cleanable?
 
     private val wasDestroyed = AtomicBoolean(false)
     private val callCounter = AtomicLong(1)
+
+    /**
+     * Whether the current object has been destroyed and its reference is gone in the Rust side.
+     */
+    val uniffiIsDestroyed: Boolean get() = wasDestroyed.get()
 
     override fun destroy() {
         // Only allow a single call to this method.
@@ -166,7 +164,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         if (this.wasDestroyed.compareAndSet(false, true)) {
             // This decrement always matches the initial count of 1 given at creation time.
             if (this.callCounter.decrementAndGet() == 0L) {
-                cleanable.clean()
+                cleanable?.clean()
             }
         }
     }
@@ -194,7 +192,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         } finally {
             // This decrement always matches the increment we performed above.
             if (this.callCounter.decrementAndGet() == 0L) {
-                cleanable.clean()
+                cleanable?.clean()
             }
         }
     }
@@ -225,17 +223,17 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         }
     }
 
-    {% for meth in obj.methods() -%}
-    {%- call kt::func_decl("override", meth, 4) %}
+    {% for meth in methods -%}
+    {%- call kt::func_decl("override", meth, 4) %}{% endcall %}
     {% endfor %}
 
-    {% call kt::uniffi_trait_impls(uniffi_trait_methods) %}
+    {% call kt::uniffi_trait_impls(uniffi_trait_methods) %}{% endcall %}
 
     {# XXX - "companion object" confusion? How to have alternate constructors *and* be an error? #}
     {% if !obj.alternate_constructors().is_empty() -%}
     companion object {
         {% for cons in obj.alternate_constructors() -%}
-        {% call kt::func_decl("", cons, 4) %}
+        {% call kt::func_decl("", cons, 4) %}{% endcall %}
         {% endfor %}
     }
     {% else if is_error %}

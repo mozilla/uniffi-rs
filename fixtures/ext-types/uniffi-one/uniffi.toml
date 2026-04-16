@@ -1,0 +1,11 @@
+[bindings.kotlin.rename]
+BindingRenamedType = "KotlinRenamedType"
+"BindingRenamedType.value" = "kotlinValue"
+
+[bindings.python.rename]
+BindingRenamedType = "PythonRenamedType"
+"BindingRenamedType.value" = "pythonValue"
+
+[bindings.swift.rename]
+BindingRenamedType = "SwiftRenamedType"
+"BindingRenamedType.value" = "swiftValue"

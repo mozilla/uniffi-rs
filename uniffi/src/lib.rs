@@ -13,11 +13,13 @@ pub use uniffi_bindgen::bindings::{kotlin_test, python_test, ruby_test, swift_te
 #[cfg(all(feature = "cargo-metadata", feature = "bindgen"))]
 pub use uniffi_bindgen::cargo_metadata::CrateConfigSupplier as CargoMetadataConfigSupplier;
 #[cfg(feature = "bindgen")]
-pub use uniffi_bindgen::library_mode::generate_bindings as generate_bindings_library_mode;
-#[cfg(feature = "bindgen")]
 pub use uniffi_bindgen::{
-    bindings::{KotlinBindingGenerator, RubyBindingGenerator, SwiftBindingGenerator},
-    generate_bindings, print_repr,
+    bindings::{
+        generate, generate_swift_bindings, GenerateOptions, SwiftBindingsOptions, TargetLanguage,
+    },
+    generate_bindings,
+    library_mode::generate_bindings as generate_bindings_library_mode,
+    print_repr,
 };
 #[cfg(feature = "build")]
 pub use uniffi_build::{generate_scaffolding, generate_scaffolding_for_crate};

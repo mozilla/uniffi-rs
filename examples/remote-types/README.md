@@ -6,4 +6,4 @@ already been defined upstream.  Instead, use `#[uniffi::remote(<Kind>)]` to wrap
 definition.  UniFFI will generate the code to handle that type in the FFI, similar to if it had been
 wrapped with `#[derive(uniffi::<Kind>)]`.
 
-See https://mozilla.github.io/uniffi-rs/udl/remote_ext_types.html for more details.
+See https://mozilla.github.io/uniffi-rs/latest/types/remote_ext_types.html for more details.

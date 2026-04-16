@@ -4,6 +4,7 @@ use url::Url;
 pub struct ExampleCustomType(String);
 
 // custom_newtype! is the easiest way to define custom types.
+// (Note that docstrings for custom types can't appear here - see below)
 uniffi::custom_newtype!(ExampleCustomType, String);
 
 // Custom Handle type which trivially wraps an i64.
@@ -19,11 +20,9 @@ impl From<Handle> for i64 {
     }
 }
 
-impl TryFrom<i64> for Handle {
-    type Error = std::convert::Infallible;
-
-    fn try_from(val: i64) -> Result<Handle, Self::Error> {
-        Ok(Handle(val))
+impl From<i64> for Handle {
+    fn from(val: i64) -> Handle {
+        Handle(val)
     }
 }
 
@@ -58,7 +57,11 @@ uniffi::custom_type!(TimeIntervalSecDbl, f64, {
 pub struct TimeIntervalSecFlt(pub f32);
 
 // Let's go back to custom_newtype for this one.
-uniffi::custom_newtype!(TimeIntervalSecFlt, f32);
+// This also shows how to set a docstring for a custom type - it's got to be part of the macro invocation.
+uniffi::custom_newtype!(
+    /// This is a docstring for the type, which some languages might be able to render with the alias.
+    TimeIntervalSecFlt, f32
+);
 
 // `Url` gets converted to a `String` to pass across the FFI.
 uniffi::custom_type!(Url, String, {

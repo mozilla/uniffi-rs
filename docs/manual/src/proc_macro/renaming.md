@@ -1,6 +1,9 @@
-# Renaming
+# Renaming via proc-macros
 
 UniFFI allows you to rename all callables and user-defined types in the foreign bindings using the `name` attribute.
+
+Renaming via proc-macros impacts all language bindings.
+For language-specific renaming, which offers renaming enum varients, record members, args, etc, see [TOML-based renaming](../renaming.md).
 
 ## Examples
 
@@ -19,12 +22,14 @@ fn function(record: Record) -> Enum {
 #[derive(uniffi::Record)]
 #[uniffi(name = "RenamedRecord")]
 pub struct Record {
+    #[uniffi(name = "renamed_field")]
     item: i32,
 }
 
 #[derive(uniffi::Enum)]
 #[uniffi(name = "RenamedEnum")]
 pub enum Enum {
+    #[uniffi(name = "RenamedEnumVariant")]
     VariantA,
     Record(Record),
 }
@@ -61,7 +66,7 @@ impl Object {
 
 ```python
 # Python
-record = RenamedRecord(item=42)
+record = RenamedRecord(renamed_field=42)
 result = renamed_function(record)
 obj = RenamedObject.renamed_constructor(123)
 value = obj.renamed_method()
@@ -69,7 +74,7 @@ value = obj.renamed_method()
 
 ```kotlin
 // Kotlin
-val record = RenamedRecord(item = 42)
+val record = RenamedRecord(renamedField = 42)
 val result = renamedFunction(record)
 val obj = RenamedObject.renamedConstructor(123)
 val value = obj.renamedMethod()
@@ -77,7 +82,7 @@ val value = obj.renamedMethod()
 
 ```swift
 // Swift
-let record = RenamedRecord(item: 42)
+let record = RenamedRecord(renamedField: 42)
 let result = renamedFunction(record: record)
 let obj = RenamedObject.renamedConstructor(value: 123)
 let value = obj.renamedMethod()

@@ -1,22 +1,80 @@
 error[E0277]: `Cell<u32>` cannot be shared between threads safely
  --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
   |
-  | struct r#Counter { }
-  |        ^^^^^^^^^ `Cell<u32>` cannot be shared between threads safely
-  |
-  = help: within `Counter`, the trait `Sync` is not implemented for `Cell<u32>`
-  = note: if you want to do aliasing and mutation between multiple threads, use `std::sync::RwLock` or `std::sync::atomic::AtomicU32` instead
+ 34 | #[::uniffi::udl_derive(Object)]
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `Cell<u32>` cannot be shared between threads safely
+    |
+    = help: within `Counter`, the trait `Sync` is not implemented for `Cell<u32>`
+    = note: if you want to do aliasing and mutation between multiple threads, use `std::sync::RwLock` or `std::sync::atomic::AtomicU32` instead
 note: required because it appears within the type `Counter`
- --> tests/ui/interface_not_sync_and_send.rs:9:12
-  |
-9 | pub struct Counter {
-  |            ^^^^^^^
-note: required by a bound in `_::{closure#0}::assert_impl_all`
+   --> tests/ui/interface_not_sync_and_send.rs:9:12
+    |
+  9 | pub struct Counter {
+    |            ^^^^^^^
+note: required by a bound in `FfiConverterArc`
+   --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
+    |
+    | pub unsafe trait FfiConverterArc<UT>: Send + Sync {
+    |                                              ^^^^ required by this bound in `FfiConverterArc`
+    = note: this error originates in the attribute macro `::uniffi::udl_derive` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: `Cell<u32>` cannot be shared between threads safely
  --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
   |
-  | #[::uniffi::udl_derive(Object)]
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `assert_impl_all`
-  = note: this error originates in the macro `::uniffi::deps::static_assertions::assert_impl_all` which comes from the expansion of the attribute macro `::uniffi::udl_derive` (in Nightly builds, run with -Z macro-backtrace for more info)
+ 35 | struct r#Counter { }
+    |        ^^^^^^^^^ `Cell<u32>` cannot be shared between threads safely
+    |
+    = help: within `Counter`, the trait `Sync` is not implemented for `Cell<u32>`
+    = note: if you want to do aliasing and mutation between multiple threads, use `std::sync::RwLock` or `std::sync::atomic::AtomicU32` instead
+note: required because it appears within the type `Counter`
+   --> tests/ui/interface_not_sync_and_send.rs:9:12
+    |
+  9 | pub struct Counter {
+    |            ^^^^^^^
+note: required by a bound in `FfiConverterArc`
+   --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
+    |
+    | pub unsafe trait FfiConverterArc<UT>: Send + Sync {
+    |                                              ^^^^ required by this bound in `FfiConverterArc`
+
+error[E0277]: `Cell<u32>` cannot be shared between threads safely
+ --> tests/ui/interface_not_sync_and_send.rs:26:10
+  |
+ 26 | #[derive(uniffi::Object)]
+    |          ^^^^^^^^^^^^^^ `Cell<u32>` cannot be shared between threads safely
+    |
+    = help: within `ProcMacroCounter`, the trait `Sync` is not implemented for `Cell<u32>`
+    = note: if you want to do aliasing and mutation between multiple threads, use `std::sync::RwLock` or `std::sync::atomic::AtomicU32` instead
+note: required because it appears within the type `ProcMacroCounter`
+   --> tests/ui/interface_not_sync_and_send.rs:27:12
+    |
+ 27 | pub struct ProcMacroCounter {
+    |            ^^^^^^^^^^^^^^^^
+note: required by a bound in `FfiConverterArc`
+   --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
+    |
+    | pub unsafe trait FfiConverterArc<UT>: Send + Sync {
+    |                                              ^^^^ required by this bound in `FfiConverterArc`
+    = note: this error originates in the derive macro `uniffi::Object` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: `Cell<u32>` cannot be shared between threads safely
+ --> tests/ui/interface_not_sync_and_send.rs:27:12
+  |
+ 27 | pub struct ProcMacroCounter {
+    |            ^^^^^^^^^^^^^^^^ `Cell<u32>` cannot be shared between threads safely
+    |
+    = help: within `ProcMacroCounter`, the trait `Sync` is not implemented for `Cell<u32>`
+    = note: if you want to do aliasing and mutation between multiple threads, use `std::sync::RwLock` or `std::sync::atomic::AtomicU32` instead
+note: required because it appears within the type `ProcMacroCounter`
+   --> tests/ui/interface_not_sync_and_send.rs:27:12
+    |
+ 27 | pub struct ProcMacroCounter {
+    |            ^^^^^^^^^^^^^^^^
+note: required by a bound in `FfiConverterArc`
+   --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
+    |
+    | pub unsafe trait FfiConverterArc<UT>: Send + Sync {
+    |                                              ^^^^ required by this bound in `FfiConverterArc`
 
 error[E0277]: `Cell<u32>` cannot be shared between threads safely
  --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
@@ -29,13 +87,14 @@ error[E0277]: `Cell<u32>` cannot be shared between threads safely
 note: required because it appears within the type `Counter`
  --> tests/ui/interface_not_sync_and_send.rs:9:12
   |
-9 | pub struct Counter {
-  |            ^^^^^^^
-note: required by a bound in `FfiConverterArc`
- --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
-  |
-  | pub unsafe trait FfiConverterArc<UT>: Send + Sync {
-  |                                              ^^^^ required by this bound in `FfiConverterArc`
+ 9 | pub struct Counter {
+   |            ^^^^^^^
+note: required by a bound in `_::{closure#0}::assert_impl_all`
+  --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
+   |
+   | #[::uniffi::udl_derive(Object)]
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `assert_impl_all`
+   = note: this error originates in the macro `::uniffi::deps::static_assertions::assert_impl_all` which comes from the expansion of the attribute macro `::uniffi::udl_derive` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `Cell<u32>` cannot be shared between threads safely
   --> tests/ui/interface_not_sync_and_send.rs:27:12
@@ -56,22 +115,3 @@ note: required by a bound in `_::{closure#0}::assert_impl_all`
 26 | #[derive(uniffi::Object)]
    |          ^^^^^^^^^^^^^^ required by this bound in `assert_impl_all`
    = note: this error originates in the macro `::uniffi::deps::static_assertions::assert_impl_all` which comes from the expansion of the derive macro `uniffi::Object` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: `Cell<u32>` cannot be shared between threads safely
-  --> tests/ui/interface_not_sync_and_send.rs:27:12
-   |
-27 | pub struct ProcMacroCounter {
-   |            ^^^^^^^^^^^^^^^^ `Cell<u32>` cannot be shared between threads safely
-   |
-   = help: within `ProcMacroCounter`, the trait `Sync` is not implemented for `Cell<u32>`
-   = note: if you want to do aliasing and mutation between multiple threads, use `std::sync::RwLock` or `std::sync::atomic::AtomicU32` instead
-note: required because it appears within the type `ProcMacroCounter`
-  --> tests/ui/interface_not_sync_and_send.rs:27:12
-   |
-27 | pub struct ProcMacroCounter {
-   |            ^^^^^^^^^^^^^^^^
-note: required by a bound in `FfiConverterArc`
-  --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
-   |
-   | pub unsafe trait FfiConverterArc<UT>: Send + Sync {
-   |                                              ^^^^ required by this bound in `FfiConverterArc`

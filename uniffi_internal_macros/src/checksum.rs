@@ -101,7 +101,7 @@ pub fn expand_derive(input: DeriveInput) -> TokenStream {
                 .fields
                 .iter()
                 .enumerate()
-                .filter(|&(_num, field)| (!has_ignore_attribute(&field.attrs)))
+                .filter(|&(_num, field)| !has_ignore_attribute(&field.attrs))
                 .map(|(num, field)| match field.ident.as_ref() {
                     Some(ident) => quote! { Checksum::checksum(&self.#ident, state); },
                     None => {

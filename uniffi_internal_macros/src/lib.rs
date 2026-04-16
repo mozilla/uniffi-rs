@@ -6,7 +6,8 @@ use proc_macro::TokenStream;
 use syn::parse_macro_input;
 
 mod checksum;
-mod ir;
+mod map_node;
+mod node;
 
 /// Custom derive for uniffi_meta::Checksum
 #[proc_macro_derive(Checksum, attributes(checksum_ignore))]
@@ -14,9 +15,23 @@ pub fn checksum_derive(input: TokenStream) -> TokenStream {
     checksum::expand_derive(parse_macro_input!(input)).into()
 }
 
-#[proc_macro_derive(Node, attributes(node))]
+#[proc_macro_derive(Node)]
 pub fn node(input: TokenStream) -> TokenStream {
-    ir::expand_node(parse_macro_input!(input))
+    node::expand_derive(parse_macro_input!(input))
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
+#[proc_macro_derive(MapNode, attributes(map_node))]
+pub fn map_node(input: TokenStream) -> TokenStream {
+    map_node::expand_derive(parse_macro_input!(input))
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
+#[proc_macro]
+pub fn use_prev_node(input: TokenStream) -> TokenStream {
+    map_node::expand_use_prev_node(parse_macro_input!(input))
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }

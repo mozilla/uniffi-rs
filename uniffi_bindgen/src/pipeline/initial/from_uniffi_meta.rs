@@ -4,12 +4,10 @@
 
 //! Organize the metadata, transforming it from a simple list to a more tree-like structure.
 
-use anyhow::{anyhow, bail, Context, Result};
-use camino::Utf8Path;
-use std::{collections::BTreeMap, fs};
+use anyhow::{anyhow, bail, Result};
+use std::collections::{btree_map::Entry, BTreeMap};
 
-use super::nodes::*;
-use uniffi_pipeline::Node;
+use super::*;
 
 /// Converts `uniffi_meta` items into the initial IR.
 ///
@@ -18,29 +16,57 @@ use uniffi_pipeline::Node;
 /// * Call [Self::try_into_initial_ir] to construct a `initial::Root` node.
 #[derive(Default)]
 pub struct UniffiMetaConverter {
-    // Use BTreeMap for each of these so that things stay consistent, regardless of how the metadata is ordered.
-    // There are 2 important names here we must not mix up. The namespace name and the rust crate name.
-    // Our metadata usually carries "module_path" reflecting the crate name.
-    // This maps module_paths to namespace names.
     module_path_map: BTreeMap<String, String>,
     // Everything below here keyed by namespace name, not the module_path.
     // Top level modules
     namespaces: BTreeMap<String, Namespace>,
     // Top-level type definitions and functions, keyed by module name
     module_docstrings: BTreeMap<String, String>,
-    module_toml: BTreeMap<String, String>,
-    functions: BTreeMap<String, BTreeMap<String, Function>>,
-    records: BTreeMap<String, BTreeMap<String, Record>>,
-    callback_interfaces: BTreeMap<String, BTreeMap<String, CallbackInterface>>,
-    enums: BTreeMap<String, BTreeMap<String, Enum>>,
-    custom_types: BTreeMap<String, BTreeMap<String, CustomType>>,
-    interfaces: BTreeMap<String, BTreeMap<String, Interface>>,
+    module_toml: BTreeMap<String, toml::Table>,
+    functions: BTreeMap<String, BTreeMap<String, uniffi_meta::FnMetadata>>,
+    records: BTreeMap<String, BTreeMap<String, uniffi_meta::RecordMetadata>>,
+    callback_interfaces: BTreeMap<String, BTreeMap<String, uniffi_meta::CallbackInterfaceMetadata>>,
+    enums: BTreeMap<String, BTreeMap<String, uniffi_meta::EnumMetadata>>,
+    custom_types: BTreeMap<String, BTreeMap<String, uniffi_meta::CustomTypeMetadata>>,
+    interfaces: BTreeMap<String, BTreeMap<String, uniffi_meta::ObjectMetadata>>,
     // Child items, keyed by module name + parent name
-    constructors: BTreeMap<(String, String), BTreeMap<String, Constructor>>,
-    methods: BTreeMap<(String, String), BTreeMap<String, Method>>,
-    trait_methods: BTreeMap<(String, String), BTreeMap<String, TraitMethod>>,
-    uniffi_traits: BTreeMap<(String, String), BTreeMap<String, UniffiTrait>>,
-    trait_impls: BTreeMap<(String, String), BTreeMap<uniffi_meta::Type, ObjectTraitImpl>>,
+    constructors: BTreeMap<(String, String), BTreeMap<String, uniffi_meta::ConstructorMetadata>>,
+    methods: BTreeMap<(String, String), BTreeMap<String, uniffi_meta::MethodMetadata>>,
+    trait_methods: BTreeMap<(String, String), BTreeMap<String, uniffi_meta::TraitMethodMetadata>>,
+    uniffi_traits: BTreeMap<(String, String), BTreeMap<String, uniffi_meta::UniffiTraitMetadata>>,
+    trait_impls: BTreeMap<
+        (String, String),
+        BTreeMap<uniffi_meta::Type, uniffi_meta::ObjectTraitImplMetadata>,
+    >,
+}
+
+/// Utility trait used to insert metadata items into a BTreeMap, but bail on duplicates
+trait InsertUnique<K, V> {
+    fn insert_unique(&mut self, k: K, v: V) -> Result<()>;
+}
+
+impl<K, V> InsertUnique<K, V> for BTreeMap<K, V>
+where
+    K: std::fmt::Debug + Ord,
+    V: std::fmt::Debug + PartialEq,
+{
+    fn insert_unique(&mut self, k: K, v: V) -> Result<()> {
+        match self.entry(k) {
+            Entry::Vacant(e) => {
+                e.insert(v);
+                Ok(())
+            }
+            Entry::Occupied(e) => {
+                if e.get() != &v {
+                    bail!(
+                        "Conflicting metadata types:\nold: {:?}\nnew: {v:?}",
+                        e.get()
+                    );
+                }
+                Ok(())
+            }
+        }
+    }
 }
 
 impl UniffiMetaConverter {
@@ -51,70 +77,103 @@ impl UniffiMetaConverter {
                 self.module_path_map
                     .insert(namespace.crate_name.clone(), namespace.name.clone());
                 // Insert a new module
-                self.namespaces
-                    .entry(namespace.name.clone())
-                    .or_insert(Namespace {
+                self.namespaces.insert_unique(
+                    namespace.name.clone(),
+                    Namespace {
                         crate_name: namespace.crate_name,
                         docstring: None,
                         config_toml: None,
                         name: namespace.name,
                         functions: vec![],
                         type_definitions: vec![],
-                    });
+                    },
+                )?;
             }
             uniffi_meta::Metadata::Func(func) => {
                 self.functions
-                    .entry(func.module_path.clone())
+                    .entry(module_path_to_crate_name(&func.module_path))
                     .or_default()
-                    .insert(func.name.clone(), Function::try_from_node(func)?);
+                    .insert_unique(func.name.clone(), func)?;
             }
             uniffi_meta::Metadata::Record(rec) => {
                 self.records
-                    .entry(rec.module_path.clone())
+                    .entry(module_path_to_crate_name(&rec.module_path))
                     .or_default()
-                    .insert(rec.name.clone(), Record::try_from_node(rec)?);
+                    .insert_unique(rec.name.clone(), rec)?;
             }
             uniffi_meta::Metadata::Enum(en) => {
                 self.enums
-                    .entry(en.module_path.clone())
+                    .entry(module_path_to_crate_name(&en.module_path))
                     .or_default()
-                    .insert(en.name.clone(), Enum::try_from_node(en)?);
+                    .insert_unique(en.name.clone(), en)?;
             }
             uniffi_meta::Metadata::Object(int) => {
                 self.interfaces
-                    .entry(int.module_path.clone())
+                    .entry(module_path_to_crate_name(&int.module_path))
                     .or_default()
-                    .insert(int.name.clone(), Interface::try_from_node(int)?);
+                    .insert_unique(int.name.clone(), int)?;
             }
             uniffi_meta::Metadata::CallbackInterface(cbi) => {
                 self.callback_interfaces
-                    .entry(cbi.module_path.clone())
+                    .entry(module_path_to_crate_name(&cbi.module_path))
                     .or_default()
-                    .insert(cbi.name.clone(), CallbackInterface::try_from_node(cbi)?);
+                    .insert_unique(cbi.name.clone(), cbi)?;
             }
             uniffi_meta::Metadata::CustomType(custom) => {
-                self.custom_types
-                    .entry(custom.module_path.clone())
-                    .or_default()
-                    .insert(custom.name.clone(), CustomType::try_from_node(custom)?);
+                let by_crate = self
+                    .custom_types
+                    .entry(module_path_to_crate_name(&custom.module_path))
+                    .or_default();
+                match by_crate.entry(custom.name.clone()) {
+                    Entry::Vacant(e) => {
+                        e.insert(custom);
+                    }
+                    Entry::Occupied(mut e) => {
+                        let existing = e.get();
+                        // UDL provides docstring: None; proc-macro may provide Some.
+                        // Any difference other than the docstring is a genuine conflict.
+                        if existing.builtin != custom.builtin
+                            || existing.module_path != custom.module_path
+                        {
+                            bail!(
+                                "Conflicting metadata types:\nold: {:?}\nnew: {:?}",
+                                existing,
+                                custom
+                            );
+                        }
+                        // Prefer the version with a docstring.
+                        if custom.docstring.is_some() && existing.docstring.is_none() {
+                            e.insert(custom);
+                        }
+                    }
+                }
             }
             uniffi_meta::Metadata::Constructor(cons) => {
                 self.constructors
-                    .entry((cons.module_path.clone(), cons.self_name.clone()))
+                    .entry((
+                        module_path_to_crate_name(&cons.module_path),
+                        cons.self_name.to_string(),
+                    ))
                     .or_default()
-                    .insert(cons.name.clone(), Constructor::try_from_node(cons)?);
+                    .insert_unique(cons.name.clone(), cons)?;
             }
             uniffi_meta::Metadata::Method(meth) => {
                 self.methods
-                    .entry((meth.module_path.to_string(), meth.self_name.to_string()))
+                    .entry((
+                        module_path_to_crate_name(&meth.module_path),
+                        meth.self_name.to_string(),
+                    ))
                     .or_default()
-                    .insert(meth.name.clone(), Method::try_from_node(meth)?);
+                    .insert_unique(meth.name.clone(), meth)?;
             }
             uniffi_meta::Metadata::TraitMethod(meth) => {
                 self.trait_methods
-                    .entry((meth.module_path.clone(), meth.trait_name.clone()))
+                    .entry((
+                        module_path_to_crate_name(&meth.module_path),
+                        meth.trait_name.to_string(),
+                    ))
                     .or_default()
-                    .insert(meth.name.clone(), TraitMethod::try_from_node(meth)?);
+                    .insert_unique(meth.name.clone(), meth)?;
             }
             uniffi_meta::Metadata::UniffiTrait(ut) => {
                 let meth = match &ut {
@@ -126,9 +185,12 @@ impl UniffiMetaConverter {
                 };
 
                 self.uniffi_traits
-                    .entry((meth.module_path.to_string(), meth.self_name.to_string()))
+                    .entry((
+                        module_path_to_crate_name(&meth.module_path),
+                        meth.self_name.to_string(),
+                    ))
                     .or_default()
-                    .insert(ut.name().to_string(), UniffiTrait::try_from_node(ut)?);
+                    .insert_unique(ut.name().to_string(), ut)?;
             }
             uniffi_meta::Metadata::ObjectTraitImpl(imp) => {
                 let (module_path, name) = match &imp.ty {
@@ -150,22 +212,21 @@ impl UniffiMetaConverter {
                     _ => bail!("Invalid ObjectTraitImpl type: {:?}", imp.ty),
                 };
                 self.trait_impls
-                    .entry((module_path.to_string(), name.to_string()))
+                    .entry((module_path_to_crate_name(module_path), name.to_string()))
                     .or_default()
-                    .insert(imp.trait_ty.clone(), ObjectTraitImpl::try_from_node(imp)?);
+                    .insert_unique(imp.trait_ty.clone(), imp)?;
             }
             uniffi_meta::Metadata::UdlFile(_) => (),
         }
         Ok(())
     }
 
-    pub fn add_module_config_toml(&mut self, module_name: String, path: &Utf8Path) -> Result<()> {
-        if !path.exists() {
-            return Ok(());
-        }
-        let contents =
-            fs::read_to_string(path).with_context(|| format!("read file: {:?}", path))?;
-        self.module_toml.insert(module_name, contents);
+    pub fn add_module_config_toml(
+        &mut self,
+        module_name: String,
+        table: toml::Table,
+    ) -> Result<()> {
+        self.module_toml.insert_unique(module_name, table)?;
         Ok(())
     }
 
@@ -173,11 +234,20 @@ impl UniffiMetaConverter {
     ///
     /// This is currently UDL-specific.  Eventually, we should probably make this another metadata
     /// items
-    pub fn add_module_docstring(&mut self, namespace: String, docstring: String) {
-        self.module_docstrings.insert(namespace, docstring);
+    pub fn add_module_docstring(&mut self, namespace: String, docstring: String) -> Result<()> {
+        self.module_docstrings.insert_unique(namespace, docstring)
     }
 
-    pub fn try_into_initial_ir(mut self) -> Result<Root> {
+    pub fn try_into_initial_ir(self) -> Result<Root> {
+        let context = Context {
+            module_path_map: self.module_path_map.clone(),
+            constructors: self.constructors,
+            methods: self.methods,
+            trait_methods: self.trait_methods,
+            uniffi_traits: self.uniffi_traits,
+            trait_impls: self.trait_impls,
+        };
+
         let mut root = Root {
             namespaces: self.namespaces.into_iter().collect(),
             cdylib: None,
@@ -191,177 +261,68 @@ impl UniffiMetaConverter {
             })?;
             namespace.docstring = Some(docstring);
         }
-        for (namespace_name, toml) in self.module_toml {
+        for (namespace_name, table) in self.module_toml {
             // already the namespace name, so no need to convert.
             // we should maybe ignore an error here?
             let namespace = root.namespaces.get_mut(&namespace_name).ok_or_else(|| {
                 anyhow!("namespace specified in toml doesn't exist: {namespace_name:?}")
             })?;
-            namespace.config_toml = Some(toml);
+            // ideally `namespace.config_toml` would be a `toml::Table`, but all members must implement `Node`.
+            namespace.config_toml = Some(toml::to_string(&table)?);
         }
         for (module_path, funcs) in self.functions {
-            get_namespace(&self.module_path_map, &mut root, &module_path)?
-                .functions
-                .extend(funcs.into_values());
+            let namespace = get_namespace(&self.module_path_map, &mut root, &module_path)?;
+            for func in funcs.into_values() {
+                namespace.functions.push(func.map_node(&context)?);
+            }
         }
         for (module_path, list) in self.records {
-            get_namespace(&self.module_path_map, &mut root, &module_path)?
-                .type_definitions
-                .extend(
-                    list.into_values()
-                        .map(|mut r| {
-                            let key = (module_path.clone(), r.name.clone());
-                            if let Some(uniffi_traits) = self.uniffi_traits.remove(&key) {
-                                r.uniffi_traits.extend(uniffi_traits.into_values())
-                            }
-                            Ok(TypeDefinition::Record(r))
-                        })
-                        .collect::<Result<Vec<_>>>()?,
-                )
+            let namespace = get_namespace(&self.module_path_map, &mut root, &module_path)?;
+            for rec in list.into_values() {
+                namespace
+                    .type_definitions
+                    .push(TypeDefinition::Record(rec.map_node(&context)?));
+            }
         }
         for (module_path, list) in self.enums {
-            get_namespace(&self.module_path_map, &mut root, &module_path)?
-                .type_definitions
-                .extend(
-                    list.into_values()
-                        .map(|mut e| {
-                            let key = (module_path.clone(), e.name.clone());
-                            if let Some(uniffi_traits) = self.uniffi_traits.remove(&key) {
-                                e.uniffi_traits.extend(uniffi_traits.into_values())
-                            }
-                            Ok(TypeDefinition::Enum(e))
-                        })
-                        .collect::<Result<Vec<_>>>()?,
-                )
+            let namespace = get_namespace(&self.module_path_map, &mut root, &module_path)?;
+            for en in list.into_values() {
+                namespace
+                    .type_definitions
+                    .push(TypeDefinition::Enum(en.map_node(&context)?));
+            }
         }
         for (module_path, list) in self.custom_types {
-            get_namespace(&self.module_path_map, &mut root, &module_path)?
-                .type_definitions
-                .extend(list.into_values().map(TypeDefinition::Custom));
+            let namespace = get_namespace(&self.module_path_map, &mut root, &module_path)?;
+            for custom in list.into_values() {
+                namespace
+                    .type_definitions
+                    .push(TypeDefinition::Custom(custom.map_node(&context)?));
+            }
         }
         // Collect child items for interfaces and callback interfaces
         for (module_path, list) in self.interfaces {
-            get_namespace(&self.module_path_map, &mut root, &module_path)?
-                .type_definitions
-                .extend(
-                    list.into_values()
-                        .map(|mut int| {
-                            let key = (module_path.clone(), int.name.clone());
-                            if let Some(methods) = self.methods.remove(&key) {
-                                if self.trait_methods.contains_key(&key) {
-                                    // Trait methods have an explicit index, so mixing them with
-                                    // regular methods won't work.
-                                    bail!("{} contains both methods and trait methods", int.name)
-                                }
-                                int.methods.extend(methods.into_values());
-                            } else if let Some(trait_methods) = self.trait_methods.remove(&key) {
-                                int.methods.extend(Self::convert_trait_methods(
-                                    trait_methods.into_values().collect(),
-                                ));
-                            }
-                            if let Some(constructors) = self.constructors.remove(&key) {
-                                int.constructors.extend(constructors.into_values())
-                            }
-                            if let Some(uniffi_traits) = self.uniffi_traits.remove(&key) {
-                                int.uniffi_traits.extend(uniffi_traits.into_values())
-                            }
-                            if let Some(trait_impls) = self.trait_impls.remove(&key) {
-                                int.trait_impls.extend(trait_impls.into_values())
-                            }
-                            Ok(TypeDefinition::Interface(int))
-                        })
-                        .collect::<Result<Vec<_>>>()?,
-                )
+            let namespace = get_namespace(&self.module_path_map, &mut root, &module_path)?;
+            for int in list.into_values() {
+                namespace
+                    .type_definitions
+                    .push(TypeDefinition::Interface(int.map_node(&context)?));
+            }
         }
         for (module_path, list) in self.callback_interfaces {
-            get_namespace(&self.module_path_map, &mut root, &module_path)?
-                .type_definitions
-                .extend(list.into_values().map(|mut cbi| {
-                    let key = (module_path.clone(), cbi.name.clone());
-                    if let Some(trait_methods) = self.trait_methods.remove(&key) {
-                        cbi.methods.extend(Self::convert_trait_methods(
-                            trait_methods.into_values().collect(),
-                        ));
-                    }
-                    TypeDefinition::CallbackInterface(cbi)
-                }))
-        }
-        if !self.constructors.is_empty() {
-            bail!("Leftover constructors: {:?}", self.constructors)
-        }
-        if !self.methods.is_empty() {
-            bail!("Leftover methods: {:?}", self.methods)
-        }
-        if !self.trait_methods.is_empty() {
-            bail!("Leftover trait_methods: {:?}", self.trait_methods)
-        }
-        if !self.uniffi_traits.is_empty() {
-            bail!("Leftover uniffi_traits: {:?}", self.uniffi_traits)
-        }
-        if !self.trait_impls.is_empty() {
-            bail!("Leftover trait_impls: {:?}", self.trait_impls)
-        }
-        // set the namespace names
-        root.try_visit_mut(|ty: &mut Type| match ty {
-            Type::Interface {
-                module_path,
-                namespace,
-                ..
+            let namespace = get_namespace(&self.module_path_map, &mut root, &module_path)?;
+            for cbi in list.into_values() {
+                namespace
+                    .type_definitions
+                    .push(TypeDefinition::CallbackInterface(cbi.map_node(&context)?));
             }
-            | Type::Record {
-                module_path,
-                namespace,
-                ..
-            }
-            | Type::Enum {
-                module_path,
-                namespace,
-                ..
-            }
-            | Type::CallbackInterface {
-                module_path,
-                namespace,
-                ..
-            }
-            | Type::Custom {
-                module_path,
-                namespace,
-                ..
-            } => {
-                *namespace = get_namespace_name(&self.module_path_map, module_path)?.to_string();
-                Ok(())
-            }
-            _ => Ok(()),
-        })?;
+        }
         Ok(root)
-    }
-
-    fn convert_trait_methods(mut trait_methods: Vec<TraitMethod>) -> impl Iterator<Item = Method> {
-        trait_methods.sort_by_key(|tm| tm.index);
-        trait_methods.into_iter().map(Self::convert_trait_method)
-    }
-
-    fn convert_trait_method(trait_method: TraitMethod) -> Method {
-        Method {
-            name: trait_method.name,
-            is_async: trait_method.is_async,
-            inputs: trait_method.inputs,
-            return_type: trait_method.return_type,
-            throws: trait_method.throws,
-            checksum: trait_method.checksum,
-            docstring: trait_method.docstring,
-        }
     }
 }
 
-fn get_namespace_name<'a>(
-    module_path_map: &'a BTreeMap<String, String>,
-    module_path: &str,
-) -> Result<&'a str> {
-    module_path_map
-        .get(module_path)
-        .map(String::as_str)
-        .ok_or_else(|| anyhow!("module lookup failed: {module_path:?}"))
+fn module_path_to_crate_name(module_path: &str) -> String {
+    module_path.split("::").next().unwrap().to_string()
 }
 
 fn get_namespace<'a>(
@@ -369,8 +330,12 @@ fn get_namespace<'a>(
     root: &'a mut Root,
     module_path: &str,
 ) -> Result<&'a mut Namespace> {
-    let name = get_namespace_name(module_path_map, module_path)?;
+    let crate_name = module_path.split("::").next().unwrap();
+    let namespace_name = module_path_map
+        .get(crate_name)
+        .map(String::as_str)
+        .ok_or_else(|| anyhow!("module lookup failed: {module_path:?}"))?;
     root.namespaces
-        .get_mut(name)
+        .get_mut(namespace_name)
         .ok_or_else(|| anyhow!("root module lookup failed: {module_path:?}"))
 }

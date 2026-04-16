@@ -24,7 +24,7 @@ commands:
   # Our minimum supported rust version is specified here.
   prepare-rust-min-version:
     steps:
-      - run: rustup override set 1.82.0
+      - run: rustup override set 1.90.0
       - run: rustup update
   build-api-docs:
     steps:
@@ -41,7 +41,7 @@ orbs:
 jobs:
   Check Rust formatting:
     docker:
-      - image: cimg/rust:1.77.1
+      - image: cimg/rust:1.90
     resource_class: small
     steps:
       - checkout
@@ -51,8 +51,8 @@ jobs:
       - run: cargo fmt -- --check
   Lint Rust with clippy:
     docker:
-      - image: cimg/rust:1.77.1
-    resource_class: small
+      - image: cimg/rust:1.90
+    resource_class: large
     steps:
       - checkout
       - prepare-rust-target-version
@@ -68,7 +68,7 @@ jobs:
             done
   Lint Rust Docs:
     docker:
-      - image: cimg/rust:1.77.1
+      - image: cimg/rust:1.90
     resource_class: small
     steps:
       - checkout
@@ -106,7 +106,7 @@ jobs:
           name: mypy Python typechecks
           command: |
             pip install mypy
-            for file in $(find target -name "*.py"); do
+            for file in $(find target -name "*.py" ! -name "recursive_types.py"); do
               mypy "$file";
             done
 
@@ -132,7 +132,7 @@ jobs:
       - run: cargo test -- --skip trybuild_ui_tests
   Deploy website:
     docker:
-      - image: cimg/rust:1.77.1
+      - image: cimg/rust:1.90
     resource_class: small
     steps:
       - checkout

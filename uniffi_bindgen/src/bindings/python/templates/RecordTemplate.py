@@ -3,7 +3,7 @@ class {{ rec.self_type.type_name }}:
     {{ rec.docstring|docstring(4) -}}
     {%- if !rec.fields.is_empty() -%}
     def __init__(self, *, {% for field in rec.fields %}
-    {{- field.name }}: {{- field.ty.type_name}}
+    {{- field.name }}: {{- field.type_annotation}}
     {%- if let Some(default) = field.default %} = {{ default.arg_literal }}{% endif %}
     {%- if !loop.last %}, {% endif %}
     {%- endfor %}):
@@ -12,7 +12,7 @@ class {{ rec.self_type.type_name }}:
         {%- when None %}
         self.{{ field.name }} = {{ field.name }}
         {%- when Some(default) %}
-        {%- if default.is_arg_literal %}
+        {%- if default.is_arg_literal() %}
         self.{{ field.name }} = {{ field.name }}
         {%- else %}
         if {{ field.name }} is {{ default.arg_literal }}:
@@ -29,6 +29,15 @@ class {{ rec.self_type.type_name }}:
     {% filter indent(4) %}
     {% include "UniffiTraitImpls.py" %}
     {% endfilter %}
+
+{%- for meth in rec.methods -%}
+{%-     let callable = meth.callable %}
+    {% if callable.is_async() %}async {% endif %}def {{ callable.name }}(self, {% include "CallableArgs.py" %}) -> {{ callable.return_type.type_name }}:
+        {{ meth.docstring|docstring(8) -}}
+        {%- filter indent(8) %}
+        {%- include "CallableBody.py" %}
+        {%- endfilter %}
+{%- endfor %}
 
     {# "builtin" methods not handled by a uniffi_trait #}
     {%- if uniffi_trait_methods.display_fmt.is_none() %}

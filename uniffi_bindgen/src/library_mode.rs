@@ -34,6 +34,9 @@ use uniffi_meta::{
 /// interface and allows for more flexibility in how the external bindings are generated.
 ///
 /// Returns the list of sources used to generate the bindings, in no particular order.
+///
+/// Deprecated: External crates are encouraged to use the `BindgenLoader` type instead, which lets
+/// you control the binding generation process more directly.
 pub fn generate_bindings<T: BindingGenerator>(
     library_path: &Utf8Path,
     crate_name: Option<String>,
@@ -61,6 +64,14 @@ pub fn generate_bindings<T: BindingGenerator>(
         cdylib: calc_cdylib_name(library_path).map(ToOwned::to_owned),
     };
     binding_generator.update_component_configs(&settings, &mut components)?;
+
+    // need to derive ffi after the bindings have had a chance to update any names etc.
+    for component in &mut components {
+        component
+            .ci
+            .derive_ffi_funcs()
+            .context("Failed to derive FFI functions")?;
+    }
 
     // give every CI a cloned copy of every CI - including itself for simplicity.
     // we end up taking n^2 copies of all ci's, but it works.

@@ -11,8 +11,7 @@ use crate::{
     record::FieldAttributeArguments,
     util::{
         create_metadata_items, either_attribute_arg, extract_docstring, ident_to_string, kw,
-        mod_path, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
-        UniffiAttributeArgs,
+        try_metadata_value_from_usize, try_read_field, AttributeSliceExt, UniffiAttributeArgs,
     },
     DeriveOptions,
 };
@@ -172,10 +171,6 @@ fn enum_or_error_ffi_converter_impl(
     let ident = item.ident();
     let impl_spec = options.ffi_impl_header("FfiConverter", ident);
     let derive_ffi_traits = options.derive_all_ffi_traits(ident);
-    let mod_path = match mod_path() {
-        Ok(p) => p,
-        Err(e) => return e.into_compile_error(),
-    };
     let mut write_match_arms: Vec<_> = item
         .enum_()
         .variants
@@ -263,7 +258,7 @@ fn enum_or_error_ffi_converter_impl(
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(#metadata_type_code)
-                .concat_str(#mod_path)
+                .concat_str(module_path!())
                 .concat_str(#name);
         }
 
@@ -273,14 +268,13 @@ fn enum_or_error_ffi_converter_impl(
 
 pub(crate) fn enum_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream> {
     let name = &item.foreign_name();
-    let module_path = mod_path()?;
     let non_exhaustive = item.is_non_exhaustive();
     let docstring = item.docstring();
     let shape = EnumShape::Enum.as_u8();
 
     let mut metadata_expr = quote! {
         ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
-            .concat_str(#module_path)
+            .concat_str(module_path!())
             .concat_str(#name)
             .concat_value(#shape)
     };
@@ -369,8 +363,15 @@ pub fn variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
             let field_names = v
                 .fields
                 .iter()
-                .map(|f| f.ident.as_ref().map(ident_to_string).unwrap_or_default())
-                .collect::<Vec<_>>();
+                .map(|f| {
+                    let attrs = f
+                        .attrs
+                        .parse_uniffi_attr_args::<FieldAttributeArguments>()?;
+                    Ok(attrs
+                        .name
+                        .unwrap_or(f.ident.as_ref().map(ident_to_string).unwrap_or_default()))
+                })
+                .collect::<syn::Result<Vec<_>>>()?;
 
             let field_defaults = v
                 .fields
@@ -382,7 +383,10 @@ pub fn variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
                     default_value_metadata_calls(&attrs.default)
                 })
                 .collect::<syn::Result<Vec<_>>>()?;
-            let name = ident_to_string(&v.ident);
+
+            let attrs = v.attrs.parse_uniffi_attr_args::<VariantAttr>()?;
+
+            let name = attrs.name.unwrap_or(ident_to_string(&v.ident));
             let value_tokens = variant_value(v)?;
 
             let docstring = extract_docstring(&v.attrs)?;
@@ -452,6 +456,32 @@ impl UniffiAttributeArgs for EnumAttr {
         Ok(Self {
             flat_error: either_attribute_arg(self.flat_error, other.flat_error)?,
             with_try_read: either_attribute_arg(self.with_try_read, other.with_try_read)?,
+            name: either_attribute_arg(self.name, other.name)?,
+        })
+    }
+}
+
+/// Handle #[uniffi(...)] attributes for enum variants
+#[derive(Clone, Default)]
+pub struct VariantAttr {
+    pub name: Option<String>,
+}
+
+impl UniffiAttributeArgs for VariantAttr {
+    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
+        let lookahead = input.lookahead1();
+        if lookahead.peek(kw::name) {
+            let _: kw::name = input.parse()?;
+            let _: Token![=] = input.parse()?;
+            let name = Some(input.parse::<LitStr>()?.value());
+            Ok(Self { name })
+        } else {
+            Err(lookahead.error())
+        }
+    }
+
+    fn merge(self, other: Self) -> syn::Result<Self> {
+        Ok(Self {
             name: either_attribute_arg(self.name, other.name)?,
         })
     }

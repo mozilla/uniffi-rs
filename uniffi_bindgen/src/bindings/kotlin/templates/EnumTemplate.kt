@@ -7,22 +7,38 @@
 
 {%- if e.is_flat() %}
 
-{%- call kt::docstring(e, 0) %}
+{%- call kt::docstring(e, 0) %}{% endcall %}
 {% match e.variant_discr_type() %}
 {% when None %}
 enum class {{ type_name }} {
     {% for variant in e.variants() -%}
-    {%- call kt::docstring(variant, 4) %}
+    {%- call kt::docstring(variant, 4) %}{% endcall %}
     {{ variant|variant_name }}{% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
+
+    {% for meth in e.methods() -%}
+    {%- call kt::func_decl("", meth, 4) %}{% endcall %}
+    {% endfor %}
+
+    {%- let uniffi_trait_methods = e.uniffi_trait_methods() %}
+    {%- call kt::uniffi_trait_impls(uniffi_trait_methods) %}{% endcall %}
+
     companion object
 }
 {% when Some(variant_discr_type) %}
 enum class {{ type_name }}(val value: {{ variant_discr_type|type_name(ci) }}) {
     {% for variant in e.variants() -%}
-    {%- call kt::docstring(variant, 4) %}
+    {%- call kt::docstring(variant, 4) %}{% endcall %}
     {{ variant|variant_name }}({{ e|variant_discr_literal(loop.index0) }}){% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
+
+    {% for meth in e.methods() -%}
+    {%- call kt::func_decl("", meth, 4) %}{% endcall %}
+    {% endfor %}
+
+    {%- let uniffi_trait_methods = e.uniffi_trait_methods() %}
+    {%- call kt::uniffi_trait_impls(uniffi_trait_methods) %}{% endcall %}
+
     companion object
 }
 {% endmatch %}
@@ -50,17 +66,21 @@ public object {{ e|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}
 
 {% else %}
 
-{%- call kt::docstring(e, 0) %}
-sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% endif %} {
+{%- call kt::docstring(e, 0) %}{% endcall %}
+sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% endif %}
+{%- let uniffi_trait_methods = e.uniffi_trait_methods() -%}
+{%- if uniffi_trait_methods.ord_cmp.is_some() -%}
+{% if contains_object_references %}, {% else %} : {% endif %}Comparable<{{ type_name }}>
+{%- endif %} {
     {% for variant in e.variants() -%}
-    {%- call kt::docstring(variant, 4) %}
+    {%- call kt::docstring(variant, 4) %}{% endcall %}
     {% if !variant.has_fields() -%}
     object {{ variant|type_name(ci) }} : {{ type_name }}()
     {% else -%}
     data class {{ variant|type_name(ci) }}(
         {%- for field in variant.fields() -%}
-        {%- call kt::docstring(field, 8) %}
-        val {% call kt::field_name(field, loop.index) %}: {{ field|type_name(ci) }}
+        {%- call kt::docstring(field, 8) %}{% endcall %}
+        val {% call kt::field_name(field, loop.index) %}{% endcall %}: {{ field|qualified_type_name(ci, config) }}
         {%- if let Some(default) = field.default_value() %} = {{ default|render_default(field, ci) }} {% endif %}
         {%- if loop.last %}{% else %}, {% endif %}
         {%- endfor -%}
@@ -71,7 +91,7 @@ sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% e
         , Comparable<{{ type_name }}>
         {%- endif %}
     {
-        {% call kt::uniffi_trait_impls(uniffi_trait_methods) %}
+        {% call kt::uniffi_trait_impls(uniffi_trait_methods) %}{% endcall %}
         companion object
     }
     {%- endif %}
@@ -84,7 +104,7 @@ sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% e
             {%- for variant in e.variants() %}
             is {{ type_name }}.{{ variant|type_name(ci) }} -> {
                 {%- if variant.has_fields() %}
-                {% call kt::destroy_fields(variant) %}
+                {% call kt::destroy_fields(variant) %}{% endcall %}
                 {% else -%}
                 // Nothing to destroy
                 {%- endif %}
@@ -93,6 +113,15 @@ sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% e
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
     }
     {% endif %}
+
+    {# We also need to put methods on the object to support variants with no data.
+       We could maybe optimize this so only write when no-data variants actually exist? #}
+    {% for meth in e.methods() -%}
+    {%- call kt::func_decl("", meth, 4) %}{% endcall %}
+    {% endfor %}
+
+    {%- call kt::uniffi_trait_impls(uniffi_trait_methods) %}{% endcall %}
+
     companion object
 }
 
@@ -113,14 +142,14 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
         }
     }
 
-    override fun allocationSize(value: {{ type_name }}) = when(value) {
+    override fun allocationSize(value: {{ type_name }}): ULong = when(value) {
         {%- for variant in e.variants() %}
         is {{ type_name }}.{{ variant|type_name(ci) }} -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
                 4UL
                 {%- for field in variant.fields() %}
-                + {{ field|allocation_size_fn }}(value.{%- call kt::field_name(field, loop.index) -%})
+                + {{ field|allocation_size_fn }}(value.{%- call kt::field_name(field, loop.index) %}{% endcall -%})
                 {%- endfor %}
             )
         }
@@ -133,7 +162,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
             is {{ type_name }}.{{ variant|type_name(ci) }} -> {
                 buf.putInt({{ loop.index }})
                 {%- for field in variant.fields() %}
-                {{ field|write_fn }}(value.{%- call kt::field_name(field, loop.index) -%}, buf)
+                {{ field|write_fn }}(value.{%- call kt::field_name(field, loop.index) %}{% endcall -%}, buf)
                 {%- endfor %}
                 Unit
             }

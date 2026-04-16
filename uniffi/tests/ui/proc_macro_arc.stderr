@@ -78,5 +78,5 @@ help: ensure that all possible cases are being handled by adding a match arm wit
    |
 22 ~         match &*foo {
 23 +             _ => todo!(),
-24 +         }
+24 ~         }
    |

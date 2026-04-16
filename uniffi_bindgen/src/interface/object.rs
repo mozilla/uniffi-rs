@@ -441,10 +441,14 @@ impl Constructor {
         self.name == "new"
     }
 
-    fn derive_ffi_func(&mut self) {
+    pub fn derive_ffi_func(&mut self) {
         assert!(!self.ffi_func.name().is_empty());
         self.ffi_func
             .init(Some(FfiType::Handle), self.arguments.iter().map(Into::into));
+    }
+
+    pub fn checksum_from_metadata(meta: uniffi_meta::ConstructorMetadata) -> u16 {
+        uniffi_meta::checksum(&Self::from(meta))
     }
 }
 
@@ -488,6 +492,9 @@ impl From<uniffi_meta::ConstructorMetadata> for Constructor {
 pub struct Method {
     pub(super) name: String,
     pub(super) is_async: bool,
+    // Ignore `self_type` for the checksum, we never compare the method checksums for methods from
+    // different objects.
+    #[checksum_ignore]
     pub(super) self_type: Type,
     pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
@@ -621,9 +628,15 @@ impl Method {
             checksum: meta.checksum,
         }
     }
+
+    pub fn checksum_from_metadata(meta: uniffi_meta::MethodMetadata) -> u16 {
+        // We can use an arbitrary `self_type` for this, since it's ignored for the checksum
+        uniffi_meta::checksum(&Self::from_metadata(meta, Type::UInt8))
+    }
 }
 
 /// The list of traits we support generating helper methods for.
+#[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, Checksum)]
 pub enum UniffiTrait {
     Debug { fmt: Method },
@@ -818,7 +831,8 @@ mod test {
                 constructor(u32 v);
             };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        let mut ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        ci.derive_ffi_funcs().unwrap();
         assert_eq!(ci.object_definitions().len(), 1);
 
         let obj = ci.get_object_definition("Testing").unwrap();
@@ -848,7 +862,8 @@ mod test {
                 constructor(u32 v);
             };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        let mut ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        ci.derive_ffi_funcs().unwrap();
         assert_eq!(ci.object_definitions().len(), 1);
 
         let obj = ci.get_object_definition("Testing").unwrap();

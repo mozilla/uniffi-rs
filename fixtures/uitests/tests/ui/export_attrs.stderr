@@ -30,13 +30,13 @@ error: attribute `flat_error` is not supported here.
 22 | #[uniffi(flat_error)]
    |          ^^^^^^^^^^
 
-error: expected `default`
+error: expected `default` or `name`
   --> tests/ui/export_attrs.rs:27:14
    |
 27 |     #[uniffi(flat_error)]
    |              ^^^^^^^^^^
 
-error: attribute arguments are not currently recognized in this position
+error: expected `name`
   --> tests/ui/export_attrs.rs:34:14
    |
 34 |     #[uniffi(flat_error)]

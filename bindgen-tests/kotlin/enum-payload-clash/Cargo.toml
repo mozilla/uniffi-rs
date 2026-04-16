@@ -1,0 +1,19 @@
+[package]
+name = "uniffi-fixture-regression-kotlin-enum-payload-clash"
+edition = "2021"
+version = "0.22.0"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+name = "uniffi_regression_kotlin_enum_payload_clash"
+
+[dependencies]
+uniffi = { workspace = true }
+
+[dev-dependencies]
+uniffi = { workspace = true, features = ["bindgen-tests"] }
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]

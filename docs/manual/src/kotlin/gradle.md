@@ -61,9 +61,9 @@ dependencies {
 }
 ```
 
-## Advise on rust->java interop
+## Advise on Rust -> Java interop
 
-It's highly recommend to call `AttachCurrentThread` when spawning a rust thread, and in that thread we need to call java functions, maybe through uniffi's foreign interface. Otherwise, [JNA] has to attach and detach a java thread into the native thread in every function call, which is a heavy operation.
+It's highly recommend to call `AttachCurrentThread` when spawning a Rust thread, and in that thread we need to call Java functions, maybe through UniFFI's foreign interface. Otherwise, [JNA] has to attach and detach a Java thread into the native thread in every function call, which is a heavy operation.
 
 ```rust
 static VM: once_cell::sync::OnceCell<jni::JavaVM> = once_cell::sync::OnceCell::new();

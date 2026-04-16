@@ -44,3 +44,15 @@ interface Message {
 
 **Note:** since UniFFI generates a default arm, if you leave out a variant, or if the upstream crate adds a new variant, this won't be caught at compile time.
 Any attempt to pass that variant across the FFI will result in a panic.
+
+## Recursive enums
+
+Enums that reference themselves are supported. UniFFI detects cycles that are self-referential, or mutually recursive through other enums or records and generates appropriate bindings.
+
+```idl
+[Enum]
+interface Tree {
+    Leaf();
+    Branch(Tree left, Tree right);
+};
+```

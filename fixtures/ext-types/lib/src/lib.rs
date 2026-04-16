@@ -5,7 +5,7 @@ use ext_types_external_crate::{
 };
 use std::sync::Arc;
 use uniffi_one::{
-    UniffiOneEnum, UniffiOneError, UniffiOneErrorInterface, UniffiOneInterface,
+    BindingRenamedType, UniffiOneEnum, UniffiOneError, UniffiOneErrorInterface, UniffiOneInterface,
     UniffiOneProcMacroType, UniffiOneTLA, UniffiOneTrait, UniffiOneType, UniffiOneUDLTrait,
 };
 use uniffi_sublib::{NotToThrowError, SubLibType};
@@ -240,5 +240,13 @@ pub struct ContainsExternalError2 {
 
 #[uniffi::export]
 fn takes_external_error(_error: NotToThrowError) {}
+
+// Using a type in an external crate which is renamed via toml in that crate.
+#[uniffi::export]
+fn get_binding_renamed_type(value: Option<String>) -> BindingRenamedType {
+    BindingRenamedType {
+        value: value.unwrap_or_else(|| "test_renamed_type".to_string()),
+    }
+}
 
 uniffi::include_scaffolding!("ext-types-lib");

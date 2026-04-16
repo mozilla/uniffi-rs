@@ -6,7 +6,95 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.30.0...HEAD).
+### ⚠️ Breaking Changes ⚠️
+- Kotlin and Python now fail to generate bindings when there are async primary constructors.
+  Previously these languages skipped the constructor in this case or generated a constructor that always threw.
+  You can get similar behavior by adding the primary constructor to the uniffi.toml excludes list in uniffi.toml (e.g. `excludes = ["MyObject.new"])
+
+### What's Fixed
+
+- Fixed bug that sometimes prevented renaming items inside a submodule [#2792](https://github.com/mozilla/uniffi-rs/pull/2792)
+- Exempted `UniFfiTag` from `clippy::exhaustive_structs` since downstream projects may depend on it [#2809](https://github.com/mozilla/uniffi-rs/pull/2809)
+
+### What's New?
+
+- Recursive enums are now supported. UniFFI automatically detects when enum and record types participate in cycles — self-referential, mutually recursive, or cycling through a record — and generates appropriate bindings: `indirect` in Swift, forward references in Python ([#2834](https://github.com/mozilla/uniffi-rs/pull/2834)).
+- `Box<T>` now automatically implements FFI traits when `T` implements them, allowing direct use in enum variants and function parameters without NewType wrappers ([#2808](https://github.com/mozilla/uniffi-rs/pull/2808))
+- Record fields can now be renamed with the proc-macro `name = "new_field_name"` attribute ([#2794](https://github.com/mozilla/uniffi-rs/pull/2794))
+- Items can be excluded from the generated bindings using `uniffi.toml`.
+- Added `mutable_records` configuration option to allow specific records to remain mutable even when `generate_immutable_records` is enabled (Kotlin and Swift).
+- Kotlin objects now have an `uniffiIsDestroyed` property that returns `true` if the Rust reference no longer exists ([#2825](https://github.com/mozilla/uniffi-rs/pull/2825))
+- Updated `askama` version to `0.15.6`
+- Custom Types can have docstrings in some languages ([#2853](https://github.com/mozilla/uniffi-rs/pull/2853))
+
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.1...HEAD).
+
+## v0.31.1 (backend crates: v0.31.1) - (_2026-04-10_)
+
+### What's Fixed
+
+- Swift: Fixed iOS crash when address sanitizer is enabled
+  [#2821](https://github.com/mozilla/uniffi-rs/pull/2821)
+- Swift: Fixed memory link in async code
+  [#2854](https://github.com/mozilla/uniffi-rs/pull/2854)
+
+[All changes in v0.31.1](https://github.com/mozilla/uniffi-rs/compare/v0.31.0...v0.31.1).
+
+## v0.31.0 (backend crates: v0.31.0) - (_2026-01-14_)
+
+### ⚠️ Breaking Changes ⚠️
+- The `uniffi-bindgen` command no longer accepts the `--lib-file` argument.  Instead, pass the
+  library directly without a UDL file.
+- Removed the `[Swift|Kotlin|Python|Ruby]BindingGenerator` types.  Use `uniffi::generate` instead
+  to generate these bindings.
+- Reworked the experimental pipeline bindgen code.  Any external binding generators using this will
+  need to be reworked as well.  See [#2787](https://github.com/mozilla/uniffi-rs/pull/2787) for
+  examples of how this can be done.
+
+### What's Deprecated?
+- `BindgenCrateConfigSupplier`.  Use the new `BindgenPaths` type instead.
+
+### What's New?
+
+- Added the `uniffi::generate` function.  This implements the `uniffi-bindgen generate` command and
+  allows it to be run programmatically.
+- The `--library` argument of `uniffi-bindgen` is deprecated and no longer has an effect.
+ `uniffi-bindgen` will now auto-detect when the source path is a library rather than a UDL file.
+- All builtin bindings support renaming almost all of the interface (types, args, items, variants, etc) via TOML definitions -
+  [see the docs](https://mozilla.github.io/uniffi-rs/next/renaming.html).
+  ([#2715](https://github.com/mozilla/uniffi-rs/pull/2715))
+- Support for methods on records and enums
+  ([#2706](https://github.com/mozilla/uniffi-rs/pull/2706), [#2724](https://github.com/mozilla/uniffi-rs/pull/2724), [#2739](https://github.com/mozilla/uniffi-rs/pull/2739)).
+- Added the `BindgenPaths` type, which is the new way to find UDL and TOML data.
+- Enum variants can now be renamed with the proc-macro `name = "NewVariantName"` attribute ([#2783](https://github.com/mozilla/uniffi-rs/pull/2783))
+- It's now possible to build a `uniffi-bindgen` that doesn't depend on `cargo-metadata` ([#2746](https://github.com/mozilla/uniffi-rs/pull/2746))
+- MSR is now 1.87, our CI runs against 1.90.
+
+### What's Fixed
+
+- Kotlin: Rust enums with nested payload types are generated using the inner type’s fully qualified
+  name, avoiding naming conflicts and allowing payloads to reuse the variant name ([#2698](https://github.com/mozilla/uniffi-rs/pull/2698)).
+- Kotlin: Enums and errors now support exporting trait methods (Display, Debug, Eq, Hash, Ord) via `toString()`,
+  `equals()`, `hashCode()`, and `compareTo()` implementations. Flat enums only support exporting `Display`. ([#2700](https://github.com/mozilla/uniffi-rs/pull/2700)).
+- Kotlin: Initialization functions now have a stable ordering ([#2718](https://github.com/mozilla/uniffi-rs/pull/2718))
+- Prevented a potential segfault when completing foreign futures ([#2733](https://github.com/mozilla/uniffi-rs/pull/2733))
+- Swift: exporting `Eq`, `Cmp` etc would generate invalid code if the Rust name had unusual captialization ([#2707](https://github.com/mozilla/uniffi-rs/issues/2707)).
+- Fix an issue when an impl block has only async constructors ([#2778](https://github.com/mozilla/uniffi-rs/pull/2778))
+- Fix issues parsing some `#[doc(...)]` attributes in exported blocks ([#2777](https://github.com/mozilla/uniffi-rs/pull/2777))
+- Fix extracting metadata from multi-arch binary files ([#2750](https://github.com/mozilla/uniffi-rs/pull/2750))
+- Python: improve generated code for `__eq__` ([#2741](https://github.com/mozilla/uniffi-rs/pull/2741))
+
+### ⚠️ Breaking Changes ⚠️
+- Method checksums no longer include the self type.  This shouldn't affect normal use.  However
+  checksum comparisons will fail if bindings built with `0.30.x` and the Rust code is built with
+  `0.31.x`, or vice-versa.
+
+### ⚠️ Breaking Changes for external bindings authors ⚠️
+- The `module_path` field now stores full module paths rather than crate names only.
+  External bindings authors will probably need to make some minor changes to work with this.
+  See https://github.com/mozilla/uniffi-rs/pull/2695/ for examples.
+
+[All changes in v0.31.0](https://github.com/mozilla/uniffi-rs/compare/v0.30.0...v0.31.0).
 
 ## v0.30.0 (backend crates: v0.30.0) - (_2025-10-08_)
 
@@ -739,7 +827,7 @@ Significant patches to UniFFI's builtin bindings which you will need to port inc
 
 - Error handling when converting custom types has been updated. If your `wrap()`
   function returns an `Err`, in some cases it now [may not panic but instead
-  return the error declared by the function](https://mozilla.github.io/uniffi-rs/udl/ext_types_wrapped.html#error-handling-during-conversion).
+  return the error declared by the function](https://mozilla.github.io/uniffi-rs/0.27/udl/custom_types.html#error-handling-during-conversion).
 
 ### What's Changed
 
@@ -763,7 +851,7 @@ Significant patches to UniFFI's builtin bindings which you will need to port inc
   constructor, you must add one explicitly.
 
 ### What's Changed
-- Kotlin and Swift, like Python, now support [simple "wrapped" types](https://mozilla.github.io/uniffi-rs/udl/ext_types_wrapped.html).
+- Kotlin and Swift, like Python, now support [simple "wrapped" types](https://mozilla.github.io/uniffi-rs/0.27/udl/custom_types.html).
 
 - The Python backend has been refactored to more closely match the other backends, but this
   should be invisible to consumers.

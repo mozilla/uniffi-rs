@@ -8,10 +8,24 @@ mod callback_interface;
 
 use callback_interface::TestCallbackInterface;
 
-#[derive(uniffi::Record)]
-pub struct One {
-    inner: i32,
+// Test proc-macro definitions in a submodule (#2728)
+mod one {
+    #[derive(uniffi::Record)]
+    pub struct One {
+        pub inner: i32,
+    }
+
+    #[uniffi::export]
+    impl One {
+        fn get_inner_value(&self) -> i32 {
+            self.inner
+        }
+
+        #[doc(hidden)]
+        fn parses_with_doc_attribute(&self) {}
+    }
 }
+pub use one::*;
 
 #[uniffi::export]
 pub fn one_inner_by_ref(one: &One) -> i32 {
@@ -228,6 +242,17 @@ pub enum MaybeBool {
     Uncertain,
 }
 
+#[uniffi::export]
+impl MaybeBool {
+    fn next(&self) -> Self {
+        match self {
+            MaybeBool::True => MaybeBool::False,
+            MaybeBool::False => MaybeBool::Uncertain,
+            MaybeBool::Uncertain => MaybeBool::True,
+        }
+    }
+}
+
 #[derive(uniffi::Enum)]
 pub enum MixedEnum {
     None,
@@ -236,6 +261,13 @@ pub enum MixedEnum {
     Both(String, i64),
     All { s: String, i: i64 },
     Vec(Vec<String>),
+}
+
+#[uniffi::export]
+impl MixedEnum {
+    fn is_not_none(&self) -> bool {
+        !matches!(self, Self::None)
+    }
 }
 
 #[uniffi::export]
@@ -265,6 +297,13 @@ pub enum BasicError {
     UnexpectedError { reason: String },
 }
 
+#[uniffi::export]
+impl BasicError {
+    fn is_unexpected(&self) -> bool {
+        matches!(self, Self::UnexpectedError { .. })
+    }
+}
+
 #[derive(uniffi::Error, Debug)]
 pub enum SimpleError {
     A,
@@ -289,8 +328,7 @@ pub enum FlatError {
     #[error("Invalid input")]
     InvalidInput,
 
-    // Inner types that aren't FFI-convertible, as well as unnamed fields,
-    // are allowed for flat errors
+    // Inner types that aren't FFI-convertible are allowed for flat errors
     #[error("OS error: {0}")]
     OsError(std::io::Error),
 }

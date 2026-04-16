@@ -76,8 +76,10 @@ nav:
     - ./proc_macro/functions.md
     - ./proc_macro/interfaces.md
     - ./proc_macro/records.md
+    - ./proc_macro/traits.md
     - ./proc_macro/renaming.md
     - ./proc_macro/docstrings.md
+  - ./renaming.md
 - ./futures.md
 
 - 'Bindings':
@@ -104,6 +106,7 @@ nav:
 - Internals:
   - ./internals/design_principles.md
   - ./internals/crates.md
+  - ./glossary.md
   - ./internals/lifting_and_lowering.md
   - ./internals/ffi_converter_traits.md
   - ./internals/rust_calls.md
@@ -112,5 +115,7 @@ nav:
   - ./internals/async-overview.md
   - ./internals/async-ffi.md
   - ./internals/rendering_foreign_bindings.md
+  - ./internals/bindings_ir.md
+  - ./internals/bindings_ir_pipeline.md
 
 - ./Upgrading.md

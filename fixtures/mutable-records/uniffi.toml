@@ -1,0 +1,7 @@
+[bindings.swift]
+generate_immutable_records = true
+mutable_records = ["MutableRecord"]
+
+[bindings.kotlin]
+generate_immutable_records = true
+mutable_records = ["MutableRecord"]

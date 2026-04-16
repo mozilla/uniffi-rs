@@ -5,28 +5,50 @@
 use super::*;
 use heck::ToUpperCamelCase;
 
-pub fn pass(namespace: &mut Namespace) -> Result<()> {
-    let crate_name = namespace.crate_name.clone();
-
-    // Change `is_async` to `async_data`
-    namespace.visit_mut(|callable: &mut Callable| {
-        callable.async_data = callable.is_async.then(|| {
-            generate_async_data(
-                &crate_name,
-                callable.return_type.ty.as_ref().map(|ty| &ty.ffi_type),
-            )
-        });
-    });
-    namespace.visit_mut(|ffi_func: &mut FfiFunction| {
-        ffi_func.async_data = ffi_func
-            .is_async
-            .then(|| generate_async_data(&crate_name, ffi_func.return_type.ty.as_ref()));
-    });
-    Ok(())
+pub fn function_async_data(
+    func: &initial::Function,
+    context: &Context,
+) -> Result<Option<AsyncData>> {
+    if !func.is_async {
+        return Ok(None);
+    }
+    let ffi_return_type = func
+        .return_type
+        .as_ref()
+        .map(|ty| ffi_types::ffi_type(ty, context))
+        .transpose()?;
+    async_data(context, ffi_return_type.as_ref()).map(Some)
 }
 
-fn generate_async_data(crate_name: &str, ffi_return_type: Option<&FfiTypeNode>) -> AsyncData {
-    let return_type_name = match &ffi_return_type.map(|ffi_type| &ffi_type.ty) {
+pub fn method_async_data(meth: &initial::Method, context: &Context) -> Result<Option<AsyncData>> {
+    if !meth.is_async {
+        return Ok(None);
+    }
+    let ffi_return_type = meth
+        .return_type
+        .as_ref()
+        .map(|ty| ffi_types::ffi_type(ty, context))
+        .transpose()?;
+    async_data(context, ffi_return_type.as_ref()).map(Some)
+}
+
+pub fn constructor_async_data(
+    cons: &initial::Constructor,
+    interface_name: &str,
+    imp: &ObjectImpl,
+    context: &Context,
+) -> Result<Option<AsyncData>> {
+    let namespace = context.namespace_name()?;
+    if !cons.is_async {
+        return Ok(None);
+    }
+    let ffi_return_type = ffi_types::interface_ffi_type(&namespace, interface_name, imp)?;
+    async_data(context, Some(&ffi_return_type)).map(Some)
+}
+
+fn async_data(context: &Context, ffi_return_type: Option<&FfiType>) -> Result<AsyncData> {
+    let crate_name = context.crate_name()?;
+    let return_type_name = match ffi_return_type {
         Some(FfiType::UInt8) => "u8",
         Some(FfiType::Int8) => "i8",
         Some(FfiType::UInt16) => "u16",
@@ -42,12 +64,12 @@ fn generate_async_data(crate_name: &str, ffi_return_type: Option<&FfiTypeNode>) 
         None => "void",
         ty => panic!("Invalid future return type: {ty:?}"),
     };
-    let struct_crate_name = match &ffi_return_type.map(|ffi_type| &ffi_type.ty) {
+    let struct_crate_name = match ffi_return_type {
         Some(FfiType::RustBuffer(Some(rust_buffer_crate))) => rust_buffer_crate,
         _ => "",
     };
 
-    AsyncData {
+    Ok(AsyncData {
         ffi_rust_future_poll: RustFfiFunctionName(format!(
             "ffi_{crate_name}_rust_future_poll_{return_type_name}"
         )),
@@ -67,5 +89,5 @@ fn generate_async_data(crate_name: &str, ffi_return_type: Option<&FfiTypeNode>) 
         ffi_foreign_future_complete: FfiFunctionTypeName(format!(
             "ForeignFutureComplete{struct_crate_name}{return_type_name}"
         )),
-    }
+    })
 }

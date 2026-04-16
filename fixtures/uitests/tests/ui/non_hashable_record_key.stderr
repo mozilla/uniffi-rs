@@ -1,3 +1,43 @@
+error[E0277]: the trait bound `f32: Hash` is not satisfied
+ --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs
+  |
+  | #[::uniffi::export_for_udl]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Hash` is not implemented for `f32`
+  |
+  = help: the following other types implement trait `Hash`:
+            i128
+            i16
+            i32
+            i64
+            i8
+            isize
+            u128
+            u16
+          and $N others
+  = note: required for `HashMap<f32, u64>` to implement `uniffi::Lower<UniFfiTag>`
+  = note: required for `HashMap<f32, u64>` to implement `LowerReturn<UniFfiTag>`
+  = note: this error originates in the attribute macro `::uniffi::export_for_udl` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `f32: std::cmp::Eq` is not satisfied
+ --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs
+  |
+  | #[::uniffi::export_for_udl]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `std::cmp::Eq` is not implemented for `f32`
+  |
+  = help: the following other types implement trait `std::cmp::Eq`:
+            i128
+            i16
+            i32
+            i64
+            i8
+            isize
+            u128
+            u16
+          and $N others
+  = note: required for `HashMap<f32, u64>` to implement `uniffi::Lower<UniFfiTag>`
+  = note: required for `HashMap<f32, u64>` to implement `LowerReturn<UniFfiTag>`
+  = note: this error originates in the attribute macro `::uniffi::export_for_udl` (in Nightly builds, run with -Z macro-backtrace for more info)
+
 error[E0277]: the trait bound `f32: std::cmp::Eq` is not satisfied
  --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs
   |
@@ -43,46 +83,6 @@ note: required by a bound in `assert_impl_all`
   | uniffi::deps::static_assertions::assert_impl_all!(f32: ::std::cmp::Eq, ::std::hash::Hash); // record<f32, u64>
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `assert_impl_all`
   = note: this error originates in the macro `uniffi::deps::static_assertions::assert_impl_all` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `f32: Hash` is not satisfied
- --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs
-  |
-  | #[::uniffi::export_for_udl]
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Hash` is not implemented for `f32`
-  |
-  = help: the following other types implement trait `Hash`:
-            i128
-            i16
-            i32
-            i64
-            i8
-            isize
-            u128
-            u16
-          and $N others
-  = note: required for `HashMap<f32, u64>` to implement `uniffi::Lower<UniFfiTag>`
-  = note: required for `HashMap<f32, u64>` to implement `LowerReturn<UniFfiTag>`
-  = note: this error originates in the attribute macro `::uniffi::export_for_udl` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `f32: std::cmp::Eq` is not satisfied
- --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs
-  |
-  | #[::uniffi::export_for_udl]
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `std::cmp::Eq` is not implemented for `f32`
-  |
-  = help: the following other types implement trait `std::cmp::Eq`:
-            i128
-            i16
-            i32
-            i64
-            i8
-            isize
-            u128
-            u16
-          and $N others
-  = note: required for `HashMap<f32, u64>` to implement `uniffi::Lower<UniFfiTag>`
-  = note: required for `HashMap<f32, u64>` to implement `LowerReturn<UniFfiTag>`
-  = note: this error originates in the attribute macro `::uniffi::export_for_udl` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `f32: Hash` is not satisfied
  --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs

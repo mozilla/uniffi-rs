@@ -22,10 +22,19 @@ pub struct Args {
     #[clap(long, display_order = 1)]
     pub compiler_messages: bool,
 
+    /// Save benchmark data to new baseline named [baseline]
+    #[clap(long)]
+    pub save_baseline: Option<String>,
+
+    /// Load benchmark data from a saved baseline named [baseline]
+    #[clap(long)]
+    pub load_baseline: Option<String>,
+
     // Args for running the metrics, these are handled in `lib.rs`
-    /// Skip benchmarks whose names do not contain FILTER
+    /// Only run benchmarks whose names contain FILTER
+    /// Multiple filters will be ORed together.
     #[clap()]
-    pub filter: Option<String>,
+    pub filter: Vec<String>,
 
     // It would be great to also support the baseline arguments, but there doesn't seem to be any
     // way to manually set those.
@@ -78,8 +87,27 @@ impl Args {
     /// Build a Criterion instance from the arguments
     pub fn build_criterion(&self) -> Criterion {
         let mut c = Criterion::default();
-        c = match &self.filter {
-            Some(f) => c.with_filter(f),
+        c = match &self.filter.len() {
+            0 => c,
+            _ => {
+                let re = regex::Regex::new(
+                    &self
+                        .filter
+                        .iter()
+                        .map(|s| format!("({})", regex::escape(s)))
+                        .collect::<Vec<_>>()
+                        .join("|"),
+                )
+                .unwrap();
+                c.with_benchmark_filter(criterion::BenchmarkFilter::Regex(re))
+            }
+        };
+        c = match &self.save_baseline {
+            Some(baseline) => c.save_baseline(baseline.clone()),
+            None => c,
+        };
+        c = match &self.load_baseline {
+            Some(baseline) => c.retain_baseline(baseline.clone(), true),
             None => c,
         };
         c

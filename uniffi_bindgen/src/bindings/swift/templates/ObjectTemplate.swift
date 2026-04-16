@@ -7,7 +7,7 @@
 
 {% include "Protocol.swift" %}
 
-{%- call swift::docstring(obj, 0) %}
+{%- call swift::docstring(obj, 0) %}{% endcall %}
 open class {{ impl_class_name }}: {{ protocol_name }}, {{ config.conformance_list_for_object(obj, is_error) }} {
     fileprivate let handle: UInt64
 
@@ -50,24 +50,29 @@ open class {{ impl_class_name }}: {{ protocol_name }}, {{ config.conformance_lis
 
     {%- match obj.primary_constructor() %}
     {%- when Some(cons) %}
-    {%- call swift::ctor_decl(cons, 4) %}
+    {%- call swift::ctor_decl(cons, 4) %}{% endcall %}
     {%- when None %}
     // No primary constructor declared for this class.
     {%- endmatch %}
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { {{ obj.ffi_object_free().name() }}(handle, $0) }
     }
 
     {% for cons in obj.alternate_constructors() %}
-    {%- call swift::func_decl("public static func", cons, 4) %}
+    {%- call swift::func_decl("public static func", cons, 4) %}{% endcall %}
     {% endfor %}
 
     {% for meth in obj.methods() -%}
-    {%- call swift::func_decl("open func", meth, 4) %}
+    {%- call swift::func_decl("open func", meth, 4) %}{% endcall %}
     {% endfor %}
 
-    {% call swift::uniffi_trait_impls(obj.uniffi_trait_methods()) %}
+    {% call swift::uniffi_trait_impls(obj.uniffi_trait_methods()) %}{% endcall %}
 
     {%- if is_error %}
     {% if !config.omit_localized_error_conformance() %}

@@ -9,19 +9,18 @@
 
 use super::*;
 
-pub fn pass(namespace: &mut Namespace) -> Result<()> {
-    let ffi_dep_sorter = DependencySorter::new(
-        namespace.ffi_definitions.drain(..),
-        FfiDefinitionDependencyLogic,
-    );
-    namespace.ffi_definitions.extend(ffi_dep_sorter.sort());
+pub fn sort_type_definitions(
+    type_definitions: impl IntoIterator<Item = TypeDefinition>,
+) -> Vec<TypeDefinition> {
+    let type_sorter = DependencySorter::new(type_definitions, TypeDefinitionDependencyLogic);
+    type_sorter.sort()
+}
 
-    let type_sorter = DependencySorter::new(
-        namespace.type_definitions.drain(..),
-        TypeDefinitionDependencyLogic,
-    );
-    namespace.type_definitions = type_sorter.sort();
-    Ok(())
+pub fn sort_ffi_definitions(
+    ffi_definitions: impl IntoIterator<Item = FfiDefinition>,
+) -> Vec<FfiDefinition> {
+    let ffi_dep_sorter = DependencySorter::new(ffi_definitions, FfiDefinitionDependencyLogic);
+    ffi_dep_sorter.sort()
 }
 
 // Generalized dependency sort using a version of depth-first topological sort:
@@ -96,21 +95,21 @@ impl DependencyLogic for FfiDefinitionDependencyLogic {
             FfiDefinition::Struct(ffi_struct) => ffi_struct
                 .fields
                 .iter()
-                .filter_map(|f| Self::type_dependency_name(&f.ty.ty))
+                .filter_map(|f| Self::type_dependency_name(&f.ty))
                 .collect(),
             FfiDefinition::RustFunction(func) => func
                 .arguments
                 .iter()
                 .map(|a| &a.ty)
                 .chain(&func.return_type.ty)
-                .filter_map(|ty| Self::type_dependency_name(&ty.ty))
+                .filter_map(Self::type_dependency_name)
                 .collect(),
             FfiDefinition::FunctionType(func_type) => func_type
                 .arguments
                 .iter()
                 .map(|a| &a.ty)
                 .chain(&func_type.return_type.ty)
-                .filter_map(|ty| Self::type_dependency_name(&ty.ty))
+                .filter_map(Self::type_dependency_name)
                 .collect(),
         }
     }
@@ -137,6 +136,7 @@ impl DependencyLogic for TypeDefinitionDependencyLogic {
     fn item_name(&self, type_def: &TypeDefinition) -> String {
         match type_def {
             TypeDefinition::Simple(self_type)
+            | TypeDefinition::Box(BoxedType { self_type, .. })
             | TypeDefinition::Optional(OptionalType { self_type, .. })
             | TypeDefinition::Sequence(SequenceType { self_type, .. })
             | TypeDefinition::Map(MapType { self_type, .. })
@@ -154,7 +154,8 @@ impl DependencyLogic for TypeDefinitionDependencyLogic {
     fn dependency_names(&self, type_def: &TypeDefinition) -> Vec<String> {
         match type_def {
             TypeDefinition::Simple(_) => vec![],
-            TypeDefinition::Optional(OptionalType { inner, .. })
+            TypeDefinition::Box(BoxedType { inner, .. })
+            | TypeDefinition::Optional(OptionalType { inner, .. })
             | TypeDefinition::Sequence(SequenceType { inner, .. }) => {
                 vec![inner.canonical_name.clone()]
             }

@@ -11,7 +11,7 @@ name = "ext_types_http_headermap"
 
 [dependencies]
 anyhow = "1"
-bytes = "1.3"
+bytes = "1.11"
 http = "0.2.9"
 thiserror = "2"
 uniffi = { workspace = true }

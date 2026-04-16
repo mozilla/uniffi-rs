@@ -66,6 +66,8 @@ trait MyTrait {
 
 ```
 
+See the [traits documentation](traits.md)
+
 # Arguments
 
 ```rust

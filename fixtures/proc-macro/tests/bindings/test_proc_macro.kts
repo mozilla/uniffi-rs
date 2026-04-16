@@ -7,6 +7,7 @@ import uniffi.fixture.proc_macro.*;
 val one = makeOne(123)
 assert(one.inner == 123)
 assert(oneInnerByRef(one) == 123)
+assert(one.getInnerValue() == 123)
 
 val two = Two("a")
 assert(takeTwo(two) == "a")
@@ -21,6 +22,8 @@ var obj2 = Object()
 assert(obj.isOtherHeavy(obj2) == MaybeBool.UNCERTAIN)
 
 assert(enumIdentity(MaybeBool.TRUE) == MaybeBool.TRUE)
+assert(MaybeBool.TRUE.next() == MaybeBool.FALSE)
+assert(enumIdentity(MaybeBool.TRUE).next() == MaybeBool.FALSE)
 
 // just make sure this works / doesn't crash
 val three = Three(obj)
@@ -33,6 +36,7 @@ try {
     alwaysFails()
     throw RuntimeException("alwaysFails should have thrown")
 } catch (e: BasicException) {
+    assert(!e.isUnexpected())
 }
 
 obj.doStuff(5u)
@@ -131,6 +135,9 @@ callCallbackInterface(KtTestCallbackInterface())
 assert(getMixedEnum(null) == MixedEnum.Int(1))
 assert(getMixedEnum(MixedEnum.None) == MixedEnum.None)
 assert(getMixedEnum(MixedEnum.String("hello")) == MixedEnum.String("hello"))
+assert(!getMixedEnum(MixedEnum.None).isNotNone());
+assert(!MixedEnum.None.isNotNone());
+assert(MixedEnum.Int(1).isNotNone());
 
 val e = getMixedEnum(null)
 if (e is MixedEnum.Int) {

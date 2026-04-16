@@ -102,7 +102,7 @@ try {
     throw RuntimeException("Expected ComplexException.UnexpectedErrorWithReason")
 } catch (e: ComplexException.UnexpectedErrorWithReason) {
     // Expected error
-    assert(e.reason == RuntimeException("something failed").toString())
+    assert(e.reason.startsWith(RuntimeException("something failed").toString()))
 }
 
 

@@ -12,6 +12,11 @@ Ideally you would then run the `uniffi-bindgen` binary from the `uniffi` crate t
 but if not on [Cargo nightly](https://doc.rust-lang.org/cargo/reference/unstable.html#artifact-dependencies),
 you need to create a binary in your project that does the same thing.
 
+While the general principles are the same, the setup differs whether you are a single crate or in a cargo workspace,
+but either way, you'll end up with a `cargo run [...] uniffi-bindgen ...` command to generate the bindings.
+
+### Single crate
+
 Add the following to your `Cargo.toml`:
 
 ```toml
@@ -38,7 +43,7 @@ In a multiple crates workspace, you can create a separate crate for running `uni
   - Add this dependency to `Cargo.toml`: `uniffi = {version = "0.XX.0", features = ["cli"] }`
   - As above, add the `uniffi-bindgen` binary target
 
-Then your can run `uniffi-bindgen` from any crate in your project using `cargo run -p uniffi-bindgen [args]`
+Then you can run `uniffi-bindgen` from any crate in your project using `cargo run -p uniffi-bindgen [args]`
 
 ## Running uniffi-bindgen using a library file
 
@@ -51,7 +56,7 @@ In our example, we generate the bindings with:
 cargo build --release
 cargo run --bin uniffi-bindgen generate --library target/release/libmath.so --language kotlin --out-dir out
 ```
-(maybe `.dylib`, good luck with `.dll`!)
+(probably `.dylib` on mac, good luck with `.dll`!)
 
 Then look in the `out` directory.
 
@@ -65,9 +70,15 @@ Library mode comes with some extra requirements:
     e.g. by using feature flags.
   - Rust sources must use `uniffi::include_scaffolding!` to include the scaffolding code.
 
+### Cross platform and multi architecture support
+
+UniFFI metadata embedded in libraries is platform and architecture agnostic, which might be useful in cross-compiled environments.
+You must still take care here, as the underlying Rust code could have its own conditional compilation;
+only the exact library is guaranteed to have the correct metadata for that library.
+
 ## Running uniffi-bindgen with a single UDL file
 
-As noted above, library mode is encouraged - building from a single UDL is not recommended.
+Generating from a single UDL is deprecated - a single crate with no proc-macro implementations doesn't seem realistic - but we support it aalmost by accident for legacy reasons.
 
 Use the `generate` command to generate bindings by specifying a UDL file.
 

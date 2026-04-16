@@ -101,6 +101,7 @@ use std::io::prelude::*;
 use std::io::ErrorKind;
 use std::process::Command;
 
+mod bindgen_paths;
 pub mod bindings;
 pub mod interface;
 pub mod library_mode;
@@ -112,10 +113,12 @@ pub mod scaffolding;
 #[cfg(feature = "cargo-metadata")]
 pub mod cargo_metadata;
 
+use crate::interface::CallbackInterface;
 use crate::interface::{
     Argument, Constructor, Enum, FfiArgument, FfiField, Field, Function, Method, Object, Record,
     Variant,
 };
+pub use bindgen_paths::{BindgenPaths, BindgenPathsLayer};
 pub use interface::ComponentInterface;
 pub use library_mode::find_components;
 use scaffolding::RustScaffolding;
@@ -139,6 +142,9 @@ pub struct GenerationSettings {
 ///
 /// External crates that implement binding generators, should implement this type
 /// and call the [`generate_external_bindings`] using a type that implements this trait.
+///
+/// Deprecated: External crates are encouraged to use the `BindgenLoader` type instead, which lets
+/// you control the binding generation process more directly.
 pub trait BindingGenerator: Sized {
     /// Handles configuring the bindings
     type Config;
@@ -180,21 +186,29 @@ pub trait VisitMut {
     /// adjust it to language specific naming conventions.
     fn visit_record(&self, record: &mut Record);
 
-    /// Change the name of an `Object` of a [`ComponentInterface`
+    /// Change the name of an `Object` of a [`ComponentInterface`]
     /// to language specific naming conventions.
     fn visit_object(&self, object: &mut Object);
 
+    /// Change the name of an `Object` of a [`ComponentInterface`]
+    /// to language specific naming conventions.
+    fn visit_callback_interface(&self, _iface: &mut CallbackInterface) {}
+
     /// Change the name of a `Field` of an `Enum` `Variant`
     /// to language specific naming conventions.
-    fn visit_field(&self, field: &mut Field);
+    fn visit_field(&self, _field: &mut Field) {}
 
     /// Change the name of a `FfiField` inside a `FfiStruct`
     /// to language specific naming conventions.
-    fn visit_ffi_field(&self, ffi_field: &mut FfiField);
+    fn visit_ffi_field(&self, _ffi_field: &mut FfiField) {}
 
     /// Change the `Arugment` of a `FfiFunction` in the [`ComponentInterface`]
     /// to language specific naming conventions.
-    fn visit_ffi_argument(&self, ffi_argument: &mut FfiArgument);
+    fn visit_ffi_argument(&self, _ffi_argument: &mut FfiArgument) {}
+
+    /// Change the `FfiType` objects in the [`ComponentInterface`]
+    /// to language specific naming conventions.
+    fn visit_ffi_type(&self, _ffi_type: &mut interface::FfiType) {}
 
     /// Go through each `Enum` of a [`ComponentInterface`] and
     /// adjust it to language specific naming conventions.
@@ -202,7 +216,7 @@ pub trait VisitMut {
 
     /// Go through each `Variant` of an `Enum` and
     /// adjust it to language specific naming conventions.
-    fn visit_variant(&self, is_error: bool, variant: &mut Variant);
+    fn visit_variant(&self, _is_error: bool, _variant: &mut Variant) {}
 
     /// Go through each `Type` in the `TypeUniverse` of
     /// a [`ComponentInterface`] and adjust it to language specific
@@ -214,17 +228,17 @@ pub trait VisitMut {
     /// visited.
     fn visit_error_name(&self, name: &mut String);
 
-    /// Go through each `Method` of an `Object` and
+    /// Go through each `Method` of an `Object` or `CallbackInterface` and
     /// adjust it to language specific naming conventions.
-    fn visit_method(&self, method: &mut Method);
+    fn visit_method(&self, object_name: &str, method: &mut Method);
 
     /// Go through each `Argument` of a `Function` and
     /// adjust it to language specific naming conventions.
-    fn visit_argument(&self, argument: &mut Argument);
+    fn visit_argument(&self, _argument: &mut Argument) {}
 
     /// Go through each `Constructor` of a [`ComponentInterface`] and
     /// adjust it to language specific naming conventions.
-    fn visit_constructor(&self, constructor: &mut Constructor);
+    fn visit_constructor(&self, object_name: &str, constructor: &mut Constructor);
 
     /// Go through each `Function` of a [`ComponentInterface`] and
     /// adjust it to language specific naming conventions.
@@ -266,19 +280,30 @@ pub trait BindgenCrateConfigSupplier {
 pub struct EmptyCrateConfigSupplier;
 impl BindgenCrateConfigSupplier for EmptyCrateConfigSupplier {}
 
+impl BindgenCrateConfigSupplier for &&dyn BindgenCrateConfigSupplier {
+    fn get_toml(&self, crate_name: &str) -> Result<Option<toml::value::Table>> {
+        (**self).get_toml(crate_name)
+    }
+
+    fn get_toml_path(&self, crate_name: &str) -> Option<Utf8PathBuf> {
+        (**self).get_toml_path(crate_name)
+    }
+
+    fn get_udl(&self, crate_name: &str, udl_name: &str) -> Result<String> {
+        (**self).get_udl(crate_name, udl_name)
+    }
+}
+
 /// A convenience function for the CLI to help avoid using static libs
 /// in places cdylibs are required.
 pub fn is_cdylib(library_file: impl AsRef<Utf8Path>) -> bool {
     library_mode::calc_cdylib_name(library_file.as_ref()).is_some()
 }
 
-/// Generate bindings for an external binding generator
-/// Ideally, this should replace the [`generate_bindings`] function below
+/// Generate bindings for single crate via a UDL file.
 ///
-/// Implements an entry point for external binding generators.
-/// The function does the following:
-/// - It parses the `udl` in a [`ComponentInterface`]
-/// - Creates an instance of [`BindingGenerator`], based on type argument `B`, and run [`BindingGenerator::write_bindings`] on it
+/// This only works if you have exactly 1 crate and no shared types.
+/// It should be considered deprecated, you should use the multi-crate options instead.
 ///
 /// # Arguments
 /// - `binding_generator`: Type that implements BindingGenerator
@@ -287,6 +312,9 @@ pub fn is_cdylib(library_file: impl AsRef<Utf8Path>) -> bool {
 /// - `out_dir_override`: The path to write the bindings to. If [`None`], it will be the path to the parent directory of the `udl_file`
 /// - `library_file`: The path to a dynamic library to attempt to extract the definitions from and extend the component interface with. No extensions to component interface occur if it's [`None`]
 /// - `crate_name`: Override the default crate name that is guessed from UDL file path.
+///
+/// Deprecated: External crates are encouraged to use the `BindgenLoader` type instead, which lets
+/// you control the binding generation process more directly.
 pub fn generate_external_bindings<T: BindingGenerator>(
     binding_generator: &T,
     udl_file: impl AsRef<Utf8Path>,
@@ -331,6 +359,13 @@ pub fn generate_external_bindings<T: BindingGenerator>(
 
     let mut components = vec![Component { ci, config }];
     binding_generator.update_component_configs(&settings, &mut components)?;
+
+    // need to derive ffi after the bindings have had a chance to update any types.
+    components[0]
+        .ci
+        .derive_ffi_funcs()
+        .context("Failed to derive FFI functions")?;
+
     binding_generator.write_bindings(&settings, &components)
 }
 
@@ -381,6 +416,9 @@ fn generate_component_scaffolding_inner(
 
 // Generate the bindings in the target languages that call the scaffolding
 // Rust code.
+///
+/// Deprecated: External crates are encouraged to use the `BindgenLoader` type instead, which lets
+/// you control the binding generation process more directly.
 pub fn generate_bindings<T: BindingGenerator>(
     udl_file: &Utf8Path,
     config_file_override: Option<&Utf8Path>,

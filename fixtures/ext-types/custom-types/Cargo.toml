@@ -11,7 +11,7 @@ name = "ext_types_custom"
 
 [dependencies]
 anyhow = "1"
-bytes = "1.3"
+bytes = "1.11"
 thiserror = "2"
 uniffi = { workspace = true }
 

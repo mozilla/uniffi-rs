@@ -46,7 +46,7 @@
 //!   * Error messages and general developer experience leave a lot to be desired.
 
 use std::{
-    collections::{BTreeMap, BTreeSet, HashSet},
+    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
     iter,
 };
 
@@ -58,6 +58,8 @@ use universe::{TypeIterator, TypeUniverse};
 
 mod callbacks;
 pub use callbacks::CallbackInterface;
+mod custom_type;
+pub use custom_type::CustomType;
 mod enum_;
 pub use enum_::{Enum, Variant};
 mod function;
@@ -66,6 +68,11 @@ mod object;
 pub use object::{Constructor, Method, Object, UniffiTrait, UniffiTraitMethods};
 mod record;
 pub use record::{Field, Record};
+
+mod exclude;
+pub use exclude::apply_exclusions;
+mod rename;
+pub use rename::rename;
 
 pub mod ffi;
 mod visit_mut;
@@ -94,9 +101,12 @@ pub struct ComponentInterface {
     records: Vec<Record>,
     functions: Vec<Function>,
     objects: Vec<Object>,
-    callback_interfaces: Vec<CallbackInterface>,
+    custom_types: Vec<CustomType>,
+    pub(crate) callback_interfaces: Vec<CallbackInterface>,
     // Type names which were seen used as an error.
     errors: HashSet<String>,
+    // Type names which participate in a recursive type cycle.
+    recursive_types: HashSet<String>,
     // Types which were seen used as callback interface error.
     callback_interface_throws_types: BTreeSet<Type>,
     // A mapping from an external module path to the external namespace.
@@ -157,6 +167,7 @@ impl ComponentInterface {
         // Unconditionally add the String type, which is used by the panic handling
         self.types.add_known_type(&Type::String)?;
         crate::macro_metadata::add_group_to_ci(self, group)?;
+        self.infer_recursive_types();
         Ok(())
     }
 
@@ -212,6 +223,11 @@ impl ComponentInterface {
     /// Get a Record definition by name, or None if no such Record is defined.
     pub fn get_record_definition(&self, name: &str) -> Option<&Record> {
         self.records.iter().find(|o| o.name == name)
+    }
+
+    /// Get a CustomType definition by name, or None if no such custom type is defined.
+    pub fn get_custom_type_definition(&self, name: &str) -> Option<&CustomType> {
+        self.custom_types.iter().find(|c| c.name == name)
     }
 
     /// Get the definitions for every Function in the interface.
@@ -363,18 +379,16 @@ impl ComponentInterface {
 
     pub fn namespace_for_type(&self, ty: &Type) -> Result<&str> {
         let mod_path = ty
-            .module_path()
+            .crate_name()
             .ok_or_else(|| anyhow!("type {ty:?} has no module path"))?;
         self.namespace_for_module_path(mod_path)
     }
 
     pub fn namespace_for_module_path(&self, module_path: &str) -> Result<&str> {
+        let crate_name = module_path.split("::").next().unwrap_or(module_path);
         self.crate_to_namespace
-            .get(module_path)
-            .map(|n| {
-                assert!(n.crate_name == module_path); // an invariant redundancy worth dieing for.
-                n.name.as_ref()
-            })
+            .get(crate_name)
+            .map(|n| n.name.as_ref())
             // incase not library mode and we've not been told
             .or_else(|| (module_path == self.crate_name()).then(|| self.namespace()))
             .ok_or_else(|| anyhow!("unresolved module path {module_path}"))
@@ -929,6 +943,25 @@ impl ComponentInterface {
         Ok(())
     }
 
+    pub(super) fn add_custom_type_definition(&mut self, defn: CustomType) -> Result<()> {
+        if let Some(existing) = self.custom_types.iter_mut().find(|c| c.name == defn.name) {
+            // Parallel merge logic exists in pipeline/initial/from_uniffi_meta.rs for the
+            // new pipeline path; keep them consistent.
+            anyhow::ensure!(
+                existing.builtin == defn.builtin && existing.module_path == defn.module_path,
+                "conflicting custom type definitions for {:?}",
+                defn.name,
+            );
+            // UDL provides docstring: None; proc-macro may provide Some.  Prefer Some.
+            if defn.docstring.is_some() && existing.docstring.is_none() {
+                existing.docstring = defn.docstring;
+            }
+            return Ok(());
+        }
+        self.custom_types.push(defn);
+        Ok(())
+    }
+
     /// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.
     pub(super) fn add_function_definition(&mut self, defn: Function) -> Result<()> {
         // Since functions are not a first-class type, we have to check for duplicates here
@@ -950,32 +983,72 @@ impl ComponentInterface {
     }
 
     pub(super) fn add_constructor_meta(&mut self, meta: ConstructorMetadata) -> Result<()> {
-        let object = get_object(&mut self.objects, &meta.self_name)
-            .ok_or_else(|| anyhow!("add_constructor_meta: object {} not found", &meta.self_name))?;
-        let defn: Constructor = meta.into();
+        let self_name = &meta.self_name;
 
-        self.types
-            .add_known_types(defn.iter_types())
-            .with_context(|| format!("adding constructor {defn:?}"))?;
-        defn.throws_name()
-            .map(|n| self.errors.insert(n.to_string()));
-        object.constructors.push(defn);
+        if let Some(object) = get_object(&mut self.objects, self_name) {
+            let defn: Constructor = meta.into();
+            self.types
+                .add_known_types(defn.iter_types())
+                .with_context(|| format!("adding constructor {defn:?}"))?;
+            defn.throws_name()
+                .map(|n| self.errors.insert(n.to_string()));
+            object.constructors.push(defn);
+        } else if let Some(record) = self.records.iter_mut().find(|r| &r.name == self_name) {
+            let defn: Constructor = meta.into();
+            self.types
+                .add_known_types(defn.iter_types())
+                .with_context(|| format!("adding constructor {defn:?}"))?;
+            defn.throws_name()
+                .map(|n| self.errors.insert(n.to_string()));
+            record.constructors.push(defn);
+        } else if let Some(enum_) = self.enums.iter_mut().find(|e| &e.name == self_name) {
+            let defn: Constructor = meta.into();
+            self.types
+                .add_known_types(defn.iter_types())
+                .with_context(|| format!("adding constructor {defn:?}"))?;
+            defn.throws_name()
+                .map(|n| self.errors.insert(n.to_string()));
+            enum_.constructors.push(defn);
+        } else {
+            bail!("add_constructor_meta: type {} not found", self_name);
+        }
 
         Ok(())
     }
 
     pub(super) fn add_method_meta(&mut self, meta: MethodMetadata) -> Result<()> {
-        let object = get_object(&mut self.objects, &meta.self_name)
-            .ok_or_else(|| anyhow!("add_method_meta: object {} not found", meta.self_name))?;
-        let method = Method::from_metadata(meta, object.as_type());
+        let self_name = &meta.self_name;
 
-        self.types
-            .add_known_types(method.iter_types())
-            .with_context(|| format!("adding method {method:?}"))?;
-        method
-            .throws_name()
-            .map(|n| self.errors.insert(n.to_string()));
-        object.methods.push(method);
+        if let Some(object) = get_object(&mut self.objects, self_name) {
+            let method = Method::from_metadata(meta, object.as_type());
+            self.types
+                .add_known_types(method.iter_types())
+                .with_context(|| format!("adding method {method:?}"))?;
+            method
+                .throws_name()
+                .map(|n| self.errors.insert(n.to_string()));
+            object.methods.push(method);
+        } else if let Some(record) = self.records.iter_mut().find(|r| &r.name == self_name) {
+            let method = Method::from_metadata(meta, record.as_type());
+            self.types
+                .add_known_types(method.iter_types())
+                .with_context(|| format!("adding method {method:?}"))?;
+            method
+                .throws_name()
+                .map(|n| self.errors.insert(n.to_string()));
+            record.methods.push(method);
+        } else if let Some(enum_) = self.enums.iter_mut().find(|e| &e.name == self_name) {
+            let method = Method::from_metadata(meta, enum_.as_type());
+            self.types
+                .add_known_types(method.iter_types())
+                .with_context(|| format!("adding method {method:?}"))?;
+            method
+                .throws_name()
+                .map(|n| self.errors.insert(n.to_string()));
+            enum_.methods.push(method);
+        } else {
+            bail!("add_method_meta: type {} not found", self_name);
+        }
         Ok(())
     }
 
@@ -1135,6 +1208,44 @@ impl ComponentInterface {
             callback.derive_ffi_funcs();
         }
         Ok(())
+    }
+
+    /// Detect recursive enums and records using a depth-first search for cycles.
+    fn infer_recursive_types(&mut self) {
+        let deps = self.type_dep_graph();
+        self.recursive_types =
+            crate::pipeline::general::infer_recursive_enums::find_recursive_enum_names(&deps);
+    }
+
+    /// Whether the named type participates in a recursive type cycle.
+    pub fn is_recursive(&self, name: &str) -> bool {
+        self.recursive_types.contains(name)
+    }
+
+    /// Build the structural-containment graph for cycle detection.
+    ///
+    /// Both enums and records are nodes. Edges point from a type to every
+    /// other enum or record name directly reachable through its fields
+    /// (unwrapping `Optional`/`Sequence`/`Map` wrappers).
+    fn type_dep_graph(&self) -> HashMap<String, HashSet<String>> {
+        let enum_entries = self.enums.iter().map(|e| {
+            let deps: HashSet<String> = e
+                .variants()
+                .iter()
+                .flat_map(|v| v.fields())
+                .flat_map(|f| type_names_in_type(&f.as_type()))
+                .collect();
+            (e.name().to_string(), deps)
+        });
+        let record_entries = self.records.iter().map(|r| {
+            let deps: HashSet<String> = r
+                .fields()
+                .iter()
+                .flat_map(|f| type_names_in_type(&f.as_type()))
+                .collect();
+            (r.name().to_string(), deps)
+        });
+        enum_entries.chain(record_entries).collect()
     }
 }
 
@@ -1298,6 +1409,29 @@ fn throws_name(throws: &Option<Type>) -> Option<&str> {
     }
 }
 
+/// Return all enum and record names directly reachable from `ty`.
+///
+/// Unwraps `Optional`/`Sequence`/`Map` wrappers but does not cross type
+/// definition boundaries — both `Enum` and `Record` references are returned
+/// as-is rather than recursed into, because they are nodes in their own right.
+fn type_names_in_type(ty: &Type) -> Vec<String> {
+    match ty {
+        Type::Enum { name, .. } | Type::Record { name, .. } => vec![name.clone()],
+        Type::Box { inner_type }
+        | Type::Optional { inner_type }
+        | Type::Sequence { inner_type } => type_names_in_type(inner_type),
+        Type::Map {
+            key_type,
+            value_type,
+        } => {
+            let mut names = type_names_in_type(key_type);
+            names.extend(type_names_in_type(value_type));
+            names
+        }
+        _ => vec![],
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -1357,6 +1491,8 @@ existing definition: Enum {
     ],
     shape: Enum,
     non_exhaustive: false,
+    constructors: [],
+    methods: [],
     uniffi_traits: [],
     docstring: None,
 },
@@ -1383,6 +1519,8 @@ new definition: Enum {
         flat: true,
     },
     non_exhaustive: false,
+    constructors: [],
+    methods: [],
     uniffi_traits: [],
     docstring: None,
 }",
@@ -1572,5 +1710,198 @@ new definition: Enum {
         // have not called `ci.set_crate_to_namespace_map()`, should still resolve our own
         assert_eq!(ci.namespace_for_module_path("crate").unwrap(), "ns");
         assert!(ci.namespace_for_module_path("oops").is_err());
+    }
+
+    #[test]
+    fn dep_graph_no_deps() {
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            enum Apple { "one", "two" };
+            enum Orange { "a", "b" };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert!(graph["Apple"].is_empty());
+        assert!(graph["Orange"].is_empty());
+    }
+
+    #[test]
+    fn dep_graph_self_referential() {
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            [Enum]
+            interface Quine {
+                Recurse(Quine value);
+            };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert_eq!(graph["Quine"], HashSet::from(["Quine".to_string()]));
+    }
+
+    #[test]
+    fn dep_graph_deduplicates_repeated_dep() {
+        // Two variants of Socks both contain Sock — Sock should appear once in the dep set.
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            [Enum]
+            interface Socks {
+                WithLeft(Sock left);
+                WithRight(Sock right);
+            };
+            enum Sock { "left", "right" };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert_eq!(graph["Socks"], HashSet::from(["Sock".to_string()]));
+    }
+
+    #[test]
+    fn dep_graph_optional_field_propagates_dep() {
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            [Enum]
+            interface Outer {
+                WithInner(Inner? value);
+            };
+            enum Inner { "a", "b" };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
+    }
+
+    #[test]
+    fn dep_graph_sequence_field_propagates_dep() {
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            [Enum]
+            interface Outer {
+                WithInners(sequence<Inner> values);
+            };
+            enum Inner { "a", "b" };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
+    }
+
+    #[test]
+    fn dep_graph_map_value_propagates_dep() {
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            [Enum]
+            interface Outer {
+                WithMap(record<DOMString, Inner> map);
+            };
+            enum Inner { "a", "b" };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
+    }
+
+    #[test]
+    fn dep_graph_primitive_fields_have_no_deps() {
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            [Enum]
+            interface Mixed {
+                WithInt(u32 value);
+                WithStr(string value);
+            };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert!(graph["Mixed"].is_empty());
+    }
+
+    #[test]
+    fn dep_graph_interface_field_has_no_dep() {
+        // Verdict holds a Judge (Interface) that has a method returning Sentence.
+        // Verdict must not gain Sentence as a dep — the traversal stops at Interface boundaries.
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            [Enum]
+            interface Verdict {
+                Guilty(Judge judge);
+            };
+            interface Judge {
+                Sentence sentence();
+            };
+            enum Sentence { "life", "parole" };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert!(graph["Verdict"].is_empty());
+    }
+
+    #[test]
+    fn test_custom_type_docstring_upgrade() {
+        // Simulates the UDL path (docstring: None) followed by the proc-macro path
+        // (docstring: Some) for the same custom type — the docstring should be preserved.
+        let mut ci = ComponentInterface::new("crate_name");
+        ci.add_custom_type_definition(CustomType {
+            name: "Guid".into(),
+            module_path: "crate_name".into(),
+            builtin: Type::String,
+            docstring: None,
+        })
+        .unwrap();
+        ci.add_custom_type_definition(CustomType {
+            name: "Guid".into(),
+            module_path: "crate_name".into(),
+            builtin: Type::String,
+            docstring: Some("A globally unique identifier.".into()),
+        })
+        .unwrap();
+        assert_eq!(
+            ci.get_custom_type_definition("Guid").unwrap().docstring(),
+            Some("A globally unique identifier.")
+        );
+    }
+
+    #[test]
+    fn test_custom_type_conflicting_builtin_is_error() {
+        let mut ci = ComponentInterface::new("crate_name");
+        ci.add_custom_type_definition(CustomType {
+            name: "Guid".into(),
+            module_path: "crate_name".into(),
+            builtin: Type::String,
+            docstring: None,
+        })
+        .unwrap();
+        assert!(ci
+            .add_custom_type_definition(CustomType {
+                name: "Guid".into(),
+                module_path: "crate_name".into(),
+                builtin: Type::Int32,
+                docstring: None,
+            })
+            .is_err());
     }
 }

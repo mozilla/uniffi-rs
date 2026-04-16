@@ -10,7 +10,7 @@ typedef interface Object;
 typedef trait Trait;
 typedef trait_with_foreign TraitWithForeign;
 
-// Then stuff defined here but referencing the imported types.
+// Then stuff defined in UDL but referencing proc-macro types.
 dictionary Externals {
     One? one;
     MaybeBool? bool;

@@ -4,11 +4,11 @@ use syn::{DeriveInput, Index};
 use uniffi_meta::EnumShape;
 
 use crate::{
-    enum_::{rich_error_ffi_converter_impl, variant_metadata, EnumItem},
+    enum_::{rich_error_ffi_converter_impl, variant_metadata, EnumItem, VariantAttr},
     ffiops,
     util::{
-        chain, create_metadata_items, extract_docstring, ident_to_string, mod_path,
-        try_metadata_value_from_usize, AttributeSliceExt,
+        create_metadata_items, extract_docstring, ident_to_string, try_metadata_value_from_usize,
+        AttributeSliceExt,
     },
     DeriveOptions,
 };
@@ -25,13 +25,10 @@ pub fn expand_error(input: DeriveInput, options: DeriveOptions) -> syn::Result<T
         .variants
         .iter()
         .flat_map(|variant| {
-            chain(
-                variant.attrs.uniffi_attr_args_not_allowed_here(),
-                variant
-                    .fields
-                    .iter()
-                    .flat_map(|field| field.attrs.uniffi_attr_args_not_allowed_here()),
-            )
+            variant
+                .fields
+                .iter()
+                .flat_map(|field| field.attrs.uniffi_attr_args_not_allowed_here())
         })
         .map(syn::Error::into_compile_error)
         .collect();
@@ -62,10 +59,6 @@ fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> To
     let lift_impl_spec = options.ffi_impl_header("Lift", ident);
     let type_id_impl_spec = options.ffi_impl_header("TypeId", ident);
     let derive_ffi_traits = options.derive_ffi_traits(ident, &["LowerError", "ConvertError"]);
-    let mod_path = match mod_path() {
-        Ok(p) => p,
-        Err(e) => return e.into_compile_error(),
-    };
 
     let lower_impl = {
         let mut match_arms: Vec<_> = item
@@ -169,7 +162,7 @@ fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> To
         #[automatically_derived]
         #type_id_impl_spec {
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_ENUM)
-                .concat_str(#mod_path)
+                .concat_str(module_path!())
                 .concat_str(#name);
         }
 
@@ -179,14 +172,13 @@ fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> To
 
 pub(crate) fn error_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream> {
     let name = &item.foreign_name();
-    let module_path = mod_path()?;
     let non_exhaustive = item.is_non_exhaustive();
     let docstring = item.docstring();
     let flat = item.is_flat_error();
     let shape = EnumShape::Error { flat }.as_u8();
     let mut metadata_expr = quote! {
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
-                .concat_str(#module_path)
+                .concat_str(module_path!())
                 .concat_str(#name)
                 .concat_value(#shape)
                 .concat_bool(false) // discr_type: None
@@ -209,7 +201,9 @@ pub fn flat_error_variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStre
         try_metadata_value_from_usize(enum_.variants.len(), "UniFFI limits enums to 256 variants")?;
     std::iter::once(Ok(quote! { .concat_value(#variants_len) }))
         .chain(enum_.variants.iter().map(|v| {
-            let name = ident_to_string(&v.ident);
+            let attrs = v.attrs.parse_uniffi_attr_args::<VariantAttr>()?;
+            let name = attrs.name.unwrap_or(ident_to_string(&v.ident));
+
             let docstring = extract_docstring(&v.attrs)?;
             Ok(quote! {
                 .concat_str(#name)

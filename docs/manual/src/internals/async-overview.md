@@ -41,11 +41,13 @@ sequenceDiagram
 ```
 
 For each async function, UniFFI generates 4 scaffolding functions:
+
 * A scaffolding function that returns a `RustFuture` handle
 * `rust_future_poll` to poll the future
 * `rust_future_complete` to receive the completed result of a future
 * `rust_future_free` to destroy a future freeing any underlying memory
-* Technically, the function names are more like `uniffi_[module_prefix]_rust_future_poll`, but this document uses above names make for shorthand.
+
+Technically, the function names are more like `uniffi_[module_prefix]_rust_future_poll`, but this document uses above names make for shorthand.
 
 The UniFFI generated code for an async function performs these steps:
 

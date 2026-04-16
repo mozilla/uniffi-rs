@@ -98,3 +98,8 @@ do {
 
 assert(ct.ecd.sval == "ecd")
 assert(getExternalCrateInterface(val: "foo").value() == "foo")
+
+// Test that BindingRenamedType from uniffi-one is renamed to SwiftRenamedType via direct function call
+let renamedType = getBindingRenamedType(value: "external_rename_test")
+assert(renamedType == SwiftRenamedType(swiftValue: "external_rename_test"))
+assert(renamedType.swiftValue == "external_rename_test")

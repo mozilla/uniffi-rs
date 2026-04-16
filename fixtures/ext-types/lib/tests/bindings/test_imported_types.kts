@@ -81,3 +81,8 @@ try {
 
 assert(ct.ecd.sval == "ecd")
 assert(getExternalCrateInterface("foo").value() == "foo")
+
+// Test that BindingRenamedType from uniffi-one is renamed to KotlinRenamedType via direct function call
+val renamedType = getBindingRenamedType("external_rename_test")
+assert(renamedType is KotlinRenamedType)
+assert(renamedType.kotlinValue == "external_rename_test")

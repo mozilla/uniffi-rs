@@ -72,6 +72,7 @@ pub fn canonical_name(t: &Type) -> String {
             canonical_name(value_type).to_upper_camel_case()
         ),
         Type::Custom { name, .. } => format!("Type{name}"),
+        Type::Box { inner_type } => canonical_name(inner_type),
     }
 }
 
@@ -115,7 +116,8 @@ impl<'a> RubyWrapper<'a> {
 mod filters {
     use super::*;
 
-    pub fn type_ffi(type_: &FfiType) -> Result<String, askama::Error> {
+    #[askama::filter_fn]
+    pub fn type_ffi(type_: &FfiType, _: &dyn askama::Values) -> Result<String, askama::Error> {
         Ok(match type_ {
             FfiType::Int8 => ":int8".to_string(),
             FfiType::UInt8 => ":uint8".to_string(),
@@ -144,7 +146,15 @@ mod filters {
         })
     }
 
-    pub fn default_rb(default: &DefaultValue) -> Result<String, askama::Error> {
+    #[askama::filter_fn]
+    pub fn default_rb(
+        default: &DefaultValue,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
+        default_rb_inner(default)
+    }
+
+    fn default_rb_inner(default: &DefaultValue) -> Result<String, askama::Error> {
         let DefaultValue::Literal(literal) = default else {
             unimplemented!("not supported.");
         };
@@ -159,12 +169,12 @@ mod filters {
             // use the double-quote form to match with the other languages, and quote escapes.
             Literal::String(s) => format!("\"{s}\""),
             Literal::None => "nil".into(),
-            Literal::Some { inner } => default_rb(inner)?,
+            Literal::Some { inner } => default_rb_inner(inner)?,
             Literal::EmptySequence => "[]".into(),
             Literal::EmptyMap => "{}".into(),
             Literal::Enum(v, type_) => match type_ {
                 Type::Enum { name, .. } => {
-                    format!("{}::{}", class_name_rb(name)?, enum_name_rb(v)?)
+                    format!("{}::{}", class_name_rb_inner(name)?, enum_name_rb_inner(v)?)
                 }
                 _ => panic!("Unexpected type in enum literal: {type_:?}"),
             },
@@ -183,26 +193,48 @@ mod filters {
         })
     }
 
-    pub fn class_name_rb(nm: &str) -> Result<String, askama::Error> {
+    #[askama::filter_fn]
+    pub fn class_name_rb(nm: &str, _: &dyn askama::Values) -> Result<String, askama::Error> {
+        class_name_rb_inner(nm)
+    }
+
+    fn class_name_rb_inner(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_upper_camel_case())
     }
 
-    pub fn fn_name_rb(nm: &str) -> Result<String, askama::Error> {
+    #[askama::filter_fn]
+    pub fn fn_name_rb(nm: &str, _: &dyn askama::Values) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_snake_case())
     }
 
-    pub fn var_name_rb(nm: &str) -> Result<String, askama::Error> {
+    #[askama::filter_fn]
+    pub fn var_name_rb(nm: &str, _: &dyn askama::Values) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         let prefix = if is_reserved_word(&nm) { "_" } else { "" };
 
         Ok(format!("{prefix}{}", nm.to_snake_case()))
     }
 
-    pub fn enum_name_rb(nm: &str) -> Result<String, askama::Error> {
+    #[askama::filter_fn]
+    pub fn enum_name_rb(nm: &str, _: &dyn askama::Values) -> Result<String, askama::Error> {
+        enum_name_rb_inner(nm)
+    }
+
+    pub fn enum_name_rb_inner(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_shouty_snake_case())
     }
 
+    #[askama::filter_fn]
     pub fn coerce_rb<S1: AsRef<str>, S2: AsRef<str>>(
+        nm: S1,
+        _: &dyn askama::Values,
+        ns: S2,
+        type_: &Type,
+    ) -> Result<String, askama::Error> {
+        coerce_rb_inner(nm, ns, type_)
+    }
+
+    pub fn coerce_rb_inner<S1: AsRef<str>, S2: AsRef<str>>(
         nm: S1,
         ns: S2,
         type_: &Type,
@@ -227,9 +259,11 @@ mod filters {
             Type::CallbackInterface { .. } => {
                 panic!("No support for coercing callback interfaces yet")
             }
-            Type::Optional { inner_type: t } => format!("({nm} ? {} : nil)", coerce_rb(nm, ns, t)?),
+            Type::Optional { inner_type: t } => {
+                format!("({nm} ? {} : nil)", coerce_rb_inner(nm, ns, t)?)
+            }
             Type::Sequence { inner_type: t } => {
-                let coerce_code = coerce_rb("v", ns, t)?;
+                let coerce_code = coerce_rb_inner("v", ns, t)?;
                 if coerce_code == "v" {
                     nm.to_string()
                 } else {
@@ -237,8 +271,8 @@ mod filters {
                 }
             }
             Type::Map { value_type: t, .. } => {
-                let k_coerce_code = coerce_rb("k", ns, &Type::String)?;
-                let v_coerce_code = coerce_rb("v", ns, t)?;
+                let k_coerce_code = coerce_rb_inner("k", ns, &Type::String)?;
+                let v_coerce_code = coerce_rb_inner("v", ns, t)?;
 
                 if k_coerce_code == "k" && v_coerce_code == "v" {
                     nm.to_string()
@@ -248,15 +282,21 @@ mod filters {
                     )
                 }
             }
+            Type::Box { inner_type } => coerce_rb_inner(nm, ns, inner_type)?,
             Type::Custom { .. } => panic!("No support for custom types, yet"),
         })
     }
 
-    pub fn check_lower_rb<S: AsRef<str>>(nm: S, type_: &Type) -> Result<String, askama::Error> {
+    #[askama::filter_fn]
+    pub fn check_lower_rb<S: AsRef<str>>(
+        nm: S,
+        _: &dyn askama::Values,
+        type_: &Type,
+    ) -> Result<String, askama::Error> {
         let nm = nm.as_ref();
         Ok(match type_ {
             Type::Object { name, .. } => {
-                format!("({}.uniffi_check_lower {nm})", class_name_rb(name)?)
+                format!("({}.uniffi_check_lower {nm})", class_name_rb_inner(name)?)
             }
             Type::Enum { .. }
             | Type::Record { .. }
@@ -264,14 +304,22 @@ mod filters {
             | Type::Sequence { .. }
             | Type::Map { .. } => format!(
                 "RustBuffer.check_lower_{}({})",
-                class_name_rb(&canonical_name(type_))?,
+                class_name_rb_inner(&canonical_name(type_))?,
                 nm
             ),
             _ => "".to_owned(),
         })
     }
 
-    pub fn lower_rb(nm: &str, type_: &Type) -> Result<String, askama::Error> {
+    #[askama::filter_fn]
+    pub fn lower_rb(
+        nm: &str,
+        _: &dyn askama::Values,
+        mut type_: &Type,
+    ) -> Result<String, askama::Error> {
+        while let Type::Box { inner_type } = type_ {
+            type_ = &**inner_type;
+        }
         Ok(match type_ {
             Type::Int8
             | Type::UInt8
@@ -286,7 +334,9 @@ mod filters {
             Type::Boolean => format!("({nm} ? 1 : 0)"),
             Type::String => format!("RustBuffer.allocFromString({nm})"),
             Type::Bytes => format!("RustBuffer.allocFromBytes({nm})"),
-            Type::Object { name, .. } => format!("({}.uniffi_lower {nm})", class_name_rb(name)?),
+            Type::Object { name, .. } => {
+                format!("({}.uniffi_lower {nm})", class_name_rb_inner(name)?)
+            }
             Type::CallbackInterface { .. } => {
                 panic!("No support for lowering callback interfaces yet")
             }
@@ -298,14 +348,23 @@ mod filters {
             | Type::Duration
             | Type::Map { .. } => format!(
                 "RustBuffer.alloc_from_{}({})",
-                class_name_rb(&canonical_name(type_))?,
+                class_name_rb_inner(&canonical_name(type_))?,
                 nm
             ),
+            Type::Box { .. } => unreachable!(),
             Type::Custom { .. } => panic!("No support for lowering custom types, yet"),
         })
     }
 
-    pub fn lift_rb(nm: &str, type_: &Type) -> Result<String, askama::Error> {
+    #[askama::filter_fn]
+    pub fn lift_rb(
+        nm: &str,
+        _: &dyn askama::Values,
+        mut type_: &Type,
+    ) -> Result<String, askama::Error> {
+        while let Type::Box { inner_type } = type_ {
+            type_ = &**inner_type;
+        }
         Ok(match type_ {
             Type::Int8
             | Type::UInt8
@@ -319,7 +378,9 @@ mod filters {
             Type::Boolean => format!("1 == {nm}"),
             Type::String => format!("{nm}.consumeIntoString"),
             Type::Bytes => format!("{nm}.consumeIntoBytes"),
-            Type::Object { name, .. } => format!("{}.uniffi_allocate({nm})", class_name_rb(name)?),
+            Type::Object { name, .. } => {
+                format!("{}.uniffi_allocate({nm})", class_name_rb_inner(name)?)
+            }
             Type::CallbackInterface { .. } => {
                 panic!("No support for lifting callback interfaces, yet")
             }
@@ -327,7 +388,7 @@ mod filters {
                 format!(
                     "{}.consumeInto{}",
                     nm,
-                    class_name_rb(&canonical_name(type_))?
+                    class_name_rb_inner(&canonical_name(type_))?
                 )
             }
             Type::Record { .. }
@@ -338,8 +399,9 @@ mod filters {
             | Type::Map { .. } => format!(
                 "{}.consumeInto{}",
                 nm,
-                class_name_rb(&canonical_name(type_))?
+                class_name_rb_inner(&canonical_name(type_))?
             ),
+            Type::Box { .. } => unreachable!(),
             Type::Custom { .. } => panic!("No support for lifting custom types, yet"),
         })
     }

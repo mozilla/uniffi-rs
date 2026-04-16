@@ -3,17 +3,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use indexmap::IndexMap;
-use uniffi_pipeline::Node;
+
+use super::*;
+
+use_prev_node!(uniffi_meta::EnumShape);
+use_prev_node!(uniffi_meta::ObjectImpl);
+use_prev_node!(uniffi_meta::Radix);
 
 /// Root node of the Initial IR
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
 pub struct Root {
     pub namespaces: IndexMap<String, Namespace>,
     /// The library path the user passed to us, if we're in library mode
     pub cdylib: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
 pub struct Namespace {
     pub name: String,
     pub crate_name: String,
@@ -24,8 +29,8 @@ pub struct Namespace {
     pub type_definitions: Vec<TypeDefinition>,
 }
 
-#[derive(Debug, Clone, Node)]
-#[node(from(FnMetadata))]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
+#[map_node(from(uniffi_meta::FnMetadata))]
 pub struct Function {
     pub name: String,
     pub is_async: bool,
@@ -36,7 +41,7 @@ pub struct Function {
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
 pub enum TypeDefinition {
     Interface(Interface),
     CallbackInterface(CallbackInterface),
@@ -45,8 +50,8 @@ pub enum TypeDefinition {
     Custom(CustomType),
 }
 
-#[derive(Debug, Clone, Node)]
-#[node(from(ConstructorMetadata))]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
+#[map_node(from(uniffi_meta::ConstructorMetadata))]
 pub struct Constructor {
     pub name: String,
     pub is_async: bool,
@@ -56,8 +61,9 @@ pub struct Constructor {
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
-#[node(from(MethodMetadata))]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
+#[map_node(from(uniffi_meta::MethodMetadata))]
+#[map_node(from(uniffi_meta::TraitMethodMetadata))]
 pub struct Method {
     pub name: String,
     pub is_async: bool,
@@ -68,8 +74,8 @@ pub struct Method {
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
-#[node(from(TraitMethodMetadata))]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
+#[map_node(from(uniffi_meta::TraitMethodMetadata))]
 pub struct TraitMethod {
     pub trait_name: String,
     // Note: the position of `index` is important since it causes callback interface methods to be
@@ -84,8 +90,8 @@ pub struct TraitMethod {
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
-#[node(from(FnParamMetadata))]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
+#[map_node(from(uniffi_meta::FnParamMetadata))]
 pub struct Argument {
     pub name: String,
     pub ty: Type,
@@ -93,15 +99,15 @@ pub struct Argument {
     pub default: Option<DefaultValue>,
 }
 
-#[derive(Debug, Clone, Node)]
-#[node(from(DefaultValueMetadata))]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
+#[map_node(from(uniffi_meta::DefaultValueMetadata))]
 pub enum DefaultValue {
     Default,
     Literal(Literal),
 }
 
-#[derive(Debug, Clone, Node)]
-#[node(from(LiteralMetadata))]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
+#[map_node(from(uniffi_meta::LiteralMetadata))]
 pub enum Literal {
     Boolean(bool),
     String(String),
@@ -122,26 +128,22 @@ pub enum Literal {
     Some { inner: Box<DefaultValue> },
 }
 
-// Represent the radix of integer literal values.
-// We preserve the radix into the generated bindings for readability reasons.
-#[derive(Debug, Clone, Node)]
-pub enum Radix {
-    Decimal = 10,
-    Octal = 8,
-    Hexadecimal = 16,
-}
-
-#[derive(Debug, Clone, Node)]
-#[node(from(RecordMetadata))]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
+#[map_node(from(uniffi_meta::RecordMetadata))]
 pub struct Record {
+    #[map_node(context.constructors_for_type(&self.module_path, &self.name)?)]
+    pub constructors: Vec<Constructor>,
+    #[map_node(context.methods_for_type(&self.module_path, &self.name)?)]
+    pub methods: Vec<Method>,
+    #[map_node(context.uniffi_traits_for_type(&self.module_path, &self.name)?)]
+    pub uniffi_traits: Vec<UniffiTrait>,
     pub name: String,
     pub fields: Vec<Field>,
-    pub uniffi_traits: Vec<UniffiTrait>,
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
-#[node(from(FieldMetadata))]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
+#[map_node(from(uniffi_meta::FieldMetadata))]
 pub struct Field {
     pub name: String,
     pub ty: Type,
@@ -149,25 +151,24 @@ pub struct Field {
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
-pub enum EnumShape {
-    Enum,
-    Error { flat: bool },
-}
-
-#[derive(Debug, Clone, Node)]
-#[node(from(EnumMetadata))]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
+#[map_node(from(uniffi_meta::EnumMetadata))]
 pub struct Enum {
+    #[map_node(context.constructors_for_type(&self.module_path, &self.name)?)]
+    pub constructors: Vec<Constructor>,
+    #[map_node(context.methods_for_type(&self.module_path, &self.name)?)]
+    pub methods: Vec<Method>,
+    #[map_node(context.uniffi_traits_for_type(&self.module_path, &self.name)?)]
+    pub uniffi_traits: Vec<UniffiTrait>,
     pub name: String,
     pub shape: EnumShape,
     pub variants: Vec<Variant>,
     pub discr_type: Option<Type>,
-    pub uniffi_traits: Vec<UniffiTrait>,
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
-#[node(from(VariantMetadata))]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
+#[map_node(from(uniffi_meta::VariantMetadata))]
 pub struct Variant {
     pub name: String,
     pub discr: Option<Literal>,
@@ -175,28 +176,34 @@ pub struct Variant {
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
-#[node(from(ObjectMetadata))]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
+#[map_node(from(uniffi_meta::ObjectMetadata))]
 pub struct Interface {
+    #[map_node(context.constructors_for_type(&self.module_path, &self.name)?)]
+    pub constructors: Vec<Constructor>,
+    #[map_node(context.methods_for_type(&self.module_path, &self.name)?)]
+    pub methods: Vec<Method>,
+    #[map_node(context.uniffi_traits_for_type(&self.module_path, &self.name)?)]
+    pub uniffi_traits: Vec<UniffiTrait>,
+    #[map_node(context.trait_impls_for_type(&self.module_path, &self.name)?)]
+    pub trait_impls: Vec<ObjectTraitImpl>,
     pub name: String,
     pub docstring: Option<String>,
-    pub constructors: Vec<Constructor>,
-    pub methods: Vec<Method>,
-    pub uniffi_traits: Vec<UniffiTrait>,
-    pub trait_impls: Vec<ObjectTraitImpl>,
     pub imp: ObjectImpl,
 }
 
-#[derive(Debug, Clone, Node)]
-#[node(from(CallbackInterfaceMetadata))]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
+#[map_node(from(uniffi_meta::CallbackInterfaceMetadata))]
 pub struct CallbackInterface {
+    #[map_node(context.methods_for_type(&self.module_path, &self.name)?)]
+    pub methods: Vec<Method>,
     pub name: String,
     pub docstring: Option<String>,
-    pub methods: Vec<Method>,
 }
 
-#[derive(Debug, Clone, Node)]
-#[node(from(UniffiTraitMetadata))]
+#[allow(clippy::large_enum_variant)]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
+#[map_node(from(uniffi_meta::UniffiTraitMetadata))]
 pub enum UniffiTrait {
     Debug { fmt: Method },
     Display { fmt: Method },
@@ -205,22 +212,24 @@ pub enum UniffiTrait {
     Ord { cmp: Method },
 }
 
-#[derive(Debug, Clone, Node)]
-#[node(from(ObjectTraitImplMetadata))]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
+#[map_node(from(uniffi_meta::ObjectTraitImplMetadata))]
 pub struct ObjectTraitImpl {
     pub ty: Type,
     pub trait_ty: Type,
 }
 
-#[derive(Debug, Clone, Node)]
-#[node(from(CustomTypeMetadata))]
+#[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
+#[map_node(from(uniffi_meta::CustomTypeMetadata))]
 pub struct CustomType {
     pub name: String,
     pub builtin: Type,
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Node, MapNode)]
+#[map_node(from(uniffi_meta::Type))]
+#[map_node(types::map_type)]
 pub enum Type {
     // Primitive types.
     UInt8,
@@ -238,7 +247,9 @@ pub enum Type {
     Bytes,
     Timestamp,
     Duration,
-    // Structurally recursive types.
+    Box {
+        inner_type: Box<Type>,
+    },
     Optional {
         inner_type: Box<Type>,
     },
@@ -250,42 +261,62 @@ pub enum Type {
         value_type: Box<Type>,
     },
     // User defined types in the API
-    #[node(from(Object))]
     Interface {
-        module_path: String, // from the metadata
-        namespace: String,   // we'll fix this up.
+        namespace: String,
         name: String,
         imp: ObjectImpl,
     },
     Record {
-        module_path: String,
         namespace: String,
         name: String,
     },
     Enum {
-        module_path: String,
         namespace: String,
         name: String,
     },
     CallbackInterface {
-        module_path: String,
         namespace: String,
         name: String,
     },
     Custom {
-        module_path: String,
         namespace: String,
         name: String,
         builtin: Box<Type>,
     },
 }
 
-#[derive(Debug, Clone, Node)]
-pub enum ObjectImpl {
-    // A single Rust type
-    Struct,
-    // A trait that's can be implemented by Rust types
-    Trait,
-    // A trait + a callback interface -- can be implemented by both Rust and foreign types.
-    CallbackTrait,
+impl TypeDefinition {
+    pub fn name(&self) -> &str {
+        match &self {
+            Self::Record(rec) => &rec.name,
+            Self::Enum(en) => &en.name,
+            Self::Interface(int) => &int.name,
+            Self::CallbackInterface(cbi) => &cbi.name,
+            Self::Custom(custom) => &custom.name,
+        }
+    }
+}
+
+impl Type {
+    pub fn name(&self) -> Option<&str> {
+        match &self {
+            Type::Record { name, .. }
+            | Type::Enum { name, .. }
+            | Type::Interface { name, .. }
+            | Type::CallbackInterface { name, .. }
+            | Type::Custom { name, .. } => Some(name.as_str()),
+            _ => None,
+        }
+    }
+
+    pub fn namespace(&self) -> Option<&str> {
+        match &self {
+            Type::Record { namespace, .. }
+            | Type::Enum { namespace, .. }
+            | Type::Interface { namespace, .. }
+            | Type::CallbackInterface { namespace, .. }
+            | Type::Custom { namespace, .. } => Some(namespace.as_str()),
+            _ => None,
+        }
+    }
 }

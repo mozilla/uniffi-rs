@@ -1,6 +1,5 @@
 target
 .*.swp
-*.jar
 .vscode
 .idea
 xcuserdata
@@ -10,3 +9,7 @@ docs/manual/book
 
 examples/app/ios/Generated
 examples/app/ios/IOSApp.xcodeproj/project.xcworkspace/xcshareddata/
+
+# gradle filess from the android benchmarks app
+fixtures/benchmarks/android/build
+fixtures/benchmarks/android/.gradle

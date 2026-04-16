@@ -7,8 +7,7 @@ use crate::{
     ffiops,
     util::{
         create_metadata_items, either_attribute_arg, extract_docstring, ident_to_string, kw,
-        mod_path, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
-        UniffiAttributeArgs,
+        try_metadata_value_from_usize, try_read_field, AttributeSliceExt, UniffiAttributeArgs,
     },
     DeriveOptions,
 };
@@ -112,7 +111,6 @@ fn record_ffi_converter_impl(
     let impl_spec = options.ffi_impl_header("FfiConverter", ident);
     let derive_ffi_traits = options.derive_all_ffi_traits(ident);
     let name = &record.foreign_name();
-    let mod_path = mod_path()?;
     let write_impl: TokenStream = record.struct_().fields.iter().map(write_field).collect();
     let try_read_fields: TokenStream = record.struct_().fields.iter().map(try_read_field).collect();
 
@@ -130,7 +128,7 @@ fn record_ffi_converter_impl(
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_RECORD)
-                .concat_str(#mod_path)
+                .concat_str(module_path!())
                 .concat_str(#name);
         }
 
@@ -149,26 +147,41 @@ fn write_field(f: &Field) -> TokenStream {
 #[derive(Default)]
 pub struct FieldAttributeArguments {
     pub(crate) default: Option<DefaultValue>,
+    pub(crate) name: Option<String>,
 }
 
 impl UniffiAttributeArgs for FieldAttributeArguments {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
-        let _: kw::default = input.parse()?;
         let lookahead = input.lookahead1();
-        let default = if lookahead.peek(Token![=]) {
+        if lookahead.peek(kw::default) {
+            let _: kw::default = input.parse()?;
+            let default = Some(if input.peek(Token![=]) {
+                let _: Token![=] = input.parse()?;
+                input.parse()?
+            } else {
+                DefaultValue::Default
+            });
+            Ok(Self {
+                default,
+                ..Self::default()
+            })
+        } else if lookahead.peek(kw::name) {
+            let _: kw::name = input.parse()?;
             let _: Token![=] = input.parse()?;
-            input.parse()?
+            let name = Some(input.parse::<LitStr>()?.value());
+            Ok(Self {
+                name,
+                ..Self::default()
+            })
         } else {
-            DefaultValue::Default
-        };
-        Ok(Self {
-            default: Some(default),
-        })
+            Err(lookahead.error())
+        }
     }
 
     fn merge(self, other: Self) -> syn::Result<Self> {
         Ok(Self {
             default: either_attribute_arg(self.default, other.default)?,
+            name: either_attribute_arg(self.name, other.name)?,
         })
     }
 }
@@ -176,7 +189,6 @@ impl UniffiAttributeArgs for FieldAttributeArguments {
 fn record_meta_static_var(record: &RecordItem) -> syn::Result<TokenStream> {
     let name = &record.foreign_name();
     let docstring = record.docstring();
-    let module_path = mod_path()?;
     let fields_len = try_metadata_value_from_usize(
         record.struct_().fields.len(),
         "UniFFI limits structs to 256 fields",
@@ -191,7 +203,9 @@ fn record_meta_static_var(record: &RecordItem) -> syn::Result<TokenStream> {
                 .attrs
                 .parse_uniffi_attr_args::<FieldAttributeArguments>()?;
 
-            let name = ident_to_string(f.ident.as_ref().unwrap());
+            let name = attrs
+                .name
+                .unwrap_or(ident_to_string(f.ident.as_ref().unwrap()));
             let docstring = extract_docstring(&f.attrs)?;
             let default = default_value_metadata_calls(&attrs.default)?;
             let type_id_meta = ffiops::type_id_meta(&f.ty);
@@ -212,7 +226,7 @@ fn record_meta_static_var(record: &RecordItem) -> syn::Result<TokenStream> {
         name,
         quote! {
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::RECORD)
-                .concat_str(#module_path)
+                .concat_str(module_path!())
                 .concat_str(#name)
                 .concat_value(#fields_len)
                 #concat_fields

@@ -4,50 +4,54 @@
 
 use super::*;
 
-pub fn pass(namespace: &mut Namespace) -> Result<()> {
-    namespace.visit_mut(|ty: &mut TypeNode| {
-        let package_name = match &ty.ty {
-            Type::Enum {
-                external_package_name,
-                ..
-            }
-            | Type::Record {
-                external_package_name,
-                ..
-            }
-            | Type::Interface {
-                external_package_name,
-                ..
-            }
-            | Type::CallbackInterface {
-                external_package_name,
-                ..
-            }
-            | Type::Custom {
-                external_package_name,
-                ..
-            } => external_package_name.as_ref(),
-            _ => None,
-        };
-        if let Some(package_name) = package_name {
-            ty.ffi_converter_name =
-                format!("{package_name}._UniffiFfiConverter{}", ty.canonical_name);
-        } else {
-            ty.ffi_converter_name = format!("_UniffiFfiConverter{}", ty.canonical_name);
-        }
-        ty.type_name = type_name(&ty.ty);
-    });
-    namespace.visit_mut(|return_ty: &mut ReturnType| {
-        return_ty.type_name = match &return_ty.ty {
-            Some(type_node) => type_node.type_name.clone(),
-            None => "None".to_string(),
-        }
-    });
-    Ok(())
+pub fn map_type(mut ty: Type, _: &Context) -> Result<Type> {
+    rename_type(&mut ty);
+    Ok(ty)
 }
 
-fn type_name(ty: &Type) -> String {
+fn rename_type(ty: &mut Type) {
     match ty {
+        Type::Enum { name, .. }
+        | Type::Record { name, .. }
+        | Type::Interface { name, .. }
+        | Type::CallbackInterface { name, .. }
+        | Type::Custom { name, .. } => {
+            *name = names::type_name(name);
+        }
+        Type::Optional { inner_type }
+        | Type::Sequence { inner_type }
+        | Type::Box { inner_type } => {
+            rename_type(inner_type);
+        }
+        Type::Map {
+            key_type,
+            value_type,
+        } => {
+            rename_type(key_type);
+            rename_type(value_type);
+        }
+        _ => (),
+    }
+}
+
+pub fn map_return_type(return_type: general::ReturnType, context: &Context) -> Result<ReturnType> {
+    Ok(match return_type.ty {
+        Some(ty) => {
+            let ty = ty.map_node(context)?;
+            ReturnType {
+                type_name: ty.type_name.clone(),
+                ty: Some(ty),
+            }
+        }
+        None => ReturnType {
+            ty: None,
+            type_name: "None".to_string(),
+        },
+    })
+}
+
+pub fn type_name(ty: &Type, context: &Context) -> Result<String> {
+    Ok(match ty {
         Type::Boolean => "bool".to_string(),
         Type::String => "str".to_string(),
         Type::Bytes => "bytes".to_string(),
@@ -63,42 +67,79 @@ fn type_name(ty: &Type) -> String {
         Type::Timestamp => "Timestamp".to_string(),
         Type::Float32 | Type::Float64 => "float".to_string(),
         Type::Interface {
-            external_package_name,
-            name,
-            ..
+            namespace, name, ..
         }
         | Type::Record {
-            external_package_name,
-            name,
-            ..
+            namespace, name, ..
         }
         | Type::Enum {
-            external_package_name,
-            name,
-            ..
+            namespace, name, ..
         }
         | Type::CallbackInterface {
-            external_package_name,
-            name,
-            ..
+            namespace, name, ..
         }
         | Type::Custom {
-            external_package_name,
-            name,
-            ..
-        } => match external_package_name {
-            None => name.clone(),
-            Some(package) => format!("{package}.{name}"),
-        },
+            namespace, name, ..
+        } => {
+            let type_name = names::type_name(name);
+            match context.external_package_name(namespace)? {
+                None => type_name.clone(),
+                Some(package) => format!("{package}.{type_name}"),
+            }
+        }
         Type::Optional { inner_type } => {
-            format!("typing.Optional[{}]", type_name(inner_type))
+            format!("typing.Optional[{}]", type_name(inner_type, context)?)
         }
         Type::Sequence { inner_type } => {
-            format!("typing.List[{}]", type_name(inner_type))
+            format!("typing.List[{}]", type_name(inner_type, context)?)
         }
         Type::Map {
             key_type,
             value_type,
-        } => format!("dict[{}, {}]", type_name(key_type), type_name(value_type)),
+        } => format!(
+            "dict[{}, {}]",
+            type_name(key_type, context)?,
+            type_name(value_type, context)?
+        ),
+        Type::Box { inner_type } => type_name(inner_type, context)?,
+    })
+}
+
+/// Like `type_name`, but wraps recursive enum and record type names in Python
+/// string quotes so they work as forward-reference annotations inside a class
+/// body (needed for Python < 3.10 which evaluates annotations eagerly).
+pub fn type_annotation(ty: &Type, context: &Context) -> Result<String> {
+    match ty {
+        Type::Enum { name, .. } | Type::Record { name, .. } if context.is_recursive(name) => {
+            Ok(format!("\"{}\"", type_name(ty, context)?))
+        }
+        Type::Optional { inner_type } => Ok(format!(
+            "typing.Optional[{}]",
+            type_annotation(inner_type, context)?
+        )),
+        Type::Sequence { inner_type } => Ok(format!(
+            "typing.List[{}]",
+            type_annotation(inner_type, context)?
+        )),
+        Type::Map {
+            key_type,
+            value_type,
+        } => Ok(format!(
+            "dict[{}, {}]",
+            type_annotation(key_type, context)?,
+            type_annotation(value_type, context)?
+        )),
+        _ => type_name(ty, context),
     }
+}
+
+pub fn ffi_converter_name(ty: &general::TypeNode, context: &Context) -> Result<String> {
+    let ext_package = match ty.ty.namespace() {
+        Some(namespace) => context.external_package_name(namespace)?,
+        _ => None,
+    };
+    Ok(match ext_package {
+        Some(package) => format!("{package}._UniffiFfiConverter{}", ty.canonical_name),
+        None => format!("_UniffiFfiConverter{}", ty.canonical_name),
+    })
 }
