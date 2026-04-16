@@ -25,6 +25,7 @@
 - Added `mutable_records` configuration option to allow specific records to remain mutable even when `generate_immutable_records` is enabled (Kotlin and Swift).
 - Kotlin objects now have an `uniffiIsDestroyed` property that returns `true` if the Rust reference no longer exists ([#2825](https://github.com/mozilla/uniffi-rs/pull/2825))
 - Updated `askama` version to `0.15.6`
+- Custom Types can have docstrings in some languages ([#2853](https://github.com/mozilla/uniffi-rs/pull/2853))
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.1...HEAD).
 

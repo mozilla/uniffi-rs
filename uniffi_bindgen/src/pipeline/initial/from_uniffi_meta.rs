@@ -120,10 +120,33 @@ impl UniffiMetaConverter {
                     .insert_unique(cbi.name.clone(), cbi)?;
             }
             uniffi_meta::Metadata::CustomType(custom) => {
-                self.custom_types
+                let by_crate = self
+                    .custom_types
                     .entry(module_path_to_crate_name(&custom.module_path))
-                    .or_default()
-                    .insert_unique(custom.name.clone(), custom)?;
+                    .or_default();
+                match by_crate.entry(custom.name.clone()) {
+                    Entry::Vacant(e) => {
+                        e.insert(custom);
+                    }
+                    Entry::Occupied(mut e) => {
+                        let existing = e.get();
+                        // UDL provides docstring: None; proc-macro may provide Some.
+                        // Any difference other than the docstring is a genuine conflict.
+                        if existing.builtin != custom.builtin
+                            || existing.module_path != custom.module_path
+                        {
+                            bail!(
+                                "Conflicting metadata types:\nold: {:?}\nnew: {:?}",
+                                existing,
+                                custom
+                            );
+                        }
+                        // Prefer the version with a docstring.
+                        if custom.docstring.is_some() && existing.docstring.is_none() {
+                            e.insert(custom);
+                        }
+                    }
+                }
             }
             uniffi_meta::Metadata::Constructor(cons) => {
                 self.constructors

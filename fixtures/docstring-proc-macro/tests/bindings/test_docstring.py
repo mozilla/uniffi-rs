@@ -58,3 +58,11 @@ assert RecordTest.__doc__.strip() == "<docstring-record>"
 # Test callbacks
 assert CallbackTest.__doc__.strip() == "<docstring-callback>"
 assert CallbackTest.test.__doc__.strip() == "<docstring-callback-method>"
+
+# Custom types
+# https://github.com/mozilla/uniffi-rs/issues/2852 - need to fully qualify them!
+# Sadly though we can't have docstrings, even if we moved to the 3.12 "type" aliases.
+# We do render them as a "trailing" docstring hoping some tools associate it, but Python doesn't know about them.
+# Python just has the docs for the underlying types.
+assert uniffi_docstring_proc_macro.CustomType.__doc__ == int.__doc__
+assert uniffi_docstring_proc_macro.CustomNewType.__doc__ == str.__doc__
