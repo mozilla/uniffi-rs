@@ -7,7 +7,7 @@ object Scaffolding {
     @JvmStatic external fun ffiBufferReadBuffer(buf: java.nio.ByteBuffer, offset: kotlin.Int): java.nio.ByteBuffer
     @JvmStatic external fun ffiBufferWriteBuffer(buf: java.nio.ByteBuffer, offset: kotlin.Int, value: java.nio.ByteBuffer)
 
-    {%- for (jni_method_name, callable) in root.jni_methods() %}
+    {%- for (jni_method_name, _, callable) in root.jni_methods() %}
     @JvmName("{{ jni_method_name }}")
     @JvmStatic external fun {{ jni_method_name }}(
         {%- for ffi_arg in callable.ffi_arguments_including_receiver() %}
