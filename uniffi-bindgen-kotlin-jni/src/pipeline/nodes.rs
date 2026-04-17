@@ -47,6 +47,9 @@ pub enum TypeDefinition {
     Optional(OptionalType),
     Sequence(SequenceType),
     Map(MapType),
+    Timestamp(TypeNode),
+    Duration(TypeNode),
+    Bytes(TypeNode),
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -384,6 +387,9 @@ impl Root {
                     TypeDefinition::Custom(c) => &c.self_type,
                     TypeDefinition::CallbackInterface(c) => &c.self_type,
                     TypeDefinition::Box(b) => &b.self_type,
+                    TypeDefinition::Timestamp(self_type) => self_type,
+                    TypeDefinition::Duration(self_type) => self_type,
+                    TypeDefinition::Bytes(self_type) => self_type,
                     TypeDefinition::Interface(_) => return false,
                 })
             })

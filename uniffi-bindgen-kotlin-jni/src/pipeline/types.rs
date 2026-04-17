@@ -100,7 +100,9 @@ fn type_rs(ty: &Type, context: &Context) -> Result<String> {
         Type::Box { inner_type } => {
             format!("::std::boxed::Box<{}>", type_rs(inner_type, context)?,)
         }
-        _ => todo!(),
+        Type::Bytes => "::std::vec::Vec<u8>".into(),
+        Type::Duration => "::std::time::Duration".into(),
+        Type::Timestamp => "::std::time::Instant".into(),
     })
 }
 
@@ -156,7 +158,9 @@ pub fn type_kt(ty: &Type, context: &Context) -> Result<String> {
             )
         }
         Type::Box { inner_type } => type_kt(inner_type, context)?,
-        _ => todo!(),
+        Type::Bytes => "ByteArray".into(),
+        Type::Duration => "java.time.Duration".into(),
+        Type::Timestamp => "java.time.Instant".into(),
     })
 }
 
@@ -188,7 +192,9 @@ pub fn read_fn_rs(ty: &Type, canonical_name: &str) -> Result<String> {
                 canonical_name.to_snake_case(),
             )
         }
-        _ => todo!(),
+        Type::Bytes => "uniffi_read_bytes".into(),
+        Type::Duration => "uniffi_read_duration".into(),
+        Type::Timestamp => "uniffi_read_timestamp".into(),
     })
 }
 
@@ -220,7 +226,9 @@ pub fn write_fn_rs(ty: &Type, canonical_name: &str) -> Result<String> {
                 canonical_name.to_snake_case(),
             )
         }
-        _ => todo!(),
+        Type::Bytes => "uniffi_write_bytes".into(),
+        Type::Duration => "uniffi_write_duration".into(),
+        Type::Timestamp => "uniffi_write_timestamp".into(),
     })
 }
 
@@ -252,7 +260,9 @@ pub fn read_fn_kt(ty: &Type, canonical_name: &str) -> String {
                 canonical_name.to_upper_camel_case()
             )
         }
-        _ => todo!(),
+        Type::Bytes => "readBytes".into(),
+        Type::Duration => "readDuration".into(),
+        Type::Timestamp => "readTimestamp".into(),
     }
 }
 
@@ -284,6 +294,8 @@ pub fn write_fn_kt(ty: &Type, canonical_name: &str) -> String {
                 canonical_name.to_upper_camel_case()
             )
         }
-        _ => todo!(),
+        Type::Bytes => "writeBytes".into(),
+        Type::Duration => "writeDuration".into(),
+        Type::Timestamp => "writeTimestamp".into(),
     }
 }

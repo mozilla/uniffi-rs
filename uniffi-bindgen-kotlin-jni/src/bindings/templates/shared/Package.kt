@@ -48,6 +48,12 @@ class InternalException(message: String) : Exception(message)
 {% include "SequenceFfi.kt" %}
 {%- when TypeDefinition::Map(map) %}
 {% include "MapFfi.kt" %}
+{%- when TypeDefinition::Timestamp(type_node) %}
+{% include "TimestampFfi.kt" %}
+{%- when TypeDefinition::Duration(type_node) %}
+{% include "DurationFfi.kt" %}
+{%- when TypeDefinition::Bytes(type_node) %}
+{% include "BytesFfi.kt" %}
 {%- when TypeDefinition::Interface(_) %}
 {%- endmatch %}
 {%- endfor %}

@@ -94,7 +94,12 @@ pub fn map_type_definitions(
             general::TypeDefinition::Map(inner) => {
                 mapped.push(TypeDefinition::Map(inner.map_node(context)?));
             }
-            // All other variants are still TODO
+            general::TypeDefinition::Simple(inner) => match &inner.ty {
+                Type::Duration => mapped.push(TypeDefinition::Duration(inner.map_node(context)?)),
+                Type::Timestamp => mapped.push(TypeDefinition::Timestamp(inner.map_node(context)?)),
+                Type::Bytes => mapped.push(TypeDefinition::Bytes(inner.map_node(context)?)),
+                _ => (),
+            },
             _ => (),
         }
     }

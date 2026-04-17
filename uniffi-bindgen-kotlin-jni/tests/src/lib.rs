@@ -86,8 +86,18 @@ mod test {
     }
 
     #[test]
+    fn test_bytes() {
+        run_tests(test_dir(), "tests/bytes.kts");
+    }
+
+    #[test]
     fn test_recursive_types() {
         run_tests(test_dir(), "tests/recursive_types.kts");
+    }
+
+    #[test]
+    fn test_time() {
+        run_tests(test_dir(), "tests/time.kts");
     }
 
     fn test_dir() -> &'static Utf8Path {
