@@ -47,6 +47,10 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
     {%- filter indent(4) %}{% include "map.rs" %}{% endfilter %}
     {%- when TypeDefinition::Set(set) %}
     {%- filter indent(4) %}{% include "set.rs" %}{% endfilter %}
+    {%- when TypeDefinition::Timestamp(type_node) %}
+    {%- filter indent(4) %}{% include "timestamp.rs" %}{% endfilter %}
+    {%- when TypeDefinition::Duration(type_node) %}
+    {%- filter indent(4) %}{% include "duration.rs" %}{% endfilter %}
     {%- when TypeDefinition::Interface(_) %}
     {%- endmatch %}
     {%- endfor %}

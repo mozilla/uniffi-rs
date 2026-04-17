@@ -68,8 +68,14 @@ pub fn map_type_definitions(
             general::TypeDefinition::Box(inner) => {
                 mapped.push(TypeDefinition::Box(inner.map_node(context)?));
             }
-            // All other variants are still TODO
-            _ => (),
+            general::TypeDefinition::Simple(inner) => match &inner.ty {
+                Type::Duration => mapped.push(TypeDefinition::Duration(inner.map_node(context)?)),
+                Type::Timestamp => mapped.push(TypeDefinition::Timestamp(inner.map_node(context)?)),
+                _ => (),
+            },
+            // No need to do anything for external definitions since we generate everything in one
+            // Rust module.
+            general::TypeDefinition::External(_) => (),
         }
     }
     Ok(mapped)
