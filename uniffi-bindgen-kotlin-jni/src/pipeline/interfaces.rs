@@ -21,6 +21,9 @@ pub fn map_class(int: general::Interface, context: &Context) -> Result<Class> {
     if self_type.is_used_as_error {
         base_classes.push("kotlin.Exception".into());
     }
+    if int.uniffi_trait_methods.ord_cmp.is_some() {
+        base_classes.push(format!("Comparable<{}>", self_type.type_kt));
+    }
 
     Ok(Class {
         self_type,
@@ -31,6 +34,7 @@ pub fn map_class(int: general::Interface, context: &Context) -> Result<Class> {
         name: int.name,
         module_path: context.normalize_rust_module_path(&int.module_path)?,
         orig_name: int.orig_name,
+        uniffi_trait_methods: int.uniffi_trait_methods.map_node(context)?,
         docstring: int.docstring.map_node(context)?,
         crate_name: context.current_crate_name()?.to_string(),
         imp: int.imp,

@@ -8,12 +8,19 @@ pub fn map_enum(input: general::Enum, context: &Context) -> Result<Enum> {
     let mut context = context.clone();
     context.update_from_enum(&input);
 
+    let mut base_classes = vec![];
     let self_type = input.self_type.map_node(&context)?;
     let discr_type = input.discr_type.map_node(&context)?;
 
     let kotlin_kind = if matches!(input.shape, EnumShape::Error { flat: true }) {
         KotlinEnumKind::FlatError
     } else if self_type.is_used_as_error || !input.is_flat {
+        if self_type.is_used_as_error {
+            base_classes.push("Exception()".to_string());
+        }
+        if input.uniffi_trait_methods.ord_cmp.is_some() {
+            base_classes.push(format!("Comparable<{}>", self_type.type_kt));
+        }
         KotlinEnumKind::SealedClass
     } else {
         KotlinEnumKind::EnumClass {
@@ -45,6 +52,8 @@ pub fn map_enum(input: general::Enum, context: &Context) -> Result<Enum> {
         variants,
         name: input.name,
         orig_name: input.orig_name,
+        base_classes,
+        uniffi_trait_methods: input.uniffi_trait_methods.map_node(&context)?,
         shape: input.shape,
         docstring: input.docstring,
         recursive: input.recursive,

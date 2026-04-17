@@ -31,7 +31,7 @@ impl Root {
         })
     }
 
-    pub fn jni_methods(&self) -> impl Iterator<Item = (&str, &Callable)> {
+    pub fn jni_methods(&self) -> impl Iterator<Item = (&str, JniMethodKind, &Callable)> {
         self.packages.iter().flat_map(Package::jni_methods)
     }
 
