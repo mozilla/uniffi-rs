@@ -22,6 +22,8 @@ import {{ import }}
 {%- when TypeDefinition::Sequence(_) %}
 {%- when TypeDefinition::Map(_) %}
 {%- when TypeDefinition::Set(_) %}
+{%- when TypeDefinition::Duration(_) %}
+{%- when TypeDefinition::Timestamp(_) %}
 {%- endmatch %}
 {%- endfor %}
 

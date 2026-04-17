@@ -22,6 +22,8 @@ pub fn standard_ffi_type_mapping(ty: &Type) -> Option<Vec<FfiType>> {
         Type::Float64 => Some(vec![FfiType::Float64]),
         Type::Boolean => Some(vec![FfiType::Boolean]),
         Type::String => Some(vec![FfiType::String]),
+        // 64-bit seconds, 32-bit nanoseconds
+        Type::Duration | Type::Timestamp => Some(vec![FfiType::Int64, FfiType::Int32]),
         Type::Bytes => Some(vec![FfiType::ByteArray]),
         Type::Sequence { inner_type } => match &**inner_type {
             Type::Int8 | Type::UInt8 => Some(vec![FfiType::ByteArray]),
