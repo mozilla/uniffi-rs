@@ -7,7 +7,11 @@ data class {{ type_name }} (
     {%- if let Some(default) = field.default %} = {{ default.default_kt }}{% endif -%}
     ,
     {%- endfor %}
-) {
+){% if rec.uniffi_trait_methods.ord_cmp.is_some() %}: Comparable<{{ type_name }}> {% endif %} {
+
+    {%- let uniffi_trait_methods = rec.uniffi_trait_methods %}
+    {% filter indent(4) %}{% include "UniffiTraitMethods.kt" %}{% endfilter %}
+
     companion object
 }
 {%- else -%}
