@@ -56,6 +56,9 @@ impl Root {
                     TypeDefinition::Custom(c) => c.self_type.id,
                     TypeDefinition::CallbackInterface(c) => c.self_type.id,
                     TypeDefinition::Box(b) => b.self_type.id,
+                    TypeDefinition::Timestamp(type_node) | TypeDefinition::Duration(type_node) => {
+                        type_node.id
+                    }
                     TypeDefinition::Interface(_) => return false,
                 })
             })

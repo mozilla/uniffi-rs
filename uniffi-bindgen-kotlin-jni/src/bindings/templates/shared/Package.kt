@@ -40,6 +40,10 @@ class InternalException(message: kotlin.String) : Exception(message)
 {% include "MapFfi.kt" %}
 {%- when TypeDefinition::Set(set) %}
 {% include "SetFfi.kt" %}
+{%- when TypeDefinition::Timestamp(type_node) %}
+{% include "TimestampFfi.kt" %}
+{%- when TypeDefinition::Duration(type_node) %}
+{% include "DurationFfi.kt" %}
 {%- when TypeDefinition::Interface(_) %}
 {%- endmatch %}
 {%- endfor %}

@@ -45,6 +45,8 @@ pub enum TypeDefinition {
     Sequence(SequenceType),
     Map(MapType),
     Set(SetType),
+    Timestamp(TypeNode),
+    Duration(TypeNode),
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
