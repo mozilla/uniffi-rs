@@ -35,19 +35,46 @@ pub unsafe extern "system" fn Java_uniffi_Scaffolding_{{ scaffolding_function.jn
             )))?;
             {%- endif %}
  
-            {%- if callable.has_receiver() %}
+            {%- match scaffolding_function.kind %}
+            {%- when ScaffoldingFunctionKind::Method %}
             let uniffi_return_value = uniffi_self.{{ callable.name_rs() }}(
                 {%- for arg in callable.arguments %}
                 {{ arg.name_rs() }},
                 {%- endfor %}
             );
-            {%- else %}
+            {%- when ScaffoldingFunctionKind::Function %}
             let uniffi_return_value = {{ callable.fully_qualified_name_rs }}(
                 {%- for arg in callable.arguments %}
                 {{ arg.name_rs() }},
                 {%- endfor %}
             );
-            {%- endif %}
+            {%- when ScaffoldingFunctionKind::TraitMethodDisplayFmt %}
+            {%- let self_type = callable.receiver_type().unwrap().type_rs %}
+            uniffi::deps::static_assertions::assert_impl_all!({{ self_type }}: ::std::fmt::Display);
+            let uniffi_return_value = format!("{uniffi_self}");
+            {%- when ScaffoldingFunctionKind::TraitMethodDebugFmt %}
+            {%- let self_type = callable.receiver_type().unwrap().type_rs %}
+            uniffi::deps::static_assertions::assert_impl_all!({{ self_type }}: ::std::fmt::Debug);
+            let uniffi_return_value = format!("{uniffi_self:?}");
+            {%- when ScaffoldingFunctionKind::TraitMethodEqEq %}
+            {%- let self_type = callable.receiver_type().unwrap().type_rs %}
+            uniffi::deps::static_assertions::assert_impl_all!({{ self_type }}: ::std::cmp::PartialEq);
+            let uniffi_return_value = ::std::cmp::PartialEq::eq(&uniffi_self, &other);
+            {%- when ScaffoldingFunctionKind::TraitMethodEqNe %}
+            {%- let self_type = callable.receiver_type().unwrap().type_rs %}
+            uniffi::deps::static_assertions::assert_impl_all!({{ self_type }}: ::std::cmp::PartialEq);
+            let uniffi_return_value = ::std::cmp::PartialEq::ne(&uniffi_self, &other);
+            {%- when ScaffoldingFunctionKind::TraitMethodHashHash %}
+            {%- let self_type = callable.receiver_type().unwrap().type_rs %}
+            uniffi::deps::static_assertions::assert_impl_all!({{ self_type }}: ::std::hash::Hash);
+            let mut uniffi_hasher = ::std::collections::hash_map::DefaultHasher::new();
+            ::std::hash::Hash::hash(&uniffi_self, &mut uniffi_hasher);
+            let uniffi_return_value =  ::std::hash::Hasher::finish(&uniffi_hasher);
+            {%- when ScaffoldingFunctionKind::TraitMethodOrdCmp %}
+            {%- let self_type = callable.receiver_type().unwrap().type_rs %}
+            uniffi::deps::static_assertions::assert_impl_all!({{ self_type }}: ::std::cmp::Ord);
+            let uniffi_return_value = ::std::cmp::Ord::cmp(&uniffi_self, &other) as i8;
+            {%- endmatch %}
 
             {%- if let Some(throws_ty) = callable.throws_type %}
             let uniffi_return_value = match uniffi_return_value {

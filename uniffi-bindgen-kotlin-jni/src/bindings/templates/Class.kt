@@ -223,6 +223,9 @@ open class {{ cls.name_kt() }} : {{ cls.base_classes|join(", ") }} {
     }
     {% endfor %}
 
+    {%- let uniffi_trait_methods = cls.uniffi_trait_methods %}
+    {% filter indent(4) %}{% include "UniffiTraitMethods.kt" %}{% endfilter %}
+
     companion object {
         {% for cons in cls.secondary_constructors() -%}
         public {% if cons.callable.is_async %}suspend {% endif %}fun {{ cons.callable.name_kt() }}({{ cons.callable.arg_list() }}): {{ cons.callable.return_type_kt() }} {

@@ -9,9 +9,17 @@ pub fn map_enum(en: general::Enum, context: &Context) -> Result<Enum> {
     context.update_from_enum(&en);
     let discr_type = en.discr_type.map_node(&context)?;
 
+    let mut base_classes = vec![];
+    let self_type = en.self_type.map_node(&context)?;
     let kotlin_kind = if matches!(en.shape, EnumShape::Error { flat: true }) {
         KotlinEnumKind::FlatError
-    } else if en.self_type.is_used_as_error || !en.is_flat {
+    } else if self_type.is_used_as_error || !en.is_flat {
+        if self_type.is_used_as_error {
+            base_classes.push("Exception()".to_string());
+        }
+        if en.uniffi_trait_methods.ord_cmp.is_some() {
+            base_classes.push(format!("Comparable<{}>", self_type.type_kt));
+        }
         KotlinEnumKind::SealedClass
     } else {
         KotlinEnumKind::EnumClass {
@@ -22,12 +30,14 @@ pub fn map_enum(en: general::Enum, context: &Context) -> Result<Enum> {
     Ok(Enum {
         is_flat: en.is_flat,
         use_entries: context.config()?.use_enum_entries(),
-        self_type: en.self_type.map_node(&context)?,
+        self_type,
         discr_type,
         discr_specified: en.discr_specified,
         variants: en.variants.map_node(&context)?,
         name: en.name,
         orig_name: en.orig_name,
+        base_classes,
+        uniffi_trait_methods: en.uniffi_trait_methods.map_node(&context)?,
         shape: en.shape,
         kotlin_kind,
         docstring: en.docstring,

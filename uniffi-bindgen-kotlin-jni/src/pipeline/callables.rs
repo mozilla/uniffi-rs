@@ -23,12 +23,12 @@ fn fully_qualified_name_rs(callable: &general::Callable, context: &Context) -> R
         general::CallableKind::Function => {
             let module_path =
                 context.module_path_for_func(context.namespace_name()?, &callable.orig_name)?;
-            return Ok(format!(
+            Ok(format!(
                 "{module_path}::{}",
                 names::escape_rust(&callable.orig_name)
-            ));
+            ))
         }
-        general::CallableKind::Method { self_type }
+        general::CallableKind::Method { self_type, .. }
         | general::CallableKind::Constructor { self_type, .. }
         | general::CallableKind::VTableMethod { self_type, .. } => {
             fully_qualified_method_name_rs(&self_type.ty, callable, context)

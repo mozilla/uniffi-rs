@@ -154,7 +154,7 @@ pub fn type_kt(ty: &Type, context: &Context) -> Result<String> {
             format!(
                 "{}.{}",
                 context.package_name(namespace)?,
-                names::class_name_kt(name, context.types_used_as_error.contains(&ty)),
+                names::class_name_kt(name, context.types_used_as_error.contains(ty)),
             )
         }
         Type::Box { inner_type } => type_kt(inner_type, context)?,

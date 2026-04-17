@@ -61,6 +61,7 @@ pub struct Record {
     pub immutable: bool,
     pub name: String,
     pub orig_name: String,
+    pub uniffi_trait_methods: UniffiTraitMethods,
     #[map_node(records::map_fields(self.fields, context)?)]
     pub fields: Vec<Field>,
     pub docstring: Option<String>,
@@ -81,6 +82,8 @@ pub struct Enum {
     pub variants: Vec<Variant>,
     pub name: String,
     pub orig_name: String,
+    pub base_classes: Vec<String>,
+    pub uniffi_trait_methods: UniffiTraitMethods,
     pub shape: EnumShape,
     pub kotlin_kind: KotlinEnumKind,
     pub docstring: Option<String>,
@@ -96,6 +99,7 @@ pub struct Enum {
 pub struct Class {
     pub name: String,
     pub orig_name: String,
+    pub uniffi_trait_methods: UniffiTraitMethods,
     pub module_path: String,
     pub self_type: TypeNode,
     pub package_name: String,
@@ -220,6 +224,22 @@ pub struct Function {
 pub struct ScaffoldingFunction {
     pub jni_method_name: String,
     pub callable: Callable,
+    pub kind: ScaffoldingFunctionKind,
+}
+
+#[derive(Debug, Clone, Node)]
+pub enum ScaffoldingFunctionKind {
+    // Normal function
+    Function,
+    // Normal method
+    Method,
+    // Trait method (most of these require special-cased logic)
+    TraitMethodDebugFmt,
+    TraitMethodDisplayFmt,
+    TraitMethodEqEq,
+    TraitMethodEqNe,
+    TraitMethodHashHash,
+    TraitMethodOrdCmp,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -350,6 +370,20 @@ pub enum Literal {
     Some { inner: Box<DefaultValue> },
 }
 
+/// Set of methods for builtin traits
+///
+/// This gets mapped from a list of `initial::UniffiTrait` items.
+#[derive(Default, Debug, Clone, Node, MapNode)]
+#[map_node(from(general::UniffiTraitMethods))]
+pub struct UniffiTraitMethods {
+    pub debug_fmt: Option<Method>,
+    pub display_fmt: Option<Method>,
+    pub eq_eq: Option<Method>,
+    pub eq_ne: Option<Method>,
+    pub hash_hash: Option<Method>,
+    pub ord_cmp: Option<Method>,
+}
+
 impl Root {
     pub fn cdylib_name(&self) -> Result<String> {
         let config_names: IndexSet<_> = self
@@ -426,6 +460,17 @@ impl Package {
             .iter()
             .filter_map(|type_def| match type_def {
                 TypeDefinition::Class(cls) => Some(cls),
+                _ => None,
+            })
+    }
+
+    pub fn uniffi_trait_methods(&self) -> impl Iterator<Item = &UniffiTraitMethods> {
+        self.type_definitions
+            .iter()
+            .filter_map(|type_def| match type_def {
+                TypeDefinition::Class(c) => Some(&c.uniffi_trait_methods),
+                TypeDefinition::Record(r) => Some(&r.uniffi_trait_methods),
+                TypeDefinition::Enum(e) => Some(&e.uniffi_trait_methods),
                 _ => None,
             })
     }
@@ -683,5 +728,50 @@ impl TypeNode {
 
     pub fn throw_error_fn_kt(&self) -> String {
         format!("uniffiThrowError{}", self.canonical_name)
+    }
+}
+
+impl UniffiTraitMethods {
+    // Rust has 2 display traits, while Kotlin has one.
+    // Prefer `Display` but use `Debug` otherwise
+    pub fn to_string(&self) -> Option<&Method> {
+        self.display_fmt.as_ref().or(self.debug_fmt.as_ref())
+    }
+
+    pub fn scaffolding_functions(&self) -> impl Iterator<Item = ScaffoldingFunction> + '_ {
+        // We only need to generate one of `Display` or `Debug`
+        let to_string = match (&self.display_fmt, &self.debug_fmt) {
+            (Some(meth), _) => Some((meth, ScaffoldingFunctionKind::TraitMethodDisplayFmt)),
+            (None, Some(meth)) => Some((meth, ScaffoldingFunctionKind::TraitMethodDebugFmt)),
+            _ => None,
+        };
+
+        to_string
+            .into_iter()
+            .chain(
+                self.eq_eq
+                    .as_ref()
+                    .map(|meth| (meth, ScaffoldingFunctionKind::TraitMethodEqEq)),
+            )
+            .chain(
+                self.eq_ne
+                    .as_ref()
+                    .map(|meth| (meth, ScaffoldingFunctionKind::TraitMethodEqNe)),
+            )
+            .chain(
+                self.hash_hash
+                    .as_ref()
+                    .map(|meth| (meth, ScaffoldingFunctionKind::TraitMethodHashHash)),
+            )
+            .chain(
+                self.ord_cmp
+                    .as_ref()
+                    .map(|meth| (meth, ScaffoldingFunctionKind::TraitMethodOrdCmp)),
+            )
+            .map(|(meth, kind)| ScaffoldingFunction {
+                jni_method_name: meth.jni_method_name.clone(),
+                callable: meth.callable.clone(),
+                kind,
+            })
     }
 }

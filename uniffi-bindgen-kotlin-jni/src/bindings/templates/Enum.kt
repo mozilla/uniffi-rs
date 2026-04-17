@@ -26,7 +26,8 @@ enum class {{ type_name }}(val value: {{ en.discr_type.type_kt }}) {
 }
 
 {%- when KotlinEnumKind::SealedClass %}
-sealed class {{ type_name }}{% if en.self_type.is_used_as_error %} : kotlin.Exception(){% endif %} {
+sealed class {{ type_name }}
+{%- if !en.base_classes.is_empty() %} : {{ en.base_classes|join(", ") }}{% endif %} {
     {% for v in en.variants -%}
     {% if en.self_type.is_used_as_error -%}
     {# error types always have use `class` for their variants #}
@@ -47,6 +48,9 @@ sealed class {{ type_name }}{% if en.self_type.is_used_as_error %} : kotlin.Exce
     ) : {{ type_name }}()
     {%- endif %}
     {% endfor %}
+
+    {%- let uniffi_trait_methods = en.uniffi_trait_methods %}
+    {% filter indent(4) %}{% include "UniffiTraitMethods.kt" %}{% endfilter %}
 
     companion object
 }

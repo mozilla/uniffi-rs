@@ -30,21 +30,41 @@ pub fn map_namespace(input: general::Namespace, context: &Context) -> Result<Pac
     let scaffolding_functions = package
         .functions
         .iter()
-        .map(|f| (&f.jni_method_name, &f.callable))
+        .map(|f| {
+            (
+                &f.jni_method_name,
+                &f.callable,
+                ScaffoldingFunctionKind::Function,
+            )
+        })
         .chain(package.classes().flat_map(|c| {
             c.methods
                 .iter()
-                .map(|m| (&m.jni_method_name, &m.callable))
-                .chain(
-                    c.constructors
-                        .iter()
-                        .map(|c| (&c.jni_method_name, &c.callable)),
-                )
+                .map(|m| {
+                    (
+                        &m.jni_method_name,
+                        &m.callable,
+                        ScaffoldingFunctionKind::Method,
+                    )
+                })
+                .chain(c.constructors.iter().map(|c| {
+                    (
+                        &c.jni_method_name,
+                        &c.callable,
+                        ScaffoldingFunctionKind::Function,
+                    )
+                }))
         }))
-        .map(|(name, callable)| ScaffoldingFunction {
+        .map(|(name, callable, kind)| ScaffoldingFunction {
             jni_method_name: name.clone(),
             callable: callable.clone(),
+            kind,
         })
+        .chain(
+            package
+                .uniffi_trait_methods()
+                .flat_map(UniffiTraitMethods::scaffolding_functions),
+        )
         .collect();
 
     // Put everything together
