@@ -59,6 +59,7 @@ pub struct Record {
     pub orig_name: String,
     pub fields_kind: FieldsKind,
     pub fields: Vec<Field>,
+    pub uniffi_trait_methods: UniffiTraitMethods,
     pub docstring: Option<String>,
     pub recursive: bool,
 }
@@ -75,6 +76,8 @@ pub struct Enum {
     pub variants: Vec<Variant>,
     pub name: String,
     pub orig_name: String,
+    pub base_classes: Vec<String>,
+    pub uniffi_trait_methods: UniffiTraitMethods,
     pub shape: EnumShape,
     pub kotlin_kind: KotlinEnumKind,
     pub docstring: Option<String>,
@@ -91,6 +94,7 @@ pub struct Enum {
 pub struct Class {
     pub name: String,
     pub orig_name: String,
+    pub uniffi_trait_methods: UniffiTraitMethods,
     pub module_path: String,
     pub self_type: TypeNode,
     pub package_name: String,
@@ -246,6 +250,23 @@ pub struct CallableResult {
     pub return_type: Option<TypeNode>,
     pub throws_type: Option<TypeNode>,
     pub return_ffi: ReturnFfi,
+}
+
+/// JNI method kind
+///
+/// This is returned by the `Package::jni_methods` function
+pub enum JniMethodKind {
+    // Normal function
+    Function,
+    // Normal method
+    Method,
+    // Trait method (most of these require special-cased logic)
+    TraitMethodDebugFmt,
+    TraitMethodDisplayFmt,
+    TraitMethodEqEq,
+    TraitMethodEqNe,
+    TraitMethodHashHash,
+    TraitMethodOrdCmp,
 }
 
 #[derive(Debug, Clone, Node)]
@@ -433,4 +454,15 @@ pub enum Literal {
     EmptySet,
     None,
     Some { inner: Box<DefaultValue> },
+}
+
+#[derive(Default, Debug, Clone, Node, MapNode)]
+#[map_node(from(general::UniffiTraitMethods))]
+pub struct UniffiTraitMethods {
+    pub debug_fmt: Option<Method>,
+    pub display_fmt: Option<Method>,
+    pub eq_eq: Option<Method>,
+    pub eq_ne: Option<Method>,
+    pub hash_hash: Option<Method>,
+    pub ord_cmp: Option<Method>,
 }
