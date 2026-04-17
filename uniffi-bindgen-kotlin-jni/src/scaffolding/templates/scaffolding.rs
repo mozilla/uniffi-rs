@@ -18,7 +18,7 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
     {%- filter indent(4) %}{% include "jni_support.rs" %}{% endfilter %}
     {%- filter indent(4) %}{% include "lift_lower.rs" %}{% endfilter %}
 
-    {%- for (jni_method_name, callable) in root.jni_methods() %}
+    {%- for (jni_method_name, jni_method_kind, callable) in root.jni_methods() %}
     {%- filter indent(4) %}{% include "jni_method.rs" %}{% endfilter %}
     {%- endfor %}
 
