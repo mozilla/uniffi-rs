@@ -25,19 +25,46 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
             )?;
             {%- endfor %}
 
-            {%- if !callable.has_receiver() %}
+            {%- match jni_method_kind %}
+            {%- when JniMethodKind::Function %}
             let uniffi_return = {{ callable.fully_qualified_name_rs }}(
                 {%- for arg in callable.arguments %}
                 {{ arg.pass_to_rust_fn(format!("uniffi_arg_lifted_{}", arg.index)) }},
                 {%- endfor %}
             );
-            {%- else %}
+            {%- when JniMethodKind::Method %}
             let uniffi_return = uniffi_arg_lifted_0.{{ callable.name_rs() }}(
                 {%- for arg in callable.arguments %}
                 {{ arg.pass_to_rust_fn(format!("uniffi_arg_lifted_{}", arg.index)) }},
                 {%- endfor %}
             );
-            {%- endif %}
+            {%- when JniMethodKind::TraitMethodDisplayFmt %}
+            {%- let self_type = callable.receiver.as_ref().unwrap().ty.type_rs %}
+            uniffi::deps::static_assertions::assert_impl_all!({{ self_type }}: ::std::fmt::Display);
+            let uniffi_return = format!("{uniffi_arg_lifted_0}");
+            {%- when JniMethodKind::TraitMethodDebugFmt %}
+            {%- let self_type = callable.receiver.as_ref().unwrap().ty.type_rs %}
+            uniffi::deps::static_assertions::assert_impl_all!({{ self_type }}: ::std::fmt::Debug);
+            let uniffi_return = format!("{uniffi_arg_lifted_0:?}");
+            {%- when JniMethodKind::TraitMethodEqEq %}
+            {%- let self_type = callable.receiver.as_ref().unwrap().ty.type_rs %}
+            uniffi::deps::static_assertions::assert_impl_all!({{ self_type }}: ::std::cmp::PartialEq);
+            let uniffi_return = ::std::cmp::PartialEq::eq(&uniffi_arg_lifted_0, &uniffi_arg_lifted_1);
+            {%- when JniMethodKind::TraitMethodEqNe %}
+            {%- let self_type = callable.receiver.as_ref().unwrap().ty.type_rs %}
+            uniffi::deps::static_assertions::assert_impl_all!({{ self_type }}: ::std::cmp::PartialEq);
+            let uniffi_return = ::std::cmp::PartialEq::ne(&uniffi_arg_lifted_0, &uniffi_arg_lifted_1);
+            {%- when JniMethodKind::TraitMethodHashHash %}
+            {%- let self_type = callable.receiver.as_ref().unwrap().ty.type_rs %}
+            uniffi::deps::static_assertions::assert_impl_all!({{ self_type }}: ::std::hash::Hash);
+            let mut uniffi_hasher = ::std::collections::hash_map::DefaultHasher::new();
+            ::std::hash::Hash::hash(&uniffi_arg_lifted_0, &mut uniffi_hasher);
+            let uniffi_return =  ::std::hash::Hasher::finish(&uniffi_hasher);
+            {%- when JniMethodKind::TraitMethodOrdCmp %}
+            {%- let self_type = callable.receiver.as_ref().unwrap().ty.type_rs %}
+            uniffi::deps::static_assertions::assert_impl_all!({{ self_type }}: ::std::cmp::Ord);
+            let uniffi_return = ::std::cmp::Ord::cmp(&uniffi_arg_lifted_0, &uniffi_arg_lifted_1) as i8;
+            {%- endmatch %}
 
             {%- if let Some(throws_type) = callable.throws_type() %}
             let uniffi_return = match uniffi_return {

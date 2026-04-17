@@ -12,6 +12,7 @@ pub fn map_record(input: general::Record, context: &Context) -> Result<Record> {
         orig_name: input.orig_name,
         fields_kind: input.fields_kind,
         fields: map_fields(input.fields, context)?,
+        uniffi_trait_methods: input.uniffi_trait_methods.map_node(context)?,
         docstring: input.docstring,
         recursive: input.recursive,
     })

@@ -89,23 +89,40 @@ impl Package {
     /// JNI methods to define/export from Rust
     ///
     /// Generates a list of (jni_method_name, callable) pairs.
-    pub fn jni_methods(&self) -> impl Iterator<Item = (&str, &Callable)> {
-        let functions = self
-            .functions
-            .iter()
-            .map(|f| (f.jni_method_name.as_str(), &f.callable));
+    pub fn jni_methods(&self) -> impl Iterator<Item = (&str, JniMethodKind, &Callable)> {
+        let functions = self.functions.iter().map(|f| {
+            (
+                f.jni_method_name.as_str(),
+                JniMethodKind::Function,
+                &f.callable,
+            )
+        });
         let methods = self.classes().flat_map(|c| {
-            c.methods
-                .iter()
-                .map(|m| (m.jni_method_name.as_str(), &m.callable))
+            c.methods.iter().map(|m| {
+                (
+                    m.jni_method_name.as_str(),
+                    JniMethodKind::Method,
+                    &m.callable,
+                )
+            })
         });
         let constructors = self.classes().flat_map(|c| {
-            c.constructors
-                .iter()
-                .map(|c| (c.jni_method_name.as_str(), &c.callable))
+            c.constructors.iter().map(|c| {
+                (
+                    c.jni_method_name.as_str(),
+                    JniMethodKind::Function,
+                    &c.callable,
+                )
+            })
         });
+        let trait_methods = self
+            .uniffi_trait_methods()
+            .flat_map(UniffiTraitMethods::jni_methods);
 
-        functions.chain(methods).chain(constructors)
+        functions
+            .chain(methods)
+            .chain(constructors)
+            .chain(trait_methods)
     }
 
     pub fn classes(&self) -> impl Iterator<Item = &Class> {
@@ -122,6 +139,17 @@ impl Package {
             .iter()
             .filter_map(|type_def| match type_def {
                 TypeDefinition::Box(b) => Some(b),
+                _ => None,
+            })
+    }
+
+    pub fn uniffi_trait_methods(&self) -> impl Iterator<Item = &UniffiTraitMethods> {
+        self.type_definitions
+            .iter()
+            .filter_map(|type_def| match type_def {
+                TypeDefinition::Class(c) => Some(&c.uniffi_trait_methods),
+                TypeDefinition::Record(r) => Some(&r.uniffi_trait_methods),
+                TypeDefinition::Enum(e) => Some(&e.uniffi_trait_methods),
                 _ => None,
             })
     }
