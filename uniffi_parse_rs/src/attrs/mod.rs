@@ -9,6 +9,7 @@ mod enums;
 mod objects;
 mod records;
 mod traits;
+mod utraits;
 
 use proc_macro2::Span;
 use syn::{spanned::Spanned, Meta, Path};
@@ -20,6 +21,7 @@ pub use enums::{EnumAttributes, VariantAttributes};
 pub use objects::{ImplAttributes, ObjectAttributes};
 pub use records::{FieldAttributes, RecordAttributes};
 pub use traits::{TraitAttributes, TraitExportType};
+pub use utraits::UniffiTraitAttrs;
 
 fn meta_matches_uniffi_export(meta: &Meta, export_name: &str) -> bool {
     path_matches_uniffi_ident(meta.path(), export_name)

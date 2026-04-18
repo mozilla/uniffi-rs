@@ -6,7 +6,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 use camino::{Utf8Path, Utf8PathBuf};
 use syn::{ext::IdentExt, Ident};
-use uniffi_meta::MetadataGroup;
+use uniffi_meta::{Metadata, MetadataGroup};
 
 use crate::{
     attrs::{
@@ -242,22 +242,56 @@ impl Module {
                     );
                 }
                 Item::Record(rec) => {
-                    metadata.items.insert(
-                        rec.record_metadata(ir, cache, module_path.append_child(item))?
-                            .into(),
+                    let meta = rec.record_metadata(ir, cache, module_path.append_child(item))?;
+                    metadata.items.extend(
+                        rec.attrs
+                            .utraits
+                            .uniffi_trait_method_metadata(
+                                &module_path,
+                                uniffi_meta::Type::Record {
+                                    module_path: meta.module_path.clone(),
+                                    name: meta.name.clone(),
+                                },
+                            )?
+                            .into_iter()
+                            .map(Metadata::from),
                     );
+                    metadata.items.insert(meta.into());
                 }
                 Item::Enum(en) => {
-                    metadata.items.insert(
-                        en.enum_metadata(ir, cache, module_path.append_child(item))?
-                            .into(),
+                    let meta = en.enum_metadata(ir, cache, module_path.append_child(item))?;
+                    metadata.items.extend(
+                        en.attrs
+                            .utraits
+                            .uniffi_trait_method_metadata(
+                                &module_path,
+                                uniffi_meta::Type::Enum {
+                                    module_path: meta.module_path.clone(),
+                                    name: meta.name.clone(),
+                                },
+                            )?
+                            .into_iter()
+                            .map(Metadata::from),
                     );
+                    metadata.items.insert(meta.into());
                 }
                 Item::Object(o) => {
-                    metadata.items.insert(
-                        o.obj_metadata(ir, cache, module_path.append_child(item))?
-                            .into(),
+                    let meta = o.obj_metadata(ir, cache, module_path.append_child(item))?;
+                    metadata.items.extend(
+                        o.attrs
+                            .utraits
+                            .uniffi_trait_method_metadata(
+                                &module_path,
+                                uniffi_meta::Type::Object {
+                                    module_path: meta.module_path.clone(),
+                                    name: meta.name.clone(),
+                                    imp: meta.imp,
+                                },
+                            )?
+                            .into_iter()
+                            .map(Metadata::from),
                     );
+                    metadata.items.insert(meta.into());
                 }
                 Item::Impl(imp) => {
                     metadata
