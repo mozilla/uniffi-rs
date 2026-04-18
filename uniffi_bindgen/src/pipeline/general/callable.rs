@@ -33,12 +33,19 @@ pub fn function_callable(func: &initial::Function, context: &Context) -> Result<
 
 pub fn method_callable(meth: &initial::Method, context: &Context) -> Result<Callable> {
     let self_type = context.self_type()?;
+    method_callable_with_kind(meth, CallableKind::Method { self_type }, context)
+}
+
+pub fn method_callable_with_kind(
+    meth: &initial::Method,
+    kind: CallableKind,
+    context: &Context,
+) -> Result<Callable> {
     let ffi_func = RustFfiFunctionName(uniffi_meta::method_symbol_name(
         &context.crate_name()?,
         &context.current_type_name()?,
         &meth.name,
     ));
-    let kind = CallableKind::Method { self_type };
     let arguments = map_method_args(&meth.inputs, &meth.name, context)?;
     let name = rename::method(meth.name.clone(), context)?;
 

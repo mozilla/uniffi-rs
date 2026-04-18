@@ -121,7 +121,10 @@ pub enum CallableKind {
     ///
     /// For trait interfaces this only applies to the Callables inside the `vtable.methods` field.
     /// Callables inside `Interface::methods` will still be `Callable::Method`.
-    VTableMethod { self_type: TypeNode },
+    VTableMethod {
+        self_type: TypeNode,
+        for_callback_interface: bool,
+    },
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -296,7 +299,7 @@ pub struct Interface {
     pub docstring: Option<String>,
     #[map_node(objects::constructors(self.constructors, context)?)]
     pub constructors: Vec<Constructor>,
-    #[map_node(objects::methods(self.methods, context)?)]
+    #[map_node(objects::interface_methods(self.methods, self.imp, context)?)]
     pub methods: Vec<Method>,
     pub trait_impls: Vec<ObjectTraitImpl>,
     pub imp: ObjectImpl,
@@ -315,7 +318,7 @@ pub struct CallbackInterface {
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
     pub docstring: Option<String>,
-    #[map_node(objects::methods(self.methods, context)?)]
+    #[map_node(objects::callback_interface_methods(self.methods, context)?)]
     pub methods: Vec<Method>,
 }
 

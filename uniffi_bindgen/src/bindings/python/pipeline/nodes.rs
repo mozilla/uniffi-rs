@@ -139,7 +139,10 @@ pub enum CallableKind {
     ///
     /// For trait interfaces this only applies to the Callables inside the `vtable.methods` field.
     /// Callables inside `Interface::methods` will still be `Callable::Method`.
-    VTableMethod { self_type: TypeNode },
+    VTableMethod {
+        self_type: TypeNode,
+        for_callback_interface: bool,
+    },
 }
 
 #[derive(Debug, Clone, Node, MapNode, Eq, PartialEq, Hash)]
@@ -520,7 +523,8 @@ impl Callable {
 
     pub fn self_type(&self) -> Option<TypeNode> {
         match &self.kind {
-            CallableKind::Method { self_type, .. } => Some(self_type.clone()),
+            CallableKind::Method { self_type, .. }
+            | CallableKind::VTableMethod { self_type, .. } => Some(self_type.clone()),
             _ => None,
         }
     }

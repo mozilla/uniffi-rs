@@ -100,15 +100,53 @@ pub fn constructors(
         .collect()
 }
 
+pub fn methods_with_kind(
+    methods: Vec<initial::Method>,
+    kind: CallableKind,
+    context: &Context,
+) -> Result<Vec<Method>> {
+    let mut mapped = Vec::with_capacity(methods.len());
+    for meth in methods {
+        if exclude::should_exclude_method(&meth.name, context)? {
+            continue;
+        }
+        mapped.push(Method {
+            callable: callable::method_callable_with_kind(&meth, kind.clone(), context)?,
+            docstring: meth.docstring,
+        })
+    }
+    Ok(mapped)
+}
+
 pub fn methods(methods: Vec<initial::Method>, context: &Context) -> Result<Vec<Method>> {
-    methods
-        .into_iter()
-        .filter_map(
-            |meth| match exclude::should_exclude_method(&meth.name, context) {
-                Err(e) => Some(Err(e)),
-                Ok(true) => None,
-                Ok(false) => Some(meth.map_node(context)),
-            },
-        )
-        .collect()
+    let self_type = context.self_type()?;
+    methods_with_kind(methods, CallableKind::Method { self_type }, context)
+}
+
+pub fn interface_methods(
+    methods: Vec<initial::Method>,
+    imp: ObjectImpl,
+    context: &Context,
+) -> Result<Vec<Method>> {
+    let self_type = context.self_type()?;
+    let kind = match imp {
+        ObjectImpl::Trait | ObjectImpl::CallbackTrait => CallableKind::VTableMethod {
+            self_type,
+            for_callback_interface: false,
+        },
+        ObjectImpl::Struct => CallableKind::Method { self_type },
+    };
+    methods_with_kind(methods, kind, context)
+}
+
+pub fn callback_interface_methods(
+    methods: Vec<initial::Method>,
+    context: &Context,
+) -> Result<Vec<Method>> {
+    let self_type = context.self_type()?;
+    let kind = CallableKind::VTableMethod {
+        self_type,
+        for_callback_interface: true,
+    };
+    methods_with_kind(methods, kind, context)
 }
