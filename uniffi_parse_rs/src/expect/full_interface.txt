@@ -675,4 +675,150 @@
             ),
         },
     ),
+    UniffiTrait(
+        Debug {
+            fmt: MethodMetadata {
+                module_path: "full_interface",
+                self_name: "ObjectRenamed",
+                name: "uniffi_trait_debug",
+                orig_name: None,
+                is_async: false,
+                inputs: [],
+                return_type: Some(
+                    String,
+                ),
+                throws: None,
+                takes_self_by_arc: false,
+                checksum: None,
+                docstring: None,
+            },
+        },
+    ),
+    UniffiTrait(
+        Display {
+            fmt: MethodMetadata {
+                module_path: "full_interface",
+                self_name: "ObjectRenamed",
+                name: "uniffi_trait_display",
+                orig_name: None,
+                is_async: false,
+                inputs: [],
+                return_type: Some(
+                    String,
+                ),
+                throws: None,
+                takes_self_by_arc: false,
+                checksum: None,
+                docstring: None,
+            },
+        },
+    ),
+    UniffiTrait(
+        Eq {
+            eq: MethodMetadata {
+                module_path: "full_interface",
+                self_name: "ObjectRenamed",
+                name: "uniffi_trait_eq",
+                orig_name: None,
+                is_async: false,
+                inputs: [
+                    FnParamMetadata {
+                        name: "other",
+                        ty: Object {
+                            module_path: "full_interface",
+                            name: "ObjectRenamed",
+                            imp: Struct,
+                        },
+                        by_ref: true,
+                        optional: false,
+                        default: None,
+                    },
+                ],
+                return_type: Some(
+                    Boolean,
+                ),
+                throws: None,
+                takes_self_by_arc: false,
+                checksum: None,
+                docstring: None,
+            },
+            ne: MethodMetadata {
+                module_path: "full_interface",
+                self_name: "ObjectRenamed",
+                name: "uniffi_trait_ne",
+                orig_name: None,
+                is_async: false,
+                inputs: [
+                    FnParamMetadata {
+                        name: "other",
+                        ty: Object {
+                            module_path: "full_interface",
+                            name: "ObjectRenamed",
+                            imp: Struct,
+                        },
+                        by_ref: true,
+                        optional: false,
+                        default: None,
+                    },
+                ],
+                return_type: Some(
+                    Boolean,
+                ),
+                throws: None,
+                takes_self_by_arc: false,
+                checksum: None,
+                docstring: None,
+            },
+        },
+    ),
+    UniffiTrait(
+        Hash {
+            hash: MethodMetadata {
+                module_path: "full_interface",
+                self_name: "ObjectRenamed",
+                name: "uniffi_trait_hash",
+                orig_name: None,
+                is_async: false,
+                inputs: [],
+                return_type: Some(
+                    UInt64,
+                ),
+                throws: None,
+                takes_self_by_arc: false,
+                checksum: None,
+                docstring: None,
+            },
+        },
+    ),
+    UniffiTrait(
+        Ord {
+            cmp: MethodMetadata {
+                module_path: "full_interface",
+                self_name: "ObjectRenamed",
+                name: "uniffi_trait_ord_cmp",
+                orig_name: None,
+                is_async: false,
+                inputs: [
+                    FnParamMetadata {
+                        name: "other",
+                        ty: Object {
+                            module_path: "full_interface",
+                            name: "ObjectRenamed",
+                            imp: Struct,
+                        },
+                        by_ref: true,
+                        optional: false,
+                        default: None,
+                    },
+                ],
+                return_type: Some(
+                    Int8,
+                ),
+                throws: None,
+                takes_self_by_arc: false,
+                checksum: None,
+                docstring: None,
+            },
+        },
+    ),
 }

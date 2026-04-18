@@ -5,7 +5,7 @@
 use syn::{Attribute, LitStr, Meta};
 
 use crate::{
-    attrs::{extract_docstring, find_uniffi_derive, meta_matches_uniffi_export},
+    attrs::{extract_docstring, find_uniffi_derive, meta_matches_uniffi_export, UniffiTraitAttrs},
     CompileEnv,
 };
 
@@ -14,6 +14,7 @@ pub struct ObjectAttributes {
     pub name: Option<String>,
     pub docstring: Option<String>,
     pub remote: bool,
+    pub utraits: UniffiTraitAttrs,
 }
 
 impl ObjectAttributes {
@@ -31,6 +32,7 @@ impl ObjectAttributes {
             None => return Ok(None),
         };
 
+        parsed.utraits = UniffiTraitAttrs::parse(&metas)?;
         for meta in metas {
             if meta.path().is_ident("uniffi") {
                 if let Meta::List(list) = meta {

@@ -54,6 +54,8 @@ pub fn func(a: u8, r: Record, e: &submod::Enum, s: &str) { }
 /// Object docstring
 #[derive(uniffi::Object)]
 #[uniffi(name="ObjectRenamed")]
+#[uniffi::export(Debug, Display)]
+#[uniffi::export(Eq, Ord, Hash)]
 pub struct Object;
 
 #[derive(uniffi::Error)]
