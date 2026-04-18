@@ -6,12 +6,12 @@ use syn::{Attribute, LitStr, Meta};
 use uniffi_meta::EnumShape;
 
 use crate::{
-    attrs::{extract_docstring, find_uniffi_derive},
+    attrs::{extract_docstring, find_uniffi_derive, UniffiTraitAttrs},
     CompileEnv,
     ErrorKind::*,
 };
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 pub struct EnumAttributes {
     pub shape: EnumShape,
     pub name: Option<String>,
@@ -19,6 +19,7 @@ pub struct EnumAttributes {
     pub non_exhaustive: bool,
     pub discr_type: Option<uniffi_meta::Type>,
     pub remote: bool,
+    pub utraits: UniffiTraitAttrs,
 }
 
 impl EnumAttributes {
@@ -46,6 +47,7 @@ impl EnumAttributes {
             (None, Some(d)) => (EnumShape::Error { flat: false }, d.remote),
         };
 
+        let utraits = UniffiTraitAttrs::parse(&metas)?;
         for meta in metas {
             let path = meta.path();
             if path.is_ident("uniffi") {
@@ -108,6 +110,7 @@ impl EnumAttributes {
             non_exhaustive,
             discr_type,
             remote,
+            utraits,
         }))
     }
 }
