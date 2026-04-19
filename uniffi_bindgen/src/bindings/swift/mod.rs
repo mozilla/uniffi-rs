@@ -32,7 +32,7 @@
 use crate::{
     bindings::GenerateOptions,
     interface::{apply_exclusions, rename},
-    BindgenLoader, BindgenPaths, Component, ComponentInterface,
+    BindgenLoader, BindgenPaths, Component, ComponentInterface, GlobalConfig,
 };
 use anyhow::{bail, Result};
 use camino::Utf8PathBuf;
@@ -140,17 +140,27 @@ pub fn generate(
 /// specialized `uniffi-bindgen-[language]` commands.
 pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
     #[cfg(not(feature = "cargo-metadata"))]
-    let paths = BindgenPaths::default();
+    let mut paths = BindgenPaths::default();
 
     #[cfg(feature = "cargo-metadata")]
     let mut paths = BindgenPaths::default();
+
+    let global_config = if let Some(ref path) = options.config {
+        let (config, crate_roots_layer) = GlobalConfig::from_file(path)?;
+        if let Some(layer) = crate_roots_layer {
+            paths.add_layer(layer);
+        }
+        config
+    } else {
+        GlobalConfig::default()
+    };
 
     #[cfg(feature = "cargo-metadata")]
     paths.add_cargo_metadata_layer(options.metadata_no_deps)?;
 
     fs::create_dir_all(&options.out_dir)?;
 
-    let loader = BindgenLoader::new(paths);
+    let loader = BindgenLoader::new(paths, global_config);
     let metadata = loader.load_metadata(&options.source)?;
     let cis = loader.load_cis(metadata)?;
     let mut components = loader.load_components(cis, parse_config)?;
@@ -226,6 +236,7 @@ pub struct SwiftBindingsOptions {
     pub modulemap_filename: Option<String>,
     pub metadata_no_deps: bool,
     pub link_frameworks: Vec<String>,
+    pub config: Option<Utf8PathBuf>,
 }
 
 // A helper for renaming items.

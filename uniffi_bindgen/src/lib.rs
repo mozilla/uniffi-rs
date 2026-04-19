@@ -103,6 +103,7 @@ use std::process::Command;
 
 mod bindgen_paths;
 pub mod bindings;
+mod global_config;
 pub mod interface;
 pub mod library_mode;
 mod loader;
@@ -119,6 +120,7 @@ use crate::interface::{
     Variant,
 };
 pub use bindgen_paths::{BindgenPaths, BindgenPathsLayer};
+pub use global_config::{CrateRootsLayer, GlobalConfig};
 pub use interface::ComponentInterface;
 pub use library_mode::find_components;
 use scaffolding::RustScaffolding;
@@ -561,7 +563,7 @@ fn overridden_config_value(
     Ok(toml::Value::from(config))
 }
 
-fn merge_toml(a: &mut toml::value::Table, b: toml::value::Table) {
+pub fn merge_toml(a: &mut toml::value::Table, b: toml::value::Table) {
     for (key, value) in b.into_iter() {
         match a.get_mut(&key) {
             Some(existing_value) => match (existing_value, value) {

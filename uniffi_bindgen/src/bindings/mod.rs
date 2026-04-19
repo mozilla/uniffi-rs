@@ -12,7 +12,7 @@ use std::fs;
 use anyhow::Result;
 use camino::Utf8PathBuf;
 
-use crate::{BindgenLoader, BindgenPaths};
+use crate::{BindgenLoader, BindgenPaths, GlobalConfig};
 mod kotlin;
 pub mod python;
 mod ruby;
@@ -53,16 +53,22 @@ pub fn generate_with_bindgen_paths(
     options: GenerateOptions,
     mut paths: BindgenPaths,
 ) -> Result<()> {
-    if let Some(path) = &options.config_override {
-        paths.add_config_override_layer(path.clone());
-    }
+    let global_config = if let Some(path) = &options.config_override {
+        let (config, crate_roots_layer) = GlobalConfig::from_file(path)?;
+        if let Some(layer) = crate_roots_layer {
+            paths.add_layer(layer);
+        }
+        config
+    } else {
+        GlobalConfig::default()
+    };
 
     #[cfg(feature = "cargo-metadata")]
     paths.add_cargo_metadata_layer(options.metadata_no_deps)?;
 
     fs::create_dir_all(&options.out_dir)?;
 
-    let loader = BindgenLoader::new(paths);
+    let loader = BindgenLoader::new(paths, global_config);
     for language in options.languages.iter() {
         match language {
             TargetLanguage::Swift => {
