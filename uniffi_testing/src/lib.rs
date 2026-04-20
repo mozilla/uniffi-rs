@@ -170,6 +170,7 @@ fn get_cargo_build_messages() -> Vec<Message> {
 
     let mut child = Command::new(env!("CARGO"))
         .arg("test")
+        .arg("--release")
         .arg(features_arg)
         .arg("--no-run")
         .arg("--message-format=json")
