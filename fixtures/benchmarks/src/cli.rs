@@ -55,6 +55,10 @@ pub struct Args {
     #[clap(long)]
     pub profile_time: Option<u64>,
 
+    /// Use `uniffi-bindgen-kotlin-jni` for the Kotlin benchmarks
+    #[clap(long)]
+    pub kotlin_jni: bool,
+
     // Args for running the metrics, these are handled in `lib.rs`
     /// Only run benchmarks whose names contain FILTER
     /// Multiple arguments are ANDed together
