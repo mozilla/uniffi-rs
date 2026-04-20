@@ -1,11 +1,43 @@
 This fixture runs a set of benchmark tests, using criterion to test the performance.
 
-Note your cwd must be this crate, not the workspace/repo root!
+- `cargo uniffi-bench` to run all benchmarks.
+- `cargo uniffi-bench [filter-string]` to run a subset of the benchmarks
+- `cargo uniffi-bench --help` for more details on the CLI
 
-- `cargo bench` to run all benchmarks.
-- `cargo bench -- -p` to run all python benchmarks (or -s for swift, -k for kotlin)
-- `cargo bench -- [glob]` to run a subset of the benchmarks
-- `cargo bench -- --help` for more details on the CLI
+## Creating benchmark tables
+
+`cargo uniffi-bench` can create tables to compare multiple branches.
+Use the `--save`/`-s` and `--compare`/`-c` flags to do this.
+For example, to generate a table that compares 3 branches:
+
+- checkout branch1
+- `cargo uniffi-bench [args] --save branch1`
+- checkout branch2
+- `cargo uniffi-bench [args] --save branch2`
+- checkout branch3
+- `cargo uniffi-bench [args] --save branch3 --compare branch1,branch2,branch3`
+
+## Profiling a benchmark using the Firefox profiler
+
+You can use the `perf` command alongside the Firefox profiler to debug benchmark performance:
+
+Run the bechmarks using `perf record` and with the `--profile-time` flag, for example:
+
+```
+perf record -g -F 999 cargo uniffi-bench --profile-time 5 kotlin-rust-call-only
+```
+
+Generate a profile from the raw perf data and copy it to some temporary location:
+
+```
+perf script -F +pid > ~/Downloads/test.perf
+```
+
+Go to https://profiler.firefox.com/ and open the file you just generated.
+Focus on the last 5 seconds or so of data and ignore the begining data
+which is tracks compiling the benchmarks crate.
+
+## Behind the scenes
 
 Benchmarking UniFFI is tricky and involves a bit of ping-pong between Rust and
 the foreign language:
