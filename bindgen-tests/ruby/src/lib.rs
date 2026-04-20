@@ -17,7 +17,7 @@ mod test {
     use camino::{Utf8Path, Utf8PathBuf};
 
     use uniffi::TargetLanguage;
-    use uniffi_bindgen_tests::test_util;
+    use uniffi_bindgen::test_util;
 
     #[test]
     fn test_simple_fns() {
@@ -115,7 +115,11 @@ mod test {
             let temp_dir = test_util::setup_test_dir("ruby");
             let lib_dir = temp_dir.join("lib");
             fs::create_dir_all(&lib_dir).unwrap();
-            test_util::build_library(&lib_dir);
+            test_util::build_library(
+                &lib_dir,
+                "uniffi-bindgen-tests-ruby",
+                test_util::LibraryOptions::default(),
+            );
             test_util::generate_sources(&lib_dir, TargetLanguage::Ruby);
             test_util::copy_test_sources(&temp_dir, "tests/*.rb");
             temp_dir
