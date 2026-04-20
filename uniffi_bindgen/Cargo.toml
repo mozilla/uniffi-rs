@@ -15,6 +15,8 @@ default = ["cargo-metadata"]
 cargo-metadata = ["dep:cargo_metadata"]
 bindgen-tests = ["cargo-metadata", "dep:uniffi_testing"]
 ffi-trace = ["uniffi_testing?/ffi-trace"]
+# Extra functionality for running test/benchmark scripts
+test-util = []
 
 [dependencies]
 anyhow = "1"
