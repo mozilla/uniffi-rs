@@ -7,6 +7,8 @@ mod cli;
 mod config;
 pub mod pipeline;
 pub mod scaffolding;
+#[cfg(feature = "test-util")]
+pub mod test_util;
 
 use std::env;
 
