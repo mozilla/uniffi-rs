@@ -9,7 +9,7 @@ pub struct SimpleRec {
 
 #[uniffi::export]
 impl SimpleRec {
-    fn roundtrip(&self) -> Self {
+    pub fn roundtrip(&self) -> Self {
         SimpleRec { a: self.a }
     }
 }
