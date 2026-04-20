@@ -5,23 +5,31 @@
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
 mod cli;
+mod compare;
 pub use cli::Args;
+pub use compare::CriterionMeasurementTracker;
 
 /// Benchmark test cases
 ///
 /// Each variant represent an FFI call that passes/returns a particular kind of data.
-#[derive(uniffi::Enum, Clone, Copy)]
+#[derive(uniffi::Enum, Clone, Copy, Debug)]
 pub enum TestCase {
     CallOnly,
     Primitives,
     Strings,
     LargeStrings,
     Records,
+    LargeRecords,
     Enums,
-    Vecs,
     Hashmaps,
     Interfaces,
     TraitInterfaces,
+    Optionals,
+    Bytes,
+    VecSmall,
+    VecPrimitives,
+    VecRecords,
+    Methods,
     NestedData,
     Errors,
 }
@@ -34,12 +42,18 @@ impl TestCase {
             Self::Strings,
             Self::LargeStrings,
             Self::Records,
+            Self::LargeRecords,
             Self::Enums,
-            Self::Vecs,
             Self::Hashmaps,
             Self::Interfaces,
             Self::TraitInterfaces,
             Self::NestedData,
+            Self::Optionals,
+            Self::Bytes,
+            Self::VecSmall,
+            Self::VecPrimitives,
+            Self::VecRecords,
+            Self::Methods,
             Self::Errors,
         ]
         .into_iter()
@@ -52,14 +66,44 @@ impl TestCase {
             Self::Strings => "strings",
             Self::LargeStrings => "large-strings",
             Self::Records => "records",
+            Self::LargeRecords => "large-records",
             Self::Enums => "enums",
-            Self::Vecs => "vecs",
             Self::Hashmaps => "hash-maps",
             Self::Interfaces => "interfaces",
             Self::TraitInterfaces => "trait-interfaces",
             Self::NestedData => "nested-data",
+            Self::Optionals => "optionals",
+            Self::Bytes => "bytes",
+            Self::VecSmall => "vecs-small",
+            Self::VecPrimitives => "vec-primitives",
+            Self::VecRecords => "vec-records",
+            Self::Methods => "methods",
             Self::Errors => "errors",
         }
+    }
+
+    fn rust_to_foreign_name(&self, language: &str) -> String {
+        format!("{language}-rust-{}", self.name())
+    }
+
+    fn foreign_to_rust_name(&self, language: &str) -> String {
+        format!("rust-{language}-{}", self.name())
+    }
+
+    fn all_names_for_language(language: &str) -> impl Iterator<Item = String> {
+        let language = language.to_string();
+        Self::iter_all().flat_map(move |test_case| {
+            [
+                test_case.rust_to_foreign_name(&language),
+                test_case.foreign_to_rust_name(&language),
+            ]
+        })
+    }
+
+    pub fn skip_foreign_side(&self) -> bool {
+        // The methods tests only makes sense on Rust.
+        // The equivalent on the foreign side is the `TestCase::CallOnly`.
+        matches!(self, Self::Methods)
     }
 
     fn callback_test_case_fn(&self, cb: Arc<dyn TestCallbackInterface>) -> Box<dyn Fn()> {
@@ -71,9 +115,13 @@ impl TestCase {
             TestCase::Strings => Box::new(move || {
                 cb.strings("a".to_string(), "b".to_string());
             }),
-            TestCase::LargeStrings => Box::new(move || {
-                cb.large_strings("a".repeat(2048), "b".repeat(1500));
-            }),
+            TestCase::LargeStrings => {
+                let large_string1 = "a".repeat(2048);
+                let large_string2 = "b".repeat(1500);
+                Box::new(move || {
+                    cb.large_strings(large_string1.clone(), large_string2.clone());
+                })
+            }
             TestCase::Records => Box::new(move || {
                 cb.records(
                     TestRecord {
@@ -88,11 +136,33 @@ impl TestCase {
                     },
                 );
             }),
+            TestCase::LargeRecords => Box::new(move || {
+                cb.large_records(
+                    TestLargeRecord {
+                        a: 1,
+                        b: 2,
+                        c: 3,
+                        d: 4,
+                        e: 1.0,
+                        f: 2.0,
+                        g: true,
+                    },
+                    TestLargeRecord {
+                        a: 1,
+                        b: 2,
+                        c: 3,
+                        d: 4,
+                        e: 1.0,
+                        f: 2.0,
+                        g: true,
+                    },
+                );
+            }),
             TestCase::Enums => Box::new(move || {
                 cb.enums(TestEnum::One { a: -1, b: 0 }, TestEnum::Two { c: 1.5 });
             }),
-            TestCase::Vecs => Box::new(move || {
-                cb.vecs(vec![0, 1], vec![2, 4, 6]);
+            TestCase::VecSmall => Box::new(move || {
+                cb.vec_small(vec![0, 1], vec![2, 4, 6]);
             }),
             TestCase::Hashmaps => Box::new(move || {
                 cb.hash_maps(HashMap::from([(0, 1), (1, 2)]), HashMap::from([(2, 4)]));
@@ -106,6 +176,36 @@ impl TestCase {
                     Arc::new(TestTraitInterfaceImpl),
                 );
             }),
+            TestCase::Optionals => Box::new(move || {
+                cb.optionals(Some(10), None, Some("testing-123".into()));
+            }),
+            TestCase::Bytes => {
+                let vec: Vec<u8> = (0..=255).collect();
+                Box::new(move || {
+                    cb.bytes(vec.clone());
+                })
+            }
+            TestCase::VecPrimitives => {
+                let vec: Vec<u32> = (0..1024).collect();
+                Box::new(move || {
+                    cb.vec_primitives(vec.clone());
+                })
+            }
+            TestCase::VecRecords => {
+                let vec: Vec<TestRecord> = (0..1024)
+                    .map(|i| TestRecord {
+                        a: i,
+                        b: i as u64 * 2,
+                        c: i as f64 / 2.0,
+                    })
+                    .collect();
+                Box::new(move || {
+                    cb.vec_records(vec.clone());
+                })
+            }
+            TestCase::Methods => {
+                panic!("Attempt to run TestCase::Method from the foreign side");
+            }
             TestCase::NestedData => Box::new(move || {
                 cb.nested_data(
                     NestedData {
@@ -141,11 +241,22 @@ impl TestCase {
     }
 }
 
-#[derive(uniffi::Record)]
+#[derive(uniffi::Record, Clone)]
 pub struct TestRecord {
     a: i32,
     b: u64,
     c: f64,
+}
+
+#[derive(uniffi::Record)]
+pub struct TestLargeRecord {
+    a: i8,
+    b: i16,
+    c: i32,
+    d: i64,
+    e: f32,
+    f: f64,
+    g: bool,
 }
 
 #[derive(uniffi::Enum)]
@@ -228,6 +339,19 @@ pub fn test_case_records(a: TestRecord, b: TestRecord) -> TestRecord {
 }
 
 #[uniffi::export]
+pub fn test_case_large_records(a: TestLargeRecord, b: TestLargeRecord) -> TestLargeRecord {
+    TestLargeRecord {
+        a: a.a + b.a,
+        b: a.b + b.b,
+        c: a.c + b.c,
+        d: a.d + b.d,
+        e: a.e + b.e,
+        f: a.f + b.f,
+        g: a.g || b.g,
+    }
+}
+
+#[uniffi::export]
 pub fn test_case_enums(a: TestEnum, b: TestEnum) -> TestEnum {
     let a_sum = match a {
         TestEnum::One { a, b } => a as f64 + b as f64,
@@ -238,11 +362,6 @@ pub fn test_case_enums(a: TestEnum, b: TestEnum) -> TestEnum {
         TestEnum::Two { c } => c,
     };
     TestEnum::Two { c: a_sum + b_sum }
-}
-
-#[uniffi::export]
-pub fn test_case_vecs(a: Vec<u32>, b: Vec<u32>) -> Vec<u32> {
-    a.into_iter().chain(b).collect()
 }
 
 #[uniffi::export]
@@ -274,6 +393,41 @@ pub fn test_case_trait_interfaces(
 }
 
 #[uniffi::export]
+pub fn test_case_optionals(a: Option<u32>, b: Option<bool>, c: Option<String>) -> u32 {
+    let mut sum = 0;
+    if let Some(value) = a {
+        sum += value;
+    }
+    if let Some(true) = b {
+        sum *= 2;
+    }
+    if let Some(string) = c {
+        sum += string.len() as u32;
+    }
+    sum
+}
+
+#[uniffi::export]
+pub fn test_case_bytes(v: Vec<u8>) -> Vec<u8> {
+    v
+}
+
+#[uniffi::export]
+pub fn test_case_vec_small(a: Vec<u32>, b: Vec<u32>) -> Vec<u32> {
+    a.into_iter().chain(b).collect()
+}
+
+#[uniffi::export]
+pub fn test_case_vec_primitives(v: Vec<u32>) -> Vec<u32> {
+    v
+}
+
+#[uniffi::export]
+pub fn test_case_vec_records(v: Vec<TestRecord>) -> Vec<TestRecord> {
+    v
+}
+
+#[uniffi::export]
 pub fn test_case_nested_data(a: NestedData, b: NestedData) -> NestedData {
     NestedData {
         a: a.a.into_iter().chain(b.a).collect(),
@@ -287,6 +441,11 @@ pub fn test_case_errors() -> Result<u32, TestError> {
     Err(TestError::Two)
 }
 
+#[uniffi::export]
+impl TestInterface {
+    pub fn noop_method(&self) {}
+}
+
 /// Benchmarks callback interface
 ///
 /// This contains a method for each [TestCase] variant.  To test callback methods, the Rust code
@@ -298,8 +457,8 @@ pub trait TestCallbackInterface: Send + Sync {
     fn strings(&self, a: String, b: String) -> String;
     fn large_strings(&self, a: String, b: String) -> String;
     fn records(&self, a: TestRecord, b: TestRecord) -> TestRecord;
+    fn large_records(&self, a: TestLargeRecord, b: TestLargeRecord) -> TestLargeRecord;
     fn enums(&self, a: TestEnum, b: TestEnum) -> TestEnum;
-    fn vecs(&self, a: Vec<u32>, b: Vec<u32>) -> Vec<u32>;
     fn hash_maps(&self, a: HashMap<u32, u32>, b: HashMap<u32, u32>) -> HashMap<u32, u32>;
     fn interfaces(&self, a: Arc<TestInterface>, b: Arc<TestInterface>) -> Arc<TestInterface>;
     fn trait_interfaces(
@@ -307,6 +466,11 @@ pub trait TestCallbackInterface: Send + Sync {
         a: Arc<dyn TestTraitInterface>,
         b: Arc<dyn TestTraitInterface>,
     ) -> Arc<dyn TestTraitInterface>;
+    fn optionals(&self, a: Option<u32>, b: Option<bool>, c: Option<String>) -> u32;
+    fn bytes(&self, v: Vec<u8>) -> Vec<u8>;
+    fn vec_small(&self, a: Vec<u32>, b: Vec<u32>) -> Vec<u32>;
+    fn vec_primitives(&self, v: Vec<u32>) -> Vec<u32>;
+    fn vec_records(&self, v: Vec<TestRecord>) -> Vec<TestRecord>;
     fn nested_data(&self, a: NestedData, b: NestedData) -> NestedData;
     fn errors(&self) -> Result<u32, TestError>;
 
@@ -335,27 +499,38 @@ pub fn run_callback_test(cb: Arc<dyn TestCallbackInterface>, test_case: TestCase
 #[uniffi::export]
 pub fn run_benchmarks(language: String, cb: Arc<dyn TestCallbackInterface>) {
     let args = Args::parse_for_run_benchmarks();
+
+    let measurement_tracker =
+        CriterionMeasurementTracker::new().expect("Error creating CriterionMeasurementTracker");
+
     let mut c = args.build_criterion();
 
-    {
-        let mut function_calls = c.benchmark_group("function-calls");
-        for test_case in TestCase::iter_all() {
-            function_calls.bench_function(format!("{language}-{}", test_case.name()), |b| {
+    for test_case in TestCase::iter_all() {
+        let rust_to_foreign_name = test_case.rust_to_foreign_name(&language);
+        let foreign_to_rust_name = test_case.foreign_to_rust_name(&language);
+
+        if args.test_case_name_matches_filter(&rust_to_foreign_name) {
+            c.bench_function(&rust_to_foreign_name, |b| {
                 b.iter_custom(|count| Duration::from_nanos(cb.run_test(test_case, count)))
             });
         }
-    }
-    {
-        let mut callbacks = c.benchmark_group("callbacks");
-        for test_case in TestCase::iter_all() {
-            let test_case_fn = test_case.callback_test_case_fn(cb.clone());
-            callbacks.bench_function(format!("{language}-{}", test_case.name()), move |b| {
-                b.iter(&test_case_fn);
+
+        if !test_case.skip_foreign_side()
+            && args.test_case_name_matches_filter(&foreign_to_rust_name)
+        {
+            let callback_fn = test_case.callback_test_case_fn(cb.clone());
+            c.bench_function(&foreign_to_rust_name, move |b| {
+                b.iter(&callback_fn);
             });
         }
     }
 
     c.final_summary();
+
+    if args.has_save_name() {
+        let name = args.calculate_save_name().expect("Error saving times");
+        measurement_tracker.save(&name).expect("Error saving times");
+    }
 }
 
 uniffi::setup_scaffolding!("benchmarks");
