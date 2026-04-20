@@ -16,11 +16,22 @@ fn main() {
         .chain(env::args())
         .collect();
 
+    if !args.compare.is_empty() && args.save.is_none() {
+        let measurement_tracker = uniffi_benchmarks::CriterionMeasurementTracker::new()
+            .expect("Error creating CriterionMeasurementTracker");
+        // User is asking to compare, but not save any new args.  We can just print the table
+        // without running any benchmarks
+        measurement_tracker
+            .compare(&args.compare, None)
+            .expect("Error generating comparision table");
+        return;
+    }
+
     let options = RunScriptOptions {
         show_compiler_messages: args.compiler_messages,
     };
 
-    if args.should_run_python() {
+    if args.should_run_foreign_language("python") {
         python_run_script(
             std::env!("CARGO_TARGET_TMPDIR"),
             "uniffi-fixture-benchmarks",
@@ -31,7 +42,7 @@ fn main() {
         .unwrap()
     }
 
-    if args.should_run_kotlin() {
+    if args.should_run_foreign_language("kotlin") {
         kotlin_run_script(
             std::env!("CARGO_TARGET_TMPDIR"),
             "uniffi-fixture-benchmarks",
@@ -42,7 +53,7 @@ fn main() {
         .unwrap()
     }
 
-    if args.should_run_swift() {
+    if args.should_run_foreign_language("swift") {
         swift_run_script(
             std::env!("CARGO_TARGET_TMPDIR"),
             "uniffi-fixture-benchmarks",
@@ -51,5 +62,13 @@ fn main() {
             &options,
         )
         .unwrap()
+    }
+
+    if !args.compare.is_empty() {
+        let measurement_tracker = uniffi_benchmarks::CriterionMeasurementTracker::new()
+            .expect("Error creating CriterionMeasurementTracker");
+        measurement_tracker
+            .compare(&args.compare, args.save.as_deref())
+            .expect("Error generating comparision table");
     }
 }
