@@ -8,6 +8,8 @@ use super::*;
 
 #[derive(Default, Clone)]
 pub struct Context {
+    // Name of the current package when we're generating scaffolding
+    pub scaffolding_crate_name: Option<String>,
     // Map namespace names to Kotlin packages
     pub package_map: HashMap<String, String>,
     // Map namespace names to Rust crates
@@ -131,20 +133,54 @@ impl Context {
             .ok_or_else(|| anyhow!("crate name not found: {namespace_name}"))
     }
 
-    pub fn module_path_for_func(&self, namespace: &str, func_orig_name: &str) -> Result<&str> {
-        self.function_module_paths
+    pub fn rust_module_path_for_func(
+        &self,
+        namespace: &str,
+        func_orig_name: &str,
+    ) -> Result<String> {
+        let module_path = self
+            .function_module_paths
             .get(namespace)
             .and_then(|map| map.get(func_orig_name))
             .map(|s| s.as_str())
-            .ok_or_else(|| anyhow!("function module path not found: {namespace}:{func_orig_name}"))
+            .ok_or_else(|| {
+                anyhow!("function module path not found: {namespace}:{func_orig_name}")
+            })?;
+        self.normalize_rust_module_path(module_path)
     }
 
-    pub fn module_path_for_type(&self, namespace: &str, type_orig_name: &str) -> Result<&str> {
-        self.type_module_paths
+    pub fn rust_module_path_for_type(
+        &self,
+        namespace: &str,
+        type_orig_name: &str,
+    ) -> Result<String> {
+        let module_path = self
+            .type_module_paths
             .get(namespace)
             .and_then(|map| map.get(type_orig_name))
             .map(|s| s.as_str())
-            .ok_or_else(|| anyhow!("type module path not found: {namespace}:{type_orig_name}"))
+            .ok_or_else(|| anyhow!("type module path not found: {namespace}:{type_orig_name}"))?;
+        self.normalize_rust_module_path(module_path)
+    }
+
+    /// Normalize a Rust module path
+    ///
+    /// This replaces the current module name with `crate`
+    pub fn normalize_rust_module_path(&self, module_path: &str) -> Result<String> {
+        let Some(scaffolding_package_name) = &self.scaffolding_crate_name else {
+            // scaffolding_package_name not set, probably because we're generating the bindings
+            // No need to map anything
+            return Ok(module_path.to_string());
+        };
+        if module_path == scaffolding_package_name {
+            Ok("crate".into())
+        } else if let Some(rest) =
+            module_path.strip_prefix(&format!("{scaffolding_package_name}::"))
+        {
+            Ok(format!("crate::{rest}"))
+        } else {
+            Ok(format!("::{module_path}"))
+        }
     }
 
     pub fn current_enum(&self) -> Result<&general::Enum> {

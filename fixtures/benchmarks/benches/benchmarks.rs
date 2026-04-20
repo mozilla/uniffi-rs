@@ -39,18 +39,54 @@ fn main() {
             script_args.clone(),
             &options,
         )
-        .unwrap()
+        .expect("Error runing python benchmark script")
     }
 
     if args.should_run_foreign_language("kotlin") {
-        kotlin_run_script(
-            std::env!("CARGO_TARGET_TMPDIR"),
-            "uniffi-fixture-benchmarks",
-            "benches/bindings/run_benchmarks.kts",
-            script_args.clone(),
-            &options,
-        )
-        .unwrap()
+        if args.kotlin_jni {
+            let temp_dir = uniffi_bindgen::test_util::setup_test_dir("kotlin-benchmarks");
+            uniffi_bindgen::test_util::build_library(
+                &temp_dir,
+                "uniffi-fixture-benchmarks",
+                uniffi_bindgen::test_util::LibraryOptions {
+                    library_name: Some("uniffi_benchmarks".into()),
+                    features: vec!["uniffi-bindgen-kotlin-jni".into()],
+                    no_default_features: false,
+                },
+            );
+            uniffi_bindgen::test_util::copy_test_sources(
+                &temp_dir,
+                "benches/bindings/run_benchmarks.kts",
+            );
+            uniffi_bindgen_kotlin_jni::test_util::generate_bindings(&temp_dir);
+            uniffi_bindgen_kotlin_jni::test_util::build_jar(
+                &temp_dir,
+                "benchmarks.jar",
+                "org/mozilla/**/*.kt",
+            );
+            uniffi_bindgen_kotlin_jni::test_util::run_script(
+                &temp_dir,
+                "benchmarks.jar",
+                "benches/bindings/run_benchmarks.kts",
+                uniffi_bindgen_kotlin_jni::test_util::RunScriptOptions {
+                    args: script_args.clone(),
+                    // The benchmarks can stress the heap, since they generate lots of objects in a
+                    // short amount of time.  Allocate enough memory so that's not an issue.
+                    initial_heap_gb: Some(4),
+                    max_heap_gb: Some(4),
+                    ..Default::default()
+                },
+            );
+        } else {
+            kotlin_run_script(
+                std::env!("CARGO_TARGET_TMPDIR"),
+                "uniffi-fixture-benchmarks",
+                "benches/bindings/run_benchmarks.kts",
+                script_args.clone(),
+                &options,
+            )
+            .expect("Error running kotlin benchmark script");
+        }
     }
 
     if args.should_run_foreign_language("swift") {
@@ -61,6 +97,6 @@ fn main() {
             script_args,
             &options,
         )
-        .unwrap()
+        .expect("Error running Swift benchmark script");
     }
 }

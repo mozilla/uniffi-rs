@@ -4,7 +4,7 @@ version = "0.31.0"
 edition = "2021"
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "lib"]
 
 [dependencies]
 uniffi-bindgen-tests = { path = "../../bindgen-tests/lib", default-features = true }
@@ -16,5 +16,5 @@ uniffi-bindgen-kotlin-jni = { path = ".." }
 
 [dev-dependencies]
 camino = "1"
-glob = "0.3"
-uniffi-bindgen-kotlin-jni = { path = ".." }
+uniffi_bindgen = { path = "../../uniffi_bindgen", features = ["test-util"] }
+uniffi-bindgen-kotlin-jni = { path = "..", features = ["test-util"] }

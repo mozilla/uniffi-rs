@@ -382,4 +382,11 @@ pub fn run_benchmarks(language: String, cb: Arc<dyn TestCallbackInterface>) {
     }
 }
 
+#[cfg(feature = "uniffi-bindgen")]
 uniffi::setup_scaffolding!("benchmarks");
+
+#[cfg(feature = "uniffi-bindgen-kotlin-jni")]
+include!(concat!(
+    env!("OUT_DIR"),
+    "/uniffi_bindgen_kotlin_jni.uniffi.rs"
+));

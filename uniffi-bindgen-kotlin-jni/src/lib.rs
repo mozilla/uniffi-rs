@@ -7,6 +7,8 @@ mod cli;
 mod config;
 pub mod pipeline;
 pub mod scaffolding;
+#[cfg(feature = "test-util")]
+pub mod test_util;
 
 use std::env;
 
@@ -102,10 +104,6 @@ fn _generate_scaffolding() -> Result<()> {
         config: None,
         metadata_no_deps: false,
     };
-    generate_scaffolding_from_args(args, &Utf8PathBuf::from(out_dir))
-}
-
-pub fn generate_scaffolding_from_args(args: cli::StandardArgs, out_dir: &Utf8Path) -> Result<()> {
     let initial_root = load_initial_root(&args)?;
-    scaffolding::generate(initial_root, out_dir)
+    scaffolding::generate(initial_root, pkg_name, &Utf8PathBuf::from(out_dir))
 }

@@ -21,8 +21,8 @@ pub fn map_callable(input: general::Callable, context: &Context) -> Result<Calla
 fn fully_qualified_name_rs(callable: &general::Callable, context: &Context) -> Result<String> {
     match &callable.kind {
         general::CallableKind::Function => {
-            let module_path =
-                context.module_path_for_func(context.namespace_name()?, &callable.orig_name)?;
+            let module_path = context
+                .rust_module_path_for_func(context.namespace_name()?, &callable.orig_name)?;
             Ok(format!(
                 "{module_path}::{}",
                 names::escape_rust(&callable.orig_name)
@@ -47,7 +47,7 @@ fn fully_qualified_method_name_rs(
     let Some(name) = self_ty.orig_name() else {
         bail!("Invalid callable self type: {self_ty:?}");
     };
-    let module_path = context.module_path_for_type(namespace, name)?;
+    let module_path = context.rust_module_path_for_type(namespace, name)?;
     let Some(self_name) = self_ty.orig_name() else {
         bail!("Invalid Callable self type: {:?}", callable.kind);
     };

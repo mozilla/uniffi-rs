@@ -28,3 +28,11 @@ pub use nodes::*;
 pub fn pipeline() -> Pipeline<initial::Root, Root> {
     general::pipeline("kotlin").pass::<Root, Context>(Context::default())
 }
+
+pub fn pipeline_for_scaffolding(package_name: String) -> Pipeline<initial::Root, Root> {
+    let context = Context {
+        scaffolding_crate_name: Some(package_name.replace("-", "_")),
+        ..Context::default()
+    };
+    general::pipeline("kotlin").pass::<Root, Context>(context)
+}

@@ -65,8 +65,8 @@ fn type_rs(ty: &Type, context: &Context) -> Result<String> {
             ..
         } => {
             format!(
-                "::{}::{orig_name}",
-                context.module_path_for_type(namespace, orig_name)?
+                "{}::{orig_name}",
+                context.rust_module_path_for_type(namespace, orig_name)?
             )
         }
         Type::Interface {
@@ -77,13 +77,13 @@ fn type_rs(ty: &Type, context: &Context) -> Result<String> {
         } => {
             if imp.is_trait_interface() {
                 format!(
-                    "::std::sync::Arc<dyn ::{}::{orig_name}>",
-                    context.module_path_for_type(namespace, orig_name)?
+                    "::std::sync::Arc<dyn {}::{orig_name}>",
+                    context.rust_module_path_for_type(namespace, orig_name)?
                 )
             } else {
                 format!(
-                    "::std::sync::Arc<::{}::{orig_name}>",
-                    context.module_path_for_type(namespace, orig_name)?
+                    "::std::sync::Arc<{}::{orig_name}>",
+                    context.rust_module_path_for_type(namespace, orig_name)?
                 )
             }
         }
@@ -93,8 +93,8 @@ fn type_rs(ty: &Type, context: &Context) -> Result<String> {
             ..
         } => {
             format!(
-                "::std::boxed::Box<dyn ::{}::{orig_name}>",
-                context.module_path_for_type(namespace, orig_name)?
+                "::std::boxed::Box<dyn {}::{orig_name}>",
+                context.rust_module_path_for_type(namespace, orig_name)?
             )
         }
         Type::Box { inner_type } => {

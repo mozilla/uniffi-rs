@@ -10,8 +10,8 @@ use camino::Utf8Path;
 
 use crate::pipeline::*;
 
-pub fn generate(initial_root: InitialRoot, out_dir: &Utf8Path) -> Result<()> {
-    let root = pipeline().execute(initial_root)?;
+pub fn generate(initial_root: InitialRoot, package_name: String, out_dir: &Utf8Path) -> Result<()> {
+    let root = pipeline_for_scaffolding(package_name).execute(initial_root)?;
     let scaffolding = Scaffolding { root };
     let output = scaffolding.render()?;
     if !out_dir.exists() {

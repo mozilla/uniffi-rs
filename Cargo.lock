@@ -1908,6 +1908,7 @@ dependencies = [
  "camino",
  "cargo_metadata 0.19.2",
  "clap",
+ "glob",
  "heck",
  "indexmap",
  "serde",
@@ -1933,11 +1934,11 @@ name = "uniffi-bindgen-kotlin-jni-tests"
 version = "0.31.0"
 dependencies = [
  "camino",
- "glob",
  "uniffi-bindgen-kotlin-jni",
  "uniffi-bindgen-kotlin-jni-runtime",
  "uniffi-bindgen-tests",
  "uniffi-bindgen-tests-external-types-source",
+ "uniffi_bindgen",
 ]
 
 [[package]]
@@ -1969,6 +1970,7 @@ dependencies = [
  "glob",
  "uniffi",
  "uniffi-bindgen-tests",
+ "uniffi_bindgen",
 ]
 
 [[package]]
@@ -1979,6 +1981,7 @@ dependencies = [
  "glob",
  "uniffi",
  "uniffi-bindgen-tests",
+ "uniffi_bindgen",
 ]
 
 [[package]]
@@ -1989,6 +1992,7 @@ dependencies = [
  "glob",
  "uniffi",
  "uniffi-bindgen-tests",
+ "uniffi_bindgen",
 ]
 
 [[package]]
@@ -2104,6 +2108,8 @@ dependencies = [
  "serde_json",
  "thiserror",
  "uniffi",
+ "uniffi-bindgen-kotlin-jni",
+ "uniffi-bindgen-kotlin-jni-runtime",
  "uniffi_bindgen",
 ]
 

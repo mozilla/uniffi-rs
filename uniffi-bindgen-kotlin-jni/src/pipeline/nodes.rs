@@ -451,10 +451,6 @@ impl Package {
         self.name.replace(".", "/")
     }
 
-    pub fn name_rs(&self) -> String {
-        names::escape_rust(&self.crate_name)
-    }
-
     pub fn classes(&self) -> impl Iterator<Item = &Class> {
         self.type_definitions
             .iter()

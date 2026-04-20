@@ -16,6 +16,7 @@ askama = { version = "0.14", default-features = false, features = ["config", "de
 camino = "1"
 cargo_metadata = { version = "0.19", optional = true }
 clap = { version = "4", default-features = false, features = [ "cargo", "derive", "error-context", "help", "suggestions", "std", "usage" ] }
+glob = { version = "0.3", optional = true }
 heck = "0.5"
 indexmap = { version = "2.2", features = ["serde"] }
 serde = "1"
@@ -28,3 +29,5 @@ textwrap = { version = "0.16", features=["smawk"], default-features = false }
 [features]
 default = ["cargo-metadata"]
 cargo-metadata = ["cargo_metadata"]
+# Extra functionality for running test/benchmark scripts
+test-util = ["glob"]
