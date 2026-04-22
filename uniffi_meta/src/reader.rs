@@ -473,13 +473,13 @@ impl<'a> MetadataReader<'a> {
             .map(|_| {
                 let name = self.read_string()?;
                 let ty = self.read_type()?;
+                let by_ref = self.read_bool()?;
                 let default = self.read_optional_default(&name, &ty)?;
                 Ok(FnParamMetadata {
                     name,
                     ty,
                     default,
-                    // not emitted by macros
-                    by_ref: false,
+                    by_ref,
                     optional: false,
                 })
             })
