@@ -81,6 +81,49 @@ class _UniffiForeignBytes(ctypes.Structure):
         return "_UniffiForeignBytes(len={}, data={})".format(self.len, self.data[0:self.len])
 
 
+class _UniffiFfiConverterByRefBytes:
+    """Zero-copy converter for `&[u8]` / `[ByRef] bytes` arguments.
+
+    Only `lower` and `check_lower` are valid — zero-copy byte buffers only
+    flow foreign -> Rust, and only in argument position. `lift`, `read`, and
+    `write` have no sound implementation here.
+
+    CPython `bytes` objects are immutable and their internal buffer doesn't
+    move for the lifetime of the object; the caller must keep the source
+    `bytes` alive for the duration of the FFI call.
+    """
+
+    @staticmethod
+    def check_lower(value):
+        # Tighter than `bytes-like`: `lower` uses `ctypes.c_char_p` which only
+        # accepts `bytes`/`None`, so fail fast with a matching check.
+        if not isinstance(value, bytes):
+            raise TypeError("a bytes object is required, not {!r}".format(type(value).__name__))
+
+    @staticmethod
+    def lower(value):
+        fb = _UniffiForeignBytes()
+        if len(value) == 0:
+            fb.len = 0
+            fb.data = None
+        else:
+            fb.len = len(value)
+            fb.data = ctypes.cast(ctypes.c_char_p(value), ctypes.POINTER(ctypes.c_char))
+        return fb
+
+    @staticmethod
+    def lift(value):
+        raise NotImplementedError("ByRef bytes cannot be lifted: zero-copy &[u8] only flows foreign->Rust")
+
+    @staticmethod
+    def read(buf):
+        raise NotImplementedError("ByRef bytes cannot be read from a buffer: zero-copy &[u8] only flows foreign->Rust")
+
+    @staticmethod
+    def write(value, buf):
+        raise NotImplementedError("ByRef bytes cannot be written to a buffer: zero-copy &[u8] only flows foreign->Rust")
+
+
 class _UniffiRustBufferStream:
     """
     Helper for structured reading of bytes from a _UniffiRustBuffer
