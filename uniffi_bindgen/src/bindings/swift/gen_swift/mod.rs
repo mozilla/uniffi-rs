@@ -1090,6 +1090,57 @@ pub mod filters {
         Ok(quote_general_keyword(oracle().var_name(nm)))
     }
 
+    /// Returns `true` if an argument is a `&[u8]` / borrowed `Bytes`.
+    ///
+    /// Used by the `to_ffi_call` macro to decide whether to wrap the
+    /// FFI call in a `FfiConverterByRefBytes.lower(...) { ... }` closure
+    /// so a `ForeignBytes` can be passed across the FFI boundary without
+    /// copying the underlying buffer.
+    #[askama::filter_fn]
+    pub fn is_borrowed_bytes(
+        arg: &Argument,
+        _: &dyn askama::Values,
+    ) -> Result<bool, askama::Error> {
+        Ok(arg.is_borrowed_bytes())
+    }
+
+    /// Returns `true` if any argument of a callable is a `&[u8]` /
+    /// borrowed `Bytes`.
+    ///
+    /// Used by the `to_ffi_call` macro to know whether the outer
+    /// `rustCall`/`rustCallWithError` closure needs an explicit name
+    /// for the `RustCallStatus` pointer — the shorthand `$0` cannot be
+    /// used from inside the nested `withUnsafeBytes { ... }` closures.
+    #[askama::filter_fn]
+    pub fn has_borrowed_bytes_arg(
+        callable: impl Callable,
+        _: &dyn askama::Values,
+    ) -> Result<bool, askama::Error> {
+        Ok(callable.arguments().iter().any(|a| a.is_borrowed_bytes()))
+    }
+
+    /// Swift expression to emit at an argument's position in an FFI call.
+    ///
+    /// For borrowed `Bytes` (`&[u8]`), this is a bare reference to the
+    /// `{name}Fb` variable bound by the outer `FfiConverterByRefBytes.lower`
+    /// scope (see `to_ffi_call`). For every other argument, this is the
+    /// standard `{FfiConverter}.lower({name})` expression.
+    #[askama::filter_fn]
+    pub fn arg_expr(arg: &Argument, _: &dyn askama::Values) -> Result<String, askama::Error> {
+        let name = quote_general_keyword(oracle().var_name(arg.name()));
+        if arg.is_borrowed_bytes() {
+            Ok(format!("{name}Fb"))
+        } else {
+            let ty = arg.as_type();
+            let ffi_converter_name = oracle().find(&ty).ffi_converter_name();
+            let lower = match ty.name() {
+                Some(_) => format!("{ffi_converter_name}_lower"),
+                None => format!("{ffi_converter_name}.lower"),
+            };
+            Ok(format!("{lower}({name})"))
+        }
+    }
+
     /// Get the idiomatic Swift rendering of an arguments name.
     /// This is the same as the var name but quoting is not required.
     #[askama::filter_fn]
