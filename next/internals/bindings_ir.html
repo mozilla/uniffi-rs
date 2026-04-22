@@ -2691,7 +2691,7 @@ We use the <a href="https://askama.readthedocs.io/en/stable/">Askama</a> templat
 <li>handling errors using the class named by <code>ReturnType.ty.lang_dataffi_converter_name</code></li>
 <li>lifting the return value using the class named by <code>ThrowsType.ty.lang_data.ffi_converter_name</code></li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="n">_UniffiConverterUInt64</span><span class="o">.</span><span class="n">check_lower</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
     <span class="n">_UniffiConverterUInt64</span><span class="o">.</span><span class="n">check_lower</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
     <span class="n">_uniffi_return</span> <span class="o">=</span> <span class="n">_uniffi_rust_call_with_error</span><span class="p">(</span>

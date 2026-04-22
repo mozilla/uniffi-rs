@@ -2432,8 +2432,8 @@ interface<span class="w"> </span>Button<span class="w"> </span>{
 };
 </code></pre></div>
 <p>would allow foreign implementations of that trait - eg, passing one back into Rust from Python:</p>
-<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">PyButton</span><span class="p">(</span><span class="n">uniffi_module</span><span class="o">.</span><span class="n">Button</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PyButton</span><span class="p">(</span><span class="n">uniffi_module</span><span class="o">.</span><span class="n">Button</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;PyButton&quot;</span>
 
 <span class="n">uniffi_module</span><span class="o">.</span><span class="n">press</span><span class="p">(</span><span class="n">PyButton</span><span class="p">())</span>

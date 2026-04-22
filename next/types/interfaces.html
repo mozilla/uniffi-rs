@@ -2525,15 +2525,15 @@ calling any methods on them, including a constructor results in the correspondin
 <span class="p">}</span>
 </code></pre></div>
 <p>When working with these objects, it may be helpful to always pass the interface or protocol, but construct the concrete implementation. For example in Swift:</p>
-<div class="highlight"><pre><span></span><code><span class="kd">let</span> <span class="nv">todoList</span> <span class="p">=</span> <span class="n">TodoList</span><span class="p">()</span>
-<span class="n">todoList</span><span class="p">.</span><span class="n">addItem</span><span class="p">(</span><span class="n">todo</span><span class="p">:</span> <span class="s">&quot;Write documentation&quot;</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">list</span><span class="p">:</span> <span class="n">todoList</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="kd">let</span><span class="w"> </span><span class="nv">todoList</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">TodoList</span><span class="p">()</span>
+<span class="n">todoList</span><span class="p">.</span><span class="n">addItem</span><span class="p">(</span><span class="n">todo</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Write documentation&quot;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">list</span><span class="p">:</span><span class="w"> </span><span class="n">todoList</span><span class="p">)</span>
 
-<span class="kd">func</span> <span class="nf">display</span><span class="p">(</span><span class="n">list</span><span class="p">:</span> <span class="n">TodoListProtocol</span><span class="p">)</span> <span class="p">{</span>
-    <span class="kd">let</span> <span class="nv">items</span> <span class="p">=</span> <span class="n">list</span><span class="p">.</span><span class="n">getItems</span><span class="p">()</span>
-    <span class="n">items</span><span class="p">.</span><span class="n">forEach</span> <span class="p">{</span>
-        <span class="bp">print</span><span class="p">(</span><span class="nv">$0</span><span class="p">)</span>
-    <span class="p">}</span>
+<span class="kd">func</span><span class="w"> </span><span class="nf">display</span><span class="p">(</span><span class="n">list</span><span class="p">:</span><span class="w"> </span><span class="n">TodoListProtocol</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="nv">items</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">getItems</span><span class="p">()</span>
+<span class="w">    </span><span class="n">items</span><span class="p">.</span><span class="n">forEach</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">print</span><span class="p">(</span><span class="nv">$0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>Following this pattern will make it easier for you to provide mock implementation of the Rust-based objects
@@ -2593,8 +2593,8 @@ For example, your Rust would have these signatures:</p>
 <h3 id="foreign-implementations">Foreign implementations</h3>
 <p>It's possible in both UDL (via a <code>[Foreign]</code> attribute) and proc-macros (via <code>#[uniffi::export(with_foreign)]</code>)
 to declare the trait can also be implemented on the foreign side passed into Rust, for example:</p>
-<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">PyButton</span><span class="p">(</span><span class="n">uniffi_module</span><span class="o">.</span><span class="n">Button</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PyButton</span><span class="p">(</span><span class="n">uniffi_module</span><span class="o">.</span><span class="n">Button</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;PyButton&quot;</span>
 
 <span class="n">uniffi_module</span><span class="o">.</span><span class="n">press</span><span class="p">(</span><span class="n">PyButton</span><span class="p">())</span>

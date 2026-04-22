@@ -2543,7 +2543,7 @@ For example, a <code>fn add(a: u32, b: u32) -&gt; u32</code> function would be i
 </code></pre></div>
 <p>The <a href="../glossary.html#bindings">bindings</a> then sets up an asynchronous loop that polls the RustFuture until it's complete.</p>
 <p>Here's some Python code that shows how this works:</p>
-<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
     <span class="c1"># Get a future handle by calling the scaffolding function</span>
     <span class="n">rust_future_handle</span> <span class="o">=</span> <span class="n">RustScaffoldingLibrary</span><span class="o">.</span><span class="n">ffi_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
@@ -2581,25 +2581,25 @@ For example, a <code>fn add(a: u32, b: u32) -&gt; u32</code> function would be i
 
 <span class="c1"># Continuation callback, this is called from Rust when progress can be made on the future, either</span>
 <span class="c1"># because it&#39;s ready or it needs to be polled again.</span>
-<span class="k">def</span> <span class="nf">uniffi_continuation_callback</span><span class="p">(</span><span class="n">future_handle</span><span class="p">,</span> <span class="n">poll_code</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">uniffi_continuation_callback</span><span class="p">(</span><span class="n">future_handle</span><span class="p">,</span> <span class="n">poll_code</span><span class="p">):</span>
     <span class="c1"># Convert the handle we sent to Rust to a Python Future</span>
     <span class="n">future</span> <span class="o">=</span> <span class="n">get_future_from_handle</span><span class="p">(</span><span class="n">future_handle</span><span class="p">)</span>
     <span class="c1"># Complete the future with the code that indicates if the future is ready or not.</span>
     <span class="n">eventloop</span><span class="o">.</span><span class="n">call_soon_threadsafe</span><span class="p">(</span><span class="n">future</span><span class="o">.</span><span class="n">set_result</span><span class="p">,</span> <span class="n">poll_code</span><span class="p">)</span>
 
 <span class="c1"># Create a `u64` handle that represents a Python Future object.</span>
-<span class="k">def</span> <span class="nf">create_future_handle</span><span class="p">(</span><span class="n">future</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_future_handle</span><span class="p">(</span><span class="n">future</span><span class="p">):</span>
     <span class="c1"># The code to do this will vary by language.</span>
 
 <span class="c1"># Re-create the Python Future object from a `u64` handle.</span>
-<span class="k">def</span> <span class="nf">get_future_from_handle</span><span class="p">(</span><span class="n">handle</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_future_from_handle</span><span class="p">(</span><span class="n">handle</span><span class="p">):</span>
     <span class="c1"># The code to do this will vary by language.</span>
 </code></pre></div>
 <h3 id="cancellation">Cancellation</h3>
 <p>Some languages have builtin cancellation semantics.  For those, you can call the
 <code>rust_future_cancel</code> to request that the future be cancelled.  On the Rust side, this causes the
 future to be dropped.</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">cancel_future</span><span class="p">(</span><span class="n">future_handle</span><span class="p">):</span>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cancel_future</span><span class="p">(</span><span class="n">future_handle</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">rust_future_has_not_been_freed</span><span class="p">(</span><span class="n">future_handle</span><span class="p">):</span>
         <span class="n">RustScaffoldingLibrary</span><span class="o">.</span><span class="n">rust_future_cancel_u32</span><span class="p">(</span><span class="n">rust_future_handle</span><span class="p">)</span>
 </code></pre></div>

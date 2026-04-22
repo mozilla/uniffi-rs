@@ -2326,14 +2326,14 @@ Note that <a href="https://github.com/mozilla/uniffi-rs/issues/2263">references 
 <span class="p">}</span>
 </code></pre></div>
 <p>…and Swift:</p>
-<div class="highlight"><pre><span></span><code><span class="kd">class</span> <span class="nc">SwiftKeychain</span><span class="p">:</span> <span class="n">Keychain</span> <span class="p">{</span>
-    <span class="kd">func</span> <span class="nf">get</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="nb">String</span><span class="p">?</span> <span class="p">{</span>
-        <span class="c1">// … elide the implementation.</span>
-        <span class="k">return</span> <span class="n">value</span>
-    <span class="p">}</span>
-    <span class="kd">func</span> <span class="nf">put</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span> <span class="p">{</span>
-        <span class="c1">// … elide the implementation.</span>
-    <span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="kd">class</span><span class="w"> </span><span class="nc">SwiftKeychain</span><span class="p">:</span><span class="w"> </span><span class="n">Keychain</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">func</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">String</span><span class="p">?</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// … elide the implementation.</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">value</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kd">func</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// … elide the implementation.</span>
+<span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
 <h2 id="4-pass-the-implementation-to-rust">4. Pass the implementation to Rust</h2>
@@ -2343,7 +2343,7 @@ Note that <a href="https://github.com/mozilla/uniffi-rs/issues/2263">references 
 authenticator.login()
 </code></pre></div>
 <p>and in Swift:</p>
-<div class="highlight"><pre><span></span><code><span class="kd">let</span> <span class="nv">authenticator</span> <span class="p">=</span> <span class="n">Authenticator</span><span class="p">(</span><span class="n">SwiftKeychain</span><span class="p">())</span>
+<div class="highlight"><pre><span></span><code><span class="kd">let</span><span class="w"> </span><span class="nv">authenticator</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">Authenticator</span><span class="p">(</span><span class="n">SwiftKeychain</span><span class="p">())</span>
 <span class="c1">// later on:</span>
 <span class="n">authenticator</span><span class="p">.</span><span class="n">login</span><span class="p">()</span>
 </code></pre></div>

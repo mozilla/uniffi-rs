@@ -2408,15 +2408,15 @@ types inside variants are UniFFI builtin types; user-defined types might be allo
 </code></pre></div>
 <p>would give you in Kotlin &amp; Swift:</p>
 <div class="highlight"><pre><span></span><code><span class="c1">// kotlin</span>
-<span class="kd">enum</span> <span class="nc">class</span> <span class="n">MyEnum</span> <span class="p">{</span>
-    <span class="n">FOO</span><span class="p">,</span>
-    <span class="n">BAR</span><span class="p">;</span>
-    <span class="n">companion</span> <span class="n">object</span>
+<span class="kd">enum</span><span class="w"> </span><span class="nc">class</span><span class="w"> </span><span class="n">MyEnum</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">FOO</span><span class="p">,</span>
+<span class="w">    </span><span class="n">BAR</span><span class="p">;</span>
+<span class="w">    </span><span class="n">companion</span><span class="w"> </span><span class="n">object</span>
 <span class="p">}</span>
 <span class="c1">// swift</span>
-<span class="kd">public</span> <span class="kd">enum</span> <span class="nc">MyEnum</span> <span class="p">{</span>
-    <span class="k">case</span> <span class="n">foo</span>
-    <span class="k">case</span> <span class="n">bar</span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">enum</span><span class="w"> </span><span class="nc">MyEnum</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">foo</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">bar</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>which means you cannot use the platforms helpful methods like <code>value</code> or <code>rawValue</code> to get the underlying discriminants. Adding a <code>repr</code> will allow the type to be defined in the foreign bindings.</p>
@@ -2431,16 +2431,16 @@ types inside variants are UniFFI builtin types; user-defined types might be allo
 </code></pre></div>
 <p>will now generate:</p>
 <div class="highlight"><pre><span></span><code><span class="c1">// kotlin</span>
-<span class="kd">enum</span> <span class="nc">class</span> <span class="n">MyEnum</span><span class="p">(</span><span class="n">val</span> <span class="n">value</span><span class="p">:</span> <span class="n">UByte</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">FOO</span><span class="p">(</span><span class="mi">3</span><span class="n">u</span><span class="p">),</span>
-    <span class="n">BAR</span><span class="p">(</span><span class="mi">4</span><span class="n">u</span><span class="p">);</span>
-    <span class="n">companion</span> <span class="n">object</span>
+<span class="kd">enum</span><span class="w"> </span><span class="nc">class</span><span class="w"> </span><span class="n">MyEnum</span><span class="p">(</span><span class="n">val</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="n">UByte</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">FOO</span><span class="p">(</span><span class="mi">3</span><span class="n">u</span><span class="p">),</span>
+<span class="w">    </span><span class="n">BAR</span><span class="p">(</span><span class="mi">4</span><span class="n">u</span><span class="p">);</span>
+<span class="w">    </span><span class="n">companion</span><span class="w"> </span><span class="n">object</span>
 <span class="p">}</span>
 
 <span class="c1">// swift</span>
-<span class="kd">public</span> <span class="kd">enum</span> <span class="nc">MyEnum</span> <span class="p">:</span> <span class="nb">UInt8</span> <span class="p">{</span>
-    <span class="k">case</span> <span class="n">foo</span> <span class="p">=</span> <span class="mi">3</span>
-    <span class="k">case</span> <span class="n">bar</span> <span class="p">=</span> <span class="mi">4</span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">enum</span><span class="w"> </span><span class="nc">MyEnum</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">UInt8</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">foo</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">3</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">bar</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">4</span>
 <span class="p">}</span>
 </code></pre></div>
 <h2 id="recursive-enums">Recursive enums</h2>
