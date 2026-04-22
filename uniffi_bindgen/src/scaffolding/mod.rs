@@ -28,6 +28,22 @@ mod filters {
         type_rs_inner(type_)
     }
 
+    /// Render the Rust type of a function/method/constructor argument.
+    /// `[ByRef] bytes` lowers to `&[u8]` so scaffolding matches the
+    /// zero-copy FFI path; other by-ref args get a plain `&` prefix.
+    #[askama::filter_fn]
+    pub fn arg_rs(arg: &Argument, _values: &dyn askama::Values) -> Result<String, askama::Error> {
+        if arg.is_borrowed_bytes() {
+            return Ok("&[u8]".to_string());
+        }
+        let rendered = type_rs_inner(&arg.as_type())?;
+        Ok(if arg.by_ref() {
+            format!("&{rendered}")
+        } else {
+            rendered
+        })
+    }
+
     fn type_rs_inner(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8 => "i8".into(),

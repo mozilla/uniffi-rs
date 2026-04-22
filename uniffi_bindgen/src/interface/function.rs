@@ -203,6 +203,12 @@ impl Argument {
         self.by_ref
     }
 
+    /// True for zero-copy `&[u8]` / `[ByRef] bytes` arguments, which take the
+    /// `ForeignBytes` FFI path instead of the owned `RustBuffer` path.
+    pub fn is_borrowed_bytes(&self) -> bool {
+        self.by_ref && matches!(self.type_, Type::Bytes)
+    }
+
     pub fn is_trait_ref(&self) -> bool {
         matches!(&self.type_, Type::Object { imp, .. } if *imp == ObjectImpl::Trait)
     }
@@ -224,9 +230,14 @@ impl AsType for Argument {
 
 impl From<&Argument> for FfiArgument {
     fn from(a: &Argument) -> FfiArgument {
+        let type_ = if a.is_borrowed_bytes() {
+            FfiType::ForeignBytes
+        } else {
+            (&a.type_).into()
+        };
         FfiArgument {
             name: a.name.clone(),
-            type_: (&a.type_).into(),
+            type_,
         }
     }
 }
@@ -433,6 +444,32 @@ mod test {
                 .unwrap(),
             "informative docstring"
         );
+    }
+
+    #[test]
+    fn byref_bytes_maps_to_foreignbytes() {
+        let arg = Argument {
+            name: "buf".into(),
+            type_: Type::Bytes,
+            by_ref: true,
+            optional: false,
+            default: None,
+        };
+        let ffi_arg: FfiArgument = (&arg).into();
+        assert!(matches!(ffi_arg.type_, FfiType::ForeignBytes));
+    }
+
+    #[test]
+    fn owned_bytes_maps_to_rustbuffer() {
+        let arg = Argument {
+            name: "buf".into(),
+            type_: Type::Bytes,
+            by_ref: false,
+            optional: false,
+            default: None,
+        };
+        let ffi_arg: FfiArgument = (&arg).into();
+        assert!(matches!(ffi_arg.type_, FfiType::RustBuffer(None)));
     }
 
     #[test]
