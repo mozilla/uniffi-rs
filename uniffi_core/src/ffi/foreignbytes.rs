@@ -26,9 +26,9 @@
 pub struct ForeignBytes {
     /// The length of the pointed-to data.
     /// We use an `i32` for compatibility with JNA.
-    len: i32,
+    pub(crate) len: i32,
     /// The pointer to the foreign-owned bytes.
-    data: *const u8,
+    pub(crate) data: *const u8,
 }
 
 impl ForeignBytes {
@@ -76,6 +76,30 @@ impl ForeignBytes {
     }
 }
 
+impl std::borrow::Borrow<[u8]> for ForeignBytes {
+    fn borrow(&self) -> &[u8] {
+        self.as_slice()
+    }
+}
+
+unsafe impl<UT> crate::Lift<UT> for ForeignBytes {
+    type FfiType = ForeignBytes;
+
+    fn try_lift(v: Self::FfiType) -> crate::Result<Self> {
+        Ok(v)
+    }
+
+    fn try_read(_buf: &mut &[u8]) -> crate::Result<Self> {
+        anyhow::bail!("ForeignBytes cannot be read from a RustBuffer")
+    }
+}
+
+impl<UT> crate::TypeId<UT> for ForeignBytes {
+    const TYPE_ID_META: crate::MetadataBuffer =
+        crate::MetadataBuffer::from_code(crate::metadata::codes::TYPE_VEC)
+            .concat(<u8 as crate::TypeId<UT>>::TYPE_ID_META);
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -114,5 +138,23 @@ mod test {
         let v = [0u8, 1, 2];
         let fbuf = unsafe { ForeignBytes::from_raw_parts(v.as_ptr(), -1) };
         fbuf.as_slice();
+    }
+
+    #[test]
+    fn test_foreignbytes_borrow_as_slice() {
+        use std::borrow::Borrow;
+        let v = [10u8, 20, 30];
+        let fbuf = unsafe { ForeignBytes::from_raw_parts(v.as_ptr(), 3) };
+        let borrowed: &[u8] = Borrow::<[u8]>::borrow(&fbuf);
+        assert_eq!(borrowed, &[10u8, 20, 30]);
+    }
+
+    #[test]
+    fn test_foreignbytes_lift() {
+        use crate::{Lift, UniFfiTag};
+        let v = [1u8, 2, 3];
+        let fbuf = unsafe { ForeignBytes::from_raw_parts(v.as_ptr(), 3) };
+        let lifted: ForeignBytes = <ForeignBytes as Lift<UniFfiTag>>::try_lift(fbuf).unwrap();
+        assert_eq!(lifted.as_slice(), &[1u8, 2, 3]);
     }
 }

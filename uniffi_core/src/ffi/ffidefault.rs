@@ -53,6 +53,12 @@ impl FfiDefault for crate::RustBuffer {
     }
 }
 
+impl FfiDefault for crate::ForeignBytes {
+    fn ffi_default() -> Self {
+        unsafe { crate::ForeignBytes::from_raw_parts(std::ptr::null(), 0) }
+    }
+}
+
 impl<T> FfiDefault for Option<T> {
     fn ffi_default() -> Self {
         None
