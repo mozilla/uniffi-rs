@@ -10,6 +10,9 @@
 - Kotlin and Python now fail to generate bindings when there are async primary constructors.
   Previously these languages skipped the constructor in this case or generated a constructor that always threw.
   You can get similar behavior by adding the primary constructor to the uniffi.toml excludes list in uniffi.toml (e.g. `excludes = ["MyObject.new"])
+- **Kotlin:** Functions declared with `[ByRef] bytes` in UDL or `&[u8]` in proc-macros now accept `java.nio.ByteBuffer` (direct) instead of `ByteArray`. To migrate, wrap a `ByteArray` as `ByteBuffer.allocateDirect(arr.size).put(arr).flip()`. This enables zero-copy transfer of byte buffers from Kotlin to Rust ([#2864](https://github.com/mozilla/uniffi-rs/issues/2864)).
+- **Ruby:** Functions declared with `[ByRef] bytes` or `&[u8]` are not supported by the Ruby binding in this release. Using them will cause codegen to fail or produce code that breaks at runtime ([#2864](https://github.com/mozilla/uniffi-rs/issues/2864)).
+- **Async `&[u8]` / `[ByRef] bytes` is not supported this release.** Swift fails at compile time; Kotlin and Python may build but have unverified lifetime guarantees across suspension. Use owned `Vec<u8>` / `bytes` for async functions until a dedicated follow-up lands ([#2864](https://github.com/mozilla/uniffi-rs/issues/2864)).
 
 ### What's Fixed
 
@@ -26,6 +29,7 @@
 - Kotlin objects now have an `uniffiIsDestroyed` property that returns `true` if the Rust reference no longer exists ([#2825](https://github.com/mozilla/uniffi-rs/pull/2825))
 - Updated `askama` version to `0.15.6`
 - Custom Types can have docstrings in some languages ([#2853](https://github.com/mozilla/uniffi-rs/pull/2853))
+- Zero-copy transfer of `&[u8]` / `[ByRef] bytes` arguments from foreign code to Rust. Kotlin, Swift, and Python bindings now pass byte buffers as pointer + length (`ForeignBytes`) rather than copying through `RustBuffer`. See the Breaking Changes section for the Kotlin API impact ([#2864](https://github.com/mozilla/uniffi-rs/issues/2864)).
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.1...HEAD).
 
