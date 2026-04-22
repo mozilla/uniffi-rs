@@ -898,6 +898,37 @@ mod filters {
         Ok(KotlinCodeOracle.var_name_raw(nm.as_ref()))
     }
 
+    /// Per-argument override of `type_name` that routes borrowed `Bytes` to
+    /// `java.nio.ByteBuffer` — the only Kotlin type JNA can expose a native
+    /// pointer to. Other args take the per-Type `type_name` path.
+    #[askama::filter_fn]
+    pub(super) fn type_name_for_arg(
+        arg: &Argument,
+        _: &dyn askama::Values,
+        ci: &ComponentInterface,
+    ) -> Result<String, askama::Error> {
+        if arg.is_borrowed_bytes() {
+            Ok("java.nio.ByteBuffer".to_string())
+        } else {
+            Ok(arg.as_codetype().type_label(ci))
+        }
+    }
+
+    /// Per-argument override of `lower_fn` that routes borrowed `Bytes`
+    /// through `FfiConverterByRefBytes.lower` (zero-copy). Other args take
+    /// the per-Type `lower_fn` path.
+    #[askama::filter_fn]
+    pub(super) fn lower_fn_for_arg(
+        arg: &Argument,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
+        if arg.is_borrowed_bytes() {
+            Ok("FfiConverterByRefBytes.lower".to_string())
+        } else {
+            Ok(format!("{}.lower", arg.as_codetype().ffi_converter_name()))
+        }
+    }
+
     /// Get a String representing the name used for an individual enum variant.
     #[askama::filter_fn]
     pub fn variant_name(v: &Variant, _: &dyn askama::Values) -> Result<String, askama::Error> {
