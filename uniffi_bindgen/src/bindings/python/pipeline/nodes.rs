@@ -167,8 +167,25 @@ pub struct Argument {
     #[map_node(names::var_name(&self.name))]
     pub name: String,
     pub ty: TypeNode,
+    pub by_ref: bool,
     pub optional: bool,
     pub default: Option<DefaultValueNode>,
+}
+
+impl Argument {
+    /// Returns the Python FfiConverter class name for this argument.
+    ///
+    /// For a borrowed `Bytes` (`&[u8]`) argument this routes through
+    /// `_UniffiFfiConverterByRefBytes`, which does zero-copy lowering.
+    /// For every other argument it returns the converter attached to the
+    /// argument's type.
+    pub fn ffi_converter_name(&self) -> String {
+        if self.by_ref && matches!(self.ty.ty, Type::Bytes) {
+            "_UniffiFfiConverterByRefBytes".to_string()
+        } else {
+            self.ty.ffi_converter_name.clone()
+        }
+    }
 }
 
 #[derive(Debug, Clone, Node, MapNode, Eq, PartialEq, Hash)]

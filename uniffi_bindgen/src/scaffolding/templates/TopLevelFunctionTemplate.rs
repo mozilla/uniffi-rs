@@ -4,7 +4,7 @@
 #[::uniffi::export_for_udl]
 pub {% if func.is_async() %}async {% endif %}fn r#{{ func.name() }}(
     {%- for arg in func.arguments() %}
-    r#{{ arg.name() }}: {% if arg.by_ref() %}&{% endif %}{{ arg.as_type().borrow()|type_rs }},
+    r#{{ arg.name() }}: {{ arg|arg_rs }},
     {%- endfor %}
 )
 {%- match (func.return_type(), func.throws_type()) %}

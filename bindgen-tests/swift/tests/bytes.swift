@@ -8,3 +8,9 @@ import Foundation
 var data = Data.init()
 data.append(contentsOf: [1, 2, 3, 4])
 assert(roundtripBytes(a: data) == data);
+
+// Zero-copy &[u8] — proc-macro path
+assert(sumBytesProcmacro(buf: Data()) == 0)
+assert(sumBytesProcmacro(buf: Data([1, 2, 3])) == 6)
+assert(firstByteProcmacro(buf: Data()) == nil)
+assert(firstByteProcmacro(buf: Data([42])) == 42)
