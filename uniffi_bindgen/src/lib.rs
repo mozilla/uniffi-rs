@@ -113,6 +113,8 @@ pub mod scaffolding;
 #[cfg(feature = "cargo-metadata")]
 pub mod cargo_metadata;
 
+mod crate_metadata;
+
 use crate::interface::CallbackInterface;
 use crate::interface::{
     Argument, Constructor, Enum, FfiArgument, FfiField, Field, Function, Method, Object, Record,
