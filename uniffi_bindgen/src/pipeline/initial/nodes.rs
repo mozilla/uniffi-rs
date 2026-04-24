@@ -32,6 +32,8 @@ pub struct Namespace {
 #[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
 #[map_node(from(uniffi_meta::FnMetadata))]
 pub struct Function {
+    #[map_node(self.orig_name.unwrap_or_else(|| self.name.clone()))]
+    pub orig_name: String,
     pub name: String,
     pub is_async: bool,
     pub inputs: Vec<Argument>,
@@ -53,6 +55,8 @@ pub enum TypeDefinition {
 #[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
 #[map_node(from(uniffi_meta::ConstructorMetadata))]
 pub struct Constructor {
+    #[map_node(self.orig_name.unwrap_or_else(|| self.name.clone()))]
+    pub orig_name: String,
     pub name: String,
     pub is_async: bool,
     pub inputs: Vec<Argument>,
@@ -65,6 +69,8 @@ pub struct Constructor {
 #[map_node(from(uniffi_meta::MethodMetadata))]
 #[map_node(from(uniffi_meta::TraitMethodMetadata))]
 pub struct Method {
+    #[map_node(self.orig_name.unwrap_or_else(|| self.name.clone()))]
+    pub orig_name: String,
     pub name: String,
     pub is_async: bool,
     pub inputs: Vec<Argument>,
@@ -81,6 +87,8 @@ pub struct TraitMethod {
     // Note: the position of `index` is important since it causes callback interface methods to be
     // ordered correctly in MetadataGroup.items
     pub index: u32,
+    #[map_node(self.orig_name.unwrap_or_else(|| self.name.clone()))]
+    pub orig_name: String,
     pub name: String,
     pub is_async: bool,
     pub inputs: Vec<Argument>,
@@ -130,22 +138,23 @@ pub enum Literal {
 
 #[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
 #[map_node(from(uniffi_meta::RecordMetadata))]
+#[map_node(types::map_record)]
 pub struct Record {
-    #[map_node(context.constructors_for_type(&self.module_path, &self.name)?)]
     pub constructors: Vec<Constructor>,
-    #[map_node(context.methods_for_type(&self.module_path, &self.name)?)]
     pub methods: Vec<Method>,
-    #[map_node(context.uniffi_traits_for_type(&self.module_path, &self.name)?)]
     pub uniffi_traits: Vec<UniffiTrait>,
     pub name: String,
+    pub orig_name: String,
     pub fields: Vec<Field>,
     pub docstring: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
 #[map_node(from(uniffi_meta::FieldMetadata))]
+#[map_node(types::map_field)]
 pub struct Field {
     pub name: String,
+    pub orig_name: String,
     pub ty: Type,
     pub default: Option<DefaultValue>,
     pub docstring: Option<String>,
@@ -153,14 +162,13 @@ pub struct Field {
 
 #[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
 #[map_node(from(uniffi_meta::EnumMetadata))]
+#[map_node(types::map_enum)]
 pub struct Enum {
-    #[map_node(context.constructors_for_type(&self.module_path, &self.name)?)]
     pub constructors: Vec<Constructor>,
-    #[map_node(context.methods_for_type(&self.module_path, &self.name)?)]
     pub methods: Vec<Method>,
-    #[map_node(context.uniffi_traits_for_type(&self.module_path, &self.name)?)]
     pub uniffi_traits: Vec<UniffiTrait>,
     pub name: String,
+    pub orig_name: String,
     pub shape: EnumShape,
     pub variants: Vec<Variant>,
     pub discr_type: Option<Type>,
@@ -169,8 +177,10 @@ pub struct Enum {
 
 #[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
 #[map_node(from(uniffi_meta::VariantMetadata))]
+#[map_node(types::map_variant)]
 pub struct Variant {
     pub name: String,
+    pub orig_name: String,
     pub discr: Option<Literal>,
     pub fields: Vec<Field>,
     pub docstring: Option<String>,
@@ -178,26 +188,25 @@ pub struct Variant {
 
 #[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
 #[map_node(from(uniffi_meta::ObjectMetadata))]
+#[map_node(types::map_interface)]
 pub struct Interface {
-    #[map_node(context.constructors_for_type(&self.module_path, &self.name)?)]
     pub constructors: Vec<Constructor>,
-    #[map_node(context.methods_for_type(&self.module_path, &self.name)?)]
     pub methods: Vec<Method>,
-    #[map_node(context.uniffi_traits_for_type(&self.module_path, &self.name)?)]
     pub uniffi_traits: Vec<UniffiTrait>,
-    #[map_node(context.trait_impls_for_type(&self.module_path, &self.name)?)]
     pub trait_impls: Vec<ObjectTraitImpl>,
     pub name: String,
+    pub orig_name: String,
     pub docstring: Option<String>,
     pub imp: ObjectImpl,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
 #[map_node(from(uniffi_meta::CallbackInterfaceMetadata))]
+#[map_node(types::map_callback_interface)]
 pub struct CallbackInterface {
-    #[map_node(context.methods_for_type(&self.module_path, &self.name)?)]
     pub methods: Vec<Method>,
     pub name: String,
+    pub orig_name: String,
     pub docstring: Option<String>,
 }
 
@@ -221,8 +230,10 @@ pub struct ObjectTraitImpl {
 
 #[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
 #[map_node(from(uniffi_meta::CustomTypeMetadata))]
+#[map_node(types::map_custom_type)]
 pub struct CustomType {
     pub name: String,
+    pub orig_name: String,
     pub builtin: Type,
     pub docstring: Option<String>,
 }
@@ -264,23 +275,28 @@ pub enum Type {
     Interface {
         namespace: String,
         name: String,
+        orig_name: String,
         imp: ObjectImpl,
     },
     Record {
         namespace: String,
         name: String,
+        orig_name: String,
     },
     Enum {
         namespace: String,
         name: String,
+        orig_name: String,
     },
     CallbackInterface {
         namespace: String,
         name: String,
+        orig_name: String,
     },
     Custom {
         namespace: String,
         name: String,
+        orig_name: String,
         builtin: Box<Type>,
     },
 }
@@ -305,6 +321,17 @@ impl Type {
             | Type::Interface { name, .. }
             | Type::CallbackInterface { name, .. }
             | Type::Custom { name, .. } => Some(name.as_str()),
+            _ => None,
+        }
+    }
+
+    pub fn orig_name(&self) -> Option<&str> {
+        match &self {
+            Type::Record { orig_name, .. }
+            | Type::Enum { orig_name, .. }
+            | Type::Interface { orig_name, .. }
+            | Type::CallbackInterface { orig_name, .. }
+            | Type::Custom { orig_name, .. } => Some(orig_name.as_str()),
             _ => None,
         }
     }

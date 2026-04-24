@@ -34,6 +34,7 @@ uniffi_internal_macros = { path = "../uniffi_internal_macros", version = "=0.31.
 uniffi_pipeline = { path = "../uniffi_pipeline", version = "=0.31.1" }
 uniffi_meta = { path = "../uniffi_meta", version = "=0.31.1" }
 uniffi_testing = { path = "../uniffi_testing", version = "=0.31.1", optional = true }
+uniffi_parse_rs = { path = "../uniffi_parse_rs", version = "=0.31.1" }
 uniffi_udl = { path = "../uniffi_udl", version = "=0.31.1" }
 # Don't include the `unicode-linebreak` or `unicode-width` since that functionality isn't needed for
 # docstrings.

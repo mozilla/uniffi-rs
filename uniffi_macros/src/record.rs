@@ -7,7 +7,8 @@ use crate::{
     ffiops,
     util::{
         create_metadata_items, either_attribute_arg, extract_docstring, ident_to_string, kw,
-        try_metadata_value_from_usize, try_read_field, AttributeSliceExt, UniffiAttributeArgs,
+        orig_name_metadata, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
+        UniffiAttributeArgs,
     },
     DeriveOptions,
 };
@@ -188,6 +189,7 @@ impl UniffiAttributeArgs for FieldAttributeArguments {
 
 fn record_meta_static_var(record: &RecordItem) -> syn::Result<TokenStream> {
     let name = &record.foreign_name();
+    let rec_orig_name_metadata = orig_name_metadata(record.attr.name.is_some(), &record.ident);
     let docstring = record.docstring();
     let fields_len = try_metadata_value_from_usize(
         record.struct_().fields.len(),
@@ -202,7 +204,12 @@ fn record_meta_static_var(record: &RecordItem) -> syn::Result<TokenStream> {
             let attrs = f
                 .attrs
                 .parse_uniffi_attr_args::<FieldAttributeArguments>()?;
-
+            let orig_name_metadata = match &f.ident {
+                Some(ident) => orig_name_metadata(attrs.name.is_some(), ident),
+                None => quote! {
+                    .concat_bool(false)
+                },
+            };
             let name = attrs
                 .name
                 .unwrap_or(ident_to_string(f.ident.as_ref().unwrap()));
@@ -214,6 +221,7 @@ fn record_meta_static_var(record: &RecordItem) -> syn::Result<TokenStream> {
             // TYPE_ID_META should be the same for both traits.
             Ok(quote! {
                 .concat_str(#name)
+                #orig_name_metadata
                 .concat(#type_id_meta)
                 #default
                 .concat_long_str(#docstring)
@@ -228,6 +236,7 @@ fn record_meta_static_var(record: &RecordItem) -> syn::Result<TokenStream> {
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::RECORD)
                 .concat_str(module_path!())
                 .concat_str(#name)
+                #rec_orig_name_metadata
                 .concat_value(#fields_len)
                 #concat_fields
                 .concat_long_str(#docstring)

@@ -1,0 +1,15 @@
+error: Unknown item
+   ┌─ src/test_src/error_through_type_alias.rs:12:27
+   │
+ 3 │ pub fn function(a: u32) -> submod::Result<String> {
+   │                            ---------------------- while resolving type
+   ·
+10 │     pub type Result<T> = Result2<T>;
+   │                          ---------- while resolving type
+11 │ 
+12 │     pub type Result2<T, E=Error> = std::result::Result<T, E>;
+   │                           ^^^^^ Unknown item
+   │
+   = Do you need to add a UniFFI derive or uniffi::export?
+   = Does the item come from a non-UniFFI crate?
+

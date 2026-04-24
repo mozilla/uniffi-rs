@@ -139,6 +139,8 @@ pub struct UdlFile {
 pub struct FnMetadata {
     pub module_path: String,
     pub name: String,
+    // Original name, if this was renamed
+    pub orig_name: Option<String>,
     pub is_async: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
@@ -162,6 +164,8 @@ pub struct ConstructorMetadata {
     pub module_path: String,
     pub self_name: String,
     pub name: String,
+    // Original name, if this was renamed
+    pub orig_name: Option<String>,
     pub is_async: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub throws: Option<Type>,
@@ -188,6 +192,8 @@ pub struct MethodMetadata {
     pub module_path: String,
     pub self_name: String,
     pub name: String,
+    // Original name, if this was renamed
+    pub orig_name: Option<String>,
     pub is_async: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
@@ -215,6 +221,8 @@ pub struct TraitMethodMetadata {
     // ordered correctly in MetadataGroup.items
     pub index: u32,
     pub name: String,
+    // Original name, if this was renamed
+    pub orig_name: Option<String>,
     pub is_async: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
@@ -240,6 +248,7 @@ impl From<TraitMethodMetadata> for MethodMetadata {
             module_path: meta.module_path,
             self_name: meta.trait_name,
             name: meta.name,
+            orig_name: meta.orig_name,
             is_async: meta.is_async,
             inputs: meta.inputs,
             return_type: meta.return_type,
@@ -323,6 +332,8 @@ pub enum DefaultValueMetadata {
 pub struct RecordMetadata {
     pub module_path: String,
     pub name: String,
+    // Original name, if this was renamed
+    pub orig_name: Option<String>,
     pub remote: bool, // only used when generating scaffolding from UDL
     pub fields: Vec<FieldMetadata>,
     pub docstring: Option<String>,
@@ -331,6 +342,8 @@ pub struct RecordMetadata {
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FieldMetadata {
     pub name: String,
+    // Original name, if this was renamed
+    pub orig_name: Option<String>,
     pub ty: Type,
     pub default: Option<DefaultValueMetadata>,
     pub docstring: Option<String>,
@@ -369,6 +382,8 @@ impl EnumShape {
 pub struct EnumMetadata {
     pub module_path: String,
     pub name: String,
+    // Original name, if this was renamed
+    pub orig_name: Option<String>,
     pub shape: EnumShape,
     pub remote: bool, // only used when generating scaffolding from UDL
     pub variants: Vec<VariantMetadata>,
@@ -380,6 +395,8 @@ pub struct EnumMetadata {
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct VariantMetadata {
     pub name: String,
+    // Original name, if this was renamed
+    pub orig_name: Option<String>,
     pub discr: Option<LiteralMetadata>,
     pub fields: Vec<FieldMetadata>,
     pub docstring: Option<String>,
@@ -389,6 +406,8 @@ pub struct VariantMetadata {
 pub struct ObjectMetadata {
     pub module_path: String,
     pub name: String,
+    // Original name, if this was renamed
+    pub orig_name: Option<String>,
     pub remote: bool, // only used when generating scaffolding from UDL
     pub imp: types::ObjectImpl,
     pub docstring: Option<String>,
@@ -519,6 +538,7 @@ impl Checksum for ObjectTraitImplMetadata {
 pub struct CustomTypeMetadata {
     pub module_path: String,
     pub name: String,
+    pub orig_name: Option<String>,
     pub builtin: Type,
     pub docstring: Option<String>,
 }

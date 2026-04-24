@@ -43,19 +43,23 @@ pub fn map_type(ty: uniffi_meta::Type, context: &Context) -> Result<Type> {
             imp,
         } => Type::Interface {
             namespace: context.get_namespace_name(&module_path)?,
+            orig_name: context.get_orig_name(&module_path, &name),
             name,
             imp: imp.map_node(context)?,
         },
         uniffi_meta::Type::Record { module_path, name } => Type::Record {
             namespace: context.get_namespace_name(&module_path)?,
+            orig_name: context.get_orig_name(&module_path, &name),
             name,
         },
         uniffi_meta::Type::Enum { module_path, name } => Type::Enum {
             namespace: context.get_namespace_name(&module_path)?,
+            orig_name: context.get_orig_name(&module_path, &name),
             name,
         },
         uniffi_meta::Type::CallbackInterface { module_path, name } => Type::CallbackInterface {
             namespace: context.get_namespace_name(&module_path)?,
+            orig_name: context.get_orig_name(&module_path, &name),
             name,
         },
         uniffi_meta::Type::Custom {
@@ -64,8 +68,93 @@ pub fn map_type(ty: uniffi_meta::Type, context: &Context) -> Result<Type> {
             builtin,
         } => Type::Custom {
             namespace: context.get_namespace_name(&module_path)?,
+            orig_name: context.get_orig_name(&module_path, &name),
             name,
             builtin: builtin.map_node(context)?,
         },
+    })
+}
+
+pub fn map_record(input: uniffi_meta::RecordMetadata, context: &Context) -> Result<Record> {
+    Ok(Record {
+        constructors: context.constructors_for_type(&input.module_path, &input.name)?,
+        methods: context.methods_for_type(&input.module_path, &input.name)?,
+        uniffi_traits: context.uniffi_traits_for_type(&input.module_path, &input.name)?,
+        orig_name: input.orig_name.unwrap_or_else(|| input.name.clone()),
+        name: input.name,
+        fields: input.fields.map_node(context)?,
+        docstring: input.docstring,
+    })
+}
+
+pub fn map_enum(input: uniffi_meta::EnumMetadata, context: &Context) -> Result<Enum> {
+    Ok(Enum {
+        constructors: context.constructors_for_type(&input.module_path, &input.name)?,
+        methods: context.methods_for_type(&input.module_path, &input.name)?,
+        uniffi_traits: context.uniffi_traits_for_type(&input.module_path, &input.name)?,
+        orig_name: input.orig_name.unwrap_or_else(|| input.name.clone()),
+        name: input.name,
+        shape: input.shape,
+        variants: input.variants.map_node(context)?,
+        discr_type: input.discr_type.map_node(context)?,
+        docstring: input.docstring,
+    })
+}
+
+pub fn map_interface(input: uniffi_meta::ObjectMetadata, context: &Context) -> Result<Interface> {
+    Ok(Interface {
+        constructors: context.constructors_for_type(&input.module_path, &input.name)?,
+        methods: context.methods_for_type(&input.module_path, &input.name)?,
+        uniffi_traits: context.uniffi_traits_for_type(&input.module_path, &input.name)?,
+        trait_impls: context.trait_impls_for_type(&input.module_path, &input.name)?,
+        orig_name: input.orig_name.unwrap_or_else(|| input.name.clone()),
+        name: input.name,
+        docstring: input.docstring,
+        imp: input.imp,
+    })
+}
+
+pub fn map_callback_interface(
+    input: uniffi_meta::CallbackInterfaceMetadata,
+    context: &Context,
+) -> Result<CallbackInterface> {
+    Ok(CallbackInterface {
+        methods: context.methods_for_type(&input.module_path, &input.name)?,
+        // Renaming callback interfaces is not supported yet -- just copy name.
+        orig_name: input.name.clone(),
+        name: input.name,
+        docstring: input.docstring,
+    })
+}
+
+pub fn map_custom_type(
+    input: uniffi_meta::CustomTypeMetadata,
+    context: &Context,
+) -> Result<CustomType> {
+    Ok(CustomType {
+        orig_name: input.orig_name.unwrap_or(input.name.clone()),
+        name: input.name,
+        builtin: input.builtin.map_node(context)?,
+        docstring: input.docstring,
+    })
+}
+
+pub fn map_variant(input: uniffi_meta::VariantMetadata, context: &Context) -> Result<Variant> {
+    Ok(Variant {
+        orig_name: input.orig_name.unwrap_or_else(|| input.name.clone()),
+        name: input.name,
+        discr: input.discr.map_node(context)?,
+        fields: input.fields.map_node(context)?,
+        docstring: input.docstring,
+    })
+}
+
+pub fn map_field(input: uniffi_meta::FieldMetadata, context: &Context) -> Result<Field> {
+    Ok(Field {
+        orig_name: input.orig_name.unwrap_or_else(|| input.name.clone()),
+        name: input.name,
+        ty: input.ty.map_node(context)?,
+        default: input.default.map_node(context)?,
+        docstring: input.docstring,
     })
 }

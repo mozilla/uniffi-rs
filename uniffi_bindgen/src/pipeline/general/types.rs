@@ -4,6 +4,15 @@
 
 use super::*;
 
+pub fn map_type_node(ty: Type, context: &Context) -> Result<TypeNode> {
+    Ok(TypeNode {
+        canonical_name: canonical_name(&ty),
+        is_used_as_error: context.type_is_used_as_error(&ty),
+        ffi_type: ffi_types::ffi_type(&ty, context)?,
+        ty: ty.map_node(context)?,
+    })
+}
+
 pub fn canonical_name(ty: &Type) -> String {
     match ty {
         Type::UInt8 => "UInt8".to_string(),

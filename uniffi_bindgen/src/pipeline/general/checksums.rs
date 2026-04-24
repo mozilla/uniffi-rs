@@ -9,51 +9,50 @@ use super::*;
 pub fn checksums(namespace: &initial::Namespace) -> Result<Vec<Checksum>> {
     let mut checksums = vec![];
 
-    namespace.try_visit(|func: &initial::Function| {
+    namespace.visit(|func: &initial::Function| {
+        let Some(checksum) = func.checksum else {
+            return;
+        };
         checksums.push(Checksum {
-            checksum: func
-                .checksum
-                .ok_or_else(|| anyhow!("Checksum not set for {}", func.name))?,
+            checksum,
             fn_name: RustFfiFunctionName(uniffi_meta::fn_checksum_symbol_name(
                 &namespace.crate_name,
                 &func.name,
             )),
         });
-        Ok(())
-    })?;
+    });
 
-    namespace.try_visit(|int: &initial::Interface| {
+    namespace.visit(|int: &initial::Interface| {
         let interface_name = int.name.clone();
         // Note: we're specifically only visiting `int.methods` here.  This skips methods for
         // traits like `Debug` which live in the `uniffi_traits` vec and don't have checksums.
-        int.methods.try_visit(|meth: &initial::Method| {
+        int.methods.visit(|meth: &initial::Method| {
+            let Some(checksum) = meth.checksum else {
+                return;
+            };
             checksums.push(Checksum {
-                checksum: meth
-                    .checksum
-                    .ok_or_else(|| anyhow!("Checksum not set for {}", meth.name))?,
+                checksum,
                 fn_name: RustFfiFunctionName(uniffi_meta::method_checksum_symbol_name(
                     &namespace.crate_name,
                     &interface_name,
                     &meth.name,
                 )),
             });
-            Ok(())
-        })?;
-        int.try_visit(|cons: &initial::Constructor| {
+        });
+        int.visit(|cons: &initial::Constructor| {
+            let Some(checksum) = cons.checksum else {
+                return;
+            };
             checksums.push(Checksum {
-                checksum: cons
-                    .checksum
-                    .ok_or_else(|| anyhow!("Checksum not set for {}", cons.name))?,
+                checksum,
                 fn_name: RustFfiFunctionName(uniffi_meta::constructor_checksum_symbol_name(
                     &namespace.crate_name,
                     &interface_name,
                     &cons.name,
                 )),
             });
-            Ok(())
-        })?;
-        Ok(())
-    })?;
+        });
+    });
 
     // Skip callback interfaces, since those don't get their checksums set currently.
 

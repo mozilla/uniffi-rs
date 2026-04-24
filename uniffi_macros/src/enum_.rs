@@ -11,7 +11,8 @@ use crate::{
     record::FieldAttributeArguments,
     util::{
         create_metadata_items, either_attribute_arg, extract_docstring, ident_to_string, kw,
-        try_metadata_value_from_usize, try_read_field, AttributeSliceExt, UniffiAttributeArgs,
+        orig_name_metadata, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
+        UniffiAttributeArgs,
     },
     DeriveOptions,
 };
@@ -117,6 +118,10 @@ impl EnumItem {
             Some(name) => name.clone(),
             None => ident_to_string(&self.ident),
         }
+    }
+
+    pub fn orig_name_metadata(&self) -> TokenStream {
+        orig_name_metadata(self.attr.name.is_some(), &self.ident)
     }
 
     pub fn is_flat_error(&self) -> bool {
@@ -268,6 +273,7 @@ fn enum_or_error_ffi_converter_impl(
 
 pub(crate) fn enum_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream> {
     let name = &item.foreign_name();
+    let orig_name_calls = &item.orig_name_metadata();
     let non_exhaustive = item.is_non_exhaustive();
     let docstring = item.docstring();
     let shape = EnumShape::Enum.as_u8();
@@ -276,6 +282,7 @@ pub(crate) fn enum_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream> 
         ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
             .concat_str(module_path!())
             .concat_str(#name)
+            #orig_name_calls
             .concat_value(#shape)
     };
     metadata_expr.extend(match item.discr_type() {
@@ -360,53 +367,50 @@ pub fn variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
                 "UniFFI limits enum variants to 256 fields",
             )?;
 
-            let field_names = v
+            let field_metadata = v
                 .fields
                 .iter()
                 .map(|f| {
                     let attrs = f
                         .attrs
                         .parse_uniffi_attr_args::<FieldAttributeArguments>()?;
-                    Ok(attrs
+                    let field_orig_name = match &f.ident {
+                        Some(ident) => orig_name_metadata(attrs.name.is_some(), ident),
+                        None => quote! {
+                            .concat_bool(false)
+                        },
+                    };
+                    let name = attrs
                         .name
-                        .unwrap_or(f.ident.as_ref().map(ident_to_string).unwrap_or_default()))
-                })
-                .collect::<syn::Result<Vec<_>>>()?;
+                        .unwrap_or(f.ident.as_ref().map(ident_to_string).unwrap_or_default());
+                    let type_id = ffiops::type_id_meta(&f.ty);
+                    let default_calls = default_value_metadata_calls(&attrs.default)?;
+                    let docstring = extract_docstring(&f.attrs)?;
 
-            let field_defaults = v
-                .fields
-                .iter()
-                .map(|f| {
-                    let attrs = f
-                        .attrs
-                        .parse_uniffi_attr_args::<FieldAttributeArguments>()?;
-                    default_value_metadata_calls(&attrs.default)
+                    Ok(quote! {
+                        .concat_str(#name)
+                        #field_orig_name
+                        .concat(#type_id)
+                        #default_calls
+                        .concat_long_str(#docstring)
+                    })
                 })
                 .collect::<syn::Result<Vec<_>>>()?;
 
             let attrs = v.attrs.parse_uniffi_attr_args::<VariantAttr>()?;
 
+            let variant_orig_name = orig_name_metadata(attrs.name.is_some(), &v.ident);
             let name = attrs.name.unwrap_or(ident_to_string(&v.ident));
             let value_tokens = variant_value(v)?;
 
             let docstring = extract_docstring(&v.attrs)?;
-            let field_docstrings = v
-                .fields
-                .iter()
-                .map(|f| extract_docstring(&f.attrs))
-                .collect::<syn::Result<Vec<_>>>()?;
-            let field_type_id_metas = v.fields.iter().map(|f| ffiops::type_id_meta(&f.ty));
 
             Ok(quote! {
                 .concat_str(#name)
+                #variant_orig_name
                 #value_tokens
                 .concat_value(#fields_len)
-                    #(
-                        .concat_str(#field_names)
-                        .concat(#field_type_id_metas)
-                        #field_defaults
-                        .concat_long_str(#field_docstrings)
-                    )*
+                    #(#field_metadata)*
                 .concat_long_str(#docstring)
             })
         }))

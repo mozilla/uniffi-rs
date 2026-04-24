@@ -145,8 +145,13 @@ pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
     #[cfg(feature = "cargo-metadata")]
     let mut paths = BindgenPaths::default();
 
+    // TODO: input cargo features and the target from the CLI and use that to build
+    // `CargoMetadataOptions`
     #[cfg(feature = "cargo-metadata")]
-    paths.add_cargo_metadata_layer(options.metadata_no_deps)?;
+    paths.add_cargo_metadata_layer(crate::CargoMetadataOptions {
+        no_deps: options.metadata_no_deps,
+        ..crate::CargoMetadataOptions::default()
+    })?;
 
     fs::create_dir_all(&options.out_dir)?;
 
