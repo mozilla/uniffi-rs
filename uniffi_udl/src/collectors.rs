@@ -62,6 +62,7 @@ impl InterfaceCollector {
                     uniffi_meta::CustomTypeMetadata {
                         module_path: module_path.clone(),
                         name: name.clone(),
+                        orig_name: None,
                         builtin: *builtin.clone(),
                         docstring: None,
                     }
