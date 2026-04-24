@@ -47,22 +47,20 @@ Then you can run `uniffi-bindgen` from any crate in your project using `cargo ru
 
 ## Running uniffi-bindgen using a library file
 
-Use `generate --library` to generate foreign bindings by using a cdylib file built for your library.
-This can be more convenient than specifying the UDL file -- especially when multiple UniFFI-ed crates are built together in one library.
-This should be used where possible - some "external type" features don't work otherwise.
+Pass a library path directly to `generate` to generate foreign bindings from a compiled library.
+Specifying a library instead of a UDL file is convenient when multiple UniFFI'd crates are built together in one library.
+UniFFI auto-detects whether the source is a library or a UDL file by its extension.
 
 In our example, we generate the bindings with:
 ```
 cargo build --release
-cargo run --bin uniffi-bindgen generate --library target/release/libmath.so --language kotlin --out-dir out
+cargo run --bin uniffi-bindgen generate target/release/libmath.so --language kotlin --out-dir out
 ```
 (probably `.dylib` on mac, good luck with `.dll`!)
 
-Then look in the `out` directory.
+Then look in the `out` directory - there will be one or more generated files.
 
-When using library mode, if multiple crates get built into the library that use UniFFI, all will have bindings generated for them.
-
-Library mode comes with some extra requirements:
+Passing a library comes with some extra requirements:
 
   - It must be run from within the cargo workspace of your project
   - Each crate must use exactly 1 UDL file when compiling the Rust library.  However, crates can have

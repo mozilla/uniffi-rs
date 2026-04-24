@@ -17,8 +17,6 @@ pub use uniffi_bindgen::{
     bindings::{
         generate, generate_swift_bindings, GenerateOptions, SwiftBindingsOptions, TargetLanguage,
     },
-    generate_bindings,
-    library_mode::generate_bindings as generate_bindings_library_mode,
     print_repr,
 };
 #[cfg(feature = "build")]

@@ -25,6 +25,12 @@
   passed to `uniffi_set_event_loop`.
 - Python: rename `uniffi_set_event_loop` to `uniffi_set_default_event_loop`
 
+### Breaking changes for users of `uniffi-bindgen` as a crate:
+- Removed the previously deprecated library-mode API: `BindgenCrateConfigSupplier`,
+ `EmptyCrateConfigSupplier`, `BindingGenerator`, `GenerationSettings`, `generate_external_bindings`,
+ `generate_bindings`, `find_components`, the `library_mode` module, and the
+ `uniffi::generate_bindings_library_mode` re-export. Use `BindgenLoader` instead.
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.0...HEAD).
 
 ### What's New?
