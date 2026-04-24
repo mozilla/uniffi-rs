@@ -4,10 +4,34 @@
 // passed to rust via `_arg_list_ffi_call` (we use  `var_name_rb` in `lower_rb`)
 #}
 
+{#
+// Returns the Ruby name for an enum variant field.
+// For tuple-style fields (empty name is uniffi metadata) we generate a 
+// positional name like v1, v2, ... using the 1-based loop index.
+#}
+{%- macro field_name(field, field_num) -%}
+{%- if field.name().is_empty() -%}
+values[{{- field_num - 1 -}}]
+{%- else -%}
+{{ field.name()|var_name_rb }}
+{%- endif -%}
+{%- endmacro -%}
+  
 {%- macro to_ffi_call(func) -%}
-    {%- match func.throws_name() -%}
-    {%- when Some with (e) -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ e|class_name_rb }},
+    {%- match func.throws_type() -%}
+    {%- when Some(Type::Custom { builtin, .. }) -%}
+      {%- match builtin.borrow() -%}
+      {%- when Type::Enum { name, .. } -%}
+      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
+      {%- when Type::Object { name, .. } -%}
+      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
+      {%- else -%}
+      {{ ci.namespace()|class_name_rb }}.rust_call
+      {%- endmatch -%}
+    {%- when Some(Type::Enum { name, .. }) -%}
+      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
+    {%- when Some(Type::Object { name, .. }) -%}
+      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
     {%- else -%}
       {{ ci.namespace()|class_name_rb }}.rust_call(
     {%- endmatch -%}
@@ -17,9 +41,20 @@
 {%- endmacro -%}
 
 {%- macro to_ffi_call_with_prefix(prefix, func) -%}
-    {%- match func.throws_name() -%}
-    {%- when Some with (e) -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ e|class_name_rb }},
+    {%- match func.throws_type() -%}
+    {%- when Some(Type::Custom { builtin, .. }) -%}
+      {%- match builtin.borrow() -%}
+      {%- when Type::Enum { name, .. } -%}
+      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
+      {%- when Type::Object { name, .. } -%}
+      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
+      {%- else -%}
+      {{ ci.namespace()|class_name_rb }}.rust_call
+      {%- endmatch -%}
+    {%- when Some(Type::Enum { name, .. }) -%}
+      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
+    {%- when Some(Type::Object { name, .. }) -%}
+      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
     {%- else -%}
       {{ ci.namespace()|class_name_rb }}.rust_call(
     {%- endmatch -%}
@@ -31,7 +66,7 @@
 
 {%- macro _arg_list_ffi_call(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name()|lower_rb(arg.as_type().borrow()) }}
+        {{- arg.name()|lower_rb(arg.as_type().borrow(), config) }}
         {%- if !loop.last %},{% endif %}
     {%- endfor %}
 {%- endmacro -%}
@@ -45,7 +80,7 @@
     {%- for arg in func.arguments() -%}
         {{ arg.name()|var_name_rb }}
         {%- match arg.default_value() %}
-        {%- when Some(default) %} = {{ default|default_rb }}
+        {%- when Some(_) %} = {{ arg|arg_default_rb }}
         {%- else %}
         {%- endmatch %}
         {%- if !loop.last %}, {% endif -%}
@@ -62,14 +97,14 @@
 
 {%- macro setup_args(func) %}
     {%- for arg in func.arguments() %}
-    {{ arg.name() }} = {{ arg.name()|coerce_rb(ci.namespace()|class_name_rb, arg.as_type().borrow()) }}
-    {{ arg.name()|check_lower_rb(arg.as_type().borrow()) }}
+    {{ arg.name() }} = {{ arg.name()|coerce_rb(ci.namespace()|class_name_rb, arg.as_type().borrow(), config) }}
+    {{ arg.name()|check_lower_rb(arg.as_type().borrow(), config) }}
     {% endfor -%}
 {%- endmacro -%}
 
 {%- macro setup_args_extra_indent(meth) %}
         {%- for arg in meth.arguments() %}
-        {{ arg.name() }} = {{ arg.name()|coerce_rb(ci.namespace()|class_name_rb, arg.as_type().borrow()) }}
-        {{ arg.name()|check_lower_rb(arg.as_type().borrow()) }}
+        {{ arg.name() }} = {{ arg.name()|coerce_rb(ci.namespace()|class_name_rb, arg.as_type().borrow(), config) }}
+        {{ arg.name()|check_lower_rb(arg.as_type().borrow(), config) }}
         {%- endfor %}
 {%- endmacro -%}

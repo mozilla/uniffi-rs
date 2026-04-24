@@ -30,19 +30,48 @@ class {{ e.name()|class_name_rb }}
 module {{ e.name()|class_name_rb }}
   {%- for variant in e.variants() %}
   class {{ variant.name()|class_name_rb }} < StandardError
-    def initialize({% for field in variant.fields() %}{{ field.name()|var_name_rb }}{% if !loop.last %}, {% endif %}{% endfor %})
-        {%- for field in variant.fields() %}
+    {%- let named_fields = variant.has_fields() && !variant.fields()[0].name().is_empty() %}
+    {%- if named_fields %}
+    def initialize({% for field in variant.fields() %}{{ field.name()|var_name_rb }}:{% if !loop.last %}, {% endif %}{% endfor %})
+        {% for field in variant.fields() %}
         @{{ field.name()|var_name_rb }} = {{ field.name()|var_name_rb }}
-        {%- endfor %}
+        {% endfor %}
         super()
-      end
+    end
+    {% else %}
+    def initialize({% for field in variant.fields() %}v{{ loop.index }}{% if !loop.last %}, {% endif %}{% endfor %})
+        {% if variant.has_fields() %}
+        @values = [{% for field in variant.fields() %}v{{ loop.index }}{% if !loop.last %}, {% endif %}{% endfor %}]
+        {% endif %}
+        super()
+    end
+    {% endif %}
     {%- if variant.has_fields() %}
+    {%- if named_fields %}
 
     attr_reader {% for field in variant.fields() %}:{{ field.name()|var_name_rb }}{% if !loop.last %}, {% endif %}{% endfor %}
+    {%- else %}
+
+    attr_reader :values
+
+    def [](index)
+        @values[index]
+    end
+    {%- endif %}
     {% endif %}
 
     def to_s
-     "#{self.class.name}({% for field in variant.fields() %}{{ field.name()|var_name_rb }}=#{@{{ field.name()|var_name_rb }}.inspect}{% if !loop.last %}, {% endif %}{% endfor %})"
+      {%- if named_fields %}
+        "#{self.class.name}({% for field in variant.fields() %}{{ field.name()|var_name_rb }}=#{@{{ field.name()|var_name_rb }}.inspect}{% if !loop.last %}, {% endif %}{% endfor %})"
+
+      {%- else %}
+      {%- if variant.has_fields() %}
+        "#{self.class.name}(#{@values.inspect})"
+      {%- else %}
+        "#{self.class.name}()"
+      {%- endif %}
+      {%- endif %}
+
     end
   end
   {%- endfor %}
@@ -55,9 +84,12 @@ end
 ERROR_MODULE_TO_READER_METHOD = {
 {%- for e in ci.enum_definitions() %}
 {% if ci.is_name_used_as_error(e.name()) %}
-{%- let typ=ci.get_type(e.name()).unwrap() %}
-{%- let canonical_type_name = self::canonical_name(typ.borrow()).borrow()|class_name_rb %}
-  {{ e.name()|class_name_rb }} => :read{{ canonical_type_name }},
+     {{ e.name()|class_name_rb }} => :readType{{ e.name()|class_name_rb }},
+{% endif %}
+{%- endfor %}
+{% for obj in ci.object_definitions() %}
+{% if ci.is_name_used_as_error(obj.name()) %}
+     '{{ obj.name()|class_name_rb }}' => :readType{{ obj.name()|class_name_rb }},
 {% endif %}
 {%- endfor %}
 }
@@ -67,7 +99,8 @@ private_constant :ERROR_MODULE_TO_READER_METHOD, :CALL_SUCCESS, :CALL_ERROR, :CA
 
 def self.consume_buffer_into_error(error_module, rust_buffer)
   rust_buffer.consumeWithStream do |stream|
-    reader_method = ERROR_MODULE_TO_READER_METHOD[error_module]
+    reader_method = ERROR_MODULE_TO_READER_METHOD[error_module] ||
+                    ERROR_MODULE_TO_READER_METHOD[error_module.name&.split('::')&.last]
     return stream.send(reader_method)
   end
 end

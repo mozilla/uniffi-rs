@@ -178,9 +178,10 @@ class RustBufferStream
     {%- for variant in e.variants() %}
     if variant == {{ loop.index }}
         {%- if variant.has_fields() %}
+        {%- let named_fields = !variant.fields()[0].name().is_empty() %}
         return {{ enum_name|class_name_rb }}::{{ variant.name()|enum_name_rb }}.new(
             {%- for field in variant.fields() %}
-            self.read{{ self::canonical_name(field.as_type().borrow()).borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
+            {% if named_fields %}{{ field.name()|var_name_rb }}: {% endif %}self.read{{ self::canonical_name(field.as_type().borrow()).borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
         )
         {%- else %}
@@ -214,9 +215,10 @@ class RustBufferStream
     {%- for variant in e.variants() %}
     if variant == {{ loop.index }}
         {%- if variant.has_fields() %}
+        {%- let named_fields = !variant.fields()[0].name().is_empty() %}
         return {{ error_name|class_name_rb }}::{{ variant.name()|class_name_rb }}.new(
             {%- for field in variant.fields() %}
-            read{{ self::canonical_name(field.as_type().borrow()).borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
+            {% if named_fields %}{{ field.name()|var_name_rb }}: {% endif %}read{{ self::canonical_name(field.as_type().borrow()).borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
         )
         {%- else %}
@@ -289,6 +291,28 @@ class RustBufferStream
 
     items
   end
+
+  {% when Type::Custom { name, builtin, .. } -%}
+  {%- match config.custom_types.get(name.as_str()) %}
+  {%- when Some(cfg) %}{%- if cfg.has_conversion() %}
+  # Custom type {{ name }}: reads builtin `{{ self::canonical_name(builtin) }}`, then applies lift.
+  def read{{ canonical_type_name }}
+    raw = read{{ self::canonical_name(builtin).borrow()|class_name_rb }}
+    {{ cfg.lift("raw") }}
+  end
+  {%- else %}
+  # The Custom type {{ name }} delegates deserialization to its builtin type.
+  def read{{ canonical_type_name }}
+    read{{ self::canonical_name(builtin).borrow()|class_name_rb }}
+  end
+  {%- endif %}
+  {%- when None %}
+  # The Custom type {{ name }} delegates deserialization to its builtin type.
+  def read{{ canonical_type_name }}
+    read{{ self::canonical_name(builtin).borrow()|class_name_rb }}
+  end
+  {%- endmatch %}
+
   {%- else -%}
   # This type is not yet supported in the Ruby backend.
   def read{{ canonical_type_name }}

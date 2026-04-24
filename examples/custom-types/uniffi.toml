@@ -35,6 +35,15 @@ imports = ["Foundation"]
 into_custom = "Date(timeIntervalSince1970: TimeInterval({}))"
 from_custom = "Float({}.timeIntervalSince1970)"
 
+[bindings.ruby.custom_types.Url]
+# Ruby's builtin URI class acts as the native URI type.
+type_name = "URI"
+imports = ["uri"]
+# Lift a string from Rust into a Ruby URI.
+lift = "URI.parse({})"
+# Lower a Ruby URI into a Rust string.
+lower = "{}.to_s"
+
 [bindings.kotlin]
 package_name = "customtypes"
 

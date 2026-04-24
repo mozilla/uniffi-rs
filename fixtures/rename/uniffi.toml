@@ -56,6 +56,53 @@ exclude = [
 ]
 
 #
+# Ruby
+#
+[bindings.ruby.rename]
+binding_function = "rb_function"
+"binding_function.record" = "rb_record"
+
+BindingRecord = "RbRecord"
+"BindingRecord.item" = "rb_item"
+
+BindingEnum = "RbEnum"
+"BindingEnum.VariantA" = "RbVariantA"
+"BindingEnum.Record" = "RbRecord"
+
+BindingEnumWithFields = "RbEnumWithFields"
+"BindingEnumWithFields.VariantA" = "RbVariantA"
+"BindingEnumWithFields.VariantA.binding_int" = "rb_int"
+"BindingEnumWithFields.Record" = "RbRecord"
+"BindingEnumWithFields.Record.binding_record" = "rb_record"
+"BindingEnumWithFields.Record.binding_int" = "rb_int"
+
+BindingError = "RbError"
+"BindingError.Simple" = "RbSimple"
+
+BindingTrait = "RbTrait"
+"BindingTrait.trait_method" = "rb_trait_method"
+
+BindingObject = "RbObject"
+"BindingObject.method" = "rb_method"
+"BindingObject.method.arg" = "rb_arg"
+
+Url = "RenamedUrl"
+
+# Item exclusions.
+function_to_exclude = ""
+"RenamedObject.new" = ""
+"RenamedObject.method_to_exclude" = ""
+RecordToExclude = ""
+
+[bindings.ruby]
+exclude = [
+    "function_to_exclude",
+    "RenamedObject.new",
+    "RenamedObject.method_to_exclude",
+    "RecordToExclude",
+]
+
+#
 # Python
 #
 [bindings.python.rename]
@@ -185,3 +232,9 @@ lower = "{}.toString()"
 type_name = "URL"
 lift = "URL(string: {})!"
 lower = "{}.absoluteString"
+
+[bindings.ruby.custom_types.RenamedUrl]
+type_name = "URI"
+imports = [ "uri" ]
+lift = "URI.parse({})"
+lower = "{}.to_s"

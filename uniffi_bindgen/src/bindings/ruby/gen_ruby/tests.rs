@@ -12,16 +12,13 @@ fn when_not_reserved_word() {
 
 #[test]
 fn cdylib_name() {
-    let config = Config {
-        cdylib_name: None,
-        cdylib_path: None,
-    };
+    let config = Config::default();
 
     assert_eq!("uniffi", config.cdylib_name());
 
     let config = Config {
         cdylib_name: Some("todolist".to_string()),
-        cdylib_path: None,
+        ..Default::default()
     };
 
     assert_eq!("todolist", config.cdylib_name());
@@ -29,17 +26,14 @@ fn cdylib_name() {
 
 #[test]
 fn cdylib_path() {
-    let config = Config {
-        cdylib_name: None,
-        cdylib_path: None,
-    };
+    let config = Config::default();
 
     assert_eq!("", config.cdylib_path());
     assert!(!config.custom_cdylib_path());
 
     let config = Config {
-        cdylib_name: None,
         cdylib_path: Some("/foo/bar".to_string()),
+        ..Default::default()
     };
 
     assert_eq!("/foo/bar", config.cdylib_path());

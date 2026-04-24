@@ -1,4 +1,4 @@
-class {{ obj.name()|class_name_rb }}
+class {{ obj.name()|class_name_rb }}{% if ci.is_name_used_as_error(obj.name()) %} < StandardError{% endif %}
 
   # A private helper for initializing instances of the class from a raw handle,
   # bypassing any initialization logic and ensuring they are GC'd properly.
@@ -69,7 +69,7 @@ class {{ obj.name()|class_name_rb }}
   def {{ meth.name()|fn_name_rb }}({% call rb::arg_list_decl(meth) %}{% endcall %})
     {%- call rb::setup_args_extra_indent(meth) %}{% endcall %}
     result = {% call rb::to_ffi_call_with_prefix("uniffi_clone_handle()", meth) %}{% endcall %}
-    return {{ "result"|lift_rb(return_type) }}
+    return {{ "result"|lift_rb(return_type, config) }}
   end
 
   {%- when None -%}

@@ -2,8 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::collections::HashMap;
 use std::process::Command;
 
+use crate::interface::{apply_exclusions, rename};
 use crate::{bindings::GenerateOptions, BindgenLoader, Component, ComponentInterface};
 use anyhow::{bail, Context, Result};
 use fs_err as fs;
@@ -24,6 +26,7 @@ pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> 
     let cdylib = loader.library_name(&options.source).map(|l| l.to_string());
     let mut components =
         loader.load_components(cis, |ci, toml| parse_config(ci, toml, cdylib.clone()))?;
+    apply_renames(&mut components);
     for c in components.iter_mut() {
         c.ci.derive_ffi_funcs()?;
     }
@@ -71,4 +74,25 @@ fn parse_config(
             .unwrap_or_else(|| format!("uniffi_{}", ci.namespace()))
     });
     Ok(config)
+}
+
+fn apply_renames(components: &mut Vec<Component<Config>>) {
+    // Remove excluded items, this happens before renaming
+    for c in components.iter_mut() {
+        apply_exclusions(&mut c.ci, &c.config.exclude);
+    }
+
+    let mut module_renames = HashMap::new();
+    for c in components.iter() {
+        if !c.config.rename.is_empty() {
+            let module_path = c.ci.crate_name().to_string();
+            module_renames.insert(module_path, c.config.rename.clone());
+        }
+    }
+
+    if !module_renames.is_empty() {
+        for c in &mut *components {
+            rename(&mut c.ci, &module_renames);
+        }
+    }
 }
