@@ -1,5 +1,9 @@
 [bindings.kotlin]
 omit_checksums = true
+# Uncomment one of the following lines to test different cleaner styles
+# disable_java_cleaner = true
+# android_cleaner = true
+
 [bindings.python]
 omit_checksums = true
 [bindings.swift]

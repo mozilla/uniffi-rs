@@ -4,7 +4,7 @@
 
 use std::fmt;
 
-use syn::{ext::IdentExt, Ident, ItemMacro, ItemType, LitStr, Path};
+use syn::{ext::IdentExt, Ident, ItemImpl, ItemMacro, ItemType, LitStr, Path};
 
 use crate::{
     CustomType, Enum, Function, Impl, Module, Object, Record, Trait, UseGlob, UseItem, Visibility,
@@ -21,6 +21,7 @@ pub enum Item {
     Object(Object),
     Fn(Function),
     Impl(Impl),
+    UnparsedImpl(ItemImpl),
     Trait(Trait),
     Type(ItemType),
     UseItem(UseItem),
@@ -70,6 +71,8 @@ pub enum BuiltinItem {
     Result,
     Arc,
     Box,
+    From,
+    UnexpectedUniFFICallbackError,
     UniffiMacro(&'static str),
 }
 
@@ -133,6 +136,7 @@ impl Item {
             Self::NonUniffi(vis, _) => *vis,
             Self::Type(t) => t.vis.clone().into(),
             Self::Builtin(_)
+            | Self::UnparsedImpl(_)
             | Self::UseRemoteType(_)
             | Self::CustomType(_)
             | Self::Macro(_)
@@ -188,6 +192,7 @@ impl fmt::Debug for Item {
                     imp.constructors.len() + imp.methods.len()
                 ))
                 .finish(),
+            Self::UnparsedImpl(_) => f.debug_tuple("UnparsedImpl").finish(),
             Self::Type(ty) => f.debug_tuple("Type").field(&ty.ident.to_string()).finish(),
             Self::UseItem(use_item) => f
                 .debug_tuple("UseItem")

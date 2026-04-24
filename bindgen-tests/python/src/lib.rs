@@ -18,7 +18,7 @@ mod test {
     use camino::{Utf8Path, Utf8PathBuf};
 
     use uniffi::TargetLanguage;
-    use uniffi_bindgen_tests::test_util;
+    use uniffi_bindgen::test_util;
 
     #[test]
     fn test_simple_fns() {
@@ -118,7 +118,11 @@ mod test {
             fs::create_dir_all(&test_package).unwrap();
             let mut f = fs::File::create(test_package.join("__init__.py")).unwrap();
             write!(f, "").unwrap();
-            test_util::build_library(&test_package);
+            test_util::build_library(
+                &test_package,
+                "uniffi-bindgen-tests-python",
+                test_util::LibraryOptions::default(),
+            );
             test_util::copy_test_sources(&temp_dir, "tests/*.py");
             test_util::generate_sources(&test_package, TargetLanguage::Python);
 

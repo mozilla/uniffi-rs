@@ -52,6 +52,7 @@ pub struct Namespace {
 pub struct Function {
     #[map_node(callable::function_callable(&self, context)?)]
     pub callable: Callable,
+    pub module_path: String,
     pub docstring: Option<String>,
 }
 
@@ -150,7 +151,7 @@ pub struct AsyncData {
     pub ffi_foreign_future_result: FfiStructName,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, MapNode)]
 pub struct Argument {
     pub name: String,
     pub orig_name: String,
@@ -203,6 +204,7 @@ pub struct Record {
     pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
+    pub module_path: String,
     #[map_node(from(uniffi_traits))]
     pub uniffi_trait_methods: UniffiTraitMethods,
     pub fields: Vec<Field>,
@@ -243,6 +245,8 @@ pub struct Enum {
     pub is_flat: bool,
     #[map_node(context.self_type()?)]
     pub self_type: TypeNode,
+    #[map_node(self.discr_type.is_some())]
+    pub discr_specified: bool,
     /// type, this will be a sized integer type that's large enough to store all the discriminant
     /// values. We try to mimic what `rustc` does, but there's no guarantee that this will be
     /// exactly the same type.
@@ -253,6 +257,7 @@ pub struct Enum {
     pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
+    pub module_path: String,
     #[map_node(from(uniffi_traits))]
     pub uniffi_trait_methods: UniffiTraitMethods,
     /// Enum discriminant type to use in generated code.  If the source code doesn't specify a
@@ -294,6 +299,7 @@ pub struct Interface {
     pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
+    pub module_path: String,
     // This `map_node` works because we've implemented a map from Vec<UniffiTrait> -> UniffiTraitMethods
     #[map_node(from(uniffi_traits))]
     pub uniffi_trait_methods: UniffiTraitMethods,
@@ -317,6 +323,7 @@ pub struct CallbackInterface {
     pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
+    pub module_path: String,
     pub docstring: Option<String>,
     #[map_node(objects::callback_interface_methods(self.methods, context)?)]
     pub methods: Vec<Method>,
@@ -362,6 +369,7 @@ pub struct CustomType {
     pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
+    pub module_path: String,
     pub builtin: TypeNode,
     pub docstring: Option<String>,
 }
@@ -411,6 +419,7 @@ pub struct TypeNode {
     ///   - Creating a unique key for a type
     pub canonical_name: String,
     pub is_used_as_error: bool,
+    pub has_from_unexpected_callback_error_impl: bool,
     pub ffi_type: FfiType,
     pub ty: Type,
 }

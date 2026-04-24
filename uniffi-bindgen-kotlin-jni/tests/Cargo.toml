@@ -1,0 +1,20 @@
+[package]
+name = "uniffi-bindgen-kotlin-jni-tests"
+version = "0.31.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+uniffi-bindgen-tests = { path = "../../bindgen-tests/lib", default-features = true }
+uniffi-bindgen-tests-external-types-source = { path = "../../bindgen-tests/external-types" }
+uniffi-bindgen-kotlin-jni-runtime = { path = "../runtime" }
+
+[build-dependencies]
+uniffi-bindgen-kotlin-jni = { path = ".." }
+
+[dev-dependencies]
+camino = "1"
+uniffi_bindgen = { path = "../../uniffi_bindgen", features = ["test-util"] }
+uniffi-bindgen-kotlin-jni = { path = "..", features = ["test-util"] }

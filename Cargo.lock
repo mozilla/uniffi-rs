@@ -94,6 +94,19 @@ checksum = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6"
 
 [[package]]
 name = "askama"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f75363874b771be265f4ffe307ca705ef6f3baa19011c149da8674a87f1b75c4"
+dependencies = [
+ "askama_derive 0.14.0",
+ "itoa",
+ "percent-encoding",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "askama"
 version = "0.15.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b8246bcbf8eb97abef10c2d92166449680d41d55c0fc6978a91dec2e3619608"
@@ -107,11 +120,28 @@ dependencies = [
 
 [[package]]
 name = "askama_derive"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "129397200fe83088e8a68407a8e2b1f826cf0086b21ccdb866a722c8bcd3a94f"
+dependencies = [
+ "askama_parser 0.14.0",
+ "basic-toml",
+ "memchr",
+ "proc-macro2",
+ "quote",
+ "rustc-hash",
+ "serde",
+ "serde_derive",
+ "syn",
+]
+
+[[package]]
+name = "askama_derive"
 version = "0.15.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2f9670bc84a28bb3da91821ef74226949ab63f1265aff7c751634f1dd0e6f97c"
 dependencies = [
- "askama_parser",
+ "askama_parser 0.15.6",
  "basic-toml",
  "memchr",
  "proc-macro2",
@@ -128,7 +158,19 @@ version = "0.15.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f0756b45480437dded0565dfc568af62ccce146fb6cfe902e808ba86e445f44f"
 dependencies = [
- "askama_derive",
+ "askama_derive 0.15.6",
+]
+
+[[package]]
+name = "askama_parser"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6ab5630b3d5eaf232620167977f95eb51f3432fc76852328774afbd242d4358"
+dependencies = [
+ "memchr",
+ "serde",
+ "serde_derive",
+ "winnow 0.7.15",
 ]
 
 [[package]]
@@ -141,7 +183,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "unicode-ident",
- "winnow",
+ "winnow 1.0.0",
 ]
 
 [[package]]
@@ -366,6 +408,15 @@ dependencies = [
 
 [[package]]
 name = "cargo-platform"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e35af189006b9c0f00a064685c727031e3ed2d8020f7ba284d78cc2671bd36ea"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "cargo-platform"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "87a0c0e6148f11f01f32650a2ea02d532b2ad4e81d8bd41e6e565b5adc5e6082"
@@ -376,12 +427,26 @@ dependencies = [
 
 [[package]]
 name = "cargo_metadata"
+version = "0.19.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd5eb614ed4c27c5d706420e4320fbe3216ab31fa1c33cd8246ac36dae4479ba"
+dependencies = [
+ "camino",
+ "cargo-platform 0.1.9",
+ "semver",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "cargo_metadata"
 version = "0.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ef987d17b0a113becdd19d3d0022d04d7ef41f9efe4f3fb63ac44ba61df3ade9"
 dependencies = [
  "camino",
- "cargo-platform",
+ "cargo-platform 0.3.2",
  "semver",
  "serde",
  "serde_json",
@@ -1018,6 +1083,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49f1f14873335454500d59611f1cf4a4b0f786f9ac11f4312a78e4cf2566695b"
 
 [[package]]
+name = "jni-sys"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c6377a88cb3910bee9b0fa88d4f42e1d2da8e79915598f65fb0c7ee14c878af2"
+dependencies = [
+ "jni-sys-macros",
+]
+
+[[package]]
+name = "jni-sys-macros"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38c0b942f458fe50cdac086d2f946512305e5631e720728f2a61aabcd47a6264"
+dependencies = [
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "js-sys"
 version = "0.3.64"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1348,6 +1432,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "583034fd73374156e66797ed8e5b0d5690409c9226b22d87cb7f19821c05d152"
 
 [[package]]
+name = "rustc_version"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cfcb3a22ef46e85b45de6ee7e79d063319ebb6594faafcf1c225ea92ab6e9b92"
+dependencies = [
+ "semver",
+]
+
+[[package]]
 name = "rustix"
 version = "0.38.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1456,12 +1549,37 @@ dependencies = [
 
 [[package]]
 name = "serde_spanned"
+version = "0.6.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bf41e0cfaf7226dca15e8197172c295a782857fcb97fad1808a166870dee75a3"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "serde_spanned"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "876ac351060d4f882bb1032b6369eb0aef79ad9df1ea8bc404874d8cc3d0cd98"
 dependencies = [
  "serde_core",
 ]
+
+[[package]]
+name = "simd_cesu8"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94f90157bb87cddf702797c5dadfa0be7d266cdf49e22da2fcaa32eff75b2c33"
+dependencies = [
+ "rustc_version",
+ "simdutf8",
+]
+
+[[package]]
+name = "simdutf8"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3a9fe34e3e7a50316060351f37187a3f546bce95496156754b601a5fa71b76e"
 
 [[package]]
 name = "siphasher"
@@ -1629,17 +1747,38 @@ dependencies = [
 
 [[package]]
 name = "toml"
+version = "0.8.23"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc1beb996b9d83529a9e75c17a1686767d148d70663143c7854d8b4a09ced362"
+dependencies = [
+ "serde",
+ "serde_spanned 0.6.9",
+ "toml_datetime 0.6.11",
+ "toml_edit",
+]
+
+[[package]]
+name = "toml"
 version = "1.1.0+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8195ca05e4eb728f4ba94f3e3291661320af739c4e43779cbdfae82ab239fcc"
 dependencies = [
  "indexmap",
  "serde_core",
- "serde_spanned",
- "toml_datetime",
+ "serde_spanned 1.1.0",
+ "toml_datetime 1.1.0+spec-1.1.0",
  "toml_parser",
  "toml_writer",
- "winnow",
+ "winnow 1.0.0",
+]
+
+[[package]]
+name = "toml_datetime"
+version = "0.6.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "22cddaf88f4fbc13c51aebbf5f8eceb5c7c5a9da2ac40a13519eb5b0a0e8f11c"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -1652,13 +1791,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "toml_edit"
+version = "0.22.27"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "41fe8c660ae4257887cf66394862d21dbca4a6ddd26f04a3560410406a2f819a"
+dependencies = [
+ "indexmap",
+ "serde",
+ "serde_spanned 0.6.9",
+ "toml_datetime 0.6.11",
+ "toml_write",
+ "winnow 0.7.15",
+]
+
+[[package]]
 name = "toml_parser"
 version = "1.1.0+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2334f11ee363607eb04df9b8fc8a13ca1715a72ba8662a26ac285c98aabb4011"
 dependencies = [
- "winnow",
+ "winnow 1.0.0",
 ]
+
+[[package]]
+name = "toml_write"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5d99f8c9a7727884afe522e9bd5edbfc91a3312b36a77b5fb8926e4c31a41801"
 
 [[package]]
 name = "toml_writer"
@@ -1723,7 +1882,7 @@ version = "0.31.1"
 dependencies = [
  "anyhow",
  "camino",
- "cargo_metadata",
+ "cargo_metadata 0.23.1",
  "clap",
  "trybuild",
  "uniffi_bindgen",
@@ -1738,6 +1897,48 @@ name = "uniffi-bindgen-cli"
 version = "0.1.0"
 dependencies = [
  "uniffi",
+]
+
+[[package]]
+name = "uniffi-bindgen-kotlin-jni"
+version = "0.31.1"
+dependencies = [
+ "anyhow",
+ "askama 0.14.0",
+ "camino",
+ "cargo_metadata 0.19.2",
+ "clap",
+ "glob",
+ "heck",
+ "indexmap",
+ "serde",
+ "textwrap",
+ "toml 0.8.23",
+ "uniffi_bindgen",
+ "uniffi_meta",
+ "uniffi_pipeline",
+]
+
+[[package]]
+name = "uniffi-bindgen-kotlin-jni-runtime"
+version = "0.31.1"
+dependencies = [
+ "anyhow",
+ "jni-sys",
+ "simd_cesu8",
+ "uniffi",
+]
+
+[[package]]
+name = "uniffi-bindgen-kotlin-jni-tests"
+version = "0.31.0"
+dependencies = [
+ "camino",
+ "uniffi-bindgen-kotlin-jni",
+ "uniffi-bindgen-kotlin-jni-runtime",
+ "uniffi-bindgen-tests",
+ "uniffi-bindgen-tests-external-types-source",
+ "uniffi_bindgen",
 ]
 
 [[package]]
@@ -1769,6 +1970,7 @@ dependencies = [
  "glob",
  "uniffi",
  "uniffi-bindgen-tests",
+ "uniffi_bindgen",
 ]
 
 [[package]]
@@ -1779,6 +1981,7 @@ dependencies = [
  "glob",
  "uniffi",
  "uniffi-bindgen-tests",
+ "uniffi_bindgen",
 ]
 
 [[package]]
@@ -1789,6 +1992,7 @@ dependencies = [
  "glob",
  "uniffi",
  "uniffi-bindgen-tests",
+ "uniffi_bindgen",
 ]
 
 [[package]]
@@ -1896,11 +2100,16 @@ dependencies = [
 name = "uniffi-fixture-benchmarks"
 version = "0.22.0"
 dependencies = [
+ "anyhow",
+ "camino",
  "clap",
  "criterion",
  "regex",
+ "serde_json",
  "thiserror",
  "uniffi",
+ "uniffi-bindgen-kotlin-jni",
+ "uniffi-bindgen-kotlin-jni-runtime",
  "uniffi_bindgen",
 ]
 
@@ -1938,7 +2147,7 @@ dependencies = [
 name = "uniffi-fixture-docstring-proc-macro"
 version = "0.22.0"
 dependencies = [
- "cargo_metadata",
+ "cargo_metadata 0.23.1",
  "glob",
  "thiserror",
  "uniffi",
@@ -2301,9 +2510,9 @@ name = "uniffi_bindgen"
 version = "0.31.1"
 dependencies = [
  "anyhow",
- "askama",
+ "askama 0.15.6",
  "camino",
- "cargo_metadata",
+ "cargo_metadata 0.23.1",
  "fs-err",
  "glob",
  "goblin",
@@ -2313,7 +2522,7 @@ dependencies = [
  "serde",
  "tempfile",
  "textwrap",
- "toml",
+ "toml 1.1.0+spec-1.1.0",
  "uniffi_internal_macros",
  "uniffi_meta",
  "uniffi_parse_rs",
@@ -2337,6 +2546,7 @@ version = "0.31.1"
 dependencies = [
  "anyhow",
  "async-compat",
+ "async-trait",
  "bytes",
  "once_cell",
  "static_assertions",
@@ -2364,7 +2574,7 @@ dependencies = [
  "quote",
  "serde",
  "syn",
- "toml",
+ "toml 1.1.0+spec-1.1.0",
  "uniffi_build",
  "uniffi_meta",
 ]
@@ -2393,7 +2603,7 @@ dependencies = [
  "syn",
  "target-lexicon",
  "thiserror",
- "toml",
+ "toml 1.1.0+spec-1.1.0",
  "uniffi_meta",
 ]
 
@@ -2414,7 +2624,7 @@ version = "0.31.1"
 dependencies = [
  "anyhow",
  "camino",
- "cargo_metadata",
+ "cargo_metadata 0.23.1",
  "fs-err",
  "once_cell",
 ]
@@ -2751,6 +2961,15 @@ name = "windows_x86_64_msvc"
 version = "0.52.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "589f6da84c646204747d1270a2a5661ea66ed1cced2631d546fdfb155959f9ec"
+
+[[package]]
+name = "winnow"
+version = "0.7.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df79d97927682d2fd8adb29682d1140b343be4ac0f08fd68b7765d9c059d3945"
+dependencies = [
+ "memchr",
+]
 
 [[package]]
 name = "winnow"

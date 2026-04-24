@@ -76,11 +76,16 @@ use bytes::buf::Buf;
 // Make Result<> public to support external impls of FfiConverter
 pub use anyhow::Result;
 
+mod arc_or_owned;
+mod custom_types;
 pub mod ffi;
 mod ffi_converter_impls;
 mod ffi_converter_traits;
 pub mod metadata;
-mod oneshot;
+pub mod oneshot;
+
+pub use arc_or_owned::ArcOrOwned;
+pub use custom_types::CustomType;
 
 #[cfg(feature = "scaffolding-ffi-buffer-fns")]
 pub use ffi::ffiserialize::FfiBufferElement;
@@ -98,6 +103,7 @@ pub mod deps {
     pub use anyhow;
     #[cfg(feature = "tokio")]
     pub use async_compat;
+    pub use async_trait;
     pub use bytes;
     pub use static_assertions;
 }

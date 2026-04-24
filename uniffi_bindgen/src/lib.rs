@@ -109,6 +109,8 @@ mod loader;
 pub mod macro_metadata;
 pub mod pipeline;
 pub mod scaffolding;
+#[cfg(feature = "test-util")]
+pub mod test_util;
 
 #[cfg(feature = "cargo-metadata")]
 pub mod cargo_metadata;

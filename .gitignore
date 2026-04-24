@@ -6,6 +6,8 @@ xcuserdata
 docs/manual/src/internals/api
 # The old mdbook outdir
 docs/manual/book
+# Outputs from the `perf` command
+perf.data
 
 examples/app/ios/Generated
 examples/app/ios/IOSApp.xcodeproj/project.xcworkspace/xcshareddata/

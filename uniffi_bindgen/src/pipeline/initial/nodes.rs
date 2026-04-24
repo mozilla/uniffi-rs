@@ -16,6 +16,8 @@ pub struct Root {
     pub namespaces: IndexMap<String, Namespace>,
     /// The library path the user passed to us, if we're in library mode
     pub cdylib: Option<String>,
+    // Types that implement `From<uniffi::UnexpectedUniFFICallbackError>`
+    pub from_unexpected_callback_error_impls: Vec<Type>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]
@@ -35,6 +37,7 @@ pub struct Function {
     #[map_node(self.orig_name.unwrap_or_else(|| self.name.clone()))]
     pub orig_name: String,
     pub name: String,
+    pub module_path: String,
     pub is_async: bool,
     pub inputs: Vec<Argument>,
     pub return_type: Option<Type>,
@@ -145,6 +148,7 @@ pub struct Record {
     pub uniffi_traits: Vec<UniffiTrait>,
     pub name: String,
     pub orig_name: String,
+    pub module_path: String,
     pub fields: Vec<Field>,
     pub docstring: Option<String>,
 }
@@ -169,6 +173,7 @@ pub struct Enum {
     pub uniffi_traits: Vec<UniffiTrait>,
     pub name: String,
     pub orig_name: String,
+    pub module_path: String,
     pub shape: EnumShape,
     pub variants: Vec<Variant>,
     pub discr_type: Option<Type>,
@@ -196,6 +201,7 @@ pub struct Interface {
     pub trait_impls: Vec<ObjectTraitImpl>,
     pub name: String,
     pub orig_name: String,
+    pub module_path: String,
     pub docstring: Option<String>,
     pub imp: ObjectImpl,
 }
@@ -207,6 +213,7 @@ pub struct CallbackInterface {
     pub methods: Vec<Method>,
     pub name: String,
     pub orig_name: String,
+    pub module_path: String,
     pub docstring: Option<String>,
 }
 
@@ -234,6 +241,7 @@ pub struct ObjectTraitImpl {
 pub struct CustomType {
     pub name: String,
     pub orig_name: String,
+    pub module_path: String,
     pub builtin: Type,
     pub docstring: Option<String>,
 }

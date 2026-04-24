@@ -82,6 +82,7 @@ pub fn map_record(input: uniffi_meta::RecordMetadata, context: &Context) -> Resu
         uniffi_traits: context.uniffi_traits_for_type(&input.module_path, &input.name)?,
         orig_name: input.orig_name.unwrap_or_else(|| input.name.clone()),
         name: input.name,
+        module_path: input.module_path,
         fields: input.fields.map_node(context)?,
         docstring: input.docstring,
     })
@@ -94,6 +95,7 @@ pub fn map_enum(input: uniffi_meta::EnumMetadata, context: &Context) -> Result<E
         uniffi_traits: context.uniffi_traits_for_type(&input.module_path, &input.name)?,
         orig_name: input.orig_name.unwrap_or_else(|| input.name.clone()),
         name: input.name,
+        module_path: input.module_path,
         shape: input.shape,
         variants: input.variants.map_node(context)?,
         discr_type: input.discr_type.map_node(context)?,
@@ -109,6 +111,7 @@ pub fn map_interface(input: uniffi_meta::ObjectMetadata, context: &Context) -> R
         trait_impls: context.trait_impls_for_type(&input.module_path, &input.name)?,
         orig_name: input.orig_name.unwrap_or_else(|| input.name.clone()),
         name: input.name,
+        module_path: input.module_path,
         docstring: input.docstring,
         imp: input.imp,
     })
@@ -123,6 +126,7 @@ pub fn map_callback_interface(
         // Renaming callback interfaces is not supported yet -- just copy name.
         orig_name: input.name.clone(),
         name: input.name,
+        module_path: input.module_path,
         docstring: input.docstring,
     })
 }
@@ -134,6 +138,7 @@ pub fn map_custom_type(
     Ok(CustomType {
         orig_name: input.orig_name.unwrap_or(input.name.clone()),
         name: input.name,
+        module_path: input.module_path,
         builtin: input.builtin.map_node(context)?,
         docstring: input.docstring,
     })

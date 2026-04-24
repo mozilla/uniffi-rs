@@ -5,7 +5,9 @@
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
 mod cli;
+mod compare;
 pub use cli::Args;
+pub use compare::CriterionMeasurementTracker;
 
 /// Benchmark test cases
 ///
@@ -60,6 +62,23 @@ impl TestCase {
             Self::NestedData => "nested-data",
             Self::Errors => "errors",
         }
+    }
+
+    fn rust_to_foreign_name(&self, language: &str) -> String {
+        format!("{language}-rust-{}", self.name())
+    }
+
+    fn foreign_to_rust_name(&self, language: &str) -> String {
+        format!("rust-{language}-{}", self.name())
+    }
+    fn all_names_for_language(language: &str) -> impl Iterator<Item = String> {
+        let language = language.to_string();
+        Self::iter_all().flat_map(move |test_case| {
+            [
+                test_case.rust_to_foreign_name(&language),
+                test_case.foreign_to_rust_name(&language),
+            ]
+        })
     }
 
     fn callback_test_case_fn(&self, cb: Arc<dyn TestCallbackInterface>) -> Box<dyn Fn()> {
@@ -335,27 +354,39 @@ pub fn run_callback_test(cb: Arc<dyn TestCallbackInterface>, test_case: TestCase
 #[uniffi::export]
 pub fn run_benchmarks(language: String, cb: Arc<dyn TestCallbackInterface>) {
     let args = Args::parse_for_run_benchmarks();
+
+    let measurement_tracker =
+        CriterionMeasurementTracker::new().expect("Error creating CriterionMeasurementTracker");
+
     let mut c = args.build_criterion();
 
-    {
-        let mut function_calls = c.benchmark_group("function-calls");
-        for test_case in TestCase::iter_all() {
-            function_calls.bench_function(format!("{language}-{}", test_case.name()), |b| {
-                b.iter_custom(|count| Duration::from_nanos(cb.run_test(test_case, count)))
-            });
-        }
-    }
-    {
-        let mut callbacks = c.benchmark_group("callbacks");
-        for test_case in TestCase::iter_all() {
-            let test_case_fn = test_case.callback_test_case_fn(cb.clone());
-            callbacks.bench_function(format!("{language}-{}", test_case.name()), move |b| {
-                b.iter(&test_case_fn);
-            });
-        }
+    for test_case in TestCase::iter_all() {
+        let callback_fn = test_case.callback_test_case_fn(cb.clone());
+        c.bench_function(&test_case.rust_to_foreign_name(&language), |b| {
+            b.iter_custom(|count| Duration::from_nanos(cb.run_test(test_case, count)))
+        });
+        c.bench_function(&test_case.foreign_to_rust_name(&language), move |b| {
+            b.iter(&callback_fn);
+        });
     }
 
     c.final_summary();
+
+    if let Some(name) = &args.save {
+        measurement_tracker.save(name).expect("Error saving times");
+    }
+    if !args.compare.is_empty() || args.save.is_some() {
+        measurement_tracker
+            .compare(&args.compare, args.save.as_deref())
+            .expect("Error generating comparision table");
+    }
 }
 
+#[cfg(feature = "uniffi-bindgen")]
 uniffi::setup_scaffolding!("benchmarks");
+
+#[cfg(feature = "uniffi-bindgen-kotlin-jni")]
+include!(concat!(
+    env!("OUT_DIR"),
+    "/uniffi_bindgen_kotlin_jni.uniffi.rs"
+));

@@ -18,7 +18,7 @@ use crate::{
     paths::LookupCache,
     CompileEnv, Enum, Error,
     ErrorKind::*,
-    Function, Impl, Ir, Item, Object, RPath, Record, Result, Trait, Visibility,
+    Function, Impl, Ir, Item, Object, RPath, Record, Result, Trait, TraitImpl, Visibility,
 };
 
 #[derive(Debug)]
@@ -200,6 +200,8 @@ impl Module {
             syn::Item::Impl(imp) => {
                 if let Some(attrs) = ImplAttributes::parse(env, &imp.attrs)? {
                     self.items.push(Item::Impl(Impl::parse(env, attrs, imp)?));
+                } else {
+                    self.items.push(Item::UnparsedImpl(imp));
                 }
             }
             syn::Item::Type(ty) => self.items.push(Item::Type(ty)),
@@ -317,6 +319,18 @@ impl Module {
                     module_path.push(item);
                     submod.create_metadata(ir, cache, module_path, metadata)?;
                     module_path.pop();
+                }
+                Item::UnparsedImpl(imp) => {
+                    if let Some(trait_impl) = module_path.resolve_trait_impl(ir, cache, imp)? {
+                        match trait_impl {
+                            TraitImpl::From { ty } => {
+                                metadata.items.insert(
+                                    uniffi_meta::FromUnexpectedCallbackErrorImplMetadata { ty }
+                                        .into(),
+                                );
+                            }
+                        }
+                    }
                 }
                 _ => (),
             }

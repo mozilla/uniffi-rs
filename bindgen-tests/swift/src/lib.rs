@@ -17,7 +17,7 @@ mod test {
     use camino::{Utf8Path, Utf8PathBuf};
 
     use uniffi::TargetLanguage;
-    use uniffi_bindgen_tests::test_util;
+    use uniffi_bindgen::test_util;
 
     #[test]
     fn test_simple_fns() {
@@ -113,7 +113,11 @@ mod test {
         static TEST_TEMPDIR: OnceLock<Utf8PathBuf> = OnceLock::new();
         TEST_TEMPDIR.get_or_init(|| {
             let temp_dir = test_util::setup_test_dir("swift");
-            test_util::build_library(&temp_dir);
+            test_util::build_library(
+                &temp_dir,
+                "uniffi-bindgen-tests-swift",
+                test_util::LibraryOptions::default(),
+            );
             test_util::generate_sources(&temp_dir, TargetLanguage::Swift);
             test_util::copy_test_sources(&temp_dir, "tests/*.swift");
             combine_module_maps(&temp_dir);

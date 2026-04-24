@@ -26,6 +26,7 @@ mod objects;
 mod paths;
 mod public_paths;
 mod records;
+mod trait_impls;
 mod traits;
 mod types;
 mod use_;
@@ -44,7 +45,9 @@ pub use objects::{Constructor, Method, Object, SelfArg};
 pub use paths::{ChildItem, Namespace, RPath, Visibility};
 pub use public_paths::ItemNames;
 pub use records::{Field, Record};
+pub use trait_impls::TraitImpl;
 pub use traits::Trait;
+pub use types::GenericArgs;
 pub use use_::{parse_use, UseGlob, UseItem};
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;

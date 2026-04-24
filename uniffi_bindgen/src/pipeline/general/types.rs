@@ -9,6 +9,8 @@ pub fn map_type_node(ty: Type, context: &Context) -> Result<TypeNode> {
         canonical_name: canonical_name(&ty),
         is_used_as_error: context.type_is_used_as_error(&ty),
         ffi_type: ffi_types::ffi_type(&ty, context)?,
+        has_from_unexpected_callback_error_impl: context
+            .type_has_from_unexpected_callback_error_impl(&ty),
         ty: ty.map_node(context)?,
     })
 }

@@ -821,4 +821,12 @@
             },
         },
     ),
+    FromUnexpectedCallbackErrorImpl(
+        FromUnexpectedCallbackErrorImplMetadata {
+            ty: Enum {
+                module_path: "full_interface",
+                name: "Error",
+            },
+        },
+    ),
 }

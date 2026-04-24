@@ -145,3 +145,13 @@ uniffi::custom_type!(
 );
 
 pub struct CustomType(String);
+
+// Implement `From<uniffi::UnexpectedUniFFICallbackError>` for one of the error types
+//
+// `uniffi_parse_rs` should see this and generate `FromUnexpectedCallbackErrorImplMetadata` based
+// on it.
+impl std::convert::From<uniffi::UnexpectedUniFFICallbackError> for Error {
+    fn from(e: uniffi::UnexpectedUniFFICallbackError) -> Self {
+        Self
+    }
+}
