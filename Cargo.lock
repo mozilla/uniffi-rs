@@ -1857,9 +1857,12 @@ dependencies = [
 name = "uniffi-fixture-benchmarks"
 version = "0.22.0"
 dependencies = [
+ "anyhow",
+ "camino",
  "clap",
  "criterion",
  "regex",
+ "serde_json",
  "thiserror",
  "uniffi",
  "uniffi_bindgen",
