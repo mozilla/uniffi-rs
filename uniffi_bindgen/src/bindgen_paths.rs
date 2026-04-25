@@ -4,12 +4,12 @@
 
 use std::fs;
 
-use anyhow::{bail, Context};
+use anyhow::bail;
 use camino::Utf8PathBuf;
 
 use crate::Result;
 
-/// Responsible for looking up UDL and config paths
+/// Responsible for looking up crate root paths, optionally overriding paths to UDL, crate configs, etc
 ///
 /// This uses a layered approach supporting multiple ways to find the paths.
 /// The first added layer takes precedence.
@@ -30,13 +30,6 @@ impl BindgenPaths {
         Ok(())
     }
 
-    /// Add a layer that always uses the same path for config files
-    ///
-    /// Used to implement the `--config` CLI flag.
-    pub fn add_config_override_layer(&mut self, path: Utf8PathBuf) {
-        self.add_layer(ConfigOverrideLayer { path })
-    }
-
     /// Add a layer using a [BindgenPathsLayer]
     ///
     /// This can be used to add custom path finding logic.
@@ -44,14 +37,18 @@ impl BindgenPaths {
         self.layers.push(Box::new(layer));
     }
 
-    /// Get the config table for a crate
-    pub fn get_config(&self, crate_name: &str) -> Result<toml::value::Table> {
-        for layer in &self.layers {
-            if let Some(table) = layer.get_config(crate_name)? {
-                return Ok(table);
-            }
-        }
-        Ok(toml::value::Table::default())
+    /// Get the root directory for a crate
+    pub fn get_crate_root(&self, crate_name: &str) -> Option<Utf8PathBuf> {
+        self.layers
+            .iter()
+            .find_map(|l| l.get_crate_root(crate_name))
+    }
+
+    /// Get the config file path for a crate
+    pub fn get_config_path(&self, crate_name: &str) -> Option<Utf8PathBuf> {
+        self.layers
+            .iter()
+            .find_map(|l| l.get_config_path(crate_name))
     }
 
     /// Get the UDL path for a crate
@@ -70,40 +67,29 @@ impl BindgenPaths {
     }
 }
 
-/// Trait for finding UDL and config paths
+/// Trait for finding crate roots and UDL paths.
+///
+/// Implement `get_crate_root` to provide crate discovery. The other methods
+/// have default implementations that derive from the crate root.
 pub trait BindgenPathsLayer {
-    /// Lookup and load the config TOML for a crate.
-    ///
-    /// This is usually loaded from `[crate-root]/uniffi.toml`. However, layers are
-    /// free to obtain the TOML table for a crate however they want. For example:
-    /// * There could be a shared TOML file for all crates and this method could
-    ///   return one of the child table values for the specified crate.
-    /// * The TOML could be hard-coded into source code and not loaded from a file at all.
-    /// * etc.
-    fn get_config(&self, _crate_name: &str) -> Result<Option<toml::value::Table>> {
-        Ok(None)
-    }
-
-    /// Lookup the a UDL file path.
-    ///
-    /// This is usually the `[crate-root]/src/[udl_name].udl`
-    fn get_udl_path(&self, _crate_name: &str, _udl_name: &str) -> Option<Utf8PathBuf> {
+    /// Find the root directory of a crate.
+    fn get_crate_root(&self, _crate_name: &str) -> Option<Utf8PathBuf> {
         None
     }
-}
 
-struct ConfigOverrideLayer {
-    path: Utf8PathBuf,
-}
+    /// Find the config file path for a crate.
+    ///
+    /// Default implementation returns `{crate_root}/uniffi.toml`.
+    fn get_config_path(&self, crate_name: &str) -> Option<Utf8PathBuf> {
+        self.get_crate_root(crate_name)
+            .map(|root| root.join("uniffi.toml"))
+    }
 
-impl BindgenPathsLayer for ConfigOverrideLayer {
-    fn get_config(&self, _crate_name: &str) -> Result<Option<toml::value::Table>> {
-        // ConfigOverrideLayer is used when an expected config override is expected to exist
-        // (eg, --config args), so the file not existing should be an error.
-        let contents = fs::read_to_string(&self.path)
-            .with_context(|| format!("read file: {:?}", self.path))?;
-        let toml = toml::de::from_str(&contents)
-            .with_context(|| format!("parse toml: {:?}", self.path))?;
-        Ok(Some(toml))
+    /// Lookup a UDL file path.
+    ///
+    /// Default implementation returns `{crate_root}/src/{udl_name}.udl`.
+    fn get_udl_path(&self, crate_name: &str, udl_name: &str) -> Option<Utf8PathBuf> {
+        self.get_crate_root(crate_name)
+            .map(|root| root.join("src").join(format!("{udl_name}.udl")))
     }
 }
