@@ -48,10 +48,15 @@ class {{ e.name()|class_name_rb }}
     end
     {% endif %}
 
+    {%- let trait_methods = e.uniffi_trait_methods() %}
+    {%- if trait_methods.display_fmt.is_none() %}
     def to_s
       "{{ e.name()|class_name_rb }}::{{ variant.name()|enum_name_rb }}"
     end
+    {%- endif %}
+    {%- include "UniffiTraitImpls.rb" %}
 
+    {%- if trait_methods.eq_eq.is_none() %}
     def ==(other)
       return false unless other.respond_to?(:{{variant.name()|var_name_rb}}?)
       return false unless other.{{ variant.name()|var_name_rb }}?
@@ -66,6 +71,7 @@ class {{ e.name()|class_name_rb }}
       {% endif %}
       true
     end
+    {%- endif %}
 
     # For each variant, we have an `NAME?` method for easily checking
     # whether an instance is that variant.

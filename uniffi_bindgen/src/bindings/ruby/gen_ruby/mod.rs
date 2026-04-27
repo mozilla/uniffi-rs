@@ -347,19 +347,19 @@ mod filters {
         let nm = nm.as_ref();
         let ns = ns.as_ref();
         Ok(match type_ {
-            Type::Int8 => format!("{ns}::uniffi_in_range({nm}, \"i8\", -2**7, 2**7)"),
-            Type::Int16 => format!("{ns}::uniffi_in_range({nm}, \"i16\", -2**15, 2**15)"),
-            Type::Int32 => format!("{ns}::uniffi_in_range({nm}, \"i32\", -2**31, 2**31)"),
-            Type::Int64 => format!("{ns}::uniffi_in_range({nm}, \"i64\", -2**63, 2**63)"),
-            Type::UInt8 => format!("{ns}::uniffi_in_range({nm}, \"u8\", 0, 2**8)"),
-            Type::UInt16 => format!("{ns}::uniffi_in_range({nm}, \"u16\", 0, 2**16)"),
-            Type::UInt32 => format!("{ns}::uniffi_in_range({nm}, \"u32\", 0, 2**32)"),
-            Type::UInt64 => format!("{ns}::uniffi_in_range({nm}, \"u64\", 0, 2**64)"),
+            Type::Int8 => format!("::{ns}::uniffi_in_range({nm}, \"i8\", -2**7, 2**7)"),
+            Type::Int16 => format!("::{ns}::uniffi_in_range({nm}, \"i16\", -2**15, 2**15)"),
+            Type::Int32 => format!("::{ns}::uniffi_in_range({nm}, \"i32\", -2**31, 2**31)"),
+            Type::Int64 => format!("::{ns}::uniffi_in_range({nm}, \"i64\", -2**63, 2**63)"),
+            Type::UInt8 => format!("::{ns}::uniffi_in_range({nm}, \"u8\", 0, 2**8)"),
+            Type::UInt16 => format!("::{ns}::uniffi_in_range({nm}, \"u16\", 0, 2**16)"),
+            Type::UInt32 => format!("::{ns}::uniffi_in_range({nm}, \"u32\", 0, 2**32)"),
+            Type::UInt64 => format!("::{ns}::uniffi_in_range({nm}, \"u64\", 0, 2**64)"),
             Type::Float32 | Type::Float64 => nm.to_string(),
             Type::Boolean => format!("{nm} ? true : false"),
             Type::Object { .. } | Type::Enum { .. } | Type::Record { .. } => nm.to_string(),
-            Type::String => format!("{ns}::uniffi_utf8({nm})"),
-            Type::Bytes => format!("{ns}::uniffi_bytes({nm})"),
+            Type::String => format!("::{ns}::uniffi_utf8({nm})"),
+            Type::Bytes => format!("::{ns}::uniffi_bytes({nm})"),
             Type::Timestamp | Type::Duration => nm.to_string(),
             Type::CallbackInterface { name, .. } => {
                 // Callback interfaces are not yet supported; emit a Ruby runtime error so that
@@ -620,6 +620,22 @@ mod filters {
         config: &Config,
     ) -> Result<String, askama::Error> {
         lift_rb_inner(nm, type_, &config.custom_types)
+    }
+
+    /// Render the Ruby expression that lowers the `self` value of a trait method.
+    /// For Object types, this is `(ClassName.uniffi_lower self)`.
+    /// For Record/Enum types, this serializes `self` into a RustBuffer.
+    #[askama::filter_fn]
+    pub fn lower_method_self_rb(
+        meth: &Method,
+        _: &dyn askama::Values,
+        config: &Config,
+    ) -> Result<String, askama::Error> {
+        let self_type = meth
+            .self_type()
+            .expect("Trait method must have a self type");
+
+        lower_rb_inner("self", &self_type, &config.custom_types)
     }
 
     /// Render a Ruby integer literal for the discriminant of the variant at `index` in enum `e`.
