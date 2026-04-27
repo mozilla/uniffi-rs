@@ -13,6 +13,8 @@ class {{ rec.name()|class_name_rb }}
     {%- endfor %}
   end
 
+  {%- let trait_methods = rec.uniffi_trait_methods() %}
+  {%- if trait_methods.eq_eq.is_none() %}
   def ==(other)
     {%- for field in rec.fields() %}
     if @{{ field.name()|var_name_rb }} != other.{{ field.name()|var_name_rb }}
@@ -22,4 +24,6 @@ class {{ rec.name()|class_name_rb }}
 
     true
   end
+  {% endif %}
+  {%- include "UniffiTraitImpls.rb" %}
 end

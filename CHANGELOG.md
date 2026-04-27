@@ -36,6 +36,7 @@
 - Kotlin objects now have an `uniffiIsDestroyed` property that returns `true` if the Rust reference no longer exists ([#2825](https://github.com/mozilla/uniffi-rs/pull/2825))
 - Updated `askama` version to `0.15.6`
 - Custom Types can have docstrings in some languages ([#2853](https://github.com/mozilla/uniffi-rs/pull/2853))
+- Ruby: Expose standard Rust traits for generated ruby code (#2883)
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.1...HEAD).
 

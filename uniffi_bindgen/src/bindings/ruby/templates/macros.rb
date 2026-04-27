@@ -22,18 +22,18 @@ values[{{- field_num - 1 -}}]
     {%- when Some(Type::Custom { builtin, .. }) -%}
       {%- match builtin.borrow() -%}
       {%- when Type::Enum { name, .. } -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
+      ::{{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
       {%- when Type::Object { name, .. } -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
+      ::{{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
       {%- else -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call
+      ::{{ ci.namespace()|class_name_rb }}.rust_call
       {%- endmatch -%}
     {%- when Some(Type::Enum { name, .. }) -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
+      ::{{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
     {%- when Some(Type::Object { name, .. }) -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
+      ::{{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
     {%- else -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call(
+      ::{{ ci.namespace()|class_name_rb }}.rust_call(
     {%- endmatch -%}
     :{{ func.ffi_func().name() }},
     {%- call _arg_list_ffi_call(func) %}{% endcall -%}
@@ -45,18 +45,18 @@ values[{{- field_num - 1 -}}]
     {%- when Some(Type::Custom { builtin, .. }) -%}
       {%- match builtin.borrow() -%}
       {%- when Type::Enum { name, .. } -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
+      ::{{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
       {%- when Type::Object { name, .. } -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
+      ::{{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
       {%- else -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call
+      ::{{ ci.namespace()|class_name_rb }}.rust_call
       {%- endmatch -%}
     {%- when Some(Type::Enum { name, .. }) -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
+      ::{{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
     {%- when Some(Type::Object { name, .. }) -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
+      ::{{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ name|class_name_rb }},
     {%- else -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call(
+      ::{{ ci.namespace()|class_name_rb }}.rust_call(
     {%- endmatch -%}
     :{{ func.ffi_func().name() }},
     {{- prefix }},
