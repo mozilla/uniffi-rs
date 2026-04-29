@@ -2257,18 +2257,74 @@
 
 
 <h1 id="generating-bindings">Generating bindings</h1>
-<p>Bindings is the term used for the code generates for foreign languages which integrate
-with Rust crates - that is, the generated Python, Swift or Kotlin code which drives the
-examples.</p>
+<p>"Bindings" is the term for the non-Rust side of the environment - the generated Python, Swift or Kotlin code which drives the examples.</p>
 <p>UniFFI comes with a <code>uniffi_bindgen</code> which generates these bindings. For introductory
-information, see <a href="tutorial/foreign_language_bindings.html">Foreign Language Bindings in the tutorial</a></p>
-<h1 id="customizing-the-binding-generation">Customizing the binding generation.</h1>
-<p>Each of the bindings reads a file <code>uniffi.toml</code> in the root of a crate which supports
-various options which influence how the bindings are generated. Default options will be used
-if this file is missing.</p>
-<p><code>--config</code> option can be used to specify additional uniffi config file. This config is merged with
-the <code>uniffi.toml</code> config present in each crate, with its values taking precedence.</p>
-<p>Each binding supports different options, so please see the documentation for each binding language.</p>
+information, see <a href="tutorial/foreign_language_bindings.html">Foreign Language Bindings in the tutorial</a>.
+There are also external bindings which don't live in this repo.</p>
+<h1 id="customizing-the-binding-generation">Customizing the binding generation</h1>
+<p>Each binding generator has their own unique configuration options to customize their output.
+There's a toml-based capability to specify these various options.</p>
+<p>Binding generation can be configured with a <code>uniffi.toml</code> in the root of each crate,
+and by specifying the path to a toml file which specifies global configuration.</p>
+<p>For the builtin bindings, see <a href="kotlin/configuration.html">Kotlin</a>, <a href="python/configuration.html">Python</a> and <a href="swift/configuration.html">Swift</a>.</p>
+<h1 id="global-configuration">Global configuration</h1>
+<p>For projects with multiple UniFFI crates, a global config file lets you set shared defaults and
+per-crate overrides in one place. For example:</p>
+<div class="highlight"><pre><span></span><code>uniffi-bindgen generate --config global.toml -l swift -o out/ libmylibrary.dylib
+</code></pre></div>
+<p>The file has three optional sections:</p>
+<ul>
+<li>
+<p><strong><code>[crate-roots]</code></strong> — Maps crate names to their root directories. Use this when
+  <code>cargo metadata</code> is unavailable or to override crate locations. Paths are relative
+  to the config file's directory.</p>
+</li>
+<li>
+<p><strong><code>[defaults]</code></strong> — Configuration applied to every crate, using the same format as
+  <code>uniffi.toml</code>. These are the lowest priority and are overridden by a crate's own
+  <code>uniffi.toml</code>.</p>
+</li>
+<li>
+<p><strong><code>[crates.&lt;name&gt;]</code></strong> — Per-crate overrides with the highest priority. These override
+  both <code>[defaults]</code> and the crate's own <code>uniffi.toml</code>.</p>
+</li>
+</ul>
+<p><strong>Priority</strong> (lowest to highest): <code>[defaults]</code> → crate's <code>uniffi.toml</code> → <code>[crates.&lt;name&gt;]</code></p>
+<p>All sections use the same format as <code>uniffi.toml</code>. Tables/maps are merged recursively; scalar
+values are replaced.</p>
+<h3 id="example-shared-ffi-module-name-with-per-crate-filenames">Example: shared FFI module name with per-crate filenames</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># ffi_module_name must be the same for all crates</span>
+<span class="k">[defaults.bindings.swift]</span>
+<span class="n">ffi_module_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;MyAppFFI&quot;</span>
+
+<span class="c1"># ffi_module_filename must differ per crate</span>
+<span class="k">[crates.auth.bindings.swift]</span>
+<span class="n">ffi_module_filename</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;auth_ffi&quot;</span>
+
+<span class="k">[crates.storage.bindings.swift]</span>
+<span class="n">ffi_module_filename</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;storage_ffi&quot;</span>
+</code></pre></div>
+<h1 id="crate-locations">Crate locations</h1>
+<p>UniFFI needs to locate UDL files and <code>uniffi.toml</code> files for each referenced crate.
+It uses the same mechanism in both places - either via the <code>cargo-metadata</code> feature,
+and/or via global configuration.
+See the discussion about <code>[crate-roots]</code> above for more info.
+If there's no <code>[crate-roots]</code> entry for a crate, we'll try and fall back to using <code>cargo-metadata</code>
+if it's enabled, otherwise we'll use the default config for the crate (and give an error if we need a UDL).</p>
+<h3 id="example-locating-crates-without-cargo-metadata">Example: locating crates without cargo-metadata</h3>
+<div class="highlight"><pre><span></span><code><span class="k">[crate-roots]</span>
+<span class="c1"># These entries also tell UniFFI where to find `suggest.udl` or `uniffi.toml` files,</span>
+<span class="c1"># avoiding cargo-metadata. Path is relative to the directory of this config file.</span>
+<span class="n">suggest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;./components/suggest&quot;</span>
+<span class="n">tabs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;./components/tabs&quot;</span>
+
+<span class="c1"># This same file can also have `[defaults]` or overrides, like:</span>
+<span class="k">[defaults.bindings.swift]</span>
+<span class="n">some_global_option</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># default for every crate</span>
+
+<span class="k">[crates.suggest.bindings.swift]</span>
+<span class="n">some_option</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># specific override for the `suggest` crate.</span>
+</code></pre></div>
 
 
 
