@@ -1104,21 +1104,6 @@ pub mod filters {
         Ok(arg.is_borrowed_bytes())
     }
 
-    /// Returns `true` if any argument of a callable is a `&[u8]` /
-    /// borrowed `Bytes`.
-    ///
-    /// Used by the `to_ffi_call` macro to know whether the outer
-    /// `rustCall`/`rustCallWithError` closure needs an explicit name
-    /// for the `RustCallStatus` pointer — the shorthand `$0` cannot be
-    /// used from inside the nested `withUnsafeBytes { ... }` closures.
-    #[askama::filter_fn]
-    pub fn has_borrowed_bytes_arg(
-        callable: impl Callable,
-        _: &dyn askama::Values,
-    ) -> Result<bool, askama::Error> {
-        Ok(callable.arguments().iter().any(|a| a.is_borrowed_bytes()))
-    }
-
     /// Swift expression to emit at an argument's position in an FFI call.
     ///
     /// For borrowed `Bytes` (`&[u8]`), this is a bare reference to the

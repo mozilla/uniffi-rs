@@ -1,3 +1,0 @@
-namespace zero_copy_bytes {
-    u32 sum_bytes_udl([ByRef] bytes buf);
-};

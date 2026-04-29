@@ -118,7 +118,7 @@
 
 {% macro arg_list(func, is_decl) %}
 {%- for arg in func.arguments() -%}
-        {{ arg.name()|var_name }}: {{ arg|type_name_for_arg(ci) }}
+        {{ arg.name()|var_name }}: {{ arg|lower_type_name_for_arg(ci) }}
 {%-     if is_decl %}
 {%-         match arg.default_value() %}
 {%-             when Some(default) %} = {{ default|render_default(arg, ci) }}

@@ -12,10 +12,14 @@ use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use syn::{spanned::Spanned, FnArg, Ident, Pat, Receiver, ReturnType, Type};
 
+/// Syntactic check for `&[u8]`. Matches the bare identifier `u8` only —
+/// fully-qualified paths like `&[::std::primitive::u8]` or user-defined
+/// type aliases named `u8` are not recognized. In practice these forms
+/// are vanishingly rare for byte slice arguments.
 fn is_u8_slice(ty: &Type) -> bool {
     if let Type::Slice(s) = ty {
         if let Type::Path(p) = &*s.elem {
-            return p.path.get_ident().is_some_and(|i| i == "u8");
+            return p.path.is_ident("u8");
         }
     }
     false

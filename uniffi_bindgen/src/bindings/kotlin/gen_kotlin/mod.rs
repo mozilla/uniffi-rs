@@ -898,11 +898,13 @@ mod filters {
         Ok(KotlinCodeOracle.var_name_raw(nm.as_ref()))
     }
 
-    /// Per-argument override of `type_name` that routes borrowed `Bytes` to
-    /// `java.nio.ByteBuffer` — the only Kotlin type JNA can expose a native
-    /// pointer to. Other args take the per-Type `type_name` path.
+    /// Per-argument override of `type_name` for the foreign->Rust (lower)
+    /// direction only. Routes borrowed `Bytes` to `java.nio.ByteBuffer` —
+    /// the only Kotlin type JNA can expose a native pointer to. Other args
+    /// take the per-Type `type_name` path. Not used for Rust->Kotlin
+    /// (callback / lift) positions.
     #[askama::filter_fn]
-    pub(super) fn type_name_for_arg(
+    pub(super) fn lower_type_name_for_arg(
         arg: &Argument,
         _: &dyn askama::Values,
         ci: &ComponentInterface,

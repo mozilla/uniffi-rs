@@ -1,5 +1,0 @@
-[bindings.kotlin]
-package_name = "uniffi.fixture.zero_copy_bytes"
-
-[bindings.swift]
-generate_case_iterable_conformance = true
