@@ -34,6 +34,10 @@ final class Callback: TestCallbackInterface, @unchecked Sendable {
         }
         return numbers
     }
+
+    func echo(s: String) -> String {
+        return s
+    }
 }
 
 // Construct a callback interface to pass to rust
@@ -44,6 +48,7 @@ invokeTestCallbackInterfaceNoop(cbi: cbi);
 assert(invokeTestCallbackInterfaceGetValue(cbi: cbi) == 42);
 invokeTestCallbackInterfaceSetValue(cbi: cbi, value: 43);
 assert(invokeTestCallbackInterfaceGetValue(cbi: cbi) == 43);
+assert(invokeTestCallbackInterfaceEcho(cbi: cbi, s: "test-string") == "test-string");
 
 // The previcalls created a bunch of callback interface references.  Make sure they've been cleaned
 // up and the only remaining reference is for our `cbi` variable.

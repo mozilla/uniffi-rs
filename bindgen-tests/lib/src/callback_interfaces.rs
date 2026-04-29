@@ -20,6 +20,8 @@ pub trait TestCallbackInterface {
         &self,
         numbers: CallbackInterfaceNumbers,
     ) -> Result<CallbackInterfaceNumbers, TestError>;
+    /// Test passing a string using a callback interface
+    fn echo(&self, s: String) -> String;
 }
 
 #[derive(uniffi::Record)]
@@ -49,6 +51,14 @@ pub fn invoke_test_callback_interface_throw_if_equal(
     numbers: CallbackInterfaceNumbers,
 ) -> Result<CallbackInterfaceNumbers, TestError> {
     cbi.throw_if_equal(numbers)
+}
+
+#[uniffi::export]
+pub fn invoke_test_callback_interface_echo(
+    cbi: Box<dyn TestCallbackInterface>,
+    s: String,
+) -> String {
+    cbi.echo(s)
 }
 
 impl From<uniffi::UnexpectedUniFFICallbackError> for TestError {

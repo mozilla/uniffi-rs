@@ -25,6 +25,9 @@ class CallbackImpl(TestCallbackInterface):
             raise TestError.Failure1()
         return numbers
 
+    def echo(self, s):
+        return s
+
 class TestCallbackInterfaces(unittest.TestCase):
     def test_callback_interfaces(self):
         # Construct a callback interface to pass to rust
@@ -35,6 +38,7 @@ class TestCallbackInterfaces(unittest.TestCase):
         assert(invoke_test_callback_interface_get_value(cbi) == 42)
         invoke_test_callback_interface_set_value(cbi, 43)
         assert(invoke_test_callback_interface_get_value(cbi) == 43)
+        assert(invoke_test_callback_interface_echo(cbi, "test-string") == "test-string")
 
         # The previous calls created a bunch of callback interface references.  Make sure they've been cleaned
         # up and the only remaining reference is for our `cbi` variable.
