@@ -103,6 +103,7 @@ use std::process::Command;
 
 mod bindgen_paths;
 pub mod bindings;
+mod global_config;
 pub mod interface;
 pub mod library_mode;
 mod loader;
@@ -119,6 +120,7 @@ use crate::interface::{
     Variant,
 };
 pub use bindgen_paths::{BindgenPaths, BindgenPathsLayer};
+pub use global_config::{CrateRootsLayer, GlobalConfig};
 pub use interface::ComponentInterface;
 pub use library_mode::find_components;
 use scaffolding::RustScaffolding;
@@ -556,25 +558,33 @@ fn overridden_config_value(
 ) -> Result<toml::Value> {
     let override_config = load_toml_file(config_file_override).context("override config")?;
     if let Some(override_config) = override_config {
-        merge_toml(&mut config, override_config);
+        merge_toml(&mut config, override_config)?;
     }
     Ok(toml::Value::from(config))
 }
 
-fn merge_toml(a: &mut toml::value::Table, b: toml::value::Table) {
+pub fn merge_toml(a: &mut toml::value::Table, b: toml::value::Table) -> Result<()> {
     for (key, value) in b.into_iter() {
         match a.get_mut(&key) {
             Some(existing_value) => match (existing_value, value) {
                 (toml::Value::Table(ref mut t0), toml::Value::Table(t1)) => {
-                    merge_toml(t0, t1);
+                    merge_toml(t0, t1)?;
                 }
-                (v, value) => *v = value,
+                (existing, new)
+                    if std::mem::discriminant(existing) == std::mem::discriminant(&new) =>
+                {
+                    *existing = new
+                }
+                (e, v) => {
+                    bail!("Inconsistent types merging TOML - key '{key}' has '{e:?}' and '{v:?}'")
+                }
             },
             None => {
                 a.insert(key, value);
             }
         }
     }
+    Ok(())
 }
 
 // convert `anyhow::Error` and `&str` etc to askama errors.
@@ -676,8 +686,30 @@ mod test {
         "#;
         let expected: toml::value::Table = toml::de::from_str(expected).unwrap();
 
-        merge_toml(&mut default, override_toml);
+        merge_toml(&mut default, override_toml).unwrap();
 
         assert_eq!(&expected, &default);
+    }
+
+    #[test]
+    fn test_merge_toml_wrong_types() {
+        let default = r#"
+            foo = "foo"
+            bar = "bar"
+        "#;
+        let mut default = toml::de::from_str(default).unwrap();
+
+        let override_toml = r#"
+            # update key but with inconsistent type.
+            bar = 1
+        "#;
+        let override_toml = toml::de::from_str(override_toml).unwrap();
+
+        assert_eq!(
+            merge_toml(&mut default, override_toml)
+                .unwrap_err()
+                .to_string(),
+            "Inconsistent types merging TOML - key 'bar' has 'String(\"bar\")' and 'Integer(1)'"
+        );
     }
 }

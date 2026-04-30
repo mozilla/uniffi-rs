@@ -11,6 +11,9 @@
   Previously these languages skipped the constructor in this case or generated a constructor that always threw.
   You can get similar behavior by adding the primary constructor to the uniffi.toml excludes list in uniffi.toml (e.g. `excludes = ["MyObject.new"])
 - Ruby: Force named parameters for enum constructors (#2880)
+- The `--config` flag now expects a [global config file](https://mozilla.github.io/uniffi-rs/next/bindings.html#global-configuration)
+  rather than a flat `uniffi.toml`-style override. Old-style files will produce a warning and be ignored.
+  See [#2866](https://github.com/mozilla/uniffi-rs/issues/2866)
 
 ### What's Fixed
 
@@ -18,7 +21,12 @@
 - Exempted `UniFfiTag` from `clippy::exhaustive_structs` since downstream projects may depend on it [#2809](https://github.com/mozilla/uniffi-rs/pull/2809)
 - Ruby: Code for all kinds of enums and custom types is now correctly generated (#2880)
 
+### ⚠️ Breaking Changes for external bindings authors ⚠️
+
+- There's a new `GlobalConfig` struct for managing config. It replaces `BindgenPathsLayer::get_config()` method which has been removed. See [#2866](https://github.com/mozilla/uniffi-rs/issues/2866).
 ### What's New?
+
+- Global config file support via `--config`. See [the docs](https://mozilla.github.io/uniffi-rs/next/bindings.html#global-configuration).
 
 - Recursive enums are now supported. UniFFI automatically detects when enum and record types participate in cycles — self-referential, mutually recursive, or cycling through a record — and generates appropriate bindings: `indirect` in Swift, forward references in Python ([#2834](https://github.com/mozilla/uniffi-rs/pull/2834)).
 - `Box<T>` now automatically implements FFI traits when `T` implements them, allowing direct use in enum variants and function parameters without NewType wrappers ([#2808](https://github.com/mozilla/uniffi-rs/pull/2808))

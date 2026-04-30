@@ -16,7 +16,7 @@ use uniffi_meta::{
 
 use crate::{
     crate_name_from_cargo_toml, interface, macro_metadata, pipeline, BindgenPaths, Component,
-    ComponentInterface, Result,
+    ComponentInterface, GlobalConfig, Result,
 };
 
 /// Load metadata, component interfaces, configuration, etc. for binding generators.
@@ -24,11 +24,15 @@ use crate::{
 /// Bindings generators use this to load all of the inputs they need to render their code.
 pub struct BindgenLoader {
     bindgen_paths: BindgenPaths,
+    global_config: GlobalConfig,
 }
 
 impl BindgenLoader {
-    pub fn new(bindgen_paths: BindgenPaths) -> Self {
-        Self { bindgen_paths }
+    pub fn new(bindgen_paths: BindgenPaths, global_config: GlobalConfig) -> Self {
+        Self {
+            bindgen_paths,
+            global_config,
+        }
     }
 
     /// Load UniFFI metadata
@@ -198,7 +202,9 @@ impl BindgenLoader {
     {
         cis.into_iter()
             .map(|ci| {
-                let toml = self.bindgen_paths.get_config(ci.crate_name())?;
+                let toml = self
+                    .global_config
+                    .get_config(&self.bindgen_paths, ci.crate_name())?;
                 let config = parse_config(&ci, toml.into())?;
                 Ok(Component { ci, config })
             })
@@ -214,8 +220,8 @@ impl BindgenLoader {
         let mut metadata_converter = pipeline::initial::UniffiMetaConverter::default();
         for metadata_group in metadata.into_values() {
             let table = self
-                .bindgen_paths
-                .get_config(&metadata_group.namespace.crate_name)?;
+                .global_config
+                .get_config(&self.bindgen_paths, &metadata_group.namespace.crate_name)?;
             if !table.is_empty() {
                 metadata_converter
                     .add_module_config_toml(metadata_group.namespace.name.clone(), table)?;

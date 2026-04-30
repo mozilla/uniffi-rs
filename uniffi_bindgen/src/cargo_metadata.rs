@@ -29,12 +29,17 @@ impl CrateConfigSupplier {
     }
 }
 
-// Newer trait for finding config - it's up to the implementation whether this
-// is loaded from a file or something else.
+// Newer trait for finding crate roots and paths
 impl BindgenPathsLayer for CrateConfigSupplier {
-    fn get_config(&self, crate_name: &str) -> Result<Option<toml::value::Table>> {
-        let crate_root = self.paths.get(crate_name);
-        let Some(crate_root) = crate_root else {
+    fn get_crate_root(&self, crate_name: &str) -> Option<Utf8PathBuf> {
+        self.paths.get(crate_name).cloned()
+    }
+}
+
+// Older trait for finding config paths
+impl BindgenCrateConfigSupplier for CrateConfigSupplier {
+    fn get_toml(&self, crate_name: &str) -> Result<Option<toml::value::Table>> {
+        let Some(crate_root) = self.get_crate_root(crate_name) else {
             return Ok(None);
         };
         // Config files are optional so we return None if the file doesn't exist.
@@ -47,19 +52,6 @@ impl BindgenPathsLayer for CrateConfigSupplier {
         let toml = toml::de::from_str(&contents)
             .with_context(|| format!("parse toml: {:?}", config_path))?;
         Ok(Some(toml))
-    }
-
-    fn get_udl_path(&self, crate_name: &str, udl_name: &str) -> Option<Utf8PathBuf> {
-        self.paths
-            .get(crate_name)
-            .map(|p| p.join("src").join(format!("{udl_name}.udl")))
-    }
-}
-
-// Older trait for finding config paths
-impl BindgenCrateConfigSupplier for CrateConfigSupplier {
-    fn get_toml(&self, crate_name: &str) -> Result<Option<toml::value::Table>> {
-        self.get_config(crate_name)
     }
 
     fn get_udl(&self, crate_name: &str, udl_name: &str) -> Result<String> {

@@ -6,6 +6,7 @@ use crate::bindings::python::pipeline::initial;
 use crate::bindings::python::run_pipeline;
 use crate::bindings::RunScriptOptions;
 use crate::cargo_metadata::CrateConfigSupplier;
+use crate::GlobalConfig;
 use anyhow::{Context, Result};
 use camino::Utf8Path;
 use std::env;
@@ -42,7 +43,7 @@ pub fn run_script(
     // Generate bindings
     let mut paths = crate::BindgenPaths::default();
     paths.add_layer(CrateConfigSupplier::from(test_helper.cargo_metadata()));
-    let root = initial::Root::from_library(paths, &cdylib_path, None)?;
+    let root = initial::Root::from_library(&paths, &GlobalConfig::default(), &cdylib_path, None)?;
     run_pipeline(root, &out_dir, None)?;
 
     // Run the python script

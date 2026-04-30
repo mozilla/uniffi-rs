@@ -37,6 +37,9 @@ struct Cli {
     /// What frameworks to link against when generating the modulemap file.
     #[arg(long)]
     link_frameworks: Vec<String>,
+    /// Path to a global config file.
+    #[arg(long, short)]
+    config: Option<Utf8PathBuf>,
 }
 
 #[derive(Debug, Args)]
@@ -73,6 +76,7 @@ impl From<Cli> for SwiftBindingsOptions {
             modulemap_filename: cli.modulemap_filename,
             metadata_no_deps: cli.metadata_no_deps,
             link_frameworks: cli.link_frameworks,
+            config: cli.config,
         }
     }
 }
