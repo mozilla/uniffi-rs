@@ -2,6 +2,7 @@ target
 .*.swp
 .vscode
 .idea
+.DS_Store
 xcuserdata
 docs/manual/src/internals/api
 # The old mdbook outdir
