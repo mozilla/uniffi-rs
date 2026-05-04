@@ -115,11 +115,33 @@ fileprivate struct {{ trait_impl }} {
 
     // Rust stores this pointer for future callback invocations, so it must live
     // for the process lifetime (not just for the init function call).
+    //
+    // `nonisolated(unsafe)` is needed under Swift 6 strict concurrency: a
+    // non-isolated `static let` of a non-Sendable type is rejected, and the
+    // FFI-imported pointee struct can't be auto-derived `Sendable`. The
+    // pointee is initialized once during static init and never mutated; its
+    // fields are C function pointers (addresses, atomic reads) whose targets
+    // are uniffi-generated trampolines designed for concurrent invocation.
+    // Same escape hatch the adjacent `UniffiHandleMap`/generated object
+    // templates already use.
+    //
+    // The annotation requires Swift 6 language mode. In Swift 5 mode the
+    // parser rejects `nonisolated(unsafe)` on stored properties, but the
+    // strict-concurrency check that needs the annotation isn't enforced
+    // there either, so the unannotated form compiles cleanly.
+#if swift(>=6)
+    nonisolated(unsafe) static let vtablePtr: UnsafePointer<{{ vtable|ffi_type_name }}> = {
+        let ptr = UnsafeMutablePointer<{{ vtable|ffi_type_name }}>.allocate(capacity: 1)
+        ptr.initialize(to: vtable)
+        return UnsafePointer(ptr)
+    }()
+#else
     static let vtablePtr: UnsafePointer<{{ vtable|ffi_type_name }}> = {
         let ptr = UnsafeMutablePointer<{{ vtable|ffi_type_name }}>.allocate(capacity: 1)
         ptr.initialize(to: vtable)
         return UnsafePointer(ptr)
     }()
+#endif
 }
 
 private func {{ callback_init }}() {
