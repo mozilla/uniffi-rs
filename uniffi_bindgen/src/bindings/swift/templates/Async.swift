@@ -3,12 +3,24 @@ private let UNIFFI_RUST_FUTURE_POLL_WAKE: Int8 = 1
 
 fileprivate let uniffiContinuationHandleMap = UniffiHandleMap<UnsafeContinuation<Int8, Never>>()
 
+// Holder for a Rust future handle plus its FFI cancel symbol. We capture this
+// in `withTaskCancellationHandler`'s `@Sendable` `onCancel` closure. The cancel
+// function pointer is a plain Swift function type (not `@convention(c)`), so
+// it doesn't satisfy `Sendable` automatically — but the underlying Rust
+// `Scheduler::cancel` is thread-safe by construction. Marking the holder
+// `@unchecked Sendable` matches how `UniffiHandleMap` and generated object
+// types handle the same pattern.
+fileprivate struct UniffiRustFutureCancelHandle: @unchecked Sendable {
+    let handle: UInt64
+    let cancel: (UInt64) -> ()
+}
+
 fileprivate func uniffiRustCallAsync<F, T>(
     rustFutureFunc: () -> UInt64,
     pollFunc: (UInt64, @escaping UniffiRustFutureContinuationCallback, UInt64) -> (),
     completeFunc: (UInt64, UnsafeMutablePointer<RustCallStatus>) -> F,
     freeFunc: (UInt64) -> (),
-    cancelFunc: @Sendable @escaping (UInt64) -> (),
+    cancelFunc: @escaping (UInt64) -> (),
     liftFunc: (F) throws -> T,
     errorHandler: ((RustBuffer) throws -> Swift.Error)?
 ) async throws -> T {
@@ -19,6 +31,7 @@ fileprivate func uniffiRustCallAsync<F, T>(
     defer {
         freeFunc(rustFuture)
     }
+    let cancelHandle = UniffiRustFutureCancelHandle(handle: rustFuture, cancel: cancelFunc)
     await withTaskCancellationHandler {
         var pollResult: Int8 = UNIFFI_RUST_FUTURE_POLL_WAKE
         repeat {
@@ -33,7 +46,7 @@ fileprivate func uniffiRustCallAsync<F, T>(
             }
         } while pollResult != UNIFFI_RUST_FUTURE_POLL_READY
     } onCancel: {
-        cancelFunc(rustFuture)
+        cancelHandle.cancel(cancelHandle.handle)
     }
     return try liftFunc(makeRustCall(
         { completeFunc(rustFuture, $0) },
