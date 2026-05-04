@@ -8,6 +8,7 @@ fileprivate func uniffiRustCallAsync<F, T>(
     pollFunc: (UInt64, @escaping UniffiRustFutureContinuationCallback, UInt64) -> (),
     completeFunc: (UInt64, UnsafeMutablePointer<RustCallStatus>) -> F,
     freeFunc: (UInt64) -> (),
+    cancelFunc: @Sendable @escaping (UInt64) -> (),
     liftFunc: (F) throws -> T,
     errorHandler: ((RustBuffer) throws -> Swift.Error)?
 ) async throws -> T {
@@ -18,19 +19,22 @@ fileprivate func uniffiRustCallAsync<F, T>(
     defer {
         freeFunc(rustFuture)
     }
-    var pollResult: Int8;
-    repeat {
-        pollResult = await withUnsafeContinuation {
-            pollFunc(
-                rustFuture,
-                { handle, pollResult in
-                    uniffiFutureContinuationCallback(handle: handle, pollResult: pollResult)
-                },
-                uniffiContinuationHandleMap.insert(obj: $0)
-            )
-        }
-    } while pollResult != UNIFFI_RUST_FUTURE_POLL_READY
-
+    await withTaskCancellationHandler {
+        var pollResult: Int8 = UNIFFI_RUST_FUTURE_POLL_WAKE
+        repeat {
+            pollResult = await withUnsafeContinuation {
+                pollFunc(
+                    rustFuture,
+                    { handle, pollResult in
+                        uniffiFutureContinuationCallback(handle: handle, pollResult: pollResult)
+                    },
+                    uniffiContinuationHandleMap.insert(obj: $0)
+                )
+            }
+        } while pollResult != UNIFFI_RUST_FUTURE_POLL_READY
+    } onCancel: {
+        cancelFunc(rustFuture)
+    }
     return try liftFunc(makeRustCall(
         { completeFunc(rustFuture, $0) },
         errorHandler: errorHandler
