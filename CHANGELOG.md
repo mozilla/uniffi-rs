@@ -6,6 +6,10 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's Fixed
+
+- Swift: Fixed `FfiConverterString` silently stripping a leading U+FEFF byte order mark from Rust strings.
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.1...HEAD).
 
 ## v0.31.1 (backend crates: v0.31.1) - (_2026-04-10_)
