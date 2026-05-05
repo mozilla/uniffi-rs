@@ -23,12 +23,12 @@ pub trait Node: Any + std::fmt::Debug {
     fn to_box_any(self: Box<Self>) -> Box<dyn Any>;
 
     /// Call a visitor function for each direct child
-    fn visit_children(&self, visitor: &mut dyn FnMut(&dyn Node));
+    fn visit_children<'a>(&'a self, visitor: &mut dyn FnMut(&'a dyn Node));
 
     /// Call a visitor function for each descendant
-    fn try_visit_descendants(
-        &self,
-        visitor: &mut dyn FnMut(&dyn Node) -> Result<()>,
+    fn try_visit_descendants<'a>(
+        &'a self,
+        visitor: &mut dyn FnMut(&'a dyn Node) -> Result<()>,
     ) -> Result<()> {
         // Store the result as we go through.  Once this is an Err value, short-circuit all
         // remaining work.
@@ -54,7 +54,7 @@ pub trait Node: Any + std::fmt::Debug {
     /// Visit all descendants of a particular type
     ///
     /// `visit` panics if no descendant type matches `T`.
-    fn visit<T: Node>(&self, mut visitor: impl FnMut(&T))
+    fn visit<'a, T: Node>(&'a self, mut visitor: impl FnMut(&'a T))
     where
         Self: Sized,
     {
@@ -69,7 +69,7 @@ pub trait Node: Any + std::fmt::Debug {
     }
 
     /// Like `visit`, but with a fallible function.
-    fn try_visit<T: Node>(&self, mut visitor: impl FnMut(&T) -> Result<()>) -> Result<()>
+    fn try_visit<'a, T: Node>(&'a self, mut visitor: impl FnMut(&'a T) -> Result<()>) -> Result<()>
     where
         Self: Sized,
     {
@@ -131,7 +131,7 @@ macro_rules! impl_leaf_nodes {
                     self
                 }
 
-                fn visit_children(&self, _visitor: &mut dyn FnMut(&dyn Node)) { }
+                fn visit_children<'a>(&'a self, _visitor: &mut dyn FnMut(&'a dyn Node)) { }
 
                 fn has_descendant_type<N: Node>(_visited: &mut HashSet<TypeId>) -> bool {
                     false
@@ -152,7 +152,7 @@ impl<T: Node> Node for Box<T> {
         self
     }
 
-    fn visit_children(&self, visitor: &mut dyn FnMut(&dyn Node)) {
+    fn visit_children<'a>(&'a self, visitor: &mut dyn FnMut(&'a dyn Node)) {
         visitor(&**self)
     }
 
@@ -176,7 +176,7 @@ impl<T: Node> Node for Option<T> {
         self
     }
 
-    fn visit_children(&self, visitor: &mut dyn FnMut(&dyn Node)) {
+    fn visit_children<'a>(&'a self, visitor: &mut dyn FnMut(&'a dyn Node)) {
         if let Some(node) = self {
             visitor(node)
         }
@@ -202,7 +202,7 @@ impl<T: Node> Node for Vec<T> {
         self
     }
 
-    fn visit_children(&self, visitor: &mut dyn FnMut(&dyn Node)) {
+    fn visit_children<'a>(&'a self, visitor: &mut dyn FnMut(&'a dyn Node)) {
         for node in self.iter() {
             visitor(node)
         }
@@ -228,7 +228,7 @@ impl<T: Node> Node for BTreeSet<T> {
         self
     }
 
-    fn visit_children(&self, visitor: &mut dyn FnMut(&dyn Node)) {
+    fn visit_children<'a>(&'a self, visitor: &mut dyn FnMut(&'a dyn Node)) {
         for node in self.iter() {
             visitor(node)
         }
@@ -254,7 +254,7 @@ impl<T: Node> Node for IndexSet<T> {
         self
     }
 
-    fn visit_children(&self, visitor: &mut dyn FnMut(&dyn Node)) {
+    fn visit_children<'a>(&'a self, visitor: &mut dyn FnMut(&'a dyn Node)) {
         for node in self.iter() {
             visitor(node)
         }
@@ -280,7 +280,7 @@ impl<K: Node, V: Node> Node for IndexMap<K, V> {
         self
     }
 
-    fn visit_children(&self, visitor: &mut dyn FnMut(&dyn Node)) {
+    fn visit_children<'a>(&'a self, visitor: &mut dyn FnMut(&'a dyn Node)) {
         for (key, value) in self.iter() {
             visitor(key);
             visitor(value);

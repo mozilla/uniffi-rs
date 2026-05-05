@@ -41,7 +41,7 @@ fn render_struct(ident: Ident, st: DataStruct) -> Result<TokenStream> {
                 self
             }
 
-            fn visit_children(&self, visitor: &mut dyn FnMut(&dyn ::uniffi_pipeline::Node)) {
+            fn visit_children<'a>(&'a self, visitor: &mut dyn FnMut(&'a dyn Node)) {
                 #(
                     visitor(&self.#members);
                 )*
@@ -106,7 +106,7 @@ fn render_enum(ident: Ident, en: DataEnum) -> Result<TokenStream> {
                 self
             }
 
-            fn visit_children(&self, visitor: &mut dyn FnMut(&dyn ::uniffi_pipeline::Node)) {
+            fn visit_children<'a>(&'a self, visitor: &mut dyn FnMut(&'a dyn Node)) {
                 match self {
                     #(
                         #arms
