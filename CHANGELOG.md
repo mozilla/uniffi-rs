@@ -20,6 +20,7 @@
 - Fixed bug that sometimes prevented renaming items inside a submodule [#2792](https://github.com/mozilla/uniffi-rs/pull/2792)
 - Exempted `UniFfiTag` from `clippy::exhaustive_structs` since downstream projects may depend on it [#2809](https://github.com/mozilla/uniffi-rs/pull/2809)
 - Ruby: Code for all kinds of enums and custom types is now correctly generated #2880 and #2891
+- Swift: Fixed `FfiConverterString` silently stripping a leading U+FEFF byte order mark from Rust strings.
 
 ### ⚠️ Breaking Changes for external bindings authors ⚠️
 

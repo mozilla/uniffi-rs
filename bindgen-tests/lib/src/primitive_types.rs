@@ -196,3 +196,17 @@ pub fn sum_with_many_types(
 pub fn func_with_multi_word_arg(the_argument: i32) -> i32 {
     the_argument
 }
+
+// Round-trip strings prefixed with U+FEFF (byte order mark) so the bindings
+// can assert string converters preserve the BOM rather than treating it as
+// encoding metadata. The two functions cover both converter paths: `lift`
+// for top-level returns and `read` for elements inside a serialized buffer.
+#[uniffi::export]
+pub fn string_with_bom() -> String {
+    "\u{feff}hello".to_string()
+}
+
+#[uniffi::export]
+pub fn strings_with_bom() -> Vec<String> {
+    vec!["\u{feff}first".to_string(), "\u{feff}second".to_string()]
+}
