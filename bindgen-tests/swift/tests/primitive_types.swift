@@ -50,3 +50,8 @@ assert(sumWithManyTypes(a: 1, b: -2, c: 3, d: -4, e: 5, f: -6, g: 7, h: -8, i: 9
 // Test that the argument names get mapped to camelCase
 let _ = funcWithMultiWordArg(theArgument: 16)
 
+// `String(bytes:encoding:.utf8)` strips a leading U+FEFF via Foundation's
+// NSString decoder; assert the lift/read paths preserve it instead.
+assert(stringWithBom() == "\u{feff}hello")
+assert(stringsWithBom() == ["\u{feff}first", "\u{feff}second"])
+
