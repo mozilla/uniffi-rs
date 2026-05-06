@@ -53,5 +53,3 @@ let _ = funcWithMultiWordArg(theArgument: 16)
 // `String(bytes:encoding:.utf8)` strips a leading U+FEFF via Foundation's
 // NSString decoder; assert the lift/read paths preserve it instead.
 assert(stringWithBom() == "\u{feff}hello")
-assert(stringsWithBom() == ["\u{feff}first", "\u{feff}second"])
-

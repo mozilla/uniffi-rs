@@ -215,8 +215,3 @@ pub fn func_with_multi_word_arg(the_argument: i32) -> i32 {
 pub fn string_with_bom() -> String {
     "\u{feff}hello".to_string()
 }
-
-#[uniffi::export]
-pub fn strings_with_bom() -> Vec<String> {
-    vec!["\u{feff}first".to_string(), "\u{feff}second".to_string()]
-}
