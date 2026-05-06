@@ -158,7 +158,7 @@ class RustBuffer < FFI::Struct
     if v.{{ variant.name()|var_name_rb }}?
       {%- for field in variant.fields() %}
       {%- if field.name().is_empty() %}
-        {{ "v.v{}"|format(loop.index)|check_lower_rb(field.as_type().borrow(), config) }}
+        {{ "v.values[{}]"|format(loop.index0)|check_lower_rb(field.as_type().borrow(), config) }}
       {%- else %}
         {{ "v.{}"|format(field.name())|check_lower_rb(field.as_type().borrow(), config) }}
       {%- endif %}

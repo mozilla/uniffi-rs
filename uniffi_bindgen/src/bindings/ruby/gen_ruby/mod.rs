@@ -312,10 +312,10 @@ mod filters {
 
     #[askama::filter_fn]
     pub fn var_name_rb(nm: &str, _: &dyn askama::Values) -> Result<String, askama::Error> {
-        let nm = nm.to_string();
-        let prefix = if is_reserved_word(&nm) { "_" } else { "" };
+        let snake = nm.to_string().to_snake_case();
+        let prefix = if is_reserved_word(&snake) { "_" } else { "" };
 
-        Ok(format!("{prefix}{}", nm.to_snake_case()))
+        Ok(format!("{prefix}{snake}"))
     }
 
     #[askama::filter_fn]
@@ -517,12 +517,12 @@ mod filters {
 
     #[askama::filter_fn]
     pub fn lower_rb(
-        nm: &str,
+        nm: impl AsRef<str>,
         _: &dyn askama::Values,
         type_: &Type,
         config: &Config,
     ) -> Result<String, askama::Error> {
-        lower_rb_inner(nm, type_, &config.custom_types)
+        lower_rb_inner(nm.as_ref(), type_, &config.custom_types)
     }
 
     fn lift_rb_inner(

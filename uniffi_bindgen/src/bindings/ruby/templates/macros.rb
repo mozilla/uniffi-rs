@@ -66,7 +66,7 @@ values[{{- field_num - 1 -}}]
 
 {%- macro _arg_list_ffi_call(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name()|lower_rb(arg.as_type().borrow(), config) }}
+        {{- arg.name()|var_name_rb|lower_rb(arg.as_type().borrow(), config) }}
         {%- if !loop.last %},{% endif %}
     {%- endfor %}
 {%- endmacro -%}
@@ -97,14 +97,14 @@ values[{{- field_num - 1 -}}]
 
 {%- macro setup_args(func) %}
     {%- for arg in func.arguments() %}
-    {{ arg.name() }} = {{ arg.name()|coerce_rb(ci.namespace()|class_name_rb, arg.as_type().borrow(), config) }}
-    {{ arg.name()|check_lower_rb(arg.as_type().borrow(), config) }}
+    {{ arg.name()|var_name_rb }} = {{ arg.name()|var_name_rb|coerce_rb(ci.namespace()|class_name_rb, arg.as_type().borrow(), config) }}
+    {{ arg.name()|var_name_rb|check_lower_rb(arg.as_type().borrow(), config) }}
     {% endfor -%}
 {%- endmacro -%}
 
 {%- macro setup_args_extra_indent(meth) %}
         {%- for arg in meth.arguments() %}
-        {{ arg.name() }} = {{ arg.name()|coerce_rb(ci.namespace()|class_name_rb, arg.as_type().borrow(), config) }}
-        {{ arg.name()|check_lower_rb(arg.as_type().borrow(), config) }}
+        {{ arg.name()|var_name_rb }} = {{ arg.name()|var_name_rb|coerce_rb(ci.namespace()|class_name_rb, arg.as_type().borrow(), config) }}
+        {{ arg.name()|var_name_rb|check_lower_rb(arg.as_type().borrow(), config) }}
         {%- endfor %}
 {%- endmacro -%}

@@ -20,6 +20,12 @@ type_name = "Dictionary<String, UInt64>"
 lift = "[\"value\": {}]"
 lower = "{}[\"value\"]!"
 
+[bindings.ruby.custom_types.CustomType2]
+# Use `Hash` as our custom type wrapper, since we can use it without having to import any types
+type_name = "Hash"
+lift = "{\"value\" => {}}"
+lower = "{}[\"value\"]"
+
 #
 # Rename configuration
 #
@@ -113,3 +119,32 @@ BindingObjectToRename = "SwiftObject"
 # Swift method and arg renaming
 "BindingObjectToRename.method" = "swift_method"
 "BindingObjectToRename.method.arg" = "swiftArg"
+
+[bindings.ruby.rename]
+binding_function_to_rename = "rb_function"
+"binding_function_to_rename.record" = "rb_record"
+
+BindingRecordToRename = "RbRecord"
+"BindingRecordToRename.item" = "rb_item"
+
+BindingEnumToRename = "RbEnum"
+"BindingEnumToRename.VariantA" = "RbVariantA"
+"BindingEnumToRename.Record" = "RbRecord"
+
+BindingEnumWithFieldsToRename = "RbEnumWithFields"
+"BindingEnumWithFieldsToRename.VariantA" = "RbVariantA"
+"BindingEnumWithFieldsToRename.VariantA.binding_int" = "rb_int"
+"BindingEnumWithFieldsToRename.Record" = "RbRecord"
+"BindingEnumWithFieldsToRename.Record.binding_record" = "rb_record"
+"BindingEnumWithFieldsToRename.Record.binding_int" = "rb_int"
+
+BindingErrorToRename = "RbError"
+"BindingErrorToRename.Simple" = "RbSimple"
+
+BindingTraitToRename = "RbTrait"
+"BindingTraitToRename.trait_method" = "rb_trait_method"
+
+BindingObjectToRename = "RbObject"
+"BindingObjectToRename.new.value" = "rb_value"
+"BindingObjectToRename.method" = "rb_method"
+"BindingObjectToRename.method.arg" = "rb_arg"
