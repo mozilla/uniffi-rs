@@ -32,6 +32,7 @@ members = [
   "bindgen-tests/kotlin/enum-payload-clash",
   "bindgen-tests/kotlin/keywords",
   "bindgen-tests/python",
+  "bindgen-tests/ruby",
   "bindgen-tests/swift",
   "bindgen-tests/swift/keywords",
   "bindgen-tests/swift/callbacks-omit-labels",
