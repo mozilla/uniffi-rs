@@ -14,6 +14,7 @@ in Rust, and the types used in UDL.
 | `SystemTime`         | `timestamp`            | Precision may be lost when converting to Python and Swift types |
 | `Duration`           | `duration`             | Precision may be lost when converting to Python and Swift types |
 | `&T`                 | `[ByRef] T`            | This works for `&str` and `&[T]`                                |
+| `&[u8]`              | `[ByRef] bytes`        | See [Byte buffers](./bytes.md)                                  |
 | `Box<T>`             | `T`                    |                                                                 |
 | `Option<T>`          | `T?`                   |                                                                 |
 | `Vec<T>`             | `sequence<T>`          |                                                                 |

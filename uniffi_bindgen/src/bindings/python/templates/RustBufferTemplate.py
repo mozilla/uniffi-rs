@@ -117,11 +117,11 @@ class _UniffiFfiConverterByRefBytes:
 
     @staticmethod
     def read(buf):
-        raise NotImplementedError("ByRef bytes cannot be read from a buffer: zero-copy &[u8] only flows foreign->Rust")
+        raise NotImplementedError("ByRef bytes cannot be read from a buffer: zero-copy &[u8] is only supported in argument position, not nested in records/options/etc.")
 
     @staticmethod
     def write(value, buf):
-        raise NotImplementedError("ByRef bytes cannot be written to a buffer: zero-copy &[u8] only flows foreign->Rust")
+        raise NotImplementedError("ByRef bytes cannot be written to a buffer: zero-copy &[u8] is only supported in argument position, not nested in records/options/etc.")
 
 
 class _UniffiRustBufferStream:

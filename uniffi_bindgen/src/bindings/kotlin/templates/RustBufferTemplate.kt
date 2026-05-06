@@ -94,11 +94,11 @@ internal object FfiConverterByRefBytes : FfiConverter<java.nio.ByteBuffer, Forei
         error("ByRef bytes cannot be lifted: zero-copy &[u8] only flows foreign->Rust")
 
     override fun read(buf: java.nio.ByteBuffer): java.nio.ByteBuffer =
-        error("ByRef bytes cannot be read from a buffer: zero-copy &[u8] only flows foreign->Rust")
+        error("ByRef bytes cannot be read from a buffer: zero-copy &[u8] is only supported in argument position, not nested in records/options/etc.")
 
     override fun write(value: java.nio.ByteBuffer, buf: java.nio.ByteBuffer): Unit =
-        error("ByRef bytes cannot be written to a buffer: zero-copy &[u8] only flows foreign->Rust")
+        error("ByRef bytes cannot be written to a buffer: zero-copy &[u8] is only supported in argument position, not nested in records/options/etc.")
 
     override fun allocationSize(value: java.nio.ByteBuffer): ULong =
-        error("ByRef bytes have no RustBuffer allocation size: zero-copy &[u8] only flows foreign->Rust")
+        error("ByRef bytes have no RustBuffer allocation size: zero-copy &[u8] is only supported in argument position, not nested in records/options/etc.")
 }
