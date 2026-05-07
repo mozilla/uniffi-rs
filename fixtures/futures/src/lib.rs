@@ -156,7 +156,7 @@ impl Drop for SwiftCancelDropGuard {
     }
 }
 
-#[uniffi::export]
+#[uniffi::export(cancellable)]
 pub async fn swift_cancel_hang() -> Result<(), MyError> {
     let _guard = SwiftCancelDropGuard;
     SWIFT_CANCEL_POLL_COUNT.fetch_add(1, Ordering::SeqCst);
@@ -406,7 +406,7 @@ pub enum AsyncError {
     Timeout,
 }
 
-#[uniffi::export(async_runtime = "tokio")]
+#[uniffi::export(async_runtime = "tokio", cancellable)]
 pub async fn use_shared_resource(options: SharedResourceOptions) -> Result<(), AsyncError> {
     use once_cell::sync::Lazy;
     use tokio::{

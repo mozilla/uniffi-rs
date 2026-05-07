@@ -21,6 +21,10 @@ pub(crate) struct FnSignature {
     // The foreign name for this function, usually == ident.
     pub name: String,
     pub is_async: bool,
+    /// Author opt-in: this future is drop-safe, so foreign-language
+    /// cancellation should propagate by dropping it. Foreign bindings that
+    /// support cancellation surface it (e.g. Swift throws CancellationError).
+    pub is_cancellable: bool,
     pub async_runtime: Option<AsyncRuntime>,
     pub receiver: Option<ReceiverArg>,
     pub args: Vec<NamedArg>,
@@ -147,6 +151,13 @@ impl FnSignature {
             ));
         }
 
+        if !is_async && export_fn_args.cancellable.is_some() {
+            return Err(syn::Error::new(
+                export_fn_args.cancellable.span(),
+                "`cancellable` only applies to async functions".to_string(),
+            ));
+        }
+
         Ok(Self {
             kind,
             span,
@@ -156,6 +167,7 @@ impl FnSignature {
                 .unwrap_or_else(|| ident_to_string(&ident)),
             ident,
             is_async,
+            is_cancellable: export_fn_args.cancellable.is_some(),
             async_runtime: export_fn_args.async_runtime,
             receiver,
             args,
@@ -258,6 +270,7 @@ impl FnSignature {
             name,
             return_ty,
             is_async,
+            is_cancellable,
             docstring,
             ..
         } = &self;
@@ -281,6 +294,7 @@ impl FnSignature {
                     .concat_str(module_path!())
                     .concat_str(#name)
                     .concat_bool(#is_async)
+                    .concat_bool(#is_cancellable)
                     .concat_value(#args_len)
                     #(#arg_metadata_calls)*
                     .concat(#type_id_meta)
@@ -297,6 +311,7 @@ impl FnSignature {
                         .concat_str(#object_name)
                         .concat_str(#name)
                         .concat_bool(#is_async)
+                        .concat_bool(#is_cancellable)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(#type_id_meta)
@@ -313,6 +328,7 @@ impl FnSignature {
                         .concat_u32(#index)
                         .concat_str(#name)
                         .concat_bool(#is_async)
+                        .concat_bool(#is_cancellable)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(#type_id_meta)
@@ -330,6 +346,7 @@ impl FnSignature {
                         .concat_str(#object_name)
                         .concat_str(#name)
                         .concat_bool(#is_async)
+                        .concat_bool(#is_cancellable)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(#type_id_meta)

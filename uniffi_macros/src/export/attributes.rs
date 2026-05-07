@@ -18,6 +18,7 @@ use uniffi_meta::UniffiTraitDiscriminants;
 #[derive(Default)]
 pub struct ExportTraitArgs {
     pub(crate) async_runtime: Option<AsyncRuntime>,
+    pub(crate) cancellable: Option<kw::cancellable>,
     pub(crate) callback_interface: Option<kw::callback_interface>,
     pub(crate) with_foreign: Option<kw::with_foreign>,
 }
@@ -38,6 +39,11 @@ impl UniffiAttributeArgs for ExportTraitArgs {
                 async_runtime: Some(input.parse()?),
                 ..Self::default()
             })
+        } else if lookahead.peek(kw::cancellable) {
+            Ok(Self {
+                cancellable: input.parse()?,
+                ..Self::default()
+            })
         } else if lookahead.peek(kw::callback_interface) {
             Ok(Self {
                 callback_interface: input.parse()?,
@@ -56,6 +62,7 @@ impl UniffiAttributeArgs for ExportTraitArgs {
     fn merge(self, other: Self) -> syn::Result<Self> {
         let merged = Self {
             async_runtime: either_attribute_arg(self.async_runtime, other.async_runtime)?,
+            cancellable: either_attribute_arg(self.cancellable, other.cancellable)?,
             callback_interface: either_attribute_arg(
                 self.callback_interface,
                 other.callback_interface,
@@ -78,6 +85,7 @@ impl UniffiAttributeArgs for ExportTraitArgs {
 #[derive(Clone, Default)]
 pub struct ExportFnArgs {
     pub(crate) async_runtime: Option<AsyncRuntime>,
+    pub(crate) cancellable: Option<kw::cancellable>,
     pub(crate) name: Option<String>,
     pub(crate) defaults: DefaultMap,
 }
@@ -96,6 +104,11 @@ impl UniffiAttributeArgs for ExportFnArgs {
             let _: Token![=] = input.parse()?;
             Ok(Self {
                 async_runtime: Some(input.parse()?),
+                ..Self::default()
+            })
+        } else if lookahead.peek(kw::cancellable) {
+            Ok(Self {
+                cancellable: input.parse()?,
                 ..Self::default()
             })
         } else if lookahead.peek(kw::name) {
@@ -122,6 +135,7 @@ impl UniffiAttributeArgs for ExportFnArgs {
     fn merge(self, other: Self) -> syn::Result<Self> {
         Ok(Self {
             async_runtime: either_attribute_arg(self.async_runtime, other.async_runtime)?,
+            cancellable: either_attribute_arg(self.cancellable, other.cancellable)?,
             name: either_attribute_arg(self.name, other.name)?,
             defaults: self.defaults.merge(other.defaults),
         })
@@ -131,6 +145,7 @@ impl UniffiAttributeArgs for ExportFnArgs {
 #[derive(Default)]
 pub struct ExportImplArgs {
     pub(crate) async_runtime: Option<AsyncRuntime>,
+    pub(crate) cancellable: Option<kw::cancellable>,
     pub(crate) name: Option<String>,
 }
 
@@ -148,6 +163,11 @@ impl UniffiAttributeArgs for ExportImplArgs {
             let _: Token![=] = input.parse()?;
             Ok(Self {
                 async_runtime: Some(input.parse()?),
+                ..Self::default()
+            })
+        } else if lookahead.peek(kw::cancellable) {
+            Ok(Self {
+                cancellable: input.parse()?,
                 ..Self::default()
             })
         } else if lookahead.peek(kw::name) {
@@ -169,6 +189,7 @@ impl UniffiAttributeArgs for ExportImplArgs {
     fn merge(self, other: Self) -> syn::Result<Self> {
         Ok(Self {
             async_runtime: either_attribute_arg(self.async_runtime, other.async_runtime)?,
+            cancellable: either_attribute_arg(self.cancellable, other.cancellable)?,
             name: either_attribute_arg(self.name, other.name)?,
         })
     }

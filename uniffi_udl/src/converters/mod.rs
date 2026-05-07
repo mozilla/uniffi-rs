@@ -195,6 +195,7 @@ fn make_uniffi_traits(
             self_name: self_name.to_string(),
             name: name.to_string(),
             is_async: false,
+            is_cancellable: false,
             inputs,
             return_type,
             throws: None,

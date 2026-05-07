@@ -41,6 +41,7 @@ pub(super) enum Attribute {
     // Modifies `Trait` to enable foreign implementations (callback interfaces)
     WithForeign,
     Async,
+    Cancellable,
     NonExhaustive,
 }
 
@@ -70,6 +71,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                 "Trait" => Ok(Attribute::Trait),
                 "WithForeign" => Ok(Attribute::WithForeign),
                 "Async" => Ok(Attribute::Async),
+                "Cancellable" => Ok(Attribute::Cancellable),
                 "NonExhaustive" => Ok(Attribute::NonExhaustive),
                 "Remote" => Ok(Attribute::Remote),
                 _ => anyhow::bail!("ExtendedAttributeNoArgs not supported: {:?}", (attr.0).0),
@@ -277,6 +279,12 @@ impl FunctionAttributes {
     pub(super) fn is_async(&self) -> bool {
         self.0.iter().any(|attr| matches!(attr, Attribute::Async))
     }
+
+    pub(super) fn is_cancellable(&self) -> bool {
+        self.0
+            .iter()
+            .any(|attr| matches!(attr, Attribute::Cancellable))
+    }
 }
 
 impl FromIterator<Attribute> for FunctionAttributes {
@@ -291,10 +299,14 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for FunctionAttribut
         weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
-            Attribute::Throws(_) | Attribute::Async => Ok(()),
+            Attribute::Throws(_) | Attribute::Async | Attribute::Cancellable => Ok(()),
             _ => bail!(format!("{attr:?} not supported for functions")),
         })?;
-        Ok(Self(attrs))
+        let result = Self(attrs);
+        if result.is_cancellable() && !result.is_async() {
+            bail!("[Cancellable] only applies to [Async] functions");
+        }
+        Ok(result)
     }
 }
 
@@ -465,6 +477,12 @@ impl ConstructorAttributes {
     pub(super) fn is_async(&self) -> bool {
         self.0.iter().any(|attr| matches!(attr, Attribute::Async))
     }
+
+    pub(super) fn is_cancellable(&self) -> bool {
+        self.0
+            .iter()
+            .any(|attr| matches!(attr, Attribute::Cancellable))
+    }
 }
 
 impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for ConstructorAttributes {
@@ -476,9 +494,14 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for ConstructorAttri
             Attribute::Throws(_) => Ok(()),
             Attribute::Name(_) => Ok(()),
             Attribute::Async => Ok(()),
+            Attribute::Cancellable => Ok(()),
             _ => bail!(format!("{attr:?} not supported for constructors")),
         })?;
-        Ok(Self(attrs))
+        let result = Self(attrs);
+        if result.is_cancellable() && !result.is_async() {
+            bail!("[Cancellable] only applies to [Async] constructors");
+        }
+        Ok(result)
     }
 }
 
@@ -503,6 +526,12 @@ impl MethodAttributes {
         self.0.iter().any(|attr| matches!(attr, Attribute::Async))
     }
 
+    pub(super) fn is_cancellable(&self) -> bool {
+        self.0
+            .iter()
+            .any(|attr| matches!(attr, Attribute::Cancellable))
+    }
+
     pub(super) fn get_self_by_arc(&self) -> bool {
         self.0
             .iter()
@@ -522,10 +551,17 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for MethodAttributes
         weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
-            Attribute::SelfType(_) | Attribute::Throws(_) | Attribute::Async => Ok(()),
+            Attribute::SelfType(_)
+            | Attribute::Throws(_)
+            | Attribute::Async
+            | Attribute::Cancellable => Ok(()),
             _ => bail!(format!("{attr:?} not supported for methods")),
         })?;
-        Ok(Self(attrs))
+        let result = Self(attrs);
+        if result.is_cancellable() && !result.is_async() {
+            bail!("[Cancellable] only applies to [Async] methods");
+        }
+        Ok(result)
     }
 }
 

@@ -641,6 +641,11 @@ impl ComponentInterface {
                 .any(CallbackInterface::has_async_method)
     }
 
+    /// Does this interface contain any callables marked cancellable?
+    pub fn has_cancellable_fns(&self) -> bool {
+        self.iter_callables().any(|c| c.is_cancellable())
+    }
+
     /// Iterate over `T` parameters of the `FutureCallback<T>` callbacks in this interface
     pub fn iter_future_callback_params(&self) -> impl Iterator<Item = FfiType> {
         let unique_results = self

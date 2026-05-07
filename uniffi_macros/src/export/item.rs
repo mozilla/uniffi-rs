@@ -114,7 +114,12 @@ impl ExportItem {
                 };
 
                 let docstring = extract_docstring(&impl_fn.attrs)?;
-                let attrs = ExportedImplFnAttributes::new(&impl_fn.attrs)?;
+                let mut attrs = ExportedImplFnAttributes::new(&impl_fn.attrs)?;
+
+                // impl-level cancellable applies to every fn in the block
+                if attrs.args.cancellable.is_none() {
+                    attrs.args.cancellable = args.cancellable;
+                }
 
                 let foreign_self_ident = if let Some(name) = &args.name {
                     Ident::new(name, self_ident.span())
@@ -189,6 +194,7 @@ impl ExportItem {
 
                 let docstring = extract_docstring(&tim.attrs)?;
                 let attrs = ExportedImplFnAttributes::new(&tim.attrs)?;
+
                 let item = if attrs.constructor {
                     return Err(syn::Error::new_spanned(
                         tim,
