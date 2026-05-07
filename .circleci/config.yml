@@ -76,7 +76,7 @@ jobs:
       - build-api-docs
   Rust and Foreign Language tests:
     docker:
-      - image: janerik/uniffi-ci-test:latest
+      - image: janerik/uniffi-ci-test:2026.05
     resource_class: large
     steps:
       - run: cat ~/.profile >> $BASH_ENV
@@ -112,7 +112,7 @@ jobs:
 
   Rust and Foreign Language tests - min supported rust:
     docker:
-      - image: janerik/uniffi-ci-test:latest
+      - image: janerik/uniffi-ci-test:2026.05
     resource_class: large
     steps:
       - run: cat ~/.profile >> $BASH_ENV
