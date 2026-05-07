@@ -76,7 +76,7 @@ jobs:
       - build-api-docs
   Rust and Foreign Language tests:
     docker:
-      - image: janerik/uniffi-ci-test:latest
+      - image: janerik/uniffi-ci-test:2026.05
     resource_class: large
     steps:
       - run: cat ~/.profile >> $BASH_ENV
@@ -105,14 +105,14 @@ jobs:
       - run:
           name: mypy Python typechecks
           command: |
-            pip install mypy
+            uv tool install mypy
             for file in $(find target -name "*.py" ! -name "recursive_types.py"); do
               mypy "$file";
             done
 
   Rust and Foreign Language tests - min supported rust:
     docker:
-      - image: janerik/uniffi-ci-test:latest
+      - image: janerik/uniffi-ci-test:2026.05
     resource_class: large
     steps:
       - run: cat ~/.profile >> $BASH_ENV
