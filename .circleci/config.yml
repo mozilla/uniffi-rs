@@ -13,17 +13,26 @@ commands:
             sudo apt-get clean
             pip install -r tools/requirements_docs.txt
 
+  install-nextest:
+    steps:
+      - run:
+          name: Install nextest
+          command: |
+            curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+
   # Our policy for updating rust versions is at https://github.com/mozilla/uniffi-rs/tree/main/docs/policies/rust-versions.md
   # See also rust-toolchain.toml in the root of this repo, which is used to specify our official target version.
   prepare-rust-target-version:
     steps:
       # So long as this is executed after the checkout it will use the version specified in rust-toolchain.yaml
+      - install-nextest
       - run: rustup self update
       - run: rustup toolchain install
       - run: rustup target add wasm32-unknown-unknown
   # Our minimum supported rust version is specified here.
   prepare-rust-min-version:
     steps:
+      - install-nextest
       - run: rustup override set 1.90.0
       - run: rustup update
   build-api-docs:
@@ -101,7 +110,7 @@ jobs:
                 --target wasm32-unknown-unknown \
                 --manifest-path "$manifest_path"
             done
-      - run: cargo test --features=uniffi/ffi-trace
+      - run: cargo nextest run --features=uniffi/ffi-trace
       - run:
           name: mypy Python typechecks
           command: |
@@ -129,7 +138,7 @@ jobs:
       # some tests fail on earlier rust versions and we want to ignore them:
       # * trybuild_ui_tests - 1.61 vs 1.62 hits https://github.com/dtolnay/trybuild/issues/186
       #   (which was WONTFIXd, so this is the best we can do)
-      - run: cargo test -- --skip trybuild_ui_tests
+      - run: cargo nextest run -- --skip trybuild_ui_tests
   Deploy website:
     docker:
       - image: cimg/rust:1.90
