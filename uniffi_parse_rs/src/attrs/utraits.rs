@@ -70,6 +70,7 @@ impl UniffiTraitAttrs {
                     name: "uniffi_trait_debug".into(),
                     orig_name: None,
                     is_async: false,
+                is_cancellable: false,
                     inputs: vec![],
                     return_type: Some(uniffi_meta::Type::String),
                     throws: None,
@@ -87,6 +88,7 @@ impl UniffiTraitAttrs {
                     name: "uniffi_trait_display".into(),
                     orig_name: None,
                     is_async: false,
+                is_cancellable: false,
                     inputs: vec![],
                     return_type: Some(uniffi_meta::Type::String),
                     throws: None,
@@ -104,6 +106,7 @@ impl UniffiTraitAttrs {
                     name: "uniffi_trait_eq_eq".into(),
                     orig_name: None,
                     is_async: false,
+                is_cancellable: false,
                     inputs: vec![uniffi_meta::FnParamMetadata {
                         name: "other".into(),
                         ty: self_ty.clone(),
@@ -123,6 +126,7 @@ impl UniffiTraitAttrs {
                     name: "uniffi_trait_eq_ne".into(),
                     orig_name: None,
                     is_async: false,
+                is_cancellable: false,
                     inputs: vec![uniffi_meta::FnParamMetadata {
                         name: "other".into(),
                         ty: self_ty.clone(),
@@ -146,6 +150,7 @@ impl UniffiTraitAttrs {
                     name: "uniffi_trait_hash".into(),
                     orig_name: None,
                     is_async: false,
+                is_cancellable: false,
                     inputs: vec![],
                     return_type: Some(uniffi_meta::Type::UInt64),
                     throws: None,
@@ -163,6 +168,7 @@ impl UniffiTraitAttrs {
                     name: "uniffi_trait_ord_cmp".into(),
                     orig_name: None,
                     is_async: false,
+                is_cancellable: false,
                     inputs: vec![uniffi_meta::FnParamMetadata {
                         name: "other".into(),
                         ty: self_ty.clone(),

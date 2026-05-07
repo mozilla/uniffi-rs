@@ -16,6 +16,9 @@ pub struct FunctionAttributes {
     pub name: Option<String>,
     pub docstring: Option<String>,
     pub async_runtime: Option<LitStr>,
+    /// Author opt-in: this future is drop-safe, so foreign-language cancellation should
+    /// propagate by dropping it.
+    pub cancellable: bool,
 }
 
 impl FunctionAttributes {
@@ -51,6 +54,9 @@ impl FunctionAttributes {
                             meta.value()?;
                             parsed.async_runtime = meta.input.parse()?;
                             Ok(())
+                        } else if meta.path.is_ident("cancellable") {
+                            parsed.cancellable = true;
+                            Ok(())
                         } else {
                             Err(meta.error("Invalid attribute"))
                         }
@@ -70,6 +76,9 @@ pub struct MethodAttributes {
     pub name: Option<String>,
     pub docstring: Option<String>,
     pub async_runtime: Option<LitStr>,
+    /// Author opt-in: this future is drop-safe, so foreign-language cancellation should
+    /// propagate by dropping it.
+    pub cancellable: bool,
 }
 
 impl MethodAttributes {
@@ -93,6 +102,9 @@ impl MethodAttributes {
                             meta.value()?;
                             parsed.async_runtime = meta.input.parse()?;
                             Ok(())
+                        } else if meta.path.is_ident("cancellable") {
+                            parsed.cancellable = true;
+                            Ok(())
                         } else {
                             Err(meta.error("Invalid attribute"))
                         }
@@ -114,6 +126,9 @@ pub struct ConstructorAttributes {
     pub name: Option<String>,
     pub docstring: Option<String>,
     pub async_runtime: Option<LitStr>,
+    /// Author opt-in: this future is drop-safe, so foreign-language cancellation should
+    /// propagate by dropping it.
+    pub cancellable: bool,
 }
 
 impl ConstructorAttributes {
@@ -142,6 +157,9 @@ impl ConstructorAttributes {
                         } else if meta.path.is_ident("async_runtime") {
                             meta.value()?;
                             parsed.async_runtime = meta.input.parse()?;
+                            Ok(())
+                        } else if meta.path.is_ident("cancellable") {
+                            parsed.cancellable = true;
                             Ok(())
                         } else {
                             Err(meta.error("Invalid attribute"))

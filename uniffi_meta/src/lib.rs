@@ -25,7 +25,7 @@ pub use metadata::codes;
 // `docs/uniffi-versioning.md` for details.
 //
 // Once we get to 1.0, then we'll need to update the scheme to something like 100 + major_version
-pub const UNIFFI_CONTRACT_VERSION: u32 = 30;
+pub const UNIFFI_CONTRACT_VERSION: u32 = 31;
 
 /// Similar to std::hash::Hash.
 ///
@@ -143,6 +143,7 @@ pub struct FnMetadata {
     // Original name, if this was renamed
     pub orig_name: Option<String>,
     pub is_async: bool,
+    pub is_cancellable: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
     pub throws: Option<Type>,
@@ -168,6 +169,7 @@ pub struct ConstructorMetadata {
     // Original name, if this was renamed
     pub orig_name: Option<String>,
     pub is_async: bool,
+    pub is_cancellable: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub throws: Option<Type>,
     pub checksum: Option<u16>,
@@ -196,6 +198,7 @@ pub struct MethodMetadata {
     // Original name, if this was renamed
     pub orig_name: Option<String>,
     pub is_async: bool,
+    pub is_cancellable: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
     pub throws: Option<Type>,
@@ -225,6 +228,7 @@ pub struct TraitMethodMetadata {
     // Original name, if this was renamed
     pub orig_name: Option<String>,
     pub is_async: bool,
+    pub is_cancellable: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
     pub throws: Option<Type>,
@@ -251,6 +255,7 @@ impl From<TraitMethodMetadata> for MethodMetadata {
             name: meta.name,
             orig_name: meta.orig_name,
             is_async: meta.is_async,
+            is_cancellable: meta.is_cancellable,
             inputs: meta.inputs,
             return_type: meta.return_type,
             throws: meta.throws,

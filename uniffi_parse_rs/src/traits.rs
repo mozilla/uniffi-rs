@@ -162,6 +162,9 @@ impl TraitMethod {
             orig_name,
             docstring: self.attrs.docstring.clone(),
             is_async: self.is_async,
+            // `cancellable` is rejected on traits: it applies to Rust futures cancelled from the
+            // foreign side, not to foreign callback futures awaited by Rust.
+            is_cancellable: false,
             takes_self_by_arc: self.self_arg.takes_self_by_arc(ir, cache, module_path)?,
             inputs: self
                 .args

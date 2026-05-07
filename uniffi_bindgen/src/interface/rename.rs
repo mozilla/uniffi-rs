@@ -235,6 +235,7 @@ mod tests {
             name: "old_function".to_string(),
             orig_name: None,
             is_async: false,
+            is_cancellable: false,
             inputs: vec![FnParamMetadata {
                 name: "arg".to_string(),
                 ty: Type::Optional {

@@ -26,6 +26,13 @@ pub(super) fn gen_trait_scaffolding(
     trait_kind: TraitKind,
     docstring: String,
 ) -> syn::Result<TokenStream> {
+    if let Some(c) = args.cancellable {
+        return Err(syn::Error::new_spanned(
+            c,
+            "`cancellable` is not supported for traits; this opt-in only applies to Rust async futures \
+             cancelled from the foreign side, not foreign callback futures awaited by Rust",
+        ));
+    }
     let trait_name = ident_to_string(&self_ident);
     let trait_impl = trait_kind.has_foreign().then(|| {
         callback_interface::trait_impl(mod_path, &self_ident, &items, true)

@@ -364,6 +364,7 @@ pub struct Constructor {
     pub(super) object_name: String,
     pub(super) object_module_path: String,
     pub(super) is_async: bool,
+    pub(super) is_cancellable: bool,
     pub(super) arguments: Vec<Argument>,
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
@@ -395,6 +396,10 @@ impl Constructor {
 
     pub fn is_async(&self) -> bool {
         self.is_async
+    }
+
+    pub fn is_cancellable(&self) -> bool {
+        self.is_cancellable
     }
 
     pub fn object_name(&self) -> &str {
@@ -472,6 +477,7 @@ impl From<uniffi_meta::ConstructorMetadata> for Constructor {
             name: meta.name,
             object_name: meta.self_name,
             is_async: meta.is_async,
+            is_cancellable: meta.is_cancellable,
             object_module_path: meta.module_path,
             arguments,
             ffi_func,
@@ -492,6 +498,7 @@ impl From<uniffi_meta::ConstructorMetadata> for Constructor {
 pub struct Method {
     pub(super) name: String,
     pub(super) is_async: bool,
+    pub(super) is_cancellable: bool,
     // Ignore `self_type` for the checksum, we never compare the method checksums for methods from
     // different objects.
     #[checksum_ignore]
@@ -527,6 +534,10 @@ impl Method {
 
     pub fn is_async(&self) -> bool {
         self.is_async
+    }
+
+    pub fn is_cancellable(&self) -> bool {
+        self.is_cancellable
     }
 
     pub fn object_name(&self) -> &str {
@@ -618,6 +629,7 @@ impl Method {
             name: meta.name,
             self_type: receiver,
             is_async: meta.is_async,
+            is_cancellable: meta.is_cancellable,
             arguments,
             return_type: meta.return_type,
             ffi_func,
@@ -751,6 +763,10 @@ impl Callable for Constructor {
         self.is_async
     }
 
+    fn is_cancellable(&self) -> bool {
+        self.is_cancellable
+    }
+
     fn ffi_func(&self) -> &FfiFunction {
         &self.ffi_func
     }
@@ -775,6 +791,10 @@ impl Callable for Method {
 
     fn is_async(&self) -> bool {
         self.is_async
+    }
+
+    fn is_cancellable(&self) -> bool {
+        self.is_cancellable
     }
 
     fn ffi_func(&self) -> &FfiFunction {
