@@ -223,9 +223,9 @@ lift = "urllib.parse.urlsplit({})"
 lower = "urllib.parse.urlunsplit({})"
 
 [bindings.kotlin.custom_types.RenamedUrl]
-type_name = "URL"
-imports = [ "java.net.URL" ]
-lift = "URL({})"
+type_name = "URI"
+imports = [ "java.net.URI" ]
+lift = "URI({})"
 lower = "{}.toString()"
 
 [bindings.swift.custom_types.RenamedUrl]
