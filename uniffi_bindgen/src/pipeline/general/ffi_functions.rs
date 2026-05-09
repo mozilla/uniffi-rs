@@ -98,7 +98,7 @@ fn method_ffi_def(
     let mut all_args = vec![initial::Argument {
         name: "uniffi_self".to_string(),
         ty: receiver_ty.clone(),
-        by_ref: false,
+        by_ref: true,
         optional: false,
         default: None,
     }];
