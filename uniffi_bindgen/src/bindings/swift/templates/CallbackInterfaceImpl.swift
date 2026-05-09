@@ -124,24 +124,11 @@ fileprivate struct {{ trait_impl }} {
     // are uniffi-generated trampolines designed for concurrent invocation.
     // Same escape hatch the adjacent `UniffiHandleMap`/generated object
     // templates already use.
-    //
-    // The annotation requires Swift 6 language mode. In Swift 5 mode the
-    // parser rejects `nonisolated(unsafe)` on stored properties, but the
-    // strict-concurrency check that needs the annotation isn't enforced
-    // there either, so the unannotated form compiles cleanly.
-#if swift(>=6)
     nonisolated(unsafe) static let vtablePtr: UnsafePointer<{{ vtable|ffi_type_name }}> = {
         let ptr = UnsafeMutablePointer<{{ vtable|ffi_type_name }}>.allocate(capacity: 1)
         ptr.initialize(to: vtable)
         return UnsafePointer(ptr)
     }()
-#else
-    static let vtablePtr: UnsafePointer<{{ vtable|ffi_type_name }}> = {
-        let ptr = UnsafeMutablePointer<{{ vtable|ffi_type_name }}>.allocate(capacity: 1)
-        ptr.initialize(to: vtable)
-        return UnsafePointer(ptr)
-    }()
-#endif
 }
 
 private func {{ callback_init }}() {
