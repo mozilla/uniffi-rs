@@ -28,13 +28,13 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
             {%- if !callable.has_receiver() %}
             let uniffi_return = {{ callable.fully_qualified_name_rs }}(
                 {%- for arg in callable.arguments %}
-                uniffi_arg_lifted_{{ arg.index }},
+                {{ arg.pass_to_rust_fn(format!("uniffi_arg_lifted_{}", arg.index)) }},
                 {%- endfor %}
             );
             {%- else %}
             let uniffi_return = uniffi_arg_lifted_0.{{ callable.name_rs() }}(
                 {%- for arg in callable.arguments %}
-                uniffi_arg_lifted_{{ arg.index }},
+                {{ arg.pass_to_rust_fn(format!("uniffi_arg_lifted_{}", arg.index)) }},
                 {%- endfor %}
             );
             {%- endif %}
