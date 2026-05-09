@@ -81,6 +81,11 @@ mod test {
     }
 
     #[test]
+    fn test_references() {
+        run_tests(test_dir(), "tests/references.kts");
+    }
+
+    #[test]
     fn test_external_types() {
         run_tests(test_dir(), "tests/external_types.kts");
     }

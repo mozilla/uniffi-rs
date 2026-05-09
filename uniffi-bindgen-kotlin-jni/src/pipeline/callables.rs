@@ -436,6 +436,27 @@ impl Argument {
             ArgumentFfi::Standard { .. } => self.ty.lower_fn_kt(),
         }
     }
+
+    /// Generate code to pass this argument to the Rust function
+    ///
+    /// This is the argument name, optionally prefixed with things like `&`/`*`
+    pub fn pass_to_rust_fn(&self, name: String) -> String {
+        match (self.by_ref, &self.ty.ty) {
+            (true, Type::Interface { imp, .. }) => {
+                if !imp.has_callback_interface() {
+                    // For non-callback trait interfaces, we have an optimized lift_ref
+                    // implementation that already gives us a ref, no need to do anything here
+                    name
+                } else {
+                    // Trait interface with a callback interface: use `&*` to go from the `Arc<dyn T>` to `&dyn T`
+                    format!("&*{name}")
+                }
+            }
+            // All other refs just need `&`
+            (true, _) => format!("&{name}"),
+            _ => name,
+        }
+    }
 }
 
 /// Generates FFI argument names and argument indexes for callables
