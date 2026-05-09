@@ -113,6 +113,9 @@ fileprivate struct {{ trait_impl }} {
         {%- endfor %}
     )
 
+    // Rust stores this pointer for future callback invocations, so it must live
+    // for the process lifetime (not just for the init function call).
+    //
     // `nonisolated(unsafe)` is needed under Swift 6 strict concurrency.
     // This is safe because the pointee is initialized once during static init
     // and never mutated by either side of the FFI.  Its fields are C function pointers.
