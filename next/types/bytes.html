@@ -9,10 +9,6 @@
       
       
       
-        <link rel="prev" href="namespace.html">
-      
-      
-        <link rel="next" href="enumerations.html">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +16,7 @@
     
     
       
-        <title>Built-in types - The UniFFI user guide</title>
+        <title>Byte buffers (&[u8]) - The UniFFI user guide</title>
       
     
     
@@ -62,7 +58,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#built-in-types" class="md-skip">
+        <a href="#byte-buffers-u8" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +98,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Built-in types
+              Byte buffers (&amp;[u8])
             
           </span>
         </div>
@@ -423,20 +419,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
@@ -452,7 +446,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             UniFFI type model
@@ -486,19 +480,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="builtin_types.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="builtin_types.html" class="md-nav__link">
         
   
   
@@ -509,7 +494,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -2239,6 +2223,41 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Constraints
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#foreign-language-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Foreign-language types
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -2256,101 +2275,72 @@
   
 
 
-<h1 id="built-in-types">Built-in types</h1>
-<p>The following built-in types can be used by UniFFI. Ths table shows the types supported
-in Rust, and the types used in UDL.</p>
+<h1 id="byte-buffers-u8">Byte buffers (<code>&amp;[u8]</code>)</h1>
+<p>A function argument typed <code>&amp;[u8]</code> (or <code>[ByRef] bytes</code> in UDL) lets
+Rust <em>borrow</em> a foreign-owned byte buffer for the duration of the
+FFI call — no copy is made. This is useful for large payloads
+(images, network frames, audio buffers) that would otherwise be
+duplicated on every call.</p>
+<p>For owned bytes, or for any case the constraints below disallow,
+use <code>Vec&lt;u8&gt;</code> / <code>bytes</code> instead.</p>
+<h2 id="usage">Usage</h2>
+<p>In Rust, declare the parameter as a borrow in the usual way:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">parse_frame</span><span class="p">(</span><span class="n">data</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="p">[</span><span class="kt">u8</span><span class="p">])</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Frame</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// `data` borrows the foreign buffer; valid for this call only.</span>
+<span class="w">    </span><span class="o">..</span><span class="p">.</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>In UDL, mark the parameter <code>[ByRef] bytes</code>:</p>
+<div class="highlight"><pre><span></span><code>namespace<span class="w"> </span>example<span class="w"> </span>{
+<span class="w">    </span>Frame<span class="w"> </span>parse_frame([ByRef]<span class="w"> </span>bytes<span class="w"> </span>data);
+};
+</code></pre></div>
+<h2 id="constraints">Constraints</h2>
+<ul>
+<li><strong>Direction.</strong> <code>&amp;[u8]</code> only flows foreign → Rust. A function may
+  take it as an argument; it cannot be returned, used in a callback
+  result, or used as a trait-method return value.</li>
+<li><strong>Argument position only.</strong> <code>&amp;[u8]</code> cannot be nested inside a
+  record, sequence, map, <code>Option</code>, or <code>Result</code>. The borrow lives
+  only as long as the FFI call, so structures that could outlive
+  the call are rejected.</li>
+<li><strong>Lifetime.</strong> The slice is valid only inside the body of the Rust
+  function. Don't store it, don't hand it to a spawned task, and
+  don't capture it in async work that outlives the call. If you need
+  the data afterwards, copy it (<code>data.to_vec()</code>).</li>
+</ul>
+<h2 id="foreign-language-types">Foreign-language types</h2>
+<p>Each binding maps <code>[ByRef] bytes</code> to a natural zero-copy type:</p>
 <table>
 <thead>
 <tr>
-<th>Rust type</th>
-<th>UDL type</th>
-<th>Notes</th>
+<th>Binding</th>
+<th>Foreign type</th>
+<th>Note</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>bool</code></td>
-<td><code>boolean</code></td>
-<td></td>
+<td>Kotlin</td>
+<td><code>java.nio.ByteBuffer</code></td>
+<td>Must be a <em>direct</em> buffer (<code>ByteBuffer.allocateDirect(...)</code>).</td>
 </tr>
 <tr>
-<td><code>u8/i8..u64/i64</code></td>
-<td><code>u8/i8..u64/i64</code></td>
-<td></td>
+<td>Swift</td>
+<td><code>Data</code></td>
+<td>The call runs inside <code>Data.withUnsafeBytes</code>.</td>
 </tr>
 <tr>
-<td><code>f32</code></td>
-<td><code>float</code></td>
-<td></td>
-</tr>
-<tr>
-<td><code>f64</code></td>
-<td><code>double</code></td>
-<td></td>
-</tr>
-<tr>
-<td><code>String</code></td>
-<td><code>string</code></td>
-<td></td>
-</tr>
-<tr>
-<td><code>Vec&lt;u8&gt;</code></td>
+<td>Python</td>
 <td><code>bytes</code></td>
-<td>Different from <code>sequence&lt;u8&gt;</code> only in foreign type mappings</td>
-</tr>
-<tr>
-<td><code>SystemTime</code></td>
-<td><code>timestamp</code></td>
-<td>Precision may be lost when converting to Python and Swift types</td>
-</tr>
-<tr>
-<td><code>Duration</code></td>
-<td><code>duration</code></td>
-<td>Precision may be lost when converting to Python and Swift types</td>
-</tr>
-<tr>
-<td><code>&amp;T</code></td>
-<td><code>[ByRef] T</code></td>
-<td>This works for <code>&amp;str</code> and <code>&amp;[T]</code></td>
-</tr>
-<tr>
-<td><code>&amp;[u8]</code></td>
-<td><code>[ByRef] bytes</code></td>
-<td>See <a href="bytes.html">Byte buffers</a></td>
-</tr>
-<tr>
-<td><code>Box&lt;T&gt;</code></td>
-<td><code>T</code></td>
-<td></td>
-</tr>
-<tr>
-<td><code>Option&lt;T&gt;</code></td>
-<td><code>T?</code></td>
-<td></td>
-</tr>
-<tr>
-<td><code>Vec&lt;T&gt;</code></td>
-<td><code>sequence&lt;T&gt;</code></td>
-<td></td>
-</tr>
-<tr>
-<td><code>HashMap&lt;K, V&gt;</code></td>
-<td><code>record&lt;K, T&gt;</code></td>
-<td></td>
-</tr>
-<tr>
-<td><code>()</code></td>
-<td><code>void</code></td>
-<td>Empty return</td>
-</tr>
-<tr>
-<td><code>Result&lt;T, E&gt;</code></td>
-<td>N/A</td>
-<td>See <a href="errors.html">Errors</a> section</td>
+<td>The <code>bytes</code> object's stable internal pointer is used.</td>
 </tr>
 </tbody>
 </table>
-<p>And of course you can use your own types, which is covered in the following sections.</p>
+<p>Passing a non-direct <code>ByteBuffer</code> from Kotlin raises an
+<code>IllegalArgumentException</code> at the call site, matching JNA's
+<code>getDirectBufferPointer</code> requirement.</p>
 
 
 
