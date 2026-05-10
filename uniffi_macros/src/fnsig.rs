@@ -12,6 +12,19 @@ use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use syn::{spanned::Spanned, FnArg, Ident, Pat, Receiver, ReturnType, Type};
 
+/// Syntactic check for `&[u8]`. Matches the bare identifier `u8` only —
+/// fully-qualified paths like `&[::std::primitive::u8]` or user-defined
+/// type aliases named `u8` are not recognized. In practice these forms
+/// are vanishingly rare for byte slice arguments.
+fn is_u8_slice(ty: &Type) -> bool {
+    if let Type::Slice(s) = ty {
+        if let Type::Path(p) = &*s.elem {
+            return p.path.is_ident("u8");
+        }
+    }
+    false
+}
+
 pub(crate) struct FnSignature {
     pub kind: FnKind,
     pub span: Span,
@@ -474,9 +487,14 @@ impl NamedArg {
         Ok(match ty {
             Type::Reference(r) => {
                 let inner = &r.elem;
+                let ty = if is_u8_slice(inner) {
+                    quote! { ::uniffi::ForeignBytes }
+                } else {
+                    ffiops::lift_ref_type(inner)
+                };
                 Self {
                     name: ident_to_string(&ident),
-                    ty: ffiops::lift_ref_type(inner),
+                    ty,
                     ref_type: Some(*inner.clone()),
                     default: defaults.remove(&ident),
                     ident,
@@ -503,9 +521,11 @@ impl NamedArg {
         let name = &self.name;
         let type_id_meta = ffiops::type_id_meta(&self.ty);
         let default_calls = default_value_metadata_calls(&self.default)?;
+        let by_ref = self.ref_type.is_some();
         Ok(quote! {
             .concat_str(#name)
             .concat(#type_id_meta)
+            .concat_bool(#by_ref)
             #default_calls
         })
     }

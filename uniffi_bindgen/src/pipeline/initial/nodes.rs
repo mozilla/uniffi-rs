@@ -95,8 +95,17 @@ pub struct TraitMethod {
 pub struct Argument {
     pub name: String,
     pub ty: Type,
+    pub by_ref: bool,
     pub optional: bool,
     pub default: Option<DefaultValue>,
+}
+
+impl Argument {
+    /// True for zero-copy `&[u8]` / `[ByRef] bytes` arguments, which take the
+    /// `ForeignBytes` FFI path instead of the owned `RustBuffer` path.
+    pub fn is_borrowed_bytes(&self) -> bool {
+        self.by_ref && matches!(self.ty, Type::Bytes)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]

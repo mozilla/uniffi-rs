@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::{Handle, RustBuffer, RustCallStatus, RustCallStatusCode};
+use crate::{ForeignBytes, Handle, RustBuffer, RustCallStatus, RustCallStatusCode};
 use std::{mem::ManuallyDrop, ptr::NonNull};
 
 /// FFIBuffer element
@@ -220,6 +220,21 @@ impl FfiSerialize for RustBuffer {
     }
 }
 
+impl FfiSerialize for ForeignBytes {
+    const SIZE: usize = 2;
+
+    fn get(buf: &[FfiBufferElement]) -> Self {
+        // Safety: the foreign bindings are responsible for sending us the correct data.
+        let (len, data) = unsafe { (buf[0].i32, buf[1].ptr as *const u8) };
+        unsafe { ForeignBytes::from_raw_parts(data, len) }
+    }
+
+    fn put(buf: &mut [FfiBufferElement], value: Self) {
+        buf[0].i32 = value.len;
+        buf[1].ptr = value.data as *const std::ffi::c_void;
+    }
+}
+
 impl FfiSerialize for RustCallStatus {
     const SIZE: usize = 4;
 
@@ -241,7 +256,7 @@ impl FfiSerialize for RustCallStatus {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{Handle, RustBuffer, RustCallStatus, RustCallStatusCode};
+    use crate::{ForeignBytes, Handle, RustBuffer, RustCallStatus, RustCallStatusCode};
 
     #[test]
     fn test_ffi_buffer_size() {
@@ -258,11 +273,22 @@ mod test {
         assert_eq!(ffi_buffer_size!(bool), 1);
         assert_eq!(ffi_buffer_size!(*const std::ffi::c_void), 1);
         assert_eq!(ffi_buffer_size!(RustBuffer), 3);
+        assert_eq!(ffi_buffer_size!(ForeignBytes), 2);
         assert_eq!(ffi_buffer_size!(RustCallStatus), 4);
         assert_eq!(ffi_buffer_size!(Handle), 1);
         assert_eq!(ffi_buffer_size!(()), 0);
 
         assert_eq!(ffi_buffer_size!(u8, f32, bool, Handle, (), RustBuffer), 7);
+    }
+
+    #[test]
+    fn test_ffi_serialize_foreign_bytes() {
+        let data = [7u8, 8, 9];
+        let fb = unsafe { ForeignBytes::from_raw_parts(data.as_ptr(), 3) };
+        let mut buf = [FfiBufferElement::default(); 2];
+        <ForeignBytes as FfiSerialize>::put(&mut buf, fb);
+        let fb2 = <ForeignBytes as FfiSerialize>::get(&buf);
+        assert_eq!(fb2.as_slice(), &[7, 8, 9]);
     }
 
     #[test]

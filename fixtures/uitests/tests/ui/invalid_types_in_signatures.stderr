@@ -9,10 +9,10 @@ error[E0277]: the trait bound `Result<(), ErrorType>: Lift<UniFfiTag>` is not sa
              Box<T>
              Duration
              ErrorType
+             ForeignBytes
              HashMap<K, V>
              Option<T>
              String
-             SystemTime
            and $N others
    = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
 
@@ -47,10 +47,10 @@ error[E0277]: the trait bound `Result<(), ErrorType>: Lift<UniFfiTag>` is not sa
              Box<T>
              Duration
              ErrorType
+             ForeignBytes
              HashMap<K, V>
              Option<T>
              String
-             SystemTime
            and $N others
 
 error[E0277]: the trait bound `Result<(), ErrorType>: Lift<UniFfiTag>` is not satisfied
@@ -64,10 +64,10 @@ error[E0277]: the trait bound `Result<(), ErrorType>: Lift<UniFfiTag>` is not sa
              Box<T>
              Duration
              ErrorType
+             ForeignBytes
              HashMap<K, V>
              Option<T>
              String
-             SystemTime
            and $N others
 
 error[E0277]: the trait bound `Result<(), ErrorType>: uniffi::Lower<UniFfiTag>` is not satisfied

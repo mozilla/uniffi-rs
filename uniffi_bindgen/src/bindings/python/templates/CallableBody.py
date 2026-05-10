@@ -5,7 +5,7 @@ if {{ arg.name }} is {{ default.arg_literal }}:
     {{ arg.name }} = {{ default.py_default }}
 {%- endif %}
 {%- endif %}
-{{ arg.ty.ffi_converter_name }}.check_lower({{ arg.name }})
+{{ arg.ffi_converter_name() }}.check_lower({{ arg.name }})
 {% endfor -%}
 
  _uniffi_lowered_args = (
@@ -18,7 +18,7 @@ if {{ arg.name }} is {{ default.arg_literal }}:
     {%-     endmatch %}
     {%- endif %}
     {%- for arg in callable.arguments %}
-    {{ arg.ty.ffi_converter_name }}.lower({{ arg.name }}),
+    {{ arg.ffi_converter_name() }}.lower({{ arg.name }}),
     {%- endfor %}
 )
 

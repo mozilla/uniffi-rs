@@ -14,6 +14,7 @@
 - The `--config` flag now expects a [global config file](https://mozilla.github.io/uniffi-rs/next/bindings.html#global-configuration)
   rather than a flat `uniffi.toml`-style override. Old-style files will produce a warning and be ignored.
   See [#2866](https://github.com/mozilla/uniffi-rs/issues/2866)
+- `[ByRef] bytes` UDL arguments now map to `&[u8]` on the Rust side instead of `&Vec<u8>`. UDL-defined functions whose Rust implementations take `&Vec<u8>` must change to `&[u8]`. Proc-macro signatures (`fn foo(x: &[u8])`) are unchanged. On the Kotlin side, call sites must now pass a *direct* `java.nio.ByteBuffer` rather than `ByteArray`; migrate with `ByteBuffer.allocateDirect(arr.size).put(arr).flip()`. Swift (`Data`) and Python (`bytes`) call sites are unchanged. ([#2878](https://github.com/mozilla/uniffi-rs/pull/2878))
 
 ### What's Fixed
 
@@ -25,6 +26,8 @@
 ### ⚠️ Breaking Changes for external bindings authors ⚠️
 
 - There's a new `GlobalConfig` struct for managing config. It replaces `BindgenPathsLayer::get_config()` method which has been removed. See [#2866](https://github.com/mozilla/uniffi-rs/issues/2866).
+- `[ByRef] bytes` arguments now travel across the FFI as a `ForeignBytes` (pointer + length) value rather than a `RustBuffer`. External bindings need to accept the foreign-language byte buffer at the call site and lower it to `ForeignBytes` for the duration of the call (no copy). ([#2878](https://github.com/mozilla/uniffi-rs/pull/2878))
+
 ### What's New?
 
 - Global config file support via `--config`. See [the docs](https://mozilla.github.io/uniffi-rs/next/bindings.html#global-configuration).
@@ -38,6 +41,7 @@
 - Updated `askama` version to `0.15.6`
 - Custom Types can have docstrings in some languages ([#2853](https://github.com/mozilla/uniffi-rs/pull/2853))
 - Ruby: Expose standard Rust traits for generated ruby code (#2883)
+- Added zero-copy transfer of `&[u8]` / `[ByRef] bytes` arguments from foreign code to Rust. Kotlin (`java.nio.ByteBuffer`, must be direct), Swift (`Data`), and Python (`bytes`-like, buffer protocol) pass byte buffers as pointer + length (`ForeignBytes`) rather than copying through `RustBuffer`. Not yet supported on Ruby, and not yet supported in async functions on any language ([#2878](https://github.com/mozilla/uniffi-rs/pull/2878)).
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.1...HEAD).
 

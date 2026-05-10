@@ -11,6 +11,18 @@
     {%- else -%}
         rustCall() {
     {%- endif %}
+    {#- Always name the `RustCallStatus` pointer so the same form works
+        whether or not we're nested inside `withUnsafeBytes` closures for
+        `&[u8]` args. #}
+        uniffiCallStatus in
+    {#- Open nested `FfiConverterByRefBytes.lower` scopes for any `&[u8]`
+        args. The `ForeignBytes` value is only guaranteed valid inside the
+        scope, so the full FFI call runs inside the innermost closure. #}
+    {%- for arg in func.arguments() -%}
+    {%-     if arg|is_borrowed_bytes %}
+        FfiConverterByRefBytes.lower({{ arg.name()|var_name }}) { {{ arg.name()|var_name }}Fb in
+    {%-     endif %}
+    {%- endfor %}
     {{ func.ffi_func().name() }}(
         {%- match func.self_type() %}
         {%-     when Some(Type::Object { .. }) %}
@@ -19,8 +31,15 @@
             {{ t|lower_fn }}(self),
         {%-     when None %}
         {%- endmatch %}
-        {%- call arg_list_lowered(func) %}{% endcall -%} $0
+        {%- call arg_list_lowered(func) %}{% endcall -%}
+         uniffiCallStatus
     )
+    {#- Close nested `withUnsafeBytes` closures. #}
+    {%- for arg in func.arguments() -%}
+    {%-     if arg|is_borrowed_bytes %}
+        }
+    {%-     endif %}
+    {%- endfor %}
 }
 {%- endmacro -%}
 
@@ -103,7 +122,7 @@ public convenience init(
 
 {%- macro arg_list_lowered(func) %}
     {%- for arg in func.arguments() %}
-        {{ arg|lower_fn }}({{ arg.name()|var_name }}),
+        {{ arg|arg_expr }},
     {%- endfor %}
 {%- endmacro -%}
 

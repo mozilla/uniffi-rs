@@ -95,6 +95,7 @@ fn method_ffi_def(
     let mut all_args = vec![initial::Argument {
         name: "uniffi_self".to_string(),
         ty: receiver_ty.clone(),
+        by_ref: false,
         optional: false,
         default: None,
     }];
@@ -108,6 +109,23 @@ fn method_ffi_def(
     )
 }
 
+/// Convert an `initial::Argument` into an `FfiArgument`.
+///
+/// Handles the `Bytes + by_ref` → `ForeignBytes` selection, matching the
+/// behavior in the legacy `interface/` layer. All other types delegate to
+/// `ffi_types::ffi_type`.
+fn argument_to_ffi_argument(arg: &initial::Argument, context: &Context) -> Result<FfiArgument> {
+    let ty = if arg.is_borrowed_bytes() {
+        FfiType::ForeignBytes
+    } else {
+        ffi_types::ffi_type(&arg.ty, context)?
+    };
+    Ok(FfiArgument {
+        name: arg.name.clone(),
+        ty,
+    })
+}
+
 fn ffi_def(
     name: String,
     arguments: &[initial::Argument],
@@ -117,12 +135,7 @@ fn ffi_def(
 ) -> Result<FfiDefinition> {
     let arguments: Vec<FfiArgument> = arguments
         .iter()
-        .map(|a| {
-            Ok(FfiArgument {
-                name: a.name.clone(),
-                ty: ffi_types::ffi_type(&a.ty, context)?,
-            })
-        })
+        .map(|a| argument_to_ffi_argument(a, context))
         .collect::<Result<Vec<_>>>()?;
 
     Ok(FfiDefinition::RustFunction(if async_data.is_none() {
@@ -150,4 +163,43 @@ fn ffi_def(
             kind: FfiFunctionKind::Scaffolding,
         }
     }))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_arg(ty: Type, by_ref: bool) -> initial::Argument {
+        initial::Argument {
+            name: "buf".to_string(),
+            ty,
+            by_ref,
+            optional: false,
+            default: None,
+        }
+    }
+
+    #[test]
+    fn byref_bytes_maps_to_foreignbytes() {
+        let context = Context::new("test");
+        let arg = make_arg(Type::Bytes, true);
+        let ffi_arg = argument_to_ffi_argument(&arg, &context).expect("should convert");
+        assert!(
+            matches!(ffi_arg.ty, FfiType::ForeignBytes),
+            "expected ForeignBytes, got {:?}",
+            ffi_arg.ty
+        );
+    }
+
+    #[test]
+    fn owned_bytes_maps_to_rustbuffer() {
+        let context = Context::new("test");
+        let arg = make_arg(Type::Bytes, false);
+        let ffi_arg = argument_to_ffi_argument(&arg, &context).expect("should convert");
+        assert!(
+            matches!(ffi_arg.ty, FfiType::RustBuffer(None)),
+            "expected RustBuffer(None), got {:?}",
+            ffi_arg.ty
+        );
+    }
 }
