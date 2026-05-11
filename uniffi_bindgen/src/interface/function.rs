@@ -36,7 +36,7 @@ use anyhow::Result;
 use uniffi_meta::Checksum;
 
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
-use super::{AsType, ComponentInterface, DefaultValue, ObjectImpl, Type, TypeIterator};
+use super::{AsType, ComponentInterface, DefaultValue, Type, TypeIterator};
 
 /// Represents a standalone function.
 ///
@@ -207,10 +207,6 @@ impl Argument {
     /// `ForeignBytes` FFI path instead of the owned `RustBuffer` path.
     pub fn is_borrowed_bytes(&self) -> bool {
         self.by_ref && matches!(self.type_, Type::Bytes)
-    }
-
-    pub fn is_trait_ref(&self) -> bool {
-        matches!(&self.type_, Type::Object { imp, .. } if *imp == ObjectImpl::Trait)
     }
 
     pub fn default_value(&self) -> Option<&DefaultValue> {

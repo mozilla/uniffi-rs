@@ -3,10 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::*;
+use uniffi_meta::TraitKind;
 
 pub fn protocol(int: &general::Interface, context: &Context) -> Result<Protocol> {
     Ok(match &int.imp {
-        ObjectImpl::Struct | ObjectImpl::Trait => {
+        ObjectImpl::Struct | ObjectImpl::Trait(TraitKind::RustOnly) => {
             // Interface that's only implemented in Rust:
             //   - Give the interface the main name and append the `Protocol` suffix to the protocol
             //   - Make the protocol inherit from `typing.Protocol`, since the #2264 doesn't affect
@@ -18,8 +19,8 @@ pub fn protocol(int: &general::Interface, context: &Context) -> Result<Protocol>
                 docstring: int.docstring.clone(),
             }
         }
-        ObjectImpl::CallbackTrait => {
-            // Trait interface that can be implemented in Rust or Python
+        ObjectImpl::Trait(TraitKind::Both | TraitKind::ForeignOnly) => {
+            // Trait interface that can be implemented in Python.
             //   - Give the protocol the main name and append the `Impl` suffix to the interface
             //   - Don't make the protocol inherit from `typing.Protocol`.  We're going to inherit
             //     from it so it's not a typical Python protocol
@@ -37,8 +38,10 @@ pub fn protocol(int: &general::Interface, context: &Context) -> Result<Protocol>
 pub fn name(int: &general::Interface) -> String {
     // Interface name, see `protocol` for a discussion of the logic here
     match &int.imp {
-        ObjectImpl::Struct | ObjectImpl::Trait => names::type_name(&int.name),
-        ObjectImpl::CallbackTrait => names::type_name(&format!("{}Impl", int.name)),
+        ObjectImpl::Struct | ObjectImpl::Trait(TraitKind::RustOnly) => names::type_name(&int.name),
+        ObjectImpl::Trait(TraitKind::Both | TraitKind::ForeignOnly) => {
+            names::type_name(&format!("{}Impl", int.name))
+        }
     }
 }
 
@@ -60,8 +63,12 @@ pub fn base_classes(int: &general::Interface, context: &Context) -> Result<Vec<S
                 // For trait interfaces implement in Rust-only, the protocol has `Protocol` appended.
                 // Trait interfaces with foreign implementations don't have that
                 match imp {
-                    ObjectImpl::Trait => (format!("{name}Protocol"), namespace),
-                    ObjectImpl::CallbackTrait => (name.to_string(), namespace),
+                    ObjectImpl::Trait(TraitKind::RustOnly) => {
+                        (format!("{name}Protocol"), namespace)
+                    }
+                    ObjectImpl::Trait(TraitKind::Both | TraitKind::ForeignOnly) => {
+                        (name.to_string(), namespace)
+                    }
                     ObjectImpl::Struct => {
                         bail!("Objects can only inherit from traits, not other objects")
                     }

@@ -16,9 +16,10 @@ mod reader;
 pub use reader::{read_metadata, read_metadata_type};
 
 mod types;
-pub use types::{AsType, ObjectImpl, Type, TypeIterator};
+pub use types::{AsType, ObjectImpl, TraitKind, Type, TypeIterator};
 
 mod metadata;
+pub use metadata::codes;
 
 // This needs to match the minor version of the `uniffi` crate.  See
 // `docs/uniffi-versioning.md` for details.

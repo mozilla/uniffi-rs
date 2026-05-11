@@ -15,7 +15,7 @@
 //! if we grow significantly more complicated attribute handling.
 
 use anyhow::{bail, Result};
-use uniffi_meta::{Checksum, ObjectImpl};
+use uniffi_meta::{Checksum, ObjectImpl, TraitKind};
 
 /// Represents an attribute parsed from UDL, like `[ByRef]` or `[Throws]`.
 ///
@@ -378,8 +378,8 @@ impl InterfaceAttributes {
     pub fn object_impl(&self) -> Result<ObjectImpl> {
         Ok(
             match (self.contains_trait(), self.contains_with_foreign()) {
-                (true, true) => ObjectImpl::CallbackTrait,
-                (true, false) => ObjectImpl::Trait,
+                (true, true) => ObjectImpl::Trait(TraitKind::Both),
+                (true, false) => ObjectImpl::Trait(TraitKind::RustOnly),
                 (false, false) => ObjectImpl::Struct,
                 (false, true) => bail!("WithForeign can't be specified without Trait"),
             },
@@ -864,12 +864,18 @@ mod test {
     fn test_trait_attribute() {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Trait]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
-        assert_eq!(attrs.object_impl().unwrap(), ObjectImpl::Trait);
+        assert_eq!(
+            attrs.object_impl().unwrap(),
+            ObjectImpl::Trait(TraitKind::RustOnly)
+        );
 
         let (_, node) =
             weedle::attribute::ExtendedAttributeList::parse("[Trait, WithForeign]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
-        assert_eq!(attrs.object_impl().unwrap(), ObjectImpl::CallbackTrait);
+        assert_eq!(
+            attrs.object_impl().unwrap(),
+            ObjectImpl::Trait(TraitKind::Both)
+        );
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();

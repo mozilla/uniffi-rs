@@ -24,10 +24,19 @@ use uniffi_pipeline::{MapNode, Node};
 pub enum ObjectImpl {
     // A single Rust type
     Struct,
-    // A trait that's can be implemented by Rust types
-    Trait,
-    // A trait + a callback interface -- can be implemented by both Rust and foreign types.
-    CallbackTrait,
+    // A trait, with the kind controlling who can export implementations
+    Trait(TraitKind),
+}
+
+/// Controls who can provide implementations of an exported trait
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Checksum, Ord, PartialOrd, Node, MapNode)]
+pub enum TraitKind {
+    /// Only Rust types implement this trait
+    RustOnly,
+    /// Both Rust and foreign types can implement this trait
+    Both,
+    /// Only foreign types implement this trait (Arc-based)
+    ForeignOnly,
 }
 
 impl ObjectImpl {
@@ -44,15 +53,27 @@ impl ObjectImpl {
     }
 
     pub fn is_trait_interface(&self) -> bool {
-        matches!(self, Self::Trait | Self::CallbackTrait)
+        matches!(self, Self::Trait(_))
     }
 
     pub fn has_callback_interface(&self) -> bool {
-        matches!(self, Self::CallbackTrait)
+        matches!(self, Self::Trait(TraitKind::Both | TraitKind::ForeignOnly))
     }
 
     pub fn has_struct(&self) -> bool {
         matches!(self, Self::Struct)
+    }
+}
+
+impl TraitKind {
+    /// True if foreign code can implement this trait
+    pub fn has_foreign(&self) -> bool {
+        matches!(self, Self::Both | Self::ForeignOnly)
+    }
+
+    /// True if Rust code can implement this trait
+    pub fn has_rust(&self) -> bool {
+        matches!(self, Self::RustOnly | Self::Both)
     }
 }
 

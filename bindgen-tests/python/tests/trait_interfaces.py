@@ -166,5 +166,26 @@ class TestAsyncTraitInterfaces(unittest.IsolatedAsyncioTestCase):
         del impl
         self.assertEqual(AsyncTraitImpl.ref_count, 0)
 
+class ForeignOnlyImpl(TestForeignOnlyTraitInterface):
+    def throw_if_equal(self, numbers):
+        if numbers.a == numbers.b:
+            raise TestError.Failure1()
+        return numbers
+
+class TestForeignOnlyTraitInterfaces(unittest.TestCase):
+    def check_foreign_only_impl(self, impl):
+        with self.assertRaises(TestError.Failure1):
+            invoke_test_foreign_only_trait_throw_if_equal(impl, CallbackInterfaceNumbers(a=10, b=10))
+        self.assertEqual(
+            invoke_test_foreign_only_trait_throw_if_equal(impl, CallbackInterfaceNumbers(a=10, b=11)),
+            CallbackInterfaceNumbers(a=10, b=11)
+        )
+
+    def test_foreign_only_impl(self):
+        self.check_foreign_only_impl(ForeignOnlyImpl())
+
+    def test_foreign_only_impl_roundtripped(self):
+        self.check_foreign_only_impl(roundtrip_test_foreign_only_trait(ForeignOnlyImpl()))
+
 if __name__ == '__main__':
     unittest.main()

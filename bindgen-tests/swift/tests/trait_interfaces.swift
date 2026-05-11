@@ -191,3 +191,35 @@ dispatchGroup.wait()
 // interfaces, check that the refcounts have gone back to 0.
 assert(traitRefCount == 0)
 assert(asyncTraitRefCount == 0)
+
+// Foreign-only trait: smoke-test for the #[uniffi::export(foreign)] codegen path
+class ForeignOnlyImpl: TestForeignOnlyTraitInterface, @unchecked Sendable {
+    func throwIfEqual(numbers: CallbackInterfaceNumbers) throws -> CallbackInterfaceNumbers {
+        if numbers.a == numbers.b {
+            throw TestError.Failure1
+        }
+        return numbers
+    }
+}
+
+func testForeignOnlyImpl(impl: TestForeignOnlyTraitInterface) {
+    do {
+        let _ = try invokeTestForeignOnlyTraitThrowIfEqual(
+            interface: impl,
+            numbers: CallbackInterfaceNumbers(a: 10, b: 10)
+        )
+        fatalError("expected throwIfEqual to throw")
+    } catch TestError.Failure1 {
+        // expected
+    } catch {
+        fatalError("unexpected error \(error)")
+    }
+    assert(
+        try! invokeTestForeignOnlyTraitThrowIfEqual(
+            interface: impl,
+            numbers: CallbackInterfaceNumbers(a: 10, b: 11)
+        ) == CallbackInterfaceNumbers(a: 10, b: 11))
+}
+
+testForeignOnlyImpl(impl: ForeignOnlyImpl())
+testForeignOnlyImpl(impl: roundtripTestForeignOnlyTrait(interface: ForeignOnlyImpl()))

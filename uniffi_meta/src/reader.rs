@@ -54,8 +54,11 @@ impl<'a> MetadataReader<'a> {
             codes::RECORD => self.read_record()?.into(),
             codes::ENUM => self.read_enum()?.into(),
             codes::INTERFACE => self.read_object(ObjectImpl::Struct)?.into(),
-            codes::TRAIT_INTERFACE => self.read_object(ObjectImpl::Trait)?.into(),
-            codes::CALLBACK_TRAIT_INTERFACE => self.read_object(ObjectImpl::CallbackTrait)?.into(),
+            codes::TRAIT_INTERFACE => {
+                let mut obj = self.read_object(ObjectImpl::Struct)?;
+                obj.imp = ObjectImpl::Trait(self.read_trait_kind()?);
+                obj.into()
+            }
             codes::CALLBACK_INTERFACE => self.read_callback_interface()?.into(),
             codes::TRAIT_METHOD => self.read_trait_method()?.into(),
             codes::UNIFFI_TRAIT => self.read_uniffi_trait()?.into(),
@@ -165,16 +168,16 @@ impl<'a> MetadataReader<'a> {
                 name: self.read_string()?,
                 imp: ObjectImpl::Struct,
             },
-            codes::TYPE_TRAIT_INTERFACE => Type::Object {
-                module_path: self.read_string()?,
-                name: self.read_string()?,
-                imp: ObjectImpl::Trait,
-            },
-            codes::TYPE_CALLBACK_TRAIT_INTERFACE => Type::Object {
-                module_path: self.read_string()?,
-                name: self.read_string()?,
-                imp: ObjectImpl::CallbackTrait,
-            },
+            codes::TYPE_TRAIT_INTERFACE => {
+                let module_path = self.read_string()?;
+                let name = self.read_string()?;
+                let kind = self.read_trait_kind()?;
+                Type::Object {
+                    module_path,
+                    name,
+                    imp: ObjectImpl::Trait(kind),
+                }
+            }
             codes::TYPE_CALLBACK_INTERFACE => Type::CallbackInterface {
                 module_path: self.read_string()?,
                 name: self.read_string()?,
@@ -354,6 +357,15 @@ impl<'a> MetadataReader<'a> {
             variants,
             non_exhaustive: self.read_bool()?,
             docstring: self.read_optional_long_string()?,
+        })
+    }
+
+    fn read_trait_kind(&mut self) -> Result<TraitKind> {
+        Ok(match self.read_u8()? {
+            codes::TRAIT_KIND_RUST_ONLY => TraitKind::RustOnly,
+            codes::TRAIT_KIND_BOTH => TraitKind::Both,
+            codes::TRAIT_KIND_FOREIGN_ONLY => TraitKind::ForeignOnly,
+            other => bail!("Unknown trait kind: {other}"),
         })
     }
 

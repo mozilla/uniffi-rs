@@ -261,6 +261,8 @@ pub mod kw {
     syn::custom_keyword!(async_runtime);
     syn::custom_keyword!(callback_interface);
     syn::custom_keyword!(with_foreign);
+    syn::custom_keyword!(rust);
+    syn::custom_keyword!(foreign);
     syn::custom_keyword!(default);
     syn::custom_keyword!(flat_error);
     syn::custom_keyword!(None);

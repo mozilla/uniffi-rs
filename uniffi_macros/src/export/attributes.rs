@@ -15,11 +15,28 @@ use syn::{
 };
 use uniffi_meta::UniffiTraitDiscriminants;
 
+/// Attribute arguments for `#[uniffi::export]` on traits.
+///
+/// The canonical way to specify what crosses the FFI boundary is with bare `rust` and `foreign`
+/// flags, which can be combined:
+///
+///   `#[uniffi::export]`                — Rust implementations only (default)
+///   `#[uniffi::export(foreign)]`       — foreign implementations only
+///   `#[uniffi::export(rust, foreign)]` — both directions
+///
+/// `with_foreign` is a deprecated alias for `rust, foreign`.
+/// `callback_interface` is a deprecated legacy flag for Box-based foreign-only traits.
 #[derive(Default)]
 pub struct ExportTraitArgs {
     pub(crate) async_runtime: Option<AsyncRuntime>,
+    /// Deprecated: use `foreign` (or probably `rust, foreign`) instead.
     pub(crate) callback_interface: Option<kw::callback_interface>,
+    /// Deprecated: use `rust, foreign` instead.
     pub(crate) with_foreign: Option<kw::with_foreign>,
+    /// Include Rust instances in the FFI bridge.
+    pub(crate) rust: Option<kw::rust>,
+    /// Include foreign instances in the FFI bridge.
+    pub(crate) foreign: Option<kw::foreign>,
 }
 
 impl Parse for ExportTraitArgs {
@@ -48,8 +65,18 @@ impl UniffiAttributeArgs for ExportTraitArgs {
                 with_foreign: input.parse()?,
                 ..Self::default()
             })
+        } else if lookahead.peek(kw::rust) {
+            Ok(Self {
+                rust: input.parse()?,
+                ..Self::default()
+            })
+        } else if lookahead.peek(kw::foreign) {
+            Ok(Self {
+                foreign: input.parse()?,
+                ..Self::default()
+            })
         } else {
-            Ok(Self::default())
+            Err(lookahead.error())
         }
     }
 
@@ -61,10 +88,20 @@ impl UniffiAttributeArgs for ExportTraitArgs {
                 other.callback_interface,
             )?,
             with_foreign: either_attribute_arg(self.with_foreign, other.with_foreign)?,
+            rust: either_attribute_arg(self.rust, other.rust)?,
+            foreign: either_attribute_arg(self.foreign, other.foreign)?,
         };
+        let has_new_flags = merged.rust.is_some() || merged.foreign.is_some();
+        let has_legacy_flags = merged.callback_interface.is_some() || merged.with_foreign.is_some();
+        if has_new_flags && has_legacy_flags {
+            return Err(syn::Error::new(
+                proc_macro2::Span::call_site(),
+                "`rust`/`foreign` flags cannot be combined with `callback_interface` or `with_foreign`",
+            ));
+        }
         if merged.callback_interface.is_some() && merged.with_foreign.is_some() {
             return Err(syn::Error::new(
-                merged.callback_interface.unwrap().span,
+                proc_macro2::Span::call_site(),
                 "`callback_interface` and `with_foreign` are mutually exclusive",
             ));
         }

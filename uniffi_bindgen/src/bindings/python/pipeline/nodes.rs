@@ -26,6 +26,7 @@ use_prev_node!(general::HandleKind);
 use_prev_node!(general::ObjectImpl);
 use_prev_node!(general::Radix);
 use_prev_node!(general::RustFfiFunctionName);
+use_prev_node!(general::TraitKind);
 use_prev_node!(general::Type, types::map_type);
 
 /// Initial IR, this stores the metadata and other data

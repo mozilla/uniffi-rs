@@ -53,7 +53,7 @@ use std::{
 use anyhow::{anyhow, bail, ensure, Context, Result};
 
 pub mod universe;
-pub use uniffi_meta::{AsType, EnumShape, ObjectImpl, Type};
+pub use uniffi_meta::{AsType, EnumShape, ObjectImpl, TraitKind, Type};
 use universe::{TypeIterator, TypeUniverse};
 
 mod callbacks;

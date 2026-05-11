@@ -4,7 +4,8 @@
 
 //! Trait interface test.  This is the like the `callback_interfaces` module, except it uses a
 //! trait that has `with_foreign` enabled (AKA a trait interface).  This means UniFFI supports both
-//! Rust and foreign language implementations of the trait.
+//! Rust and foreign language implementations of the trait.  Also includes a minimal
+//! `#[uniffi::export(foreign)]` trait to verify the foreign-only codegen path.
 
 use std::sync::{
     atomic::{AtomicU32, Ordering},
@@ -167,6 +168,31 @@ impl AsyncTestTraitInterface for TestTraitInterfaceImpl {
             Ok(numbers)
         }
     }
+}
+
+/// Foreign-only trait interface: no Rust impl, no `create_*` export.
+/// A single method is enough to smoke-test the foreign-only codegen path.
+#[uniffi::export(foreign)]
+pub trait TestForeignOnlyTraitInterface: Send + Sync {
+    fn throw_if_equal(
+        &self,
+        numbers: CallbackInterfaceNumbers,
+    ) -> Result<CallbackInterfaceNumbers, TestError>;
+}
+
+#[uniffi::export]
+pub fn invoke_test_foreign_only_trait_throw_if_equal(
+    interface: Arc<dyn TestForeignOnlyTraitInterface>,
+    numbers: CallbackInterfaceNumbers,
+) -> Result<CallbackInterfaceNumbers, TestError> {
+    interface.throw_if_equal(numbers)
+}
+
+#[uniffi::export]
+pub fn roundtrip_test_foreign_only_trait(
+    interface: Arc<dyn TestForeignOnlyTraitInterface>,
+) -> Arc<dyn TestForeignOnlyTraitInterface> {
+    interface
 }
 
 // Functions to round-trip trait interfaces across the FFI
