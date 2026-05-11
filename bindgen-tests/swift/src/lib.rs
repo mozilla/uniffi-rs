@@ -75,6 +75,11 @@ mod test {
     }
 
     #[test]
+    fn test_references() {
+        run_tests(test_dir(), "tests/references.swift");
+    }
+
+    #[test]
     fn test_custom_types() {
         run_tests(test_dir(), "tests/custom_types.swift");
     }
