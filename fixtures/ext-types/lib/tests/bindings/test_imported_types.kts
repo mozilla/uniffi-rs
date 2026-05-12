@@ -6,6 +6,8 @@ import uniffi.imported_types_lib.*
 import uniffi.imported_types_sublib.*
 import uniffi.uniffi_one_ns.*
 import uniffi.ext_types_custom.*
+import java.net.URI
+import kotlinx.coroutines.runBlocking
 
 // First step: implement a trait from an external crate in Kotlin and pass it to a function from this
 // crate.  This tests #2343 -- the codegen for this module needs to initialize the vtable from
@@ -20,7 +22,7 @@ assert(invokeUniffiOneTrait(KtUniffiOneImpl()) == "Hello from Kotlin")
 val ct = getCombinedType(null)
 assert(ct.uot.sval == "hello")
 assert(ct.guid ==  "a-guid")
-assert(ct.url ==  java.net.URL("http://example.com/"))
+assert(ct.url ==  URI.create("http://example.com/").toURL())
 
 val ct2 = getCombinedType(ct)
 assert(ct == ct2)
@@ -32,7 +34,7 @@ assert(getUniffiOneTrait(null) == null)
 assert(getSubType(null).maybeInterface == null)
 assert(getTraitImpl().hello() == "sub-lib trait impl says hello")
 
-val url = java.net.URL("http://example.com/")
+val url = URI.create("http://example.com/").toURL()
 assert(getUrl(url) ==  url)
 assert(getMaybeUrl(url)!! ==  url)
 assert(getMaybeUrl(null) ==  null)
@@ -44,6 +46,10 @@ assert(getOuid("ouid") == "ouid")
 //assert(getImportedGuid("guid") == "guid")
 assert(getImportedOuid("ouid") == "ouid")
 assert(getImportedHandleU8(null) == 3u.toUByte())
+runBlocking {
+    assert(getNestedExternalOuidAsync(null) == "nested-external-ouid")
+    assert(getLocalExternalGuidAsync() == "local-external-guid")
+}
 
 val uot = UniffiOneType("hello")
 assert(getUniffiOneType(uot) == uot)

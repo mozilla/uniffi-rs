@@ -984,18 +984,18 @@ mod filters {
     ) -> Result<String, askama::Error> {
         let ffi_func = callable.ffi_rust_future_complete(ci);
         let call = format!("UniffiLib.{ffi_func}(future, continuation)");
-        // May need to convert the RustBuffer from our package to the RustBuffer of the external package
+        // May need to convert the RustBuffer from our package to the RustBuffer of the external package.
         let call = match callable.return_type() {
-            Some(return_type) if ci.is_external(return_type) => {
-                let ffi_type = FfiType::from(return_type);
-                match ffi_type {
-                    FfiType::RustBuffer(Some(ExternalFfiMetadata { name, .. })) => {
-                        let suffix = KotlinCodeOracle.class_name(ci, &name);
-                        format!("{call}.let {{ RustBuffer{suffix}.create(it.capacity.toULong(), it.len.toULong(), it.data) }}")
-                    }
-                    _ => call,
+            Some(return_type) => match FfiType::from(return_type) {
+                FfiType::RustBuffer(Some(external_meta))
+                    if external_meta.crate_name() != ci.crate_name() =>
+                {
+                    let ExternalFfiMetadata { name, .. } = external_meta;
+                    let suffix = KotlinCodeOracle.class_name(ci, &name);
+                    format!("{call}.let {{ RustBuffer{suffix}.create(it.capacity.toULong(), it.len.toULong(), it.data) }}")
                 }
-            }
+                _ => call,
+            },
             _ => call,
         };
         Ok(format!("{{ future, continuation -> {call} }}"))
