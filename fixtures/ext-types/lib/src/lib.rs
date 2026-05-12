@@ -143,6 +143,36 @@ fn get_nested_external_ouid(ouid: Option<NestedExternalOuid>) -> NestedExternalO
     ouid.unwrap_or_else(|| NestedExternalOuid(Ouid("nested-external-ouid".to_string())))
 }
 
+#[uniffi::export]
+async fn get_nested_external_ouid_async(ouid: Option<NestedExternalOuid>) -> NestedExternalOuid {
+    get_nested_external_ouid(ouid)
+}
+
+pub struct LocalExternalGuid {
+    pub value: String,
+}
+
+impl From<Guid> for LocalExternalGuid {
+    fn from(value: Guid) -> Self {
+        Self { value: value.0 }
+    }
+}
+
+impl From<LocalExternalGuid> for Guid {
+    fn from(value: LocalExternalGuid) -> Self {
+        Guid(value.value)
+    }
+}
+
+uniffi::custom_type!(LocalExternalGuid, Guid, { remote });
+
+#[uniffi::export]
+async fn get_local_external_guid_async() -> LocalExternalGuid {
+    LocalExternalGuid {
+        value: "local-external-guid".to_string(),
+    }
+}
+
 // A struct
 fn get_uniffi_one_type(t: UniffiOneType) -> UniffiOneType {
     t
