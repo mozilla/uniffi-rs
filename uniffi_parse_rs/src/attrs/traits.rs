@@ -7,8 +7,9 @@ use syn::{spanned::Spanned, Attribute, LitStr, Meta};
 use uniffi_meta::TraitKind;
 
 use crate::{
-    attrs::{extract_docstring, meta_matches_uniffi_export},
-    CompileEnv,
+    attrs::{extract_docstring, meta_is_uniffi_export},
+    paths::LookupCache,
+    CompileEnv, Ir, RPath,
 };
 
 #[derive(Debug, PartialEq, Eq)]
@@ -35,7 +36,13 @@ impl TraitExportType {
 }
 
 impl TraitAttributes {
-    pub fn parse(env: &CompileEnv, attrs: &[Attribute]) -> syn::Result<Option<Self>> {
+    pub fn parse<'ir>(
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+        env: &CompileEnv,
+        attrs: &[Attribute],
+    ) -> syn::Result<Option<Self>> {
         let mut export_ty = None;
         let mut name = None;
         let mut docstring = None;
@@ -43,7 +50,7 @@ impl TraitAttributes {
             return Ok(None);
         };
         for meta in metas {
-            if meta_matches_uniffi_export(&meta, "export") {
+            if meta_is_uniffi_export(module_path, ir, cache, &meta) {
                 if export_ty.is_some() {
                     return Err(syn::Error::new(meta.span(), "multiple `export` attributes"));
                 }

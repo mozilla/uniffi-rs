@@ -38,7 +38,6 @@ pub use functions::{Argument, Function, ReturnType};
 pub use impls::Impl;
 pub use ir::Ir;
 pub use items::{BuiltinItem, Item};
-pub use macros::resolve_macros;
 pub use modules::Module;
 pub use objects::{Constructor, Method, Object, SelfArg};
 pub use paths::{ChildItem, Namespace, RPath, Visibility};
@@ -82,9 +81,9 @@ impl Parser {
         path: &Utf8Path,
         features: Vec<String>,
     ) -> anyhow::Result<&Module> {
-        let env = CompileEnv::new(self.target.clone(), features);
+        let compile_env = CompileEnv::new(self.target.clone(), features);
         self.ir
-            .add_crate_root(name, path, &env)
+            .add_crate_root(name, path, compile_env)
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
@@ -99,7 +98,9 @@ impl Parser {
     }
 
     pub fn into_uniffi_meta(mut self) -> anyhow::Result<MetadataGroupMap> {
-        resolve_macros(&mut self.ir).map_err(|e| anyhow::anyhow!("{e}"))?;
+        self.ir
+            .resolve_items()
+            .map_err(|e| anyhow::anyhow!("{e}"))?;
         self.ir
             .into_metadata_group_map()
             .map_err(|e| anyhow::anyhow!("{e}"))

@@ -5,8 +5,9 @@
 use syn::{Attribute, LitStr, Meta};
 
 use crate::{
-    attrs::{extract_docstring, find_uniffi_derive, meta_matches_uniffi_export, UniffiTraitAttrs},
-    CompileEnv,
+    attrs::{extract_docstring, find_uniffi_derive, meta_is_uniffi_export, UniffiTraitAttrs},
+    paths::LookupCache,
+    CompileEnv, Ir, RPath,
 };
 
 #[derive(Clone, Default)]
@@ -18,7 +19,13 @@ pub struct ObjectAttributes {
 }
 
 impl ObjectAttributes {
-    pub fn parse(env: &CompileEnv, attrs: &[Attribute]) -> syn::Result<Option<Self>> {
+    pub fn parse<'ir>(
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+        env: &CompileEnv,
+        attrs: &[Attribute],
+    ) -> syn::Result<Option<Self>> {
         let mut parsed = Self::default();
 
         let Some(metas) = env.parse_attrs(attrs)? else {
@@ -26,13 +33,13 @@ impl ObjectAttributes {
         };
         parsed.remote = match metas
             .iter()
-            .find_map(|meta| find_uniffi_derive(meta, "Object"))
+            .find_map(|meta| find_uniffi_derive(ir, cache, module_path, meta, "Object"))
         {
             Some(d) => d.remote,
             None => return Ok(None),
         };
 
-        parsed.utraits = UniffiTraitAttrs::parse(&metas)?;
+        parsed.utraits = UniffiTraitAttrs::parse(ir, cache, module_path, &metas)?;
         for meta in metas {
             if meta.path().is_ident("uniffi") {
                 if let Meta::List(list) = meta {
@@ -62,20 +69,26 @@ pub struct ImplAttributes {
 }
 
 impl ImplAttributes {
-    pub fn parse(env: &CompileEnv, attrs: &[Attribute]) -> syn::Result<Option<Self>> {
+    pub fn parse<'ir>(
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+        env: &CompileEnv,
+        attrs: &[Attribute],
+    ) -> syn::Result<Option<Self>> {
         let mut parsed = Self::default();
         let Some(metas) = env.parse_attrs(attrs)? else {
             return Ok(None);
         };
         if !metas
             .iter()
-            .any(|meta| meta_matches_uniffi_export(meta, "export"))
+            .any(|meta| meta_is_uniffi_export(module_path, ir, cache, meta))
         {
             return Ok(None);
         }
 
         for meta in metas {
-            if meta_matches_uniffi_export(&meta, "export") {
+            if meta_is_uniffi_export(module_path, ir, cache, &meta) {
                 if let Meta::List(list) = meta {
                     list.parse_nested_meta(|meta| {
                         if meta.path.is_ident("name") {
