@@ -10,6 +10,7 @@ use crate::Triple;
 /// Compilation environment
 ///
 /// This is use to skip or include items based on conditional compilation
+#[derive(Clone)]
 pub struct CompileEnv {
     target: Triple,
     features: Vec<String>,

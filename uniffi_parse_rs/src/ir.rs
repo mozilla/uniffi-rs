@@ -10,20 +10,33 @@ use syn::{ext::IdentExt, Ident};
 use uniffi_meta::MetadataGroup;
 
 use crate::{
-    paths::LookupCache, CompileEnv, Error, ErrorKind::*, Item, MetadataGroupMap, Module, RPath,
-    Result,
+    attrs::{
+        EnumAttributes, FunctionAttributes, ImplAttributes, ObjectAttributes, RecordAttributes,
+        TraitAttributes,
+    },
+    macros::maybe_resolve_macro,
+    paths::LookupCache,
+    CompileEnv, Enum, Error,
+    ErrorKind::*,
+    Function, Impl, Item, MetadataGroupMap, Module, Object, RPath, Record, Result, Trait,
 };
 
 /// Intermediate representation of the interface
 ///
 /// The first parsing step converts `syn` types and stores them here.
 /// The main goal is to parse enough of `syn` to resolve `syn::Type` into `uniffi_meta::Type`.
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub struct Ir {
-    /// Map idents to the crate root modules
+    pub crate_roots: HashMap<Ident, CrateRoot>,
+}
+
+pub struct CrateRoot {
+    /// Root module, represented as an `Item::Module`.
     ///
-    /// Every value is `Item::Module`
-    pub crate_roots: HashMap<Ident, Item>,
+    /// This is an `Item::Module` because of `RPath`.
+    /// That type wants to store a `Vec<&Item>` for each component of the path.
+    module: Item,
+    compile_env: CompileEnv,
 }
 
 impl Ir {
@@ -38,13 +51,23 @@ impl Ir {
         &mut self,
         crate_name: &str,
         file_path: &Utf8Path,
-        env: &CompileEnv,
+        compile_env: CompileEnv,
     ) -> Result<&Module> {
         let crate_name = crate_name.replace("-", "_");
         let ident = format_ident!("{crate_name}");
-        let module = Module::new_crate_root(ident.clone(), file_path, env)?;
-        self.crate_roots.insert(ident.clone(), Item::Module(module));
-        match self.crate_roots.get(&ident) {
+        let module = Module::new_crate_root(ident.clone(), file_path, &compile_env)?;
+        self.crate_roots.insert(
+            ident.clone(),
+            CrateRoot {
+                module: Item::Module(module),
+                compile_env,
+            },
+        );
+        match self
+            .crate_roots
+            .get(&ident)
+            .map(|crate_root| &crate_root.module)
+        {
             Some(Item::Module(m)) => Ok(m),
             _ => unreachable!(),
         }
@@ -103,31 +126,21 @@ impl Ir {
     }
 
     pub fn crate_root(&self, ident: &Ident) -> Option<&Module> {
-        self.crate_roots.get(ident).map(|item| match item {
-            Item::Module(item) => item,
-            item => panic!("Crate root is not Item::Module ({item:?})"),
-        })
+        self.crate_roots.get(ident).map(CrateRoot::module)
     }
 
     pub fn crate_roots(&self) -> impl Iterator<Item = &Module> {
-        self.crate_roots.values().map(|item| match item {
-            Item::Module(module) => module,
-            item => panic!("Crate root is not Item::Module ({item:?})"),
-        })
+        self.crate_roots.values().map(CrateRoot::module)
     }
 
     pub fn crate_roots_and_paths(&self) -> impl Iterator<Item = (RPath<'_>, &Module)> {
-        self.crate_roots.values().map(|item| match item {
-            Item::Module(module) => (RPath::new(item), module),
-            item => panic!("Crate root is not Item::Module ({item:?})"),
-        })
+        self.crate_roots
+            .values()
+            .map(|crate_root| (RPath::new(&crate_root.module), crate_root.module()))
     }
 
     pub fn crate_roots_mut(&mut self) -> impl Iterator<Item = &mut Module> {
-        self.crate_roots.values_mut().map(|item| match item {
-            Item::Module(module) => module,
-            item => panic!("Crate root is not Item::Module ({item:?})"),
-        })
+        self.crate_roots.values_mut().map(CrateRoot::module_mut)
     }
 
     pub fn into_metadata_group_map(self) -> Result<MetadataGroupMap> {
@@ -148,9 +161,124 @@ impl Ir {
             .collect()
     }
 
+    /// Resolve Item::Unresolved to more specific items like Item::UseRemoteType
+    ///
+    /// This needs to run after adding all crates parsing, since it requires looking up module paths.
+    pub fn resolve_items(&mut self) -> syn::Result<()> {
+        // Find and remove unresolved items from all modules
+        let mut unresolved_map = HashMap::new();
+        for crate_root in self.crate_roots.values_mut() {
+            crate_root.visit_modules_mut(|module| {
+                unresolved_map.insert(module.id, module.remove_unresolved_items());
+            });
+        }
+
+        // Resolve the items
+        let mut resolved_map = HashMap::new();
+        let mut cache = LookupCache::default();
+        for crate_root in self.crate_roots.values() {
+            crate_root.try_visit_modules_and_paths(|module, rpath| {
+                let Some(unresolved) = unresolved_map.remove(&module.id) else {
+                    return Ok(());
+                };
+
+                let mut resolved_items = vec![];
+                for item in unresolved {
+                    if let Some(item) =
+                        self.resolve_item(&mut cache, rpath, &crate_root.compile_env, item)?
+                    {
+                        resolved_items.push(item);
+                    }
+                }
+                resolved_map.insert(module.id, resolved_items);
+                Ok(())
+            })?;
+        }
+
+        // Add resolved items to the modules
+        for crate_root in self.crate_roots.values_mut() {
+            crate_root.visit_modules_mut(|module| {
+                if let Some(resolved) = resolved_map.remove(&module.id) {
+                    module.items.extend(resolved);
+                }
+            });
+        }
+        Ok(())
+    }
+
+    /// Resolve an unresolved item
+    fn resolve_item<'ir>(
+        &'ir self,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+        env: &CompileEnv,
+        item: syn::Item,
+    ) -> syn::Result<Option<Item>> {
+        Ok(match item {
+            syn::Item::Fn(func) => {
+                if let Some(attrs) =
+                    FunctionAttributes::parse(self, cache, module_path, env, &func.attrs)?
+                {
+                    Some(Item::Fn(Function::parse(attrs, func.clone())?))
+                } else {
+                    None
+                }
+            }
+            syn::Item::Struct(st) => {
+                if let Some(attrs) =
+                    RecordAttributes::parse(self, cache, module_path, env, &st.attrs)?
+                {
+                    let r = Record::parse(env, attrs, st)?;
+                    Some(Item::Record(r))
+                } else if let Some(attrs) =
+                    ObjectAttributes::parse(self, cache, module_path, env, &st.attrs)?
+                {
+                    Some(Item::Object(Object::parse(attrs, st.ident, st.vis)?))
+                } else {
+                    Some(Item::NonUniffi(st.vis.into(), st.ident))
+                }
+            }
+            syn::Item::Enum(en) => {
+                if let Some(attrs) =
+                    ObjectAttributes::parse(self, cache, module_path, env, &en.attrs)?
+                {
+                    Some(Item::Object(Object::parse(attrs, en.ident, en.vis)?))
+                } else if let Some(attrs) =
+                    EnumAttributes::parse(self, cache, module_path, env, &en.attrs)?
+                {
+                    Some(Item::Enum(Enum::parse(env, attrs, en)?))
+                } else {
+                    Some(Item::NonUniffi(en.vis.into(), en.ident))
+                }
+            }
+            syn::Item::Trait(tr) => {
+                if let Some(attrs) =
+                    TraitAttributes::parse(self, cache, module_path, env, &tr.attrs)?
+                {
+                    Some(Item::Trait(Trait::parse(env, attrs, tr)?))
+                } else {
+                    None
+                }
+            }
+            syn::Item::Impl(imp) => {
+                if let Some(attrs) =
+                    ImplAttributes::parse(self, cache, module_path, env, &imp.attrs)?
+                {
+                    Some(Item::Impl(Impl::parse(env, attrs, imp)?))
+                } else {
+                    None
+                }
+            }
+            syn::Item::Macro(mac) => maybe_resolve_macro(self, cache, module_path, &mac)?,
+            _ => None,
+        })
+    }
+
     #[cfg(test)]
     pub fn new_for_test(test_sources: &[&str]) -> Self {
-        Self::new_for_test_with_env(test_sources, CompileEnv::new_for_test())
+        let mut ir = Self::new_for_test_with_env(test_sources, CompileEnv::new_for_test());
+        ir.resolve_items().expect("resolve_items failed");
+        ir
     }
 
     #[cfg(test)]
@@ -160,12 +288,64 @@ impl Ir {
             ir.add_crate_root(
                 test_source,
                 &camino::Utf8PathBuf::from(format!("src/test_src/{test_source}.rs")),
-                &env,
+                env.clone(),
             )
             .unwrap();
         }
-        crate::resolve_macros(&mut ir).unwrap();
+        ir.resolve_items().expect("resolve_items failed");
         ir
+    }
+}
+
+impl CrateRoot {
+    pub fn module_item(&self) -> &Item {
+        &self.module
+    }
+
+    pub fn module(&self) -> &Module {
+        match &self.module {
+            Item::Module(module) => module,
+            item => panic!("crate_root.module is not Item::Module ({item:?})"),
+        }
+    }
+
+    pub fn module_mut(&mut self) -> &mut Module {
+        match &mut self.module {
+            Item::Module(module) => module,
+            item => panic!("crate_root.module is not Item::Module ({item:?})"),
+        }
+    }
+
+    // Couple of helper modules for `Ir::resolve_items`
+    //
+    // There's more combinations that could be implemented, but no need yet.
+
+    fn try_visit_modules_and_paths<'ir>(
+        &'ir self,
+        mut visitor: impl FnMut(&'ir Module, &RPath<'ir>) -> syn::Result<()>,
+    ) -> syn::Result<()> {
+        let mut stack = vec![(self.module(), RPath::new(&self.module))];
+        while let Some((module, path)) = stack.pop() {
+            visitor(module, &path)?;
+            for item in module.items.iter() {
+                if let Item::Module(m) = item {
+                    stack.push((m, path.append_child(item)));
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn visit_modules_mut(&mut self, mut visitor: impl FnMut(&mut Module)) {
+        let mut stack = vec![self.module_mut()];
+        while let Some(module) = stack.pop() {
+            visitor(module);
+            for item in module.items.iter_mut() {
+                if let Item::Module(m) = item {
+                    stack.push(m);
+                }
+            }
+        }
     }
 }
 

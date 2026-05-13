@@ -7,8 +7,10 @@ use uniffi_meta::EnumShape;
 
 use crate::{
     attrs::{extract_docstring, find_uniffi_derive, UniffiTraitAttrs},
+    paths::LookupCache,
     CompileEnv,
     ErrorKind::*,
+    Ir, RPath,
 };
 
 #[derive(Clone, Debug)]
@@ -23,7 +25,13 @@ pub struct EnumAttributes {
 }
 
 impl EnumAttributes {
-    pub fn parse(env: &CompileEnv, attrs: &[Attribute]) -> syn::Result<Option<Self>> {
+    pub fn parse<'ir>(
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+        env: &CompileEnv,
+        attrs: &[Attribute],
+    ) -> syn::Result<Option<Self>> {
         let mut name = None;
         let mut docstring = None;
         let mut non_exhaustive = false;
@@ -35,10 +43,10 @@ impl EnumAttributes {
 
         let enum_derive = metas
             .iter()
-            .find_map(|meta| find_uniffi_derive(meta, "Enum"));
+            .find_map(|meta| find_uniffi_derive(ir, cache, module_path, meta, "Enum"));
         let error_derive = metas
             .iter()
-            .find_map(|meta| find_uniffi_derive(meta, "Error"));
+            .find_map(|meta| find_uniffi_derive(ir, cache, module_path, meta, "Error"));
 
         let (mut shape, remote) = match (enum_derive, error_derive) {
             (None, None) => return Ok(None),
@@ -47,7 +55,7 @@ impl EnumAttributes {
             (None, Some(d)) => (EnumShape::Error { flat: false }, d.remote),
         };
 
-        let utraits = UniffiTraitAttrs::parse(&metas)?;
+        let utraits = UniffiTraitAttrs::parse(ir, cache, module_path, &metas)?;
         for meta in metas {
             let path = meta.path();
             if path.is_ident("uniffi") {

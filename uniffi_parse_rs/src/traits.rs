@@ -86,7 +86,7 @@ impl Trait {
                         imp: uniffi_meta::ObjectImpl::Trait(kind),
                         remote: false,
                     }
-                        .into(),
+                    .into(),
                 );
                 uniffi_meta::Type::Object {
                     module_path: names.module_path,

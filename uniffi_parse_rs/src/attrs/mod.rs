@@ -23,18 +23,38 @@ pub use records::{FieldAttributes, RecordAttributes};
 pub use traits::{TraitAttributes, TraitExportType};
 pub use utraits::UniffiTraitAttrs;
 
-fn meta_matches_uniffi_export(meta: &Meta, export_name: &str) -> bool {
-    path_matches_uniffi_ident(meta.path(), export_name)
+use crate::{paths::LookupCache, BuiltinItem, Ir, Item, Namespace, RPath};
+
+fn meta_matches_uniffi_attr(meta: &Meta, export_name: &str) -> bool {
+    let path = meta.path();
+    path.segments.len() == 2
+        && path.segments[0].ident == "uniffi"
+        && path.segments[1].ident == export_name
 }
 
-fn find_uniffi_derive(meta: &Meta, derive_name: &str) -> Option<DeriveInfo> {
+fn meta_is_uniffi_export<'ir>(
+    module_path: &RPath<'ir>,
+    ir: &'ir Ir,
+    cache: &mut LookupCache<'ir>,
+    meta: &Meta,
+) -> bool {
+    resolved_path_is_uniffi_macro(module_path, ir, cache, meta.path(), "export")
+}
+
+fn find_uniffi_derive<'ir>(
+    ir: &'ir Ir,
+    cache: &mut LookupCache<'ir>,
+    module_path: &RPath<'ir>,
+    meta: &Meta,
+    derive_name: &str,
+) -> Option<DeriveInfo> {
     let mut result = None;
     if meta.path().is_ident("derive") {
         if let Meta::List(list) = meta {
             // Ignore errors when parsing the meta, maybe it's a derive syntax that we don't
             // understand
             let _ = list.parse_nested_meta(|meta| {
-                if path_matches_uniffi_ident(&meta.path, derive_name) {
+                if resolved_path_is_uniffi_derive(module_path, ir, cache, &meta.path, derive_name) {
                     result = Some(DeriveInfo {
                         remote: false,
                         span: meta.path.span(),
@@ -43,12 +63,12 @@ fn find_uniffi_derive(meta: &Meta, derive_name: &str) -> Option<DeriveInfo> {
                 Ok(())
             });
         }
-    } else if path_matches_uniffi_ident(meta.path(), "remote") {
+    } else if resolved_path_is_uniffi_macro(module_path, ir, cache, meta.path(), "remote") {
         if let Meta::List(list) = meta {
             // Ignore errors when parsing the meta, maybe it's a derive syntax that we don't
             // understand
             let _ = list.parse_nested_meta(|meta| {
-                if path_matches_uniffi_ident(&meta.path, derive_name) {
+                if meta.path.is_ident(derive_name) {
                     result = Some(DeriveInfo {
                         remote: true,
                         span: meta.path.span(),
@@ -66,11 +86,34 @@ pub struct DeriveInfo {
     span: Span,
 }
 
-fn path_matches_uniffi_ident(path: &Path, ident: &str) -> bool {
-    let s = &path.segments;
-    if s.len() == 1 && s[0].ident == ident {
-        true
-    } else {
-        s.len() == 2 && s[0].ident == "uniffi" && s[1].ident == ident
+fn resolved_path_is_uniffi_macro<'ir>(
+    module_path: &RPath<'ir>,
+    ir: &'ir Ir,
+    cache: &mut LookupCache<'ir>,
+    path: &Path,
+    name: &str,
+) -> bool {
+    let resolved = module_path
+        .resolve(ir, cache, path, Namespace::Macro)
+        .and_then(|rpath| rpath.item());
+    match resolved {
+        Ok(Item::Builtin(BuiltinItem::UniffiMacro(n))) if *n == name => true,
+        _ => false,
+    }
+}
+
+fn resolved_path_is_uniffi_derive<'ir>(
+    module_path: &RPath<'ir>,
+    ir: &'ir Ir,
+    cache: &mut LookupCache<'ir>,
+    path: &Path,
+    name: &str,
+) -> bool {
+    let resolved = module_path
+        .resolve(ir, cache, path, Namespace::Macro)
+        .and_then(|rpath| rpath.item());
+    match resolved {
+        Ok(Item::Builtin(BuiltinItem::UniffiDerive(n))) if *n == name => true,
+        _ => false,
     }
 }

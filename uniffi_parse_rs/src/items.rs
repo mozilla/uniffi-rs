@@ -4,7 +4,7 @@
 
 use std::fmt;
 
-use syn::{ext::IdentExt, Ident, ItemMacro, ItemType, LitStr, Path};
+use syn::{ext::IdentExt, Ident, ItemType, LitStr, Path};
 
 use crate::{
     CustomType, Enum, Function, Impl, Module, Object, Record, Trait, UseGlob, UseItem, Visibility,
@@ -27,14 +27,11 @@ pub enum Item {
     UseGlob(UseGlob),
     UseRemoteType(Path),
     IncludeScaffolding(LitStr),
+    // Unresolved syn::Item, we'll process this in [crate::Ir::resolve_items]
+    Unresolved(syn::Item),
     // syn::Item that's doesn't have a UniFFI attribute.
     // These still can be used as custom types though.
     NonUniffi(Visibility, Ident),
-    /// Macro expression that we haven't evaluated in any way yet.
-    ///
-    /// `macros::resolve_macros` inspects these macros and converts them to other variants like
-    /// `UseRemoteType` if they match.
-    Macro(ItemMacro),
     /// Custom type macro expression
     CustomType(CustomType),
     Udl(uniffi_meta::Type),
@@ -72,6 +69,7 @@ pub enum BuiltinItem {
     Arc,
     Box,
     UniffiMacro(&'static str),
+    UniffiDerive(&'static str),
 }
 
 impl BuiltinItem {
@@ -139,13 +137,13 @@ impl Item {
             Self::UseGlob(u) => u.vis,
             Self::NonUniffi(vis, _) => *vis,
             Self::Type(t) => t.vis.clone().into(),
-            Self::Builtin(_)
-            | Self::UseRemoteType(_)
-            | Self::CustomType(_)
-            | Self::Macro(_)
-            | Self::Udl(_) => Visibility::Public,
+            Self::Builtin(_) | Self::UseRemoteType(_) | Self::CustomType(_) | Self::Udl(_) => {
+                Visibility::Public
+            }
             // "visibility" doesn't mean anything for these items, let's return `Private`
-            Self::Impl(_) | Self::IncludeScaffolding(_) => Visibility::Private,
+            Self::Unresolved(_) | Self::Impl(_) | Self::IncludeScaffolding(_) => {
+                Visibility::Private
+            }
         }
     }
 
@@ -214,7 +212,7 @@ impl fmt::Debug for Item {
                 .field("ident", &c.ident.to_string())
                 .finish(),
             Self::Udl(ty) => f.debug_tuple("Udl").field(ty).finish(),
-            Self::Macro(_) => f.debug_tuple("Macro").finish(),
+            Self::Unresolved(_) => f.debug_tuple("Unresolved").finish(),
         }
     }
 }

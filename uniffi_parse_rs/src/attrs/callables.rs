@@ -5,8 +5,9 @@
 use syn::{Attribute, LitStr, Meta};
 
 use crate::{
-    attrs::{extract_docstring, meta_matches_uniffi_export, DefaultMap},
-    CompileEnv,
+    attrs::{extract_docstring, meta_is_uniffi_export, meta_matches_uniffi_attr, DefaultMap},
+    paths::LookupCache,
+    CompileEnv, Ir, RPath,
 };
 
 #[derive(Clone, Default)]
@@ -18,19 +19,25 @@ pub struct FunctionAttributes {
 }
 
 impl FunctionAttributes {
-    pub fn parse(env: &CompileEnv, attrs: &[Attribute]) -> syn::Result<Option<Self>> {
+    pub fn parse<'ir>(
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+        env: &CompileEnv,
+        attrs: &[Attribute],
+    ) -> syn::Result<Option<Self>> {
         let mut parsed = Self::default();
         let Some(metas) = env.parse_attrs(attrs)? else {
             return Ok(None);
         };
         if !metas
             .iter()
-            .any(|meta| meta_matches_uniffi_export(meta, "export"))
+            .any(|meta| meta_is_uniffi_export(module_path, ir, cache, meta))
         {
             return Ok(None);
         }
         for meta in metas {
-            if meta_matches_uniffi_export(&meta, "export") {
+            if meta_is_uniffi_export(module_path, ir, cache, &meta) {
                 if let Meta::List(list) = meta {
                     list.parse_nested_meta(|meta| {
                         if meta.path.is_ident("default") {
@@ -72,7 +79,7 @@ impl MethodAttributes {
             return Ok(None);
         };
         for meta in metas {
-            if meta_matches_uniffi_export(&meta, "method") {
+            if meta_matches_uniffi_attr(&meta, "method") {
                 if let Meta::List(list) = meta {
                     list.parse_nested_meta(|meta| {
                         if meta.path.is_ident("default") {
@@ -117,12 +124,12 @@ impl ConstructorAttributes {
         };
         if !metas
             .iter()
-            .any(|meta| meta_matches_uniffi_export(meta, "constructor"))
+            .any(|meta| meta_matches_uniffi_attr(meta, "constructor"))
         {
             return Ok(None);
         }
         for meta in metas {
-            if meta_matches_uniffi_export(&meta, "constructor") {
+            if meta_matches_uniffi_attr(&meta, "constructor") {
                 if let Meta::List(list) = meta {
                     list.parse_nested_meta(|meta| {
                         if meta.path.is_ident("default") {

@@ -9,16 +9,13 @@ use syn::{ext::IdentExt, Ident};
 use uniffi_meta::{Metadata, MetadataGroup};
 
 use crate::{
-    attrs::{
-        extract_docstring, EnumAttributes, FunctionAttributes, ImplAttributes, ObjectAttributes,
-        RecordAttributes, TraitAttributes,
-    },
+    attrs::extract_docstring,
     files::{read_to_string, FileId},
     macros, parse_use,
     paths::LookupCache,
-    CompileEnv, Enum, Error,
+    CompileEnv, Error,
     ErrorKind::*,
-    Function, Impl, Ir, Item, Object, RPath, Record, Result, Trait, Visibility,
+    Ir, Item, RPath, Result, Visibility,
 };
 
 #[derive(Debug)]
@@ -155,7 +152,7 @@ impl Module {
                     }
                 }
                 item => {
-                    self.parse_non_module_item(item, env)
+                    self.parse_non_module_item(item)
                         .map_err(|e| Error::new_syn(self.source, e))?;
                 }
             }
@@ -163,53 +160,37 @@ impl Module {
         Ok(())
     }
 
-    fn parse_non_module_item(&mut self, item: syn::Item, env: &CompileEnv) -> syn::Result<()> {
+    pub fn remove_unresolved_items(&mut self) -> Vec<syn::Item> {
+        let mut unparsed = vec![];
+        self.items = std::mem::take(&mut self.items)
+            .into_iter()
+            .filter_map(|item| match item {
+                Item::Unresolved(i) => {
+                    unparsed.push(i);
+                    None
+                }
+                _ => Some(item),
+            })
+            .collect();
+        unparsed
+    }
+
+    fn parse_non_module_item(&mut self, item: syn::Item) -> syn::Result<()> {
         match item {
-            syn::Item::Fn(func) => {
-                if let Some(attrs) = FunctionAttributes::parse(env, &func.attrs)? {
-                    self.items.push(Item::Fn(Function::parse(attrs, func)?));
-                }
-            }
-            syn::Item::Struct(st) => {
-                if let Some(attrs) = RecordAttributes::parse(env, &st.attrs)? {
-                    let r = Record::parse(env, attrs, st)?;
-                    self.items.push(Item::Record(r));
-                } else if let Some(attrs) = ObjectAttributes::parse(env, &st.attrs)? {
-                    self.items
-                        .push(Item::Object(Object::parse(attrs, st.ident, st.vis)?));
+            syn::Item::Fn(_)
+            | syn::Item::Struct(_)
+            | syn::Item::Enum(_)
+            | syn::Item::Trait(_)
+            | syn::Item::Impl(_) => self.items.push(Item::Unresolved(item)),
+            syn::Item::Macro(ref item_macro) => {
+                if let Some(udl_name) = macros::parse_include_scaffolding(&item_macro.mac)? {
+                    self.udl_name = Some(udl_name.value());
                 } else {
-                    self.items.push(Item::NonUniffi(st.vis.into(), st.ident));
-                }
-            }
-            syn::Item::Enum(en) => {
-                if let Some(attrs) = ObjectAttributes::parse(env, &en.attrs)? {
-                    self.items
-                        .push(Item::Object(Object::parse(attrs, en.ident, en.vis)?));
-                } else if let Some(attrs) = EnumAttributes::parse(env, &en.attrs)? {
-                    self.items.push(Item::Enum(Enum::parse(env, attrs, en)?));
-                } else {
-                    self.items.push(Item::NonUniffi(en.vis.into(), en.ident));
-                }
-            }
-            syn::Item::Trait(tr) => {
-                if let Some(attrs) = TraitAttributes::parse(env, &tr.attrs)? {
-                    self.items.push(Item::Trait(Trait::parse(env, attrs, tr)?));
-                }
-            }
-            syn::Item::Impl(imp) => {
-                if let Some(attrs) = ImplAttributes::parse(env, &imp.attrs)? {
-                    self.items.push(Item::Impl(Impl::parse(env, attrs, imp)?));
+                    self.items.push(Item::Unresolved(item));
                 }
             }
             syn::Item::Type(ty) => self.items.push(Item::Type(ty)),
             syn::Item::Use(use_) => self.items.extend(parse_use(use_)?),
-            syn::Item::Macro(item_macro) => {
-                if let Some(udl_name) = macros::parse_include_scaffolding(&item_macro.mac)? {
-                    self.udl_name = Some(udl_name.value());
-                } else {
-                    self.items.push(Item::Macro(item_macro));
-                }
-            }
             _ => (),
         }
         Ok(())
