@@ -6,7 +6,8 @@ use syn::{Attribute, LitStr, Meta};
 
 use crate::{
     attrs::{extract_docstring, find_uniffi_derive, Default, UniffiTraitAttrs},
-    CompileEnv,
+    paths::LookupCache,
+    CompileEnv, Ir, RPath,
 };
 
 #[derive(Clone, Default)]
@@ -18,7 +19,13 @@ pub struct RecordAttributes {
 }
 
 impl RecordAttributes {
-    pub fn parse(env: &CompileEnv, attrs: &[Attribute]) -> syn::Result<Option<Self>> {
+    pub fn parse<'ir>(
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+        env: &CompileEnv,
+        attrs: &[Attribute],
+    ) -> syn::Result<Option<Self>> {
         let mut parsed = Self::default();
 
         let Some(metas) = env.parse_attrs(attrs)? else {
@@ -26,13 +33,13 @@ impl RecordAttributes {
         };
         parsed.remote = match metas
             .iter()
-            .find_map(|meta| find_uniffi_derive(meta, "Record"))
+            .find_map(|meta| find_uniffi_derive(ir, cache, module_path, meta, "Record"))
         {
             Some(d) => d.remote,
             None => return Ok(None),
         };
 
-        parsed.utraits = UniffiTraitAttrs::parse(&metas)?;
+        parsed.utraits = UniffiTraitAttrs::parse(ir, cache, module_path, &metas)?;
         for meta in metas {
             if meta.path().is_ident("uniffi") {
                 if let Meta::List(list) = meta {
