@@ -15,7 +15,7 @@ use crate::{
     paths::LookupCache,
     CompileEnv, Error,
     ErrorKind::*,
-    Ir, Item, RPath, Result, Visibility,
+    Ir, Item, RPath, Result, TraitImpl, Visibility,
 };
 
 #[derive(Debug)]
@@ -48,6 +48,7 @@ impl Module {
         Ok(module)
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn new_child(
         &self,
         source: FileId,
@@ -228,7 +229,7 @@ impl Module {
                         rec.attrs
                             .utraits
                             .uniffi_trait_method_metadata(
-                                &module_path,
+                                module_path,
                                 uniffi_meta::Type::Record {
                                     module_path: meta.module_path.clone(),
                                     name: meta.name.clone(),
@@ -245,7 +246,7 @@ impl Module {
                         en.attrs
                             .utraits
                             .uniffi_trait_method_metadata(
-                                &module_path,
+                                module_path,
                                 uniffi_meta::Type::Enum {
                                     module_path: meta.module_path.clone(),
                                     name: meta.name.clone(),
@@ -262,7 +263,7 @@ impl Module {
                         o.attrs
                             .utraits
                             .uniffi_trait_method_metadata(
-                                &module_path,
+                                module_path,
                                 uniffi_meta::Type::Object {
                                     module_path: meta.module_path.clone(),
                                     name: meta.name.clone(),
@@ -297,6 +298,16 @@ impl Module {
                     module_path.push(item);
                     submod.create_metadata(ir, cache, module_path, metadata)?;
                     module_path.pop();
+                }
+                Item::UnresolvedImpl(imp) => {
+                    if let Ok(Some(TraitImpl::FromUnexpectedUniffiCallbackError { ty })) =
+                        module_path.resolve_trait_impl(ir, cache, imp)
+                    {
+                        metadata.items.insert(
+                            uniffi_meta::FromUnexpectedCallbackErrorImplMetadata { ty: ty.clone() }
+                                .into(),
+                        );
+                    }
                 }
                 _ => (),
             }

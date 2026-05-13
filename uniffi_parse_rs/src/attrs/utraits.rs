@@ -24,7 +24,7 @@ impl UniffiTraitAttrs {
     ) -> syn::Result<Self> {
         let mut parsed = Self::default();
         for meta in metas {
-            if meta_is_uniffi_export(module_path, ir, cache, &meta) {
+            if meta_is_uniffi_export(module_path, ir, cache, meta) {
                 let Meta::List(list) = meta else {
                     return Err(syn::Error::new(meta.span(), "invalid attribute"));
                 };
@@ -101,7 +101,7 @@ impl UniffiTraitAttrs {
                 eq: uniffi_meta::MethodMetadata {
                     module_path: module_path.clone(),
                     self_name: self_name.into(),
-                    name: "uniffi_trait_eq".into(),
+                    name: "uniffi_trait_eq_eq".into(),
                     orig_name: None,
                     is_async: false,
                     inputs: vec![uniffi_meta::FnParamMetadata {
@@ -120,7 +120,7 @@ impl UniffiTraitAttrs {
                 ne: uniffi_meta::MethodMetadata {
                     module_path: module_path.clone(),
                     self_name: self_name.into(),
-                    name: "uniffi_trait_ne".into(),
+                    name: "uniffi_trait_eq_ne".into(),
                     orig_name: None,
                     is_async: false,
                     inputs: vec![uniffi_meta::FnParamMetadata {

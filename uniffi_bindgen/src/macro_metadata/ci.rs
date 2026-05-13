@@ -117,6 +117,8 @@ fn add_item_to_ci(iface: &mut ComponentInterface, item: Metadata) -> anyhow::Res
             })?;
             iface.add_custom_type_definition(meta.into())?;
         }
+        // Not used by the `ComponentInterface`
+        Metadata::FromUnexpectedCallbackErrorImpl(_) => (),
     }
     Ok(())
 }

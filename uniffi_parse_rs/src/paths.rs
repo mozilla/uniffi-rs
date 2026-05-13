@@ -141,6 +141,10 @@ impl<'ir> RPath<'ir> {
                     BuiltinItem::UniffiMacro(name) | BuiltinItem::UniffiDerive(name) => {
                         path.push_str(name)
                     }
+                    BuiltinItem::From => path.push_str("From"),
+                    BuiltinItem::UnexpectedUniFFICallbackError => {
+                        path.push_str("UnexpectedUniFFICallbackError")
+                    }
                 }
             } else {
                 path.push_str(&item.name());
@@ -605,27 +609,23 @@ impl Namespace {
                 | Item::Udl(_)
                 | Item::Type(_)
                 | Item::UseRemoteType(_) => true,
-                Item::Builtin(builtin) => match builtin {
-                    BuiltinItem::UniffiMacro(_) | BuiltinItem::UniffiDerive(_) => false,
-                    _ => true,
-                },
+                Item::Builtin(builtin) => !matches!(
+                    builtin,
+                    BuiltinItem::UniffiMacro(_) | BuiltinItem::UniffiDerive(_)
+                ),
                 _ => false,
             },
-            Self::Value => match item {
-                Item::Fn(_) => true,
-                _ => false,
-            },
+            Self::Value => matches!(item, Item::Fn(_)),
             Self::Macro => match item {
-                Item::Builtin(builtin) => match builtin {
-                    BuiltinItem::UniffiMacro(_) | BuiltinItem::UniffiDerive(_) => true,
-                    _ => false,
-                },
+                Item::Builtin(builtin) => {
+                    matches!(
+                        builtin,
+                        BuiltinItem::UniffiMacro(_) | BuiltinItem::UniffiDerive(_)
+                    )
+                }
                 _ => true,
             },
-            Self::NonUniffiType => match item {
-                Item::NonUniffi(_, _) => true,
-                _ => false,
-            },
+            Self::NonUniffiType => matches!(item, Item::NonUniffi(_, _)),
         }
     }
 }
@@ -714,6 +714,7 @@ fn get_builtin_item(path: &Path) -> Option<&'static Item> {
         "Result" | "std::result::Result" => Some(&Item::Builtin(BuiltinItem::Result)),
         "String" | "std::string::String" => Some(&Item::Builtin(BuiltinItem::String)),
         "str" | "std::primitive::str" => Some(&Item::Builtin(BuiltinItem::Str)),
+        "From" | "std::convert::From" => Some(&Item::Builtin(BuiltinItem::From)),
         "std::collections::HashMap" => Some(&Item::Builtin(BuiltinItem::HashMap)),
         "std::collections::HashSet" => Some(&Item::Builtin(BuiltinItem::HashSet)),
         "std::sync::Arc" => Some(&Item::Builtin(BuiltinItem::Arc)),
@@ -732,6 +733,9 @@ fn get_builtin_item(path: &Path) -> Option<&'static Item> {
         "uniffi::Enum" => Some(&Item::Builtin(BuiltinItem::UniffiDerive("Enum"))),
         "uniffi::Error" => Some(&Item::Builtin(BuiltinItem::UniffiDerive("Error"))),
         "uniffi::Object" => Some(&Item::Builtin(BuiltinItem::UniffiDerive("Object"))),
+        "uniffi::UnexpectedUniFFICallbackError" => {
+            Some(&Item::Builtin(BuiltinItem::UnexpectedUniFFICallbackError))
+        }
         _ => None,
     }
 }

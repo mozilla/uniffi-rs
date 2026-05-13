@@ -536,6 +536,20 @@ impl Checksum for ObjectTraitImplMetadata {
     }
 }
 
+/// This notes that a type implements From<UnexpectedUniFFICallbackError>
+///
+/// It's only used by `uniffi_parse_rs`.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct FromUnexpectedCallbackErrorImplMetadata {
+    pub ty: Type,
+}
+
+impl Checksum for FromUnexpectedCallbackErrorImplMetadata {
+    fn checksum<H: Hasher>(&self, state: &mut H) {
+        Checksum::checksum(&self.ty, state);
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CustomTypeMetadata {
     pub module_path: String,
@@ -572,6 +586,7 @@ pub enum Metadata {
     CustomType(CustomTypeMetadata),
     UniffiTrait(UniffiTraitMetadata),
     ObjectTraitImpl(ObjectTraitImplMetadata),
+    FromUnexpectedCallbackErrorImpl(FromUnexpectedCallbackErrorImplMetadata),
 }
 
 impl Metadata {
@@ -594,6 +609,9 @@ impl Metadata {
             Metadata::CustomType(meta) => &meta.module_path,
             Metadata::UniffiTrait(meta) => meta.module_path(),
             Metadata::ObjectTraitImpl(t) => t.ty.crate_name().expect("type has no crate name"),
+            Metadata::FromUnexpectedCallbackErrorImpl(t) => {
+                t.ty.crate_name().expect("type has no crate name")
+            }
         }
     }
 }
@@ -673,6 +691,12 @@ impl From<UniffiTraitMetadata> for Metadata {
 impl From<ObjectTraitImplMetadata> for Metadata {
     fn from(t: ObjectTraitImplMetadata) -> Self {
         Self::ObjectTraitImpl(t)
+    }
+}
+
+impl From<FromUnexpectedCallbackErrorImplMetadata> for Metadata {
+    fn from(m: FromUnexpectedCallbackErrorImplMetadata) -> Self {
+        Self::FromUnexpectedCallbackErrorImpl(m)
     }
 }
 

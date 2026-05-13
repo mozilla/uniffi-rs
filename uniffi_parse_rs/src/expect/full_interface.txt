@@ -773,7 +773,7 @@
             eq: MethodMetadata {
                 module_path: "full_interface",
                 self_name: "ObjectRenamed",
-                name: "uniffi_trait_eq",
+                name: "uniffi_trait_eq_eq",
                 orig_name: None,
                 is_async: false,
                 inputs: [
@@ -800,7 +800,7 @@
             ne: MethodMetadata {
                 module_path: "full_interface",
                 self_name: "ObjectRenamed",
-                name: "uniffi_trait_ne",
+                name: "uniffi_trait_eq_ne",
                 orig_name: None,
                 is_async: false,
                 inputs: [
@@ -873,6 +873,14 @@
                 takes_self_by_arc: false,
                 checksum: None,
                 docstring: None,
+            },
+        },
+    ),
+    FromUnexpectedCallbackErrorImpl(
+        FromUnexpectedCallbackErrorImplMetadata {
+            ty: Enum {
+                module_path: "full_interface",
+                name: "Error",
             },
         },
     ),

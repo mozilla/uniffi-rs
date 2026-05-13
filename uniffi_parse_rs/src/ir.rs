@@ -266,7 +266,7 @@ impl Ir {
                 {
                     Some(Item::Impl(Impl::parse(env, attrs, imp)?))
                 } else {
-                    None
+                    Some(Item::UnresolvedImpl(imp))
                 }
             }
             syn::Item::Macro(mac) => maybe_resolve_macro(self, cache, module_path, &mac)?,

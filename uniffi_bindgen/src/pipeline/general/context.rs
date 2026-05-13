@@ -20,6 +20,7 @@ pub struct Context {
     pub rename_tables: HashMap<String, toml::Table>,
     // Maps namespaces to exclude tables from the TOML config
     pub exclude_sets: HashMap<String, HashSet<String>>,
+    pub from_unexpected_callback_error_impls: HashSet<Type>,
 }
 
 impl Context {
@@ -34,6 +35,7 @@ impl Context {
             names_used_as_error: HashSet::default(),
             rename_tables: HashMap::default(),
             exclude_sets: HashMap::default(),
+            from_unexpected_callback_error_impls: HashSet::default(),
         }
     }
 
@@ -102,6 +104,8 @@ impl Context {
                 .insert(namespace.name.clone(), rename_table);
             self.exclude_sets
                 .insert(namespace.name.clone(), exclude_set);
+            self.from_unexpected_callback_error_impls
+                .extend(root.from_unexpected_callback_error_impls.clone());
         }
         Ok(())
     }
@@ -224,5 +228,9 @@ impl Context {
             | Type::Custom { name, .. } => self.names_used_as_error.contains(name),
             _ => false,
         }
+    }
+
+    pub fn type_has_from_unexpected_callback_error_impl(&self, ty: &Type) -> bool {
+        self.from_unexpected_callback_error_impls.contains(ty)
     }
 }
