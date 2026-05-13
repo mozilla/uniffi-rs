@@ -96,10 +96,7 @@ fn resolved_path_is_uniffi_macro<'ir>(
     let resolved = module_path
         .resolve(ir, cache, path, Namespace::Macro)
         .and_then(|rpath| rpath.item());
-    match resolved {
-        Ok(Item::Builtin(BuiltinItem::UniffiMacro(n))) if *n == name => true,
-        _ => false,
-    }
+    matches!(resolved, Ok(Item::Builtin(BuiltinItem::UniffiMacro(n))) if *n == name)
 }
 
 fn resolved_path_is_uniffi_derive<'ir>(
@@ -112,8 +109,5 @@ fn resolved_path_is_uniffi_derive<'ir>(
     let resolved = module_path
         .resolve(ir, cache, path, Namespace::Macro)
         .and_then(|rpath| rpath.item());
-    match resolved {
-        Ok(Item::Builtin(BuiltinItem::UniffiDerive(n))) if *n == name => true,
-        _ => false,
-    }
+    matches!(resolved, Ok(Item::Builtin(BuiltinItem::UniffiDerive(n))) if *n == name)
 }

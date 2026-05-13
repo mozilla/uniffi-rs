@@ -450,6 +450,7 @@ pub struct TypeNode {
     pub canonical_name: String,
     pub id: u64,
     pub is_used_as_error: bool,
+    pub has_from_unexpected_callback_error_impl: bool,
     pub ffi_type: FfiType,
     pub ty: Type,
 }
