@@ -4,7 +4,7 @@
 
 use syn::{spanned::Spanned, Meta};
 
-use crate::{attrs::meta_matches_uniffi_export, Error, RPath, Result};
+use crate::{attrs::meta_is_uniffi_export, paths::LookupCache, Error, Ir, RPath, Result};
 
 #[derive(Clone, Default, Debug)]
 pub struct UniffiTraitAttrs {
@@ -16,10 +16,15 @@ pub struct UniffiTraitAttrs {
 }
 
 impl UniffiTraitAttrs {
-    pub fn parse(metas: &[Meta]) -> syn::Result<Self> {
+    pub fn parse<'ir>(
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+        metas: &[Meta],
+    ) -> syn::Result<Self> {
         let mut parsed = Self::default();
         for meta in metas {
-            if meta_matches_uniffi_export(&meta, "export") {
+            if meta_is_uniffi_export(module_path, ir, cache, &meta) {
                 let Meta::List(list) = meta else {
                     return Err(syn::Error::new(meta.span(), "invalid attribute"));
                 };
