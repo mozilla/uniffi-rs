@@ -65,6 +65,7 @@ impl APIConverter<ObjectMetadata> for weedle::InterfaceDefinition<'_> {
                 self_name: object_name.to_string(),
                 name: name.to_string(),
                 is_async: false,
+                is_cancellable: false,
                 inputs,
                 return_type,
                 throws: None,

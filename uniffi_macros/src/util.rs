@@ -245,6 +245,7 @@ pub(crate) fn derive_ffi_traits(
 /// Custom keywords
 pub mod kw {
     syn::custom_keyword!(async_runtime);
+    syn::custom_keyword!(cancellable);
     syn::custom_keyword!(callback_interface);
     syn::custom_keyword!(with_foreign);
     syn::custom_keyword!(default);

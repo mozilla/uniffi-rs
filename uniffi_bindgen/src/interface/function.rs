@@ -49,6 +49,7 @@ pub struct Function {
     pub(super) name: String,
     pub(super) module_path: String,
     pub(super) is_async: bool,
+    pub(super) is_cancellable: bool,
     pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
     // We don't include the FFIFunc in the hash calculation, because:
@@ -81,6 +82,10 @@ impl Function {
 
     pub fn is_async(&self) -> bool {
         self.is_async
+    }
+
+    pub fn is_cancellable(&self) -> bool {
+        self.is_cancellable
     }
 
     pub fn arguments(&self) -> Vec<&Argument> {
@@ -154,6 +159,7 @@ impl From<uniffi_meta::FnMetadata> for Function {
         let ffi_name = meta.ffi_symbol_name();
         let checksum_fn_name = meta.checksum_symbol_name();
         let is_async = meta.is_async;
+        let is_cancellable = meta.is_cancellable;
         let return_type = meta.return_type;
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
 
@@ -167,6 +173,7 @@ impl From<uniffi_meta::FnMetadata> for Function {
             name: meta.name,
             module_path: meta.module_path,
             is_async,
+            is_cancellable,
             arguments,
             return_type,
             ffi_func,
@@ -265,6 +272,12 @@ pub trait Callable {
     fn return_type(&self) -> Option<&Type>;
     fn throws_type(&self) -> Option<&Type>;
     fn is_async(&self) -> bool;
+    /// True if the foreign binding should propagate cancellation to the
+    /// underlying Rust future via drop. Author opt-in: only set when the
+    /// future is drop-safe.
+    fn is_cancellable(&self) -> bool {
+        false
+    }
     fn docstring(&self) -> Option<&str>;
 
     fn self_type(&self) -> Option<Type> {
@@ -340,6 +353,10 @@ impl Callable for Function {
         self.is_async
     }
 
+    fn is_cancellable(&self) -> bool {
+        self.is_cancellable
+    }
+
     fn ffi_func(&self) -> &FfiFunction {
         &self.ffi_func
     }
@@ -361,6 +378,10 @@ impl<T: Callable> Callable for &T {
 
     fn is_async(&self) -> bool {
         (*self).is_async()
+    }
+
+    fn is_cancellable(&self) -> bool {
+        (*self).is_cancellable()
     }
 
     fn docstring(&self) -> Option<&str> {
@@ -478,6 +499,7 @@ mod test {
             name: "fn".to_string(),
             module_path: "fn".to_string(),
             is_async: false,
+            is_cancellable: false,
             arguments: vec![Argument {
                 name: "a".to_string(),
                 type_: Type::Int32,

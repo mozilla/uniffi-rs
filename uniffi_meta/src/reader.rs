@@ -233,6 +233,7 @@ impl<'a> MetadataReader<'a> {
         let module_path = self.read_string()?;
         let name = self.read_string()?;
         let is_async = self.read_bool()?;
+        let is_cancellable = self.read_bool()?;
         let inputs = self.read_inputs()?;
         let (return_type, throws) = self.read_return_type()?;
         let docstring = self.read_optional_long_string()?;
@@ -240,6 +241,7 @@ impl<'a> MetadataReader<'a> {
             module_path,
             name,
             is_async,
+            is_cancellable,
             inputs,
             return_type,
             throws,
@@ -253,6 +255,7 @@ impl<'a> MetadataReader<'a> {
         let self_name = self.read_string()?;
         let name = self.read_string()?;
         let is_async = self.read_bool()?;
+        let is_cancellable = self.read_bool()?;
         let inputs = self.read_inputs()?;
         let (return_type, throws) = self.read_return_type()?;
         let docstring = self.read_optional_long_string()?;
@@ -270,6 +273,7 @@ impl<'a> MetadataReader<'a> {
             module_path,
             self_name,
             is_async,
+            is_cancellable,
             name,
             inputs,
             throws,
@@ -283,6 +287,7 @@ impl<'a> MetadataReader<'a> {
         let self_name = self.read_string()?;
         let name = self.read_string()?;
         let is_async = self.read_bool()?;
+        let is_cancellable = self.read_bool()?;
         let inputs = self.read_inputs()?;
         let (return_type, throws) = self.read_return_type()?;
         let docstring = self.read_optional_long_string()?;
@@ -291,6 +296,7 @@ impl<'a> MetadataReader<'a> {
             self_name,
             name,
             is_async,
+            is_cancellable,
             inputs,
             return_type,
             throws,
@@ -397,6 +403,7 @@ impl<'a> MetadataReader<'a> {
         let index = self.read_u32()?;
         let name = self.read_string()?;
         let is_async = self.read_bool()?;
+        let is_cancellable = self.read_bool()?;
         let inputs = self.read_inputs()?;
         let (return_type, throws) = self.read_return_type()?;
         let docstring = self.read_optional_long_string()?;
@@ -406,6 +413,7 @@ impl<'a> MetadataReader<'a> {
             index,
             name,
             is_async,
+            is_cancellable,
             inputs,
             return_type,
             throws,

@@ -91,7 +91,7 @@ public convenience init(
 {%- endmacro %}
 
 {%- macro call_async(callable) %}
-        {% call is_try(callable) %}{% endcall %} await uniffiRustCallAsync(
+        {% call is_try(callable) %}{% endcall %} await {% if callable.is_cancellable() %}uniffiRustCallAsyncCancellable{% else %}uniffiRustCallAsync{% endif %}(
             rustFutureFunc: {
                 {{ callable.ffi_func().name() }}(
                     {%- if callable.self_type().is_some() %}
@@ -105,6 +105,9 @@ public convenience init(
             pollFunc: {{ callable.ffi_rust_future_poll(ci) }},
             completeFunc: {{ callable.ffi_rust_future_complete(ci) }},
             freeFunc: {{ callable.ffi_rust_future_free(ci) }},
+            {%- if callable.is_cancellable() %}
+            cancelFunc: {{ callable.ffi_rust_future_cancel(ci) }},
+            {%- endif %}
             {%- match callable.return_type() %}
             {%- when Some(return_type) %}
             liftFunc: {{ return_type|lift_fn }},
@@ -183,11 +186,11 @@ v{{- field_num -}}
 {%- endmacro -%}
 
 {%- macro throws(func) %}
-{%- if func.throws() %}throws {% endif %}
+{%- if func.throws() || func.is_cancellable() %}throws {% endif %}
 {%- endmacro -%}
 
 {%- macro is_try(func) %}
-{%- if func.throws() %}try {% else %}try! {% endif %}
+{%- if func.throws() || func.is_cancellable() %}try {% else %}try! {% endif %}
 {%- endmacro -%}
 
 {%- macro docstring_value(maybe_docstring, indent_spaces) %}

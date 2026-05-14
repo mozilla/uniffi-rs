@@ -228,6 +228,7 @@ mod tests {
             module_path: "test_crate".to_string(),
             name: "old_function".to_string(),
             is_async: false,
+            is_cancellable: false,
             inputs: vec![FnParamMetadata {
                 name: "arg".to_string(),
                 ty: Type::Optional {

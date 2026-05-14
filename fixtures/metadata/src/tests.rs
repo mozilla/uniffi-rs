@@ -393,6 +393,7 @@ mod test_metadata {
                 self_name: "State".into(),
                 name: "state_method".into(),
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![],
                 return_type: None,
                 throws: None,
@@ -647,6 +648,7 @@ mod test_function_metadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "test_func".into(),
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![
                     FnParamMetadata::simple(
                         "person",
@@ -679,6 +681,7 @@ mod test_function_metadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "test_func_no_return".into(),
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![],
                 return_type: None,
                 throws: None,
@@ -698,6 +701,7 @@ mod test_function_metadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "test_func_that_throws".into(),
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![],
                 return_type: Some(Type::Enum {
                     module_path: "uniffi_fixture_metadata::tests::state".into(),
@@ -723,6 +727,7 @@ mod test_function_metadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "test_func_no_return_that_throws".into(),
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![],
                 return_type: None,
                 throws: Some(Type::Enum {
@@ -747,6 +752,7 @@ mod test_function_metadata {
                 self_name: "Calculator".into(),
                 name: "add".into(),
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![
                     FnParamMetadata::simple("a", Type::UInt8),
                     FnParamMetadata::simple("b", Type::UInt8),
@@ -770,6 +776,7 @@ mod test_function_metadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "test_async_func".into(),
                 is_async: true,
+                is_cancellable: false,
                 inputs: vec![
                     FnParamMetadata::simple(
                         "person",
@@ -804,6 +811,7 @@ mod test_function_metadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "test_async_func_that_throws".into(),
                 is_async: true,
+                is_cancellable: false,
                 inputs: vec![],
                 return_type: Some(Type::Enum {
                     module_path: "uniffi_fixture_metadata::tests::state".into(),
@@ -831,6 +839,7 @@ mod test_function_metadata {
                 self_name: "Calculator".into(),
                 name: "async_sub".into(),
                 is_async: true,
+                is_cancellable: false,
                 inputs: vec![
                     FnParamMetadata::simple("a", Type::UInt8),
                     FnParamMetadata::simple("b", Type::UInt8),
@@ -890,6 +899,7 @@ mod test_function_metadata {
                 self_name: "Calculator".into(),
                 name: "get_display".into(),
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![],
                 throws: None,
                 takes_self_by_arc: false,
@@ -912,6 +922,7 @@ mod test_function_metadata {
                 index: 0,
                 name: "display_result".into(),
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![
                     FnParamMetadata::simple("val", Type::String),
                 ],
@@ -947,6 +958,7 @@ mod test_function_metadata {
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "input_trait_with_foreign".into(),
                 is_async: false,
+                is_cancellable: false,
                 throws: None,
                 checksum: Some(
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_INPUT_TRAIT_WITH_FOREIGN
@@ -975,6 +987,7 @@ mod test_function_metadata {
                 index: 0,
                 name: "log".into(),
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![FnParamMetadata::simple("message", Type::String)],
                 return_type: None,
                 throws: None,

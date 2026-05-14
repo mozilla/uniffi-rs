@@ -5,7 +5,10 @@
 use std::{
     future::Future,
     pin::Pin,
-    sync::{Arc, Mutex, MutexGuard},
+    sync::{
+        atomic::{AtomicU32, Ordering},
+        Arc, Mutex, MutexGuard,
+    },
     task::{Context, Poll, Waker},
     thread,
     time::Duration,
@@ -124,6 +127,57 @@ pub async fn fallible_me(do_fail: bool) -> Result<u8, MyError> {
     } else {
         Ok(42)
     }
+}
+
+// === Swift `Task.cancel()` propagation harness ===
+//
+// `swift_cancel_hang` hangs forever holding a `SwiftCancelDropGuard`. The
+// only way the future ever finishes is by being dropped, which happens
+// when the foreign `Task.cancel()` propagates through the patched
+// `withTaskCancellationHandler` to `ffi_*_rust_future_cancel_*`. Swift
+// tests observe `SWIFT_CANCEL_DROP_COUNT` to verify the drop fired.
+//
+// `SWIFT_CANCEL_POLL_COUNT` is bumped after the guard is in place so the
+// foreign side can synchronize on "body has been polled" (and therefore
+// the scheduler is past `Empty`) instead of sleeping. Without this, a
+// cancel that races the first poll transitions the scheduler straight
+// from `Empty` to `Cancelled` with no callback fired; the next poll
+// short-circuits on `is_cancelled()` before running the body, and
+// `SwiftCancelDropGuard` is never constructed.
+
+static SWIFT_CANCEL_DROP_COUNT: AtomicU32 = AtomicU32::new(0);
+static SWIFT_CANCEL_POLL_COUNT: AtomicU32 = AtomicU32::new(0);
+
+struct SwiftCancelDropGuard;
+
+impl Drop for SwiftCancelDropGuard {
+    fn drop(&mut self) {
+        SWIFT_CANCEL_DROP_COUNT.fetch_add(1, Ordering::SeqCst);
+    }
+}
+
+#[uniffi::export(cancellable)]
+pub async fn swift_cancel_hang() -> Result<(), MyError> {
+    let _guard = SwiftCancelDropGuard;
+    SWIFT_CANCEL_POLL_COUNT.fetch_add(1, Ordering::SeqCst);
+    futures::future::pending::<()>().await;
+    Ok(())
+}
+
+#[uniffi::export]
+pub fn swift_cancel_drop_count() -> u32 {
+    SWIFT_CANCEL_DROP_COUNT.load(Ordering::SeqCst)
+}
+
+#[uniffi::export]
+pub fn swift_cancel_poll_count() -> u32 {
+    SWIFT_CANCEL_POLL_COUNT.load(Ordering::SeqCst)
+}
+
+#[uniffi::export]
+pub fn swift_cancel_reset() {
+    SWIFT_CANCEL_DROP_COUNT.store(0, Ordering::SeqCst);
+    SWIFT_CANCEL_POLL_COUNT.store(0, Ordering::SeqCst);
 }
 
 // An async function returning a struct that can throw.
@@ -352,7 +406,7 @@ pub enum AsyncError {
     Timeout,
 }
 
-#[uniffi::export(async_runtime = "tokio")]
+#[uniffi::export(async_runtime = "tokio", cancellable)]
 pub async fn use_shared_resource(options: SharedResourceOptions) -> Result<(), AsyncError> {
     use once_cell::sync::Lazy;
     use tokio::{

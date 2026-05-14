@@ -24,7 +24,7 @@ mod metadata;
 // `docs/uniffi-versioning.md` for details.
 //
 // Once we get to 1.0, then we'll need to update the scheme to something like 100 + major_version
-pub const UNIFFI_CONTRACT_VERSION: u32 = 30;
+pub const UNIFFI_CONTRACT_VERSION: u32 = 31;
 
 /// Similar to std::hash::Hash.
 ///
@@ -140,6 +140,7 @@ pub struct FnMetadata {
     pub module_path: String,
     pub name: String,
     pub is_async: bool,
+    pub is_cancellable: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
     pub throws: Option<Type>,
@@ -163,6 +164,7 @@ pub struct ConstructorMetadata {
     pub self_name: String,
     pub name: String,
     pub is_async: bool,
+    pub is_cancellable: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub throws: Option<Type>,
     pub checksum: Option<u16>,
@@ -189,6 +191,7 @@ pub struct MethodMetadata {
     pub self_name: String,
     pub name: String,
     pub is_async: bool,
+    pub is_cancellable: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
     pub throws: Option<Type>,
@@ -216,6 +219,7 @@ pub struct TraitMethodMetadata {
     pub index: u32,
     pub name: String,
     pub is_async: bool,
+    pub is_cancellable: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
     pub throws: Option<Type>,
@@ -241,6 +245,7 @@ impl From<TraitMethodMetadata> for MethodMetadata {
             self_name: meta.trait_name,
             name: meta.name,
             is_async: meta.is_async,
+            is_cancellable: meta.is_cancellable,
             inputs: meta.inputs,
             return_type: meta.return_type,
             throws: meta.throws,

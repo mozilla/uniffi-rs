@@ -401,15 +401,20 @@ Task {
 counter.enter()
 Task {
 	let task = Task {
-	    try! await useSharedResource(options: SharedResourceOptions(releaseAfterMs: 100, timeoutMs: 1000))
+		do {
+			try await useSharedResource(options: SharedResourceOptions(releaseAfterMs: 100, timeoutMs: 1000))
+		} catch is CancellationError {
+			// Expected: `task.cancel()` below propagates through uniffi
+			// to drop the in-flight Rust future, releasing the lock.
+		} catch {
+			fatalError("unexpected error: \(error)")
+		}
 	}
 
 	// Wait some time to ensure the task has locked the shared resource
 	try await Task.sleep(nanoseconds: 50_000_000)
-	// Cancel the job task the shared resource has been released.
-	//
-	// FIXME: this test currently passes because `test.cancel()` doesn't actually cancel the
-	// operation.  We need to rework the Swift async handling to handle this properly.
+	// Cancel so the shared resource is released before the second
+	// `useSharedResource` below times out.
 	task.cancel()
 
 	// Try accessing the shared resource again.  The initial task should release the shared resource
@@ -423,6 +428,50 @@ counter.enter()
 Task {
 	try! await useSharedResource(options: SharedResourceOptions(releaseAfterMs: 100, timeoutMs: 1000))
 	try! await useSharedResource(options: SharedResourceOptions(releaseAfterMs: 0, timeoutMs: 1000))
+	counter.leave()
+}
+
+// Test that `Task.cancel()` propagates through uniffi to drop the
+// in-flight Rust future.
+//
+// `swiftCancelHang` returns `Result<(), MyError>` so the Swift wrapper is
+// `async throws` and can surface the `CancellationError` thrown out of
+// `uniffiRustCallAsync` when `cancelFunc` fires the scheduler. The
+// hanging Rust future holds a drop guard whose `Drop` impl bumps
+// `swiftCancelDropCount`; we assert it incremented exactly once.
+counter.enter()
+Task {
+	swiftCancelReset()
+	let dropBefore = swiftCancelDropCount()
+
+	let task = Task {
+		try await swiftCancelHang()
+	}
+
+	// Spin until the first poll has run the body and registered a
+	// continuation with the scheduler. Without this, cancel can win the
+	// race and reach the scheduler while it is still `Empty`: the
+	// scheduler transitions Empty → Cancelled with no callback fired,
+	// the next poll short-circuits on `is_cancelled()` before polling
+	// the inner future, and the drop guard is never constructed.
+	while swiftCancelPollCount() == 0 {
+		await Task.yield()
+	}
+
+	task.cancel()
+
+	do {
+		try await task.value
+		fatalError("expected CancellationError, got success")
+	} catch is CancellationError {
+		// Expected.
+	} catch {
+		fatalError("unexpected error: \(error)")
+	}
+
+	let dropAfter = swiftCancelDropCount()
+	assert(dropAfter == dropBefore + 1, "drop count did not increment")
+
 	counter.leave()
 }
 
