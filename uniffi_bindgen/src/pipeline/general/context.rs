@@ -21,6 +21,7 @@ pub struct Context {
     // Maps namespaces to exclude tables from the TOML config
     pub exclude_sets: HashMap<String, HashSet<String>>,
     pub from_unexpected_callback_error_impls: HashSet<Type>,
+    pub type_id_map: HashMap<Type, u64>,
 }
 
 impl Context {
@@ -36,6 +37,7 @@ impl Context {
             rename_tables: HashMap::default(),
             exclude_sets: HashMap::default(),
             from_unexpected_callback_error_impls: HashSet::default(),
+            type_id_map: HashMap::default(),
         }
     }
 
@@ -107,6 +109,7 @@ impl Context {
             self.from_unexpected_callback_error_impls
                 .extend(root.from_unexpected_callback_error_impls.clone());
         }
+        self.populate_type_id_map(root)?;
         Ok(())
     }
 
@@ -149,20 +152,12 @@ impl Context {
     }
 
     pub fn update_from_record(&mut self, rec: &initial::Record) -> Result<()> {
-        self.current_type = Some(Type::Record {
-            namespace: self.namespace_name()?,
-            name: rec.name.clone(),
-            orig_name: rec.orig_name.clone(),
-        });
+        self.current_type = Some(types::type_for_record(rec, self)?);
         Ok(())
     }
 
     pub fn update_from_enum(&mut self, en: &initial::Enum) -> Result<()> {
-        self.current_type = Some(Type::Enum {
-            namespace: self.namespace_name()?,
-            name: en.name.clone(),
-            orig_name: en.orig_name.clone(),
-        });
+        self.current_type = Some(types::type_for_enum(en, self)?);
         Ok(())
     }
 
@@ -178,12 +173,7 @@ impl Context {
     }
 
     pub fn update_from_interface(&mut self, int: &initial::Interface) -> Result<()> {
-        self.current_type = Some(Type::Interface {
-            namespace: self.namespace_name()?,
-            name: int.name.clone(),
-            orig_name: int.orig_name.clone(),
-            imp: int.imp,
-        });
+        self.current_type = Some(types::type_for_interface(int, self)?);
         Ok(())
     }
 
@@ -191,21 +181,12 @@ impl Context {
         &mut self,
         cbi: &initial::CallbackInterface,
     ) -> Result<()> {
-        self.current_type = Some(Type::CallbackInterface {
-            namespace: self.namespace_name()?,
-            name: cbi.name.clone(),
-            orig_name: cbi.orig_name.clone(),
-        });
+        self.current_type = Some(types::type_for_callback_interface(cbi, self)?);
         Ok(())
     }
 
     pub fn update_from_custom_type(&mut self, custom: &initial::CustomType) -> Result<()> {
-        self.current_type = Some(Type::Custom {
-            namespace: self.namespace_name()?,
-            name: custom.name.clone(),
-            orig_name: custom.orig_name.clone(),
-            builtin: Box::new(custom.builtin.clone()),
-        });
+        self.current_type = Some(types::type_for_custom_type(custom, self)?);
         Ok(())
     }
 
@@ -232,5 +213,64 @@ impl Context {
 
     pub fn type_has_from_unexpected_callback_error_impl(&self, ty: &Type) -> bool {
         self.from_unexpected_callback_error_impls.contains(ty)
+    }
+
+    fn populate_type_id_map(&mut self, root: &initial::Root) -> Result<()> {
+        let mut type_id_counter = 0..;
+        let mut type_id_map = HashMap::new();
+        let mut add_type = |ty: Type| {
+            type_id_map
+                .entry(ty)
+                .or_insert_with(|| type_id_counter.next().unwrap());
+        };
+
+        // Add builtin types to `type_id_map` for the `BuiltinTypes` struct.
+        add_type(Type::UInt8);
+        add_type(Type::Int8);
+        add_type(Type::UInt16);
+        add_type(Type::Int16);
+        add_type(Type::UInt32);
+        add_type(Type::Int32);
+        add_type(Type::UInt64);
+        add_type(Type::Int64);
+        add_type(Type::Float32);
+        add_type(Type::Float64);
+        add_type(Type::String);
+        // Add types from the interface
+        root.visit(|ty: &Type| add_type(ty.clone()));
+        root.try_visit(|namespace: &initial::Namespace| {
+            self.current_namespace_name = Some(namespace.name.clone());
+            root.try_visit(|rec: &initial::Record| {
+                add_type(types::type_for_record(rec, self)?);
+                Ok(())
+            })?;
+            root.try_visit(|en: &initial::Enum| {
+                add_type(types::type_for_enum(en, self)?);
+                Ok(())
+            })?;
+            root.try_visit(|int: &initial::Interface| {
+                add_type(types::type_for_interface(int, self)?);
+                Ok(())
+            })?;
+            root.try_visit(|cbi: &initial::CallbackInterface| {
+                add_type(types::type_for_callback_interface(cbi, self)?);
+                Ok(())
+            })?;
+            root.try_visit(|custom: &initial::CustomType| {
+                add_type(types::type_for_custom_type(custom, self)?);
+                Ok(())
+            })?;
+            Ok(())
+        })?;
+        self.current_namespace_name = None;
+        self.type_id_map = type_id_map;
+        Ok(())
+    }
+
+    pub fn get_type_id(&self, ty: &Type) -> Result<u64> {
+        self.type_id_map
+            .get(ty)
+            .cloned()
+            .ok_or_else(|| anyhow!("Type not in type_id_map: {ty:?} {:#?}", self.type_id_map))
     }
 }

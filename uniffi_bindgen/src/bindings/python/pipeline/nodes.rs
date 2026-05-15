@@ -32,12 +32,29 @@ use_prev_node!(general::Type, types::map_type);
 /// Initial IR, this stores the metadata and other data
 #[derive(Debug, Clone, Node, MapNode)]
 #[map_node(from(general::Root))]
-#[map_node(update_context(context.update_from_root(&self)))]
+#[map_node(update_context(context.update_from_root(&self)?))]
 pub struct Root {
     /// In library mode, the library path the user passed to us
     pub cdylib: Option<String>,
     #[map_node(from(namespaces))]
     pub modules: IndexMap<String, Module>,
+    pub builtin_types: BuiltinTypes,
+}
+
+#[derive(Debug, Clone, MapNode, Node)]
+#[map_node(from(general::BuiltinTypes))]
+pub struct BuiltinTypes {
+    pub u8: TypeNode,
+    pub i8: TypeNode,
+    pub u16: TypeNode,
+    pub i16: TypeNode,
+    pub u32: TypeNode,
+    pub i32: TypeNode,
+    pub u64: TypeNode,
+    pub i64: TypeNode,
+    pub f32: TypeNode,
+    pub f64: TypeNode,
+    pub string: TypeNode,
 }
 
 #[derive(Debug, Clone, Node, MapNode, Template)]
@@ -65,7 +82,8 @@ pub struct Module {
     pub ffi_uniffi_contract_version: RustFfiFunctionName,
     // Correct contract version value
     pub correct_contract_version: String,
-    pub string_type_node: TypeNode,
+    // Copy builtin types so that we can use in from the `Module.py` template
+    pub builtin_types: BuiltinTypes,
 }
 
 // These structs exist so that we can easily deserialize the entire `uniffi.toml` file.

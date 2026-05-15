@@ -60,7 +60,6 @@ pub fn map_namespace(namespace: initial::Namespace, context: &Context) -> Result
         ffi_rustbuffer_reserve: rust_buffer::rustbuffer_reserve_fn_name(context)?,
         ffi_uniffi_contract_version: checksums::ffi_uniffi_contract_version(&namespace),
         correct_contract_version: uniffi_meta::UNIFFI_CONTRACT_VERSION.to_string(),
-        string_type_node: Type::String.map_node(context)?,
         crate_name: namespace.crate_name,
         config_toml: namespace.config_toml,
         docstring: namespace.docstring,
