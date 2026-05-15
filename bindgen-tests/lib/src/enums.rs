@@ -20,7 +20,7 @@ pub enum EnumWithData {
 
 #[uniffi::export]
 impl EnumWithData {
-    fn roundtrip(&self) -> Self {
+    pub fn roundtrip(&self) -> Self {
         self.clone()
     }
 }

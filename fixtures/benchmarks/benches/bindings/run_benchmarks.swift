@@ -11,6 +11,7 @@
 #else
     import Darwin.C
 #endif
+import Foundation
 
 // Create objects to use in the tests.  This way the benchmarks don't include the time needed to
 // construct these objects.
@@ -19,6 +20,8 @@ let TEST_LARGE_STRING1 = String(repeating: "a", count: 2048)
 let TEST_LARGE_STRING2 = String(repeating: "b", count: 1500)
 let TEST_REC1 = TestRecord(a: -1, b: 1, c: 1.5)
 let TEST_REC2 = TestRecord(a: -2, b: 2, c: 4.5)
+let TEST_LARGE_REC1 = TestLargeRecord(a: 1, b: 2, c: 3, d: 4, e: 1.0, f: 2.0, g: true)
+let TEST_LARGE_REC2 = TestLargeRecord(a: -1, b: -2, c: -3, d: -4, e: -1.0, f: -2.0, g: false)
 let TEST_ENUM1 = TestEnum.one(a: -1, b: 0)
 let TEST_ENUM2 = TestEnum.two(c: 1.5)
 let TEST_VEC1: [UInt32] = [0, 1]
@@ -29,6 +32,9 @@ let TEST_INTERFACE = TestInterface()
 let TEST_INTERFACE2 = TestInterface()
 let TEST_TRAIT_INTERFACE = makeTestTraitInterface()
 let TEST_TRAIT_INTERFACE2 = makeTestTraitInterface()
+let TEST_BYTES = Data(bytes: Array((0...255).map { UInt8($0) }))
+let TEST_PRIMITIVE_LIST = Array((0...1024).map { UInt32($0) })
+let TEST_RECORD_LIST = Array((0...1024).map { TestRecord(a: Int32($0), b: UInt64($0) * 2, c: Float64($0) / 2.0) })
 let TEST_NESTED_DATA1 = NestedData(
     a: [TestRecord(a: -1, b: 1, c: 1.5)],
     b: [["one", "two"], ["three"]],
@@ -69,6 +75,18 @@ final class TestCallbackObj: TestCallbackInterface {
         )
     }
 
+    func largeRecords(a: TestLargeRecord, b: TestLargeRecord) -> TestLargeRecord {
+        return TestLargeRecord(
+            a: a.a + b.a,
+            b: a.b + b.b,
+            c: a.c + b.c,
+            d: a.d + b.d,
+            e: a.e + b.e,
+            f: a.f + b.f,
+            g: a.g && b.g
+        )
+    }
+
     func enums(a: TestEnum, b: TestEnum) -> TestEnum {
         let aSum = switch a {
         case .one(let a, let b): Float64(a) + Float64(b)
@@ -79,10 +97,6 @@ final class TestCallbackObj: TestCallbackInterface {
         case .two(let c): c
         }
         return TestEnum.two(c: aSum + bSum)
-    }
-
-    func vecs(a: [UInt32], b: [UInt32]) -> [UInt32] {
-        return a + b
     }
 
     func hashMaps(
@@ -111,6 +125,36 @@ final class TestCallbackObj: TestCallbackInterface {
         } else {
             return b
         }
+    }
+
+    func optionals(a: UInt32?, b: Bool?, c: String?) -> UInt32 {
+        var sum: UInt32 = 0;
+        if let value = a {
+            sum += value;
+        }
+        if b == true {
+            sum *= 2;
+        }
+        if let string = c {
+            sum += UInt32(string.count)
+        }
+        return sum
+    }
+
+    func bytes(v: Data) -> Data {
+        return v
+    }
+
+    func vecSmall(a: [UInt32], b: [UInt32]) -> [UInt32] {
+        return a + b
+    }
+
+    func vecPrimitives(v: [UInt32]) -> [UInt32] {
+        return v
+    }
+
+    func vecRecords(v: [TestRecord]) -> [TestRecord] {
+        return v
     }
 
     func nestedData(a: NestedData, b: NestedData) -> NestedData {
@@ -158,16 +202,16 @@ final class TestCallbackObj: TestCallbackInterface {
                 let _ = testCaseRecords(a: TEST_REC1, b: TEST_REC2)
             }
 
+        case TestCase.largeRecords:
+            start = clock()
+            for _ in 0...count {
+                let _ = testCaseLargeRecords(a: TEST_LARGE_REC1, b: TEST_LARGE_REC2)
+            }
+
         case TestCase.enums:
             start = clock()
             for _ in 0...count {
                 let _ = testCaseEnums(a: TEST_ENUM1, b: TEST_ENUM2)
-            }
-
-        case TestCase.vecs:
-            start = clock()
-            for _ in 0...count {
-                let _ = testCaseVecs(a: TEST_VEC1, b: TEST_VEC2)
             }
 
         case TestCase.hashmaps:
@@ -186,6 +230,42 @@ final class TestCallbackObj: TestCallbackInterface {
             start = clock()
             for _ in 0...count {
                 let _ = testCaseTraitInterfaces(a: TEST_TRAIT_INTERFACE, b: TEST_TRAIT_INTERFACE2)
+            }
+
+        case TestCase.optionals:
+            start = clock()
+            for _ in 0...count {
+                let _ = testCaseOptionals(a: 10, b: nil, c: "testing-123")
+            }
+
+        case TestCase.bytes:
+            start = clock()
+            for _ in 0...count {
+                let _ = testCaseBytes(v: TEST_BYTES)
+            }
+
+        case TestCase.vecSmall:
+            start = clock()
+            for _ in 0...count {
+                let _ = testCaseVecSmall(a: TEST_VEC1, b: TEST_VEC2)
+            }
+
+        case TestCase.vecPrimitives:
+            start = clock()
+            for _ in 0...count {
+                let _ = testCaseVecPrimitives(v: TEST_PRIMITIVE_LIST)
+            }
+
+        case TestCase.vecRecords:
+            start = clock()
+            for _ in 0...count {
+                let _ = testCaseVecRecords(v: TEST_RECORD_LIST)
+            }
+
+        case TestCase.methods:
+            start = clock()
+            for _ in 0...count {
+                let _ = TEST_INTERFACE.noopMethod()
             }
 
         case TestCase.nestedData:
