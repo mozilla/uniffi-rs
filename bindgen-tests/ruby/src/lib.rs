@@ -60,6 +60,16 @@ mod test {
     }
 
     #[test]
+    fn test_callback_interfaces() {
+        run_tests(test_dir(), "tests/callback_interfaces.rb");
+    }
+
+    #[test]
+    fn test_trait_interfaces() {
+        run_tests(test_dir(), "tests/trait_interfaces.rb");
+    }
+
+    #[test]
     fn test_defaults() {
         run_tests(test_dir(), "tests/defaults.rb");
     }

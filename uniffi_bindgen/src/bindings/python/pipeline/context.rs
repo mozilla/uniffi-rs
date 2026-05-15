@@ -12,11 +12,14 @@ pub struct Context {
     pub current_config: Option<PythonConfig>,
     pub module_namespace: Option<String>,
     pub recursive_type_names: HashSet<String>,
+    pub builtin_types: Option<BuiltinTypes>,
 }
 
 impl Context {
-    pub fn update_from_root(&mut self, root: &general::Root) {
+    pub fn update_from_root(&mut self, root: &general::Root) -> Result<()> {
         self.cdylib = root.cdylib.clone();
+        self.builtin_types = Some(root.builtin_types.clone().map_node(self)?);
+        Ok(())
     }
 
     pub fn update_from_namespace(&mut self, namespace: &general::Namespace) -> Result<()> {
@@ -38,6 +41,12 @@ impl Context {
         });
         self.recursive_type_names = recursive_type_names;
         Ok(())
+    }
+
+    pub fn builtin_types(&self) -> Result<BuiltinTypes> {
+        self.builtin_types
+            .clone()
+            .ok_or_else(|| anyhow!("Context.builtin_types not set"))
     }
 
     pub fn is_recursive(&self, name: &str) -> bool {

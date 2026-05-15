@@ -20,6 +20,7 @@ mod nodes;
 mod objects;
 mod records;
 mod rename;
+mod root;
 mod rust_buffer;
 mod rust_future;
 mod sort;
