@@ -13,9 +13,12 @@ class {{ e.name()|class_name_rb }}
     raise RuntimeError, '{{ e.name()|class_name_rb }} cannot be instantiated directly'
   end
 
+  {%- let methods = e.methods() %}
+  {%- include "MethodImpls.rb" %}
+
   # Each enum variant is a nested class of the enum itself.
   {% for variant in e.variants() -%}
-  class {{ variant.name()|enum_name_rb }}
+  class {{ variant.name()|enum_name_rb }} < {{ e.name()|class_name_rb }}
     {%- let named_fields = variant.has_fields() && !variant.fields()[0].name().is_empty() %}
     {% if variant.has_fields() %}
     {%- if named_fields %}

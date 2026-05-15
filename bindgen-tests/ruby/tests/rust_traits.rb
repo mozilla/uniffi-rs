@@ -30,13 +30,13 @@ class TestRustTraits < Test::Unit::TestCase
     # The Rust code only uses `a` for the ordering
     assert RustTraitTest.new(a: 1, b: 2) < RustTraitTest.new(a: 2, b: 3)
     assert RustTraitTest.new(a: 2, b: 3) > RustTraitTest.new(a: 1, b: 2)
-    assert RustTraitTest.new(a: 1, b: 2) <= RustTraitTest.new(a: 1, b: 2)
-    assert RustTraitTest.new(a: 1, b: 2) >= RustTraitTest.new(a: 1, b: 2)
+    assert RustTraitTest.new(a: 1, b: 2) <= RustTraitTest.new(a: 1, b: 3)
+    assert RustTraitTest.new(a: 1, b: 2) >= RustTraitTest.new(a: 1, b: 3)
   end
 
   def test_hash
     # The Rust code only uses `a` for the hash
-    assert_equal RustTraitTest.new(a: 1, b: 2).hash, RustTraitTest.new(a: 1, b: 2).hash
+    assert_equal RustTraitTest.new(a: 1, b: 2).hash, RustTraitTest.new(a: 1, b: 3).hash
     assert_not_equal RustTraitTest.new(a: 1, b: 2).hash, RustTraitTest.new(a: 2, b: 2).hash
   end
 

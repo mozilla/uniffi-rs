@@ -7,15 +7,8 @@
 require 'test/unit'
 require 'uniffi_bindgen_tests'
 
-class TestRecords < Test::Unit::TestCase
+class TestReferences < Test::Unit::TestCase
   include UniffiBindgenTests
-
-  def test_simple_rec
-    rec = SimpleRec.new a: 42
-    result = UniffiBindgenTests.roundtrip_simple_rec rec
-
-    assert_equal 42, result.a
-  end
 
   def test_value_ref
     result = UniffiBindgenTests.roundtrip_u8_ref 2

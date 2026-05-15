@@ -52,4 +52,8 @@ class TestRecords < Test::Unit::TestCase
     assert_equal 'hello world', result.field_string
     assert_equal 99, result.field_rec.a
   end
+
+  def test_methods
+    assert_equal SimpleRec.new(a: 42), SimpleRec.new(a: 42).roundtrip
+  end
 end

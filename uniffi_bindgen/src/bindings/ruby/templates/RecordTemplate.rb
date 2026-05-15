@@ -13,6 +13,9 @@ class {{ rec.name()|class_name_rb }}
     {%- endfor %}
   end
 
+  {%- let methods = rec.methods() %}
+  {%- include "MethodImpls.rb" %}
+
   {%- let trait_methods = rec.uniffi_trait_methods() %}
   {%- if trait_methods.eq_eq.is_none() %}
   def ==(other)

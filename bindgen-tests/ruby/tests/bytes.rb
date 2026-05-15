@@ -31,4 +31,12 @@ class TestBytes < Test::Unit::TestCase
 
     assert_equal Encoding::BINARY, result.encoding
   end
+
+  # Zero-copy &[u8] — proc-macro path
+  def zero_copy_bytes
+    assert_equal 0, sum_bytes_procmacro(''.b)
+    assert_equal 6, sum_bytes_procmacro("\x01\x02\x03".b)
+    assert_nil first_byte_procmacro(''.b)
+    assert_equal 42, first_byte_procmacro("\x2a".b)
+  end
 end

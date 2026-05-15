@@ -16,10 +16,16 @@
 require 'ffi'
 require 'set'
 
+{%- if ci.has_callback_definitions() %}
+require 'monitor'
+{%- endif %}
 
 module {{ ci.namespace()|class_name_rb }}
   {% include "Helpers.rb" %}
 
+  {%- if ci.has_callback_definitions() %}
+  {% include "HandleMap.rb" %}
+  {%- endif %}
   {% include "RustBufferTemplate.rb" %}
   {% include "RustBufferStream.rb" %}
   {% include "RustBufferBuilder.rb" %}
@@ -28,6 +34,9 @@ module {{ ci.namespace()|class_name_rb }}
   {% include "ErrorTemplate.rb" %}
 
   {% include "NamespaceLibraryTemplate.rb" %}
+  {%- if ci.has_callback_definitions() %}
+  {% include "CallbackInterfaceRuntime.rb" %}
+  {%- endif %}
 
   # Custom type definitions.
 
@@ -72,6 +81,11 @@ module {{ ci.namespace()|class_name_rb }}
 
   {% for obj in ci.object_definitions() %}
   {% include "ObjectTemplate.rb" %}
+  {% endfor %}
+
+  {% for cbi in ci.callback_interface_definitions() %}
+  {%- let name = cbi.name() %}
+  {% include "CallbackInterfaceTemplate.rb" %}
   {% endfor %}
 end
 

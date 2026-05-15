@@ -21,11 +21,55 @@ class {{ obj.name()|class_name_rb }}{% if ci.is_name_used_as_error(obj.name()) %
     end
   end
 
+  {%- if obj.has_callback_interface() %}
+  # HandleMap for trait interface: stores Ruby-native objects keyed by odd handles.
+  @uniffi_handle_map = UniffiHandleMap.new
+
+  class << self
+    attr_reader :uniffi_handle_map
+  end
+
+  # For trait interfaces: check that the object is either a Rust-backed instance or
+  # responds to the required interface methods.
+  def self.uniffi_check_lower(inst)
+    {%- for method in obj.methods() %}
+    if !inst.respond_to?(:{{ method.name()|fn_name_rb }})
+      raise TypeError.new "Expected a {{ obj.name()|class_name_rb }} instance or an object implementing the interface, got #{inst}"
+    end
+    {%- endfor %}
+  end
+
+  def uniffi_clone_handle
+    return ::{{ci.namespace()|class_name_rb }}.rust_call(
+      :{{ obj.ffi_object_clone().name() }},
+      @handle
+    )
+  end
+
+  # For trait interfaces: lowering distinguishes between Rust-backed and Ruby-native instances.
+  def self.uniffi_lower(inst)
+    if inst.is_a?(self) && inst.instance_variable_defined?(:@handle)
+      inst.uniffi_clone_handle()
+    else
+      @uniffi_handle_map.insert(inst)
+    end
+  end
+
+  # For trait interfaces: lifting distinguishes even handles (Rust) from odd handles (Ruby).
+  def self.uniffi_lift(handle)
+    if (handle & 1) == 0
+      uniffi_allocate handle
+    else
+      @uniffi_handle_map.remove handle
+    end
+  end
+  
+  {%- else %}
   # A private helper for lowering instances into a raw handle.
   # This does an explicit typecheck, because accidentally lowering a different type of
   # object in a place where this type is expected, could lead to memory unsafety.
   def self.uniffi_check_lower(inst)
-    if not inst.is_a? self
+    if !inst.is_a? self
       raise TypeError.new "Expected a {{ obj.name()|class_name_rb }} instance, got #{inst}"
     end
   end
@@ -40,6 +84,11 @@ class {{ obj.name()|class_name_rb }}{% if ci.is_name_used_as_error(obj.name()) %
   def self.uniffi_lower(inst)
     return inst.uniffi_clone_handle()
   end
+
+  def self.uniffi_lift(handle)
+    uniffi_allocate handle
+  end
+  {%- endif %}
 
   {%- match obj.primary_constructor() %}
   {%- when Some with (cons) %}
@@ -82,3 +131,12 @@ class {{ obj.name()|class_name_rb }}{% if ci.is_name_used_as_error(obj.name()) %
   {%- let trait_methods = obj.uniffi_trait_methods() %}
   {%- include "UniffiTraitImpls.rb" %}
 end
+
+{%- if obj.has_callback_interface() %}
+{# For trait interfaces, generate and register the vtable. #}
+{%- let vtable = obj.vtable().expect("trait interface must have a vtable") %}
+{%- let vtable_methods = obj.vtable_methods() %}
+{%- let ffi_init_callback = obj.ffi_init_callback() %}
+{%- let cbi_name = obj.name() %}
+{%- include "TraitInterfaceVtable.rb" %}
+{%- endif %}

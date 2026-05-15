@@ -104,32 +104,61 @@ class TestRecursiveTypes < Test::Unit::TestCase
   end
 
   def test_trie_branch
-    trie = Trie::BRANCH.new(children: {
-                              'a' => Trie::LEAF.new(1),
-                              'b' => Trie::LEAF.new(2)
-                            })
+    assert_equal 0, UniffiBindgenTests.trie_sum(Trie::BRANCH.new(children: {}))
+
+    assert_equal(
+      7,
+      UniffiBindgenTests.trie_sum(
+        Trie::BRANCH.new(children: { 'x' => Trie::BRANCH.new(children: { 'y' => Trie::LEAF.new(7) }) })
+      )
+    )
+
+    trie = Trie::BRANCH.new(children: { 'a' => Trie::LEAF.new(1), 'b' => Trie::LEAF.new(2) })
 
     assert_equal 3, UniffiBindgenTests.trie_sum(trie)
   end
 
-  # -- RoseTree --
+  # -- RoseTree (cycle through a record: RoseTree → RoseData → Vec<RoseTree>) --
 
   def test_rose_tree_leaf
     assert_equal 5, UniffiBindgenTests.sum_rose_tree(RoseTree::LEAF.new(5))
   end
 
   def test_rose_tree_branch
-    tree = RoseTree::BRANCH.new(
-      RoseData.new(
-        value: 1,
-        children: [
-          RoseTree::LEAF.new(2),
-          RoseTree::LEAF.new(3)
-        ]
+    assert_equal 10, UniffiBindgenTests.sum_rose_tree(
+      RoseTree::BRANCH.new(
+        RoseData.new(value: 10, children: [])
       )
     )
 
-    assert_equal 6, UniffiBindgenTests.sum_rose_tree(tree)
+    assert_equal 6, UniffiBindgenTests.sum_rose_tree(
+      RoseTree::BRANCH.new(
+        RoseData.new(
+          value: 1,
+          children: [
+            RoseTree::LEAF.new(2),
+            RoseTree::LEAF.new(3),
+          ]
+        )
+      )
+    )
+
+    assert_equal 10, UniffiBindgenTests.sum_rose_tree(
+      RoseTree::BRANCH.new(
+        RoseData.new(
+          value: 1,
+          children: [
+            RoseTree::BRANCH.new(
+              RoseData.new(
+                value: 2,
+                children: [RoseTree::LEAF.new(3)]
+              )
+            ),
+            RoseTree::LEAF.new(4),
+          ]
+        )
+      )
+    )
   end
 
   # --- Recursive EvalError ---
