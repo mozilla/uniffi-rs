@@ -21,7 +21,7 @@ class TestOptions < Test::Unit::TestCase
     assert_equal 42, UniffiBindgenTests.roundtrip_option_i64(42)
     assert_equal 42, UniffiBindgenTests.roundtrip_option_f32(42.0)
     assert_equal 42, UniffiBindgenTests.roundtrip_option_f64(42.0)
-    assert_equal "test-string", UniffiBindgenTests.roundtrip_option_string("test-string")
+    assert_equal 'test-string', UniffiBindgenTests.roundtrip_option_string('test-string')
     assert_equal true, UniffiBindgenTests.roundtrip_option_bool(true)
 
     rec = OptionsRec.new(a: 42)
@@ -42,5 +42,6 @@ class TestOptions < Test::Unit::TestCase
     assert_nil UniffiBindgenTests.roundtrip_option_string(nil)
     assert_nil UniffiBindgenTests.roundtrip_option_string(nil)
     assert_nil UniffiBindgenTests.roundtrip_option_rec(nil)
+    assert_nil UniffiBindgenTests.roundtrip_option_bool(nil)
   end
 end

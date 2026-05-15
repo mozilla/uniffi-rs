@@ -28,86 +28,86 @@ class RustBufferBuilder
   end
 
   {% for typ in ci.iter_local_types() -%}
-  {%- let canonical_type_name = self::canonical_name(typ).borrow()|class_name_rb -%}
+  {%- let canonical_type_name = self::canonical_name(typ) -%}
   {%- match typ -%}
 
   {% when Type::Int8 -%}
 
-  def write_I8(v)
+  def write_{{ canonical_type_name }}(v)
     v = ::{{ ci.namespace()|class_name_rb }}::uniffi_in_range(v, "i8", -2**7, 2**7)
     pack_into(1, 'c', v)
   end
 
   {% when Type::UInt8 -%}
 
-  def write_U8(v)
+  def write_{{ canonical_type_name }}(v)
     v = ::{{ ci.namespace()|class_name_rb }}::uniffi_in_range(v, "u8", 0, 2**8)
     pack_into(1, 'c', v)
   end
 
   {% when Type::Int16 -%}
 
-  def write_I16(v)
+  def write_{{ canonical_type_name }}(v)
     v = ::{{ ci.namespace()|class_name_rb }}::uniffi_in_range(v, "i16", -2**15, 2**15)
     pack_into(2, 's>', v)
   end
 
   {% when Type::UInt16 -%}
 
-  def write_U16(v)
+  def write_{{ canonical_type_name }}(v)
     v = ::{{ ci.namespace()|class_name_rb }}::uniffi_in_range(v, "u16", 0, 2**16)
     pack_into(2, 'S>', v)
   end
 
   {% when Type::Int32 -%}
 
-  def write_I32(v)
+  def write_{{ canonical_type_name }}(v)
     v = ::{{ ci.namespace()|class_name_rb }}::uniffi_in_range(v, "i32", -2**31, 2**31)
     pack_into(4, 'l>', v)
   end
 
   {% when Type::UInt32 -%}
 
-  def write_U32(v)
+  def write_{{ canonical_type_name }}(v)
     v = ::{{ ci.namespace()|class_name_rb }}::uniffi_in_range(v, "u32", 0, 2**32)
     pack_into(4, 'L>', v)
   end
 
   {% when Type::Int64 -%}
 
-  def write_I64(v)
+  def write_{{ canonical_type_name }}(v)
     v = ::{{ ci.namespace()|class_name_rb }}::uniffi_in_range(v, "i64", -2**63, 2**63)
     pack_into(8, 'q>', v)
   end
 
   {% when Type::UInt64 -%}
 
-  def write_U64(v)
+  def write_{{ canonical_type_name }}(v)
     v = ::{{ ci.namespace()|class_name_rb }}::uniffi_in_range(v, "u64", 0, 2**64)
     pack_into(8, 'Q>', v)
   end
 
   {% when Type::Float32 -%}
 
-  def write_F32(v)
+  def write_{{ canonical_type_name }}(v)
     pack_into(4, 'g', v)
   end
 
   {% when Type::Float64 -%}
 
-  def write_F64(v)
+  def write_{{ canonical_type_name }}(v)
     pack_into(8, 'G', v)
   end
 
   {% when Type::Boolean -%}
 
-  def write_Bool(v)
+  def write_{{ canonical_type_name }}(v)
     pack_into(1, 'c', v ? 1 : 0)
   end
 
   {% when Type::String -%}
 
-  def write_String(v)
+  def write_{{ canonical_type_name }}(v)
     v = ::{{ ci.namespace()|class_name_rb }}::uniffi_utf8(v)
     pack_into 4, 'l>', v.bytes.size
     write v
@@ -115,7 +115,7 @@ class RustBufferBuilder
 
   {% when Type::Bytes -%}
 
-  def write_Bytes(v)
+  def write_{{ canonical_type_name }}(v)
     v = ::{{ ci.namespace()|class_name_rb }}::uniffi_bytes(v)
     pack_into 4, 'l>', v.bytes.size
     write v
@@ -184,13 +184,41 @@ class RustBufferBuilder
     if v.{{ variant.name()|var_name_rb }}?
       pack_into(4, 'l>', {{ loop.index }})
       {%- for field in variant.fields() %}
-        self.write_{{ self::canonical_name(field.as_type().borrow()).borrow()|class_name_rb }}(v.{% call rb::field_name(field, loop.index) %}{% endcall %})
+        self.write_{{ self::canonical_name(field.as_type().borrow()) }}(v.{% call rb::field_name(field, loop.index) %}{% endcall %})
       {%- endfor %}
     end
     {%- endfor %}
     {%- endif %}
  end
-   {% endif %}
+  {% else %}
+  {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
+  # The Error type {{ enum_name }} - write for callback error returns.
+
+  def write_{{ canonical_type_name }}(v)
+    {%- if e.is_flat() %}
+    {%- for variant in e.variants() %}
+    if v.is_a?({{ enum_name|class_name_rb }}::{{ variant.name()|class_name_rb }})
+      pack_into 4, 'l>', {{ loop.index }}
+      return
+    end
+    {%- endfor %}
+    {%- else -%}
+    {%- for variant in e.variants() %}
+    if v.is_a?({{ enum_name|class_name_rb }}::{{ variant.name()|class_name_rb }})
+      pack_into 4, 'l>', {{ loop.index }}
+      {%- for field in variant.fields() %}
+        {%- if field.name().is_empty() %}
+        self.write_{{ self::canonical_name(field.as_type().borrow()) }}(v[{{ loop.index0 }}])
+        {%- else %}
+        self.write_{{ self::canonical_name(field.as_type().borrow()) }}(v.{{ field.name()|var_name_rb }})
+        {%- endif %}
+      {%- endfor %}
+      return
+    end
+    {%- endfor %}
+    {%- endif %}
+  end
+  {% endif %}
 
   {% when Type::Record { name: record_name, .. } -%}
   {%- let rec = ci.get_record_definition(record_name).unwrap() -%}
@@ -198,7 +226,7 @@ class RustBufferBuilder
 
   def write_{{ canonical_type_name }}(v)
     {%- for field in rec.fields() %}
-    self.write_{{ self::canonical_name(field.as_type().borrow()).borrow()|class_name_rb }}(v.{{ field.name()|var_name_rb }})
+    self.write_{{ self::canonical_name(field.as_type().borrow()) }}(v.{{ field.name()|var_name_rb }})
     {%- endfor %}
   end
 
@@ -210,7 +238,7 @@ class RustBufferBuilder
       pack_into(1, 'c', 0)
     else
       pack_into(1, 'c', 1)
-      self.write_{{ self::canonical_name(inner_type).borrow()|class_name_rb }}(v)
+      self.write_{{ self::canonical_name(inner_type) }}(v)
     end
   end
 
@@ -221,7 +249,7 @@ class RustBufferBuilder
     pack_into(4, 'l>', items.size)
 
     items.each do |item|
-      self.write_{{ self::canonical_name(inner_type).borrow()|class_name_rb }}(item)
+      self.write_{{ self::canonical_name(inner_type) }}(item)
     end
   end
 
@@ -232,19 +260,19 @@ class RustBufferBuilder
     pack_into(4, 'l>', items.size)
 
     items.each do |item|
-      self.write_{{ self::canonical_name(inner_type).borrow()|class_name_rb }}(item)
+      self.write_{{ self::canonical_name(inner_type) }}(item)
     end
   end
 
-  {% when Type::Map { key_type: k, value_type: inner_type } -%}
-  # The Map<T> type for {{ self::canonical_name(inner_type) }}.
+  {% when Type::Map { key_type: k, value_type: v } -%}
+  # The Map<T> type for {{ canonical_type_name }}.
 
   def write_{{ canonical_type_name }}(items)
     pack_into(4, 'l>', items.size)
 
     items.each do |k, v|
-      write_String(k)
-      self.write_{{ self::canonical_name(inner_type).borrow()|class_name_rb }}(v)
+      self.write_{{ self::canonical_name(k) }}(k)
+      self.write_{{ self::canonical_name(v) }}(v)
     end
   end
 
@@ -253,20 +281,27 @@ class RustBufferBuilder
   {%- when Some(cfg) %}{%- if cfg.has_conversion() %}
   # Custom type {{ name }}: applies lower, then writes builtin `{{ self::canonical_name(builtin) }}`
   def write_{{ canonical_type_name }}(v)
-    write_{{ self::canonical_name(builtin).borrow()|class_name_rb }}({{ cfg.lower("v") }})
+    write_{{ self::canonical_name(builtin) }}({{ cfg.lower("v") }})
   end
   {%- else %}
   # The Custom type {{ name }} delegates serialization to its builtin type.
   def write_{{ canonical_type_name }}(v)
-    write_{{ self::canonical_name(builtin).borrow()|class_name_rb }}(v)
+    write_{{ self::canonical_name(builtin) }}(v)
   end
   {%- endif %}
   {%- when None %}
   # The Custom type {{ name }} delegates serialization to its builtin type.
   def write_{{ canonical_type_name }}(v)
-    write_{{ self::canonical_name(builtin).borrow()|class_name_rb }}(v)
+    write_{{ self::canonical_name(builtin) }}(v)
   end
   {%- endmatch %}
+
+  {% when Type::CallbackInterface { name, .. } -%}
+  # The CallbackInterface type {{ name }}: write a uint64 handle.
+  def write_{{ canonical_type_name }}(v)
+    handle = {{ self::canonical_name(typ) }}FfiConverter.lower(v)
+    pack_into 8, 'Q>', handle
+  end
 
   {%- else -%}
   # This type is not yet supported in the Ruby backend.

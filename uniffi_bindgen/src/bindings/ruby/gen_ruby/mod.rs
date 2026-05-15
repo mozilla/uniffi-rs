@@ -159,6 +159,10 @@ impl<'a> RubyWrapper<'a> {
     }
 }
 
+fn class_name_rb_inner(nm: &str) -> Result<String, askama::Error> {
+    Ok(nm.to_string().to_upper_camel_case())
+}
+
 mod filters {
     use super::*;
 
@@ -179,16 +183,39 @@ mod filters {
             FfiType::RustBuffer(_) => "RustBuffer.by_value".to_string(),
             FfiType::RustCallStatus => "RustCallStatus".to_string(),
             FfiType::ForeignBytes => "ForeignBytes".to_string(),
-            FfiType::Callback(_) => unimplemented!("FFI Callbacks not implemented"),
-            // Note: this can't just be `unimplemented!()` because some of the FFI function
-            // definitions use references.  Those FFI functions aren't actually used, so we just
-            // pick something that runs and makes some sense.  Revisit this once the references
-            // are actually implemented.
-            FfiType::Reference(_) | FfiType::MutReference(_) => ":pointer".to_string(),
+            FfiType::Callback(name) => format!(":{name}"),
+            FfiType::Reference(inner) | FfiType::MutReference(inner) => match inner.as_ref() {
+                FfiType::Struct(name) => format!("{name}.by_ref"),
+                _ => ":pointer".to_string(),
+            },
             FfiType::VoidPointer => ":pointer".to_string(),
-            FfiType::Struct(_) => {
-                unimplemented!("Structs are not implemented")
-            }
+            FfiType::Struct(name) => format!("{name}.by_value"),
+        })
+    }
+
+    /// Generate the Ruby FFI::Pointer write method name for writing a lowered return value.
+    /// For RustBuffer returns, return "rustbuffer" as a sentinel - template handles it specially.
+    #[askama::filter_fn]
+    pub fn ffi_write_return_rb(
+        return_type: &Type,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
+        let ffi_type = FfiType::from(return_type);
+
+        Ok(match &ffi_type {
+            FfiType::Int8 => "write_int8".to_string(),
+            FfiType::UInt8 => "write_uint8".to_string(),
+            FfiType::Int16 => "write_int16".to_string(),
+            FfiType::UInt16 => "write_uint16".to_string(),
+            FfiType::Int32 => "write_int32".to_string(),
+            FfiType::UInt32 => "write_uint32".to_string(),
+            FfiType::Int64 => "write_int64".to_string(),
+            FfiType::UInt64 => "write_uint64".to_string(),
+            FfiType::Float32 => "write_float".to_string(),
+            FfiType::Float64 => "write_double".to_string(),
+            FfiType::Handle => "write_uint64".to_string(),
+            FfiType::RustBuffer(_) => "rustbuffer".to_string(),
+            _ => panic!("Unsupported FFI return type for callback: {ffi_type:?}"),
         })
     }
 
@@ -304,10 +331,6 @@ mod filters {
         class_name_rb_inner(nm)
     }
 
-    fn class_name_rb_inner(nm: &str) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_upper_camel_case())
-    }
-
     #[askama::filter_fn]
     pub fn fn_name_rb(nm: &str, _: &dyn askama::Values) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_snake_case())
@@ -358,17 +381,17 @@ mod filters {
             Type::UInt16 => format!("::{ns}::uniffi_in_range({nm}, \"u16\", 0, 2**16)"),
             Type::UInt32 => format!("::{ns}::uniffi_in_range({nm}, \"u32\", 0, 2**32)"),
             Type::UInt64 => format!("::{ns}::uniffi_in_range({nm}, \"u64\", 0, 2**64)"),
-            Type::Float32 | Type::Float64 => nm.to_string(),
+            Type::Float32
+            | Type::Float64
+            | Type::Object { .. }
+            | Type::Enum { .. }
+            | Type::Record { .. }
+            | Type::Timestamp
+            | Type::Duration
+            | Type::CallbackInterface { .. } => nm.to_string(),
             Type::Boolean => format!("{nm} ? true : false"),
-            Type::Object { .. } | Type::Enum { .. } | Type::Record { .. } => nm.to_string(),
             Type::String => format!("::{ns}::uniffi_utf8({nm})"),
             Type::Bytes => format!("::{ns}::uniffi_bytes({nm})"),
-            Type::Timestamp | Type::Duration => nm.to_string(),
-            Type::CallbackInterface { name, .. } => {
-                // Callback interfaces are not yet supported; emit a Ruby runtime error so that
-                // code generation succeeds but calling such functions raises clearly.
-                format!("raise NotImplementedError, \"Callback interface {name} is not yet supported in the Ruby bindings\"")
-            }
             Type::Optional { inner_type: t } => {
                 format!(
                     "({nm} ? {} : nil)",
@@ -391,9 +414,12 @@ mod filters {
                     format!("{nm}.map {{ |v| {coerce_code} }}.to_set")
                 }
             }
-            Type::Map { value_type: t, .. } => {
-                let k_coerce_code = coerce_rb_inner("k", ns, &Type::String, custom_types)?;
-                let v_coerce_code = coerce_rb_inner("v", ns, t, custom_types)?;
+            Type::Map {
+                key_type: kt,
+                value_type: vt,
+            } => {
+                let k_coerce_code = coerce_rb_inner("k", ns, kt, custom_types)?;
+                let v_coerce_code = coerce_rb_inner("v", ns, vt, custom_types)?;
 
                 if k_coerce_code == "k" && v_coerce_code == "v" {
                     nm.to_string()
@@ -433,11 +459,9 @@ mod filters {
             | Type::Optional { .. }
             | Type::Sequence { .. }
             | Type::Set { .. }
-            | Type::Map { .. } => format!(
-                "RustBuffer.check_lower_{}({})",
-                class_name_rb_inner(&canonical_name(type_))?,
-                nm
-            ),
+            | Type::Map { .. } => {
+                format!("RustBuffer.check_lower_{}({})", canonical_name(type_), nm)
+            }
             Type::Custom { name, .. } => {
                 if let Some(cfg) = config.custom_types.get(name) {
                     if let Some(type_name) = &cfg.type_name {
@@ -501,14 +525,14 @@ mod filters {
             | Type::Float32
             | Type::Float64 => nm.to_string(),
             Type::Boolean => format!("({nm} ? 1 : 0)"),
-            Type::String => format!("RustBuffer.allocFromString({nm})"),
-            Type::Bytes => format!("RustBuffer.allocFromBytes({nm})"),
             Type::Object { name, .. } => {
                 format!("({}.uniffi_lower {nm})", class_name_rb_inner(name)?)
             }
             Type::CallbackInterface { name, .. } => {
                 format!(
-                    "raise(NotImplementedError, \"Callback interface {name} is not yet supported in the Ruby bindings\")"
+                    "(CallbackInterface{}FfiConverter.lower {})",
+                    class_name_rb_inner(name)?,
+                    nm
                 )
             }
             Type::Enum { .. }
@@ -517,12 +541,12 @@ mod filters {
             | Type::Sequence { .. }
             | Type::Set { .. }
             | Type::Timestamp
+            | Type::String
+            | Type::Bytes
             | Type::Duration
-            | Type::Map { .. } => format!(
-                "RustBuffer.alloc_from_{}({})",
-                class_name_rb_inner(&canonical_name(type_))?,
-                nm
-            ),
+            | Type::Map { .. } => {
+                format!("RustBuffer.alloc_from_{}({})", canonical_name(type_), nm)
+            }
             Type::Box { .. } => unreachable!(),
             Type::Custom { .. } => unreachable!("Custom types should be handled before dispatch"),
         })
@@ -586,20 +610,18 @@ mod filters {
             | Type::UInt64 => format!("{nm}.to_i"),
             Type::Float32 | Type::Float64 => format!("{nm}.to_f"),
             Type::Boolean => format!("1 == {nm}"),
-            Type::String => format!("{nm}.consumeIntoString"),
-            Type::Bytes => format!("{nm}.consumeIntoBytes"),
             Type::Object { name, .. } => {
-                format!("{}.uniffi_allocate({nm})", class_name_rb_inner(name)?)
+                format!("{}.uniffi_lift({nm})", class_name_rb_inner(name)?)
             }
             Type::CallbackInterface { name, .. } => {
                 format!(
-                    "raise(NotImplementedError, \"Callback interface {name} is not yet supported in the Ruby bindings\")"
+                    "(CallbackInterface{}FfiConverter.lift {nm})",
+                    class_name_rb_inner(name)?
                 )
             }
             Type::Enum { .. } => {
                 format!(
-                    "{}.consumeInto{}",
-                    nm,
+                    "{nm}.consume_into_{}",
                     class_name_rb_inner(&canonical_name(type_))?
                 )
             }
@@ -608,12 +630,10 @@ mod filters {
             | Type::Sequence { .. }
             | Type::Set { .. }
             | Type::Timestamp
+            | Type::String
+            | Type::Bytes
             | Type::Duration
-            | Type::Map { .. } => format!(
-                "{}.consumeInto{}",
-                nm,
-                class_name_rb_inner(&canonical_name(type_))?
-            ),
+            | Type::Map { .. } => format!("{nm}.consume_into_{}", canonical_name(type_)),
             Type::Box { .. } => unreachable!(),
             Type::Custom { name, builtin, .. } => {
                 let lifted = lift_rb_inner(nm, builtin, custom_types)?;
@@ -695,6 +715,24 @@ mod test_type {
             }),
             "OptionalSequenceTypeExample"
         );
+
+        let map = Type::Map {
+            key_type: Box::new(Type::UInt32),
+            value_type: Box::new(Type::UInt32),
+        };
+        assert_eq!(canonical_name(&map), "MapU32U32");
+        assert_eq!(
+            canonical_name(&Type::Enum {
+                module_path: "foo".to_string(),
+                name: "HTMLError".to_string()
+            }),
+            "TypeHTMLError"
+        );
+    }
+
+    #[test]
+    fn test_class_name() {
+        assert_eq!(class_name_rb_inner("Example").unwrap(), "Example");
     }
 }
 

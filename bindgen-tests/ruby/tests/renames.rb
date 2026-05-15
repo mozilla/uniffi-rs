@@ -19,6 +19,8 @@ class TestRenames < Test::Unit::TestCase
 
   def test_rename_enum
     rec = RenamedRecord.new item: 42
+    _enum1 = RenamedEnum::RENAMED_VARIANT.new
+    _enum2 = RenamedEnum::RECORD.new rec
     result = UniffiBindgenTests.renamed_function rec
 
     assert_kind_of RenamedEnum::RECORD, result
