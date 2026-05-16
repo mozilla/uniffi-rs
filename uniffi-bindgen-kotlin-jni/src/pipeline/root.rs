@@ -5,9 +5,12 @@
 use super::*;
 
 pub fn map_root(input: general::Root, context: &Context) -> Result<Root> {
+    let mut context = context.clone();
+    context.update_from_root(&input)?;
+
     Ok(Root {
         cdylib: input.cdylib,
-        packages: Vec::from_iter(input.namespaces.map_node(context)?.into_values()),
+        packages: Vec::from_iter(input.namespaces.map_node(&context)?.into_values()),
     })
 }
 
