@@ -63,6 +63,11 @@ pub enum CallableKind {
 /// Wrap `Type` so that we can add extra fields that are set for all variants.
 #[derive(Debug, Clone, Node, MapNode)]
 #[map_node(from(general::TypeNode))]
+#[map_node(types::map_type_node)]
 pub struct TypeNode {
+    pub id: u64,
     pub ty: Type,
+    pub type_rs: String,
+    pub type_kt: String,
+    pub is_used_as_error: bool,
 }

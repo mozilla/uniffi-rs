@@ -108,5 +108,5 @@ fn _generate_scaffolding() -> Result<()> {
         metadata_no_deps: false,
     };
     let initial_root = load_initial_root(&args)?;
-    scaffolding::generate(initial_root, &Utf8PathBuf::from(out_dir))
+    scaffolding::generate(initial_root, pkg_name, &Utf8PathBuf::from(out_dir))
 }
