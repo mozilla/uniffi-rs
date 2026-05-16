@@ -218,6 +218,7 @@ mod tests {
             orig_name: name.to_string(),
         });
         TypeDefinition::Enum(Enum {
+            module_path: "my_crate".into(),
             name: name.to_string(),
             orig_name: name.to_string(),
             is_flat: false,
@@ -254,6 +255,7 @@ mod tests {
             orig_name: name.to_string(),
         });
         TypeDefinition::Enum(Enum {
+            module_path: "my_crate".into(),
             name: name.to_string(),
             orig_name: name.to_string(),
             is_flat: true,
@@ -319,6 +321,7 @@ mod tests {
             })
             .collect();
         TypeDefinition::Enum(Enum {
+            module_path: "my_crate".into(),
             name: name.to_string(),
             orig_name: name.to_string(),
             is_flat: false,
@@ -341,6 +344,7 @@ mod tests {
             orig_name: name.to_string(),
         });
         TypeDefinition::Record(Record {
+            module_path: "my_crate".into(),
             name: name.to_string(),
             orig_name: name.to_string(),
             self_type,
