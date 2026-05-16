@@ -5,7 +5,7 @@
 use super::*;
 
 pub fn map_function(input: general::Function, context: &Context) -> Result<Function> {
-    let module_path = &input.module_path;
+    let module_path = context.normalize_rust_module_path(&input.module_path)?;
     let fully_qualified_name_rs = format!(
         "{module_path}::{}",
         names::escape_rust(&input.callable.orig_name)
