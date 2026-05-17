@@ -37,6 +37,9 @@ pub fn map_type(ty: uniffi_meta::Type, context: &Context) -> Result<Type> {
             key_type: key_type.map_node(context)?,
             value_type: value_type.map_node(context)?,
         },
+        uniffi_meta::Type::Set { inner_type } => Type::Set {
+            inner_type: inner_type.map_node(context)?,
+        },
         uniffi_meta::Type::Object {
             module_path,
             name,

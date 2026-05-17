@@ -83,6 +83,12 @@ mod filters {
                 type_rs_inner(key_type)?,
                 type_rs_inner(value_type)?
             ),
+            Type::Set { inner_type } => {
+                format!(
+                    "::std::collections::HashSet<{}>",
+                    type_rs_inner(inner_type)?
+                )
+            }
             Type::Custom { name, .. } => format!("r#{name}"),
         })
     }

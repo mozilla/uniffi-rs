@@ -133,6 +133,7 @@ pub enum Literal {
     Enum(String, Type),
     EmptySequence,
     EmptyMap,
+    EmptySet,
     None,
     Some { inner: Box<DefaultValue> },
 }
@@ -268,6 +269,9 @@ pub enum Type {
     Map {
         key_type: Box<Type>,
         value_type: Box<Type>,
+    },
+    Set {
+        inner_type: Box<Type>,
     },
     // User defined types in the API
     Interface {

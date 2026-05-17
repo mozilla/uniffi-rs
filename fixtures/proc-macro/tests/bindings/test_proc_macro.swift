@@ -42,6 +42,10 @@ let three = Three(obj: obj)
 
 assert(makeZero().inner == "ZERO")
 assert(makeRecordWithBytes().someBytes == Data([0, 1, 2, 3, 4]))
+
+assert(makeHashSet(v: "hello") == Set(["hello"]))
+let s: Set<String> = ["a", "b", "c"]
+assert(returnHashSet(h: s) == s)
 assert(join(parts: ["a", "b", "c"], sep: ":") == "a:b:c")
 
 do {
@@ -92,6 +96,7 @@ assert(recordWithImplicitDefaults.afloat == 0.0)
 assert(recordWithImplicitDefaults.adouble == 0.0)
 assert(recordWithImplicitDefaults.vec == [])
 assert(recordWithImplicitDefaults.map == [:])
+assert(recordWithImplicitDefaults.set == Set<String>())
 assert(recordWithImplicitDefaults.someBytes == Data([]))
 assert(recordWithImplicitDefaults.optInt32 == nil)
 assert(recordWithImplicitDefaults.customInteger == 0)

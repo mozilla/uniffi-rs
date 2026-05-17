@@ -44,6 +44,7 @@
 - Ruby: Expose standard Rust traits for generated ruby code (#2883)
 - Added zero-copy transfer of `&[u8]` / `[ByRef] bytes` arguments from foreign code to Rust. Kotlin (`java.nio.ByteBuffer`, must be direct), Swift (`Data`), and Python (`bytes`-like, buffer protocol) pass byte buffers as pointer + length (`ForeignBytes`) rather than copying through `RustBuffer`. Not yet supported on Ruby, and not yet supported in async functions on any language ([#2878](https://github.com/mozilla/uniffi-rs/pull/2878)).
 - `#[uniffi::export(async_runtime = "tokio")]` can now be applied to trait exports, wrapping each method's FFI scaffolding future in `async_compat::Compat` the same way it does for inherent impls and free functions ([#2899](https://github.com/mozilla/uniffi-rs/pull/2899)).
+- Added support for using `HashSet` with proc-macros
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.1...HEAD).
 

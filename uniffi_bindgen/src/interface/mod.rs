@@ -439,6 +439,13 @@ impl ComponentInterface {
             .any(|t| matches!(t, Type::Map { .. }))
     }
 
+    /// Check whether the interface contains any set types
+    pub fn contains_set_types(&self) -> bool {
+        self.types
+            .iter_local_types()
+            .any(|t| matches!(t, Type::Set { .. }))
+    }
+
     /// Check whether the interface contains any object types
     pub fn contains_object_types(&self) -> bool {
         self.types
@@ -1419,7 +1426,8 @@ fn type_names_in_type(ty: &Type) -> Vec<String> {
         Type::Enum { name, .. } | Type::Record { name, .. } => vec![name.clone()],
         Type::Box { inner_type }
         | Type::Optional { inner_type }
-        | Type::Sequence { inner_type } => type_names_in_type(inner_type),
+        | Type::Sequence { inner_type }
+        | Type::Set { inner_type } => type_names_in_type(inner_type),
         Type::Map {
             key_type,
             value_type,

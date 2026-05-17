@@ -37,17 +37,18 @@ UDL supports default values (eg, [`Record`s](../udl/records.md#default-values-fo
 
 The types you can use a natural default with are below.
 
-| Type | Default value |
-|---------|----------------------|
-| `Option` | `None` |
-| `String` | Empty string |
-| `Vec<T>` | Empty list |
-| `HashMap<T>` | Empty map |
-| Builtin numeric types | 0 |
-| `bool` | false |
-| Records | Record with all fields set to their default value (only valid if they all have defaults) |
-| Objects | Primary constructor called with 0 arguments |
-| Custom Types | The default value of the "bridge" type |
+| Type                  | Default value                                                                            |
+|-----------------------|------------------------------------------------------------------------------------------|
+| `Option`              | `None`                                                                                   |
+| `String`              | Empty string                                                                             |
+| `Vec<T>`              | Empty list                                                                               |
+| `HashMap<K, V>`       | Empty map                                                                                |
+| `HashSet<K>`          | Empty set                                                                                |
+| Builtin numeric types | 0                                                                                        |
+| `bool`                | false                                                                                    |
+| Records               | Record with all fields set to their default value (only valid if they all have defaults) |
+| Objects               | Primary constructor called with 0 arguments                                              |
+| Custom Types          | The default value of the "bridge" type                                                   |
 
 ## Literal values
 

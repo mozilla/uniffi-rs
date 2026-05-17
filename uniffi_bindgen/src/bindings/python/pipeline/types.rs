@@ -102,6 +102,9 @@ pub fn type_name(ty: &Type, context: &Context) -> Result<String> {
             type_name(value_type, context)?
         ),
         Type::Box { inner_type } => type_name(inner_type, context)?,
+        Type::Set { inner_type } => {
+            format!("typing.Set[{}]", type_name(inner_type, context)?)
+        }
     })
 }
 
@@ -128,6 +131,10 @@ pub fn type_annotation(ty: &Type, context: &Context) -> Result<String> {
             "dict[{}, {}]",
             type_annotation(key_type, context)?,
             type_annotation(value_type, context)?
+        )),
+        Type::Set { inner_type } => Ok(format!(
+            "typing.Set[{}]",
+            type_annotation(inner_type, context)?
         )),
         _ => type_name(ty, context),
     }

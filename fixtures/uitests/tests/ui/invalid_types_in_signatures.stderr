@@ -11,8 +11,8 @@ error[E0277]: the trait bound `Result<(), ErrorType>: Lift<UniFfiTag>` is not sa
              ErrorType
              ForeignBytes
              HashMap<K, V>
+             HashSet<T>
              Option<T>
-             String
            and $N others
    = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
 
@@ -28,9 +28,9 @@ error[E0277]: the trait bound `Result<(), ErrorType>: uniffi::Lower<UniFfiTag>` 
              Duration
              ErrorType
              HashMap<K, V>
+             HashSet<T>
              Option<T>
              String
-             SystemTime
            and $N others
    = note: required for `Option<Result<(), ErrorType>>` to implement `uniffi::Lower<UniFfiTag>`
    = note: required for `Option<Result<(), ErrorType>>` to implement `LowerReturn<UniFfiTag>`
@@ -49,8 +49,8 @@ error[E0277]: the trait bound `Result<(), ErrorType>: Lift<UniFfiTag>` is not sa
              ErrorType
              ForeignBytes
              HashMap<K, V>
+             HashSet<T>
              Option<T>
-             String
            and $N others
 
 error[E0277]: the trait bound `Result<(), ErrorType>: Lift<UniFfiTag>` is not satisfied
@@ -66,8 +66,8 @@ error[E0277]: the trait bound `Result<(), ErrorType>: Lift<UniFfiTag>` is not sa
              ErrorType
              ForeignBytes
              HashMap<K, V>
+             HashSet<T>
              Option<T>
-             String
            and $N others
 
 error[E0277]: the trait bound `Result<(), ErrorType>: uniffi::Lower<UniFfiTag>` is not satisfied
@@ -82,9 +82,9 @@ error[E0277]: the trait bound `Result<(), ErrorType>: uniffi::Lower<UniFfiTag>` 
              Duration
              ErrorType
              HashMap<K, V>
+             HashSet<T>
              Option<T>
              String
-             SystemTime
            and $N others
    = note: required for `Option<Result<(), ErrorType>>` to implement `uniffi::Lower<UniFfiTag>`
    = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)

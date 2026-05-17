@@ -51,6 +51,10 @@ assert(make_hashmap(1, 2) == {1: 2})
 d = {1: 2}
 assert(return_hashmap(d) == d)
 
+assert(make_hash_set("hello") == {"hello"})
+s = {"a", "b", "c"}
+assert(return_hash_set(s) == s)
+
 assert(join(["a", "b", "c"], ":") == "a:b:c")
 
 try:
@@ -98,6 +102,7 @@ assert(record_with_implicit_defaults.afloat == 0.0)
 assert(record_with_implicit_defaults.adouble == 0.0)
 assert(record_with_implicit_defaults.vec == [])
 assert(record_with_implicit_defaults.map == dict())
+assert(record_with_implicit_defaults.set == set())
 assert(record_with_implicit_defaults.some_bytes == b'')
 assert(record_with_implicit_defaults.opt_int32 is None)
 assert(record_with_implicit_defaults.custom_integer == 0)

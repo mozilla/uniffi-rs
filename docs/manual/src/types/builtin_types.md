@@ -19,6 +19,7 @@ in Rust, and the types used in UDL.
 | `Option<T>`          | `T?`                   |                                                                 |
 | `Vec<T>`             | `sequence<T>`          |                                                                 |
 | `HashMap<K, V>`      | `record<K, T>`         |                                                                 |
+| `HashSet<K>`         | N/A                    |                                                                 |
 | `()`                 | `void`                 | Empty return                                                    |
 | `Result<T, E>`       | N/A                    | See [Errors](./errors.md) section                               |
 

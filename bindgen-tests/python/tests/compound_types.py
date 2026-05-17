@@ -7,12 +7,15 @@ class TestCompoundTypes(unittest.TestCase):
         self.assertEqual(roundtrip_option(None), None)
         self.assertEqual(roundtrip_vec([1, 2, 3]), [1, 2, 3])
         self.assertEqual(roundtrip_hash_map({ "a": 1, "b": 2 }), { "a": 1, "b": 2 })
+        self.assertEqual(roundtrip_hash_set({"a", "b", "c"}), {"a", "b", "c"})
         self.assertEqual(roundtrip_complex_compound([
             { "a": 1, "b": 2 }
         ]), [
             { "a": 1, "b": 2 }
         ])
         self.assertEqual(roundtrip_complex_compound(None), None)
+        self.assertEqual(roundtrip_complex_hash_set([{"a", "b"}]), [{"a", "b"}])
+        self.assertEqual(roundtrip_complex_hash_set(None), None)
 
 if __name__ == '__main__':
     unittest.main()

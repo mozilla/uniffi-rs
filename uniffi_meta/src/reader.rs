@@ -199,6 +199,9 @@ impl<'a> MetadataReader<'a> {
                 key_type: Box::new(self.read_type()?),
                 value_type: Box::new(self.read_type()?),
             },
+            codes::TYPE_HASH_SET => Type::Set {
+                inner_type: Box::new(self.read_type()?),
+            },
             codes::TYPE_UNIT => bail!("Unexpected TYPE_UNIT"),
             codes::TYPE_RESULT => bail!("Unexpected TYPE_RESULT"),
             _ => bail!("Unexpected metadata type code: {value:?}"),
@@ -601,6 +604,7 @@ impl<'a> MetadataReader<'a> {
             },
             codes::LIT_EMPTY_SEQ => LiteralMetadata::EmptySequence,
             codes::LIT_EMPTY_MAP => LiteralMetadata::EmptyMap,
+            codes::LIT_EMPTY_SET => LiteralMetadata::EmptySet,
             _ => bail!("Unexpected literal kind code: {literal_kind:?}"),
         })
     }

@@ -8,9 +8,12 @@ assert(roundtripOption(a: 42) == 42);
 assert(roundtripOption(a: nil) == nil);
 assert(roundtripVec(a: [1, 2, 3]) == [1, 2, 3]);
 assert(roundtripHashMap(a: ["a": 1, "b": 2]) == ["a": 1, "b": 2])
+assert(roundtripHashSet(a: ["a", "b", "c"]) == ["a", "b", "c"])
 assert(roundtripComplexCompound(a: [
     ["a": 1, "b": 2]
 ]) == [
     ["a": 1, "b": 2]
 ])
 assert(roundtripComplexCompound(a: nil) == nil);
+assert(roundtripComplexHashSet(a: [["a", "b"]]) == [["a", "b"]])
+assert(roundtripComplexHashSet(a: nil) == nil)

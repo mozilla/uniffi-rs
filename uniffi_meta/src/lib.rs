@@ -289,6 +289,7 @@ pub enum LiteralMetadata {
     Enum(String, Type),
     EmptySequence,
     EmptyMap,
+    EmptySet,
     None,
     Some { inner: Box<DefaultValueMetadata> },
 }

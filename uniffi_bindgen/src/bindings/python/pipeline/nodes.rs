@@ -92,6 +92,7 @@ pub enum TypeDefinition {
     Optional(OptionalType),
     Sequence(SequenceType),
     Map(MapType),
+    Set(SetType),
     /// User types that are defined in another crate
     External(ExternalType),
 }
@@ -245,6 +246,7 @@ pub enum Literal {
     ),
     EmptySequence,
     EmptyMap,
+    EmptySet,
     None,
     Some {
         inner: Box<DefaultValue>,
@@ -423,6 +425,13 @@ pub struct SequenceType {
 pub struct MapType {
     pub key: TypeNode,
     pub value: TypeNode,
+    pub self_type: TypeNode,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::SetType))]
+pub struct SetType {
+    pub inner: TypeNode,
     pub self_type: TypeNode,
 }
 

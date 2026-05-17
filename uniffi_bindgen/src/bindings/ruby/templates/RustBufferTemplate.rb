@@ -234,6 +234,28 @@ class RustBuffer < FFI::Struct
     end
   end
 
+  {% when Type::Set { inner_type } -%}
+  # The Set<T> type for {{ self::canonical_name(inner_type) }}.
+
+  def self.check_lower_{{ canonical_type_name }}(v)
+    v.each do |item|
+      {{ "item"|check_lower_rb(inner_type.borrow(), config) }}
+    end
+  end
+
+  def self.alloc_from_{{ canonical_type_name }}(v)
+    RustBuffer.allocWithBuilder do |builder|
+      builder.write_{{ canonical_type_name }}(v)
+      return builder.finalize()
+    end
+  end
+
+  def consumeInto{{ canonical_type_name }}
+    consumeWithStream do |stream|
+      return stream.read{{ canonical_type_name }}
+    end
+  end
+
   {% when Type::Map { key_type: k, value_type: inner_type } -%}
   # The Map<T> type for {{ self::canonical_name(inner_type) }}.
 
