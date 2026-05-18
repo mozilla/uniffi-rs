@@ -432,6 +432,32 @@ fn get_say_after_udl_traits() -> Vec<Arc<dyn SayAfterUdlTrait>> {
     vec![Arc::new(SayAfterImpl1), Arc::new(SayAfterImpl2)]
 }
 
+// Example of an async trait whose Rust implementation uses tokio resources.
+#[uniffi::export(with_foreign, async_runtime = "tokio")]
+#[async_trait::async_trait]
+pub trait SayAfterTraitTokio: Send + Sync {
+    async fn say_after(&self, ms: u16, who: String) -> String;
+}
+
+#[async_trait::async_trait]
+impl SayAfterTraitTokio for SayAfterImpl1 {
+    async fn say_after(&self, ms: u16, who: String) -> String {
+        say_after_with_tokio(ms, who).await
+    }
+}
+
+#[async_trait::async_trait]
+impl SayAfterTraitTokio for SayAfterImpl2 {
+    async fn say_after(&self, ms: u16, who: String) -> String {
+        say_after_with_tokio(ms, who).await
+    }
+}
+
+#[uniffi::export]
+fn get_say_after_tokio_traits() -> Vec<Arc<dyn SayAfterTraitTokio>> {
+    vec![Arc::new(SayAfterImpl1), Arc::new(SayAfterImpl2)]
+}
+
 // Async callback interface implemented in foreign code
 #[uniffi::export(with_foreign)]
 #[async_trait::async_trait]
