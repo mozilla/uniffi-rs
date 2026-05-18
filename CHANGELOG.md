@@ -18,6 +18,7 @@
 
 ### What's Fixed
 
+- Kotlin: Fixed JNA direct-mapped `u8`/`u16` return values by widening the internal return carrier to `Int`, which avoids signedness mismatches during checksum validation and other direct-return paths on Android ARM32. ([#2897](https://github.com/mozilla/uniffi-rs/pull/2897))
 - Fixed bug that sometimes prevented renaming items inside a submodule [#2792](https://github.com/mozilla/uniffi-rs/pull/2792)
 - Exempted `UniFfiTag` from `clippy::exhaustive_structs` since downstream projects may depend on it [#2809](https://github.com/mozilla/uniffi-rs/pull/2809)
 - Ruby: Code for all kinds of enums and custom types is now correctly generated #2880 and #2891

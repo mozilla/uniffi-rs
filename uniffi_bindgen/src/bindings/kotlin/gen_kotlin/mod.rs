@@ -504,6 +504,20 @@ impl KotlinCodeOracle {
         }
     }
 
+    /// Kotlin/JNA direct mapping can mis-handle unsigned 8/16-bit direct return values
+    /// on some runtimes, so widen the raw carrier to Int and let the generated
+    /// converters lift it back into the public UByte/UShort API types.
+    fn ffi_type_label_for_direct_return(
+        &self,
+        ffi_type: &FfiType,
+        ci: &ComponentInterface,
+    ) -> String {
+        match ffi_type {
+            FfiType::UInt8 | FfiType::UInt16 => "Int".to_string(),
+            _ => self.ffi_type_label_by_value(ffi_type, ci),
+        }
+    }
+
     /// FFI type name to use inside structs
     ///
     /// The main requirement here is that all types must have default values or else the struct
@@ -851,6 +865,15 @@ mod filters {
     }
 
     #[askama::filter_fn]
+    pub fn ffi_type_name_for_direct_return(
+        type_: &FfiType,
+        _: &dyn askama::Values,
+        ci: &ComponentInterface,
+    ) -> Result<String, askama::Error> {
+        Ok(KotlinCodeOracle.ffi_type_label_for_direct_return(type_, ci))
+    }
+
+    #[askama::filter_fn]
     pub fn ffi_type_name_for_ffi_struct(
         type_: &FfiType,
         _: &dyn askama::Values,
@@ -1060,5 +1083,42 @@ mod test {
         assert!(KotlinVersion::new(1, 2, 3) > KotlinVersion::new(0, 1, 2));
         assert!(KotlinVersion::new(1, 2, 3) > KotlinVersion::new(0, 100, 0));
         assert!(KotlinVersion::new(10, 0, 0) > KotlinVersion::new(1, 10, 0));
+    }
+
+    #[test]
+    fn checksum_functions_use_direct_return_carriers() {
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test_crate {
+                u16 get_value();
+            };
+            "#,
+            "test_crate",
+        )
+        .unwrap();
+        let config = Config {
+            package_name: Some("uniffi.test_crate".to_string()),
+            cdylib_name: Some("test_crate".to_string()),
+            ..Config::default()
+        };
+
+        let bindings = generate_bindings(&config, &ci).unwrap();
+        let checksum_checks = bindings
+            .split("private fun uniffiCheckApiChecksums")
+            .nth(1)
+            .expect("generated checksum checks")
+            .split("/**")
+            .next()
+            .expect("end of generated checksum checks");
+
+        assert!(
+            bindings
+                .contains("external fun uniffi_test_crate_checksum_func_get_value(\n    ): Int"),
+            "checksum functions should use Int as the JNA direct return carrier"
+        );
+        assert!(
+            !checksum_checks.contains(".toShort())"),
+            "checksum comparisons should compare the widened Int carrier directly"
+        );
     }
 }
