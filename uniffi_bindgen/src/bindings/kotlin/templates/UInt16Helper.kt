@@ -6,6 +6,10 @@ public object FfiConverterUShort: FfiConverter<UShort, Short> {
         return value.toUShort()
     }
 
+    fun lift(value: Int): UShort {
+        return value.toUShort()
+    }
+
     override fun read(buf: ByteBuffer): UShort {
         return lift(buf.getShort())
     }
