@@ -58,6 +58,16 @@ pub fn output_u16() -> u16 {
 }
 
 #[uniffi::export]
+pub fn output_u8_max() -> u8 {
+    u8::MAX
+}
+
+#[uniffi::export]
+pub fn output_u16_max() -> u16 {
+    u16::MAX
+}
+
+#[uniffi::export]
 pub fn output_i16() -> i16 {
     1
 }

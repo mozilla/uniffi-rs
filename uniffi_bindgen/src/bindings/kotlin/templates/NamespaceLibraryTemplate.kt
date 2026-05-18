@@ -53,7 +53,7 @@ internal open class {{ ffi_struct.name()|ffi_struct_name }}(
 {% for func in func_list -%}
 external fun {{ func.name() }}(
     {%- call kt::arg_list_ffi_decl(func) %}{% endcall %}
-): {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type.borrow()|ffi_type_name_by_value(ci) }}{% when None %}Unit{% endmatch %}
+): {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type.borrow()|ffi_type_name_for_direct_return(ci) }}{% when None %}Unit{% endmatch %}
 {% endfor %}
 {%- endmacro %}
 
@@ -120,7 +120,7 @@ private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
 @Suppress("UNUSED_PARAMETER")
 private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     {%- for (name, expected_checksum) in ci.iter_checksums() %}
-    if (lib.{{ name }}() != {{ expected_checksum }}.toShort()) {
+    if (lib.{{ name }}() != {{ expected_checksum }}) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     {%- endfor %}
