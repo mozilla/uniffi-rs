@@ -8,6 +8,7 @@
 
 ### What's Fixed
 
+- Kotlin: Fixed JNA direct-mapped `u8`/`u16` return values by widening the internal return carrier to `Int`, which avoids signedness mismatches during checksum validation and other direct-return paths on Android ARM32. ([#2897](https://github.com/mozilla/uniffi-rs/pull/2897))
 - Swift: Fixed `FfiConverterString` silently stripping a leading U+FEFF byte order mark from Rust strings.
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.1...HEAD).
