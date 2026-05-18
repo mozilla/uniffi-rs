@@ -150,6 +150,25 @@ Task {
 	counter.leave()
 }
 
+// Test async trait methods backed by a tokio-using Rust impl
+counter.enter()
+
+Task {
+	let traits = getSayAfterTokioTraits()
+
+	let t0 = Date()
+	let result1 = await traits[0].sayAfter(ms: 1000, who: "Alice")
+	let result2 = await traits[1].sayAfter(ms: 1000, who: "Bob")
+	let t1 = Date()
+
+	assert(result1 == "Hello, Alice (with Tokio)!")
+	assert(result2 == "Hello, Bob (with Tokio)!")
+	let tDelta = DateInterval(start: t0, end: t1)
+	assert(tDelta.duration > 2 && tDelta.duration < 2.1)
+
+	counter.leave()
+}
+
 // Test object with a fallible async ctor.
 counter.enter()
 
