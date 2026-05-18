@@ -26,9 +26,6 @@ pub(super) fn gen_trait_scaffolding(
     with_foreign: bool,
     docstring: String,
 ) -> syn::Result<TokenStream> {
-    if let Some(rt) = args.async_runtime {
-        return Err(syn::Error::new_spanned(rt, "not supported for traits"));
-    }
     let trait_name = ident_to_string(&self_ident);
     let trait_impl = with_foreign.then(|| {
         callback_interface::trait_impl(mod_path, &self_ident, &items, true)
@@ -91,7 +88,9 @@ pub(super) fn gen_trait_scaffolding(
     let impl_tokens: TokenStream = items
         .into_iter()
         .map(|item| match item {
-            ImplItem::Method(sig) => gen_method_scaffolding(sig, None, udl_mode, None),
+            ImplItem::Method(sig) => {
+                gen_method_scaffolding(sig, args.async_runtime.as_ref(), udl_mode, None)
+            }
             _ => unreachable!("traits have no constructors"),
         })
         .collect::<syn::Result<_>>()?;
