@@ -8,6 +8,11 @@ use super::*;
 pub struct Context {
     pub scaffolding_crate_name: Option<String>,
     pub current_crate_name: Option<String>,
+    pub current_namespace_name: Option<String>,
+    // Map namespace names to Rust crates
+    pub crate_map: HashMap<String, String>,
+    // Map namespace names to Config values
+    pub config_map: HashMap<String, Config>,
     pub type_module_path_map: HashMap<Type, String>,
     pub package_map: HashMap<String, String>,
     pub type_id_map: HashMap<Type, u64>,
@@ -18,9 +23,16 @@ impl Context {
         self.populate_type_id_map(root);
         self.populate_type_module_path_map(root);
         for namespace in root.namespaces.values() {
-            let package_name = format!("uniffi.{}", namespace.name);
+            let config = Config::from_toml(namespace.config_toml.as_deref())?;
+            let package_name = match &config.package_name {
+                Some(name) => name.clone(),
+                None => format!("uniffi.{}", namespace.name),
+            };
+            self.config_map.insert(namespace.name.clone(), config);
             self.package_map
                 .insert(namespace.name.clone(), package_name);
+            self.crate_map
+                .insert(namespace.name.clone(), namespace.crate_name.clone());
         }
         Ok(())
     }
@@ -66,6 +78,7 @@ impl Context {
 
     pub fn update_from_namespace(&mut self, namespace: &general::Namespace) {
         self.current_crate_name = Some(namespace.crate_name.clone());
+        self.current_namespace_name = Some(namespace.name.clone());
     }
 
     pub fn current_crate_name(&self) -> Result<&str> {
@@ -107,5 +120,25 @@ impl Context {
         } else {
             Ok(format!("::{module_path}"))
         }
+    }
+
+    pub fn namespace_name(&self) -> Result<&str> {
+        self.current_namespace_name
+            .as_deref()
+            .ok_or_else(|| anyhow!("current_namespace_name not set"))
+    }
+
+    pub fn config(&self) -> Result<&Config> {
+        let namespace_name = self.namespace_name()?;
+        self.config_map
+            .get(namespace_name)
+            .ok_or_else(|| anyhow!("config not found: {namespace_name}"))
+    }
+
+    pub fn crate_name(&self, namespace_name: &str) -> Result<&str> {
+        self.crate_map
+            .get(namespace_name)
+            .map(|s| s.as_str())
+            .ok_or_else(|| anyhow!("crate name not found: {namespace_name}"))
     }
 }
