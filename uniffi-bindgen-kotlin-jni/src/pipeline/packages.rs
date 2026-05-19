@@ -7,15 +7,11 @@ use super::*;
 pub fn map_namespace(input: general::Namespace, context: &Context) -> Result<Package> {
     let mut context = context.clone();
     context.update_from_namespace(&input);
-    let config = Config::from_toml(input.config_toml)?;
 
     Ok(Package {
-        name: match &config.package_name {
-            Some(name) => name.clone(),
-            None => format!("uniffi.{}", input.name),
-        },
+        name: context.package_name_for_namespace(&input.name)?.to_string(),
         crate_name: input.name,
-        config,
+        config: context.config()?.clone(),
         functions: input.functions.map_node(&context)?,
     })
 }
