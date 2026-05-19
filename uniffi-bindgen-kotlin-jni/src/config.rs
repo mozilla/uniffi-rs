@@ -12,33 +12,49 @@ use uniffi_pipeline::Node;
 pub struct Config {
     pub(super) package_name: Option<String>,
     pub(super) cdylib_name: Option<String>,
-    generate_immutable_records: Option<bool>,
+    pub generate_immutable_records: Option<bool>,
     #[serde(default)]
-    mutable_records: IndexSet<String>,
+    pub mutable_records: IndexSet<String>,
     #[serde(default)]
-    omit_checksums: bool,
+    pub omit_checksums: bool,
     #[serde(default)]
-    custom_types: IndexMap<String, CustomTypeConfig>,
+    pub custom_types: IndexMap<String, CustomTypeConfig>,
     #[serde(default)]
-    pub(super) external_packages: IndexMap<String, String>,
+    pub android: bool,
     #[serde(default)]
-    android: bool,
+    pub android_cleaner: Option<bool>,
     #[serde(default)]
-    android_cleaner: Option<bool>,
+    pub kotlin_target_version: Option<String>,
     #[serde(default)]
-    kotlin_target_version: Option<String>,
-    #[serde(default)]
-    disable_java_cleaner: bool,
+    pub disable_java_cleaner: bool,
     #[serde(default)]
     pub(super) exclude: Vec<String>,
+    // Note: we ignore `external_packages`.  We don't need it since we process all packages at once
+    // and know all the names.
 }
 
 impl Config {
-    pub fn from_toml(config_toml: Option<String>) -> Result<Self> {
-        Ok(match config_toml {
-            Some(s) => toml::from_str(&s)?,
-            None => Self::default(),
-        })
+    pub fn from_toml(config_toml: Option<&str>) -> Result<Self> {
+        let Some(config_toml) = config_toml else {
+            return Ok(Self::default());
+        };
+
+        #[derive(Deserialize, Default)]
+        pub struct ToplevelConfig {
+            #[serde(default)]
+            bindings: BindingsConfig,
+        }
+        #[derive(Deserialize, Default)]
+        pub struct BindingsConfig {
+            #[serde(default)]
+            kotlin: Config,
+        }
+        let top_level: ToplevelConfig = toml::from_str(config_toml)?;
+        Ok(top_level.bindings.kotlin)
+    }
+
+    pub fn record_is_immutable(&self, name: &str) -> bool {
+        self.generate_immutable_records == Some(true) || self.mutable_records.contains(name)
     }
 
     pub(crate) fn android_cleaner(&self) -> bool {
@@ -62,36 +78,22 @@ impl Config {
             })
             .unwrap_or(KotlinVersion::new(0, 0, 0))
     }
-
-    // Get the package name for an external type
-    fn external_package_name(&self, module_path: &str, namespace: Option<&str>) -> String {
-        // config overrides are keyed by the crate name, default fallback is the namespace.
-        let crate_name = module_path.split("::").next().unwrap();
-        match self.external_packages.get(crate_name) {
-            Some(name) => name.clone(),
-            // If the module path is not in `external_packages`, we need to fall back to a default
-            // with the namespace, which we hopefully have.  This is quite fragile, but it's
-            // unreachable in library mode - all deps get an entry in `external_packages` with the
-            // correct namespace.
-            None => format!("uniffi.{}", namespace.unwrap_or(module_path)),
-        }
-    }
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, Node)]
 #[serde(default)]
 pub struct CustomTypeConfig {
-    imports: Option<Vec<String>>,
-    type_name: Option<String>,
-    into_custom: String, // b/w compat alias for lift
-    lift: String,
-    from_custom: String, // b/w compat alias for lower
-    lower: String,
+    pub imports: Option<Vec<String>>,
+    pub type_name: Option<String>,
+    pub into_custom: String, // b/w compat alias for lift
+    pub lift: String,
+    pub from_custom: String, // b/w compat alias for lower
+    pub lower: String,
 }
 
 // functions replace literal "{}" in strings with a specified value.
 impl CustomTypeConfig {
-    fn lift(&self, name: &str) -> String {
+    pub fn lift(&self, name: &str) -> String {
         let converter = if self.lift.is_empty() {
             &self.into_custom
         } else {
@@ -99,7 +101,7 @@ impl CustomTypeConfig {
         };
         converter.replace("{}", name)
     }
-    fn lower(&self, name: &str) -> String {
+    pub fn lower(&self, name: &str) -> String {
         let converter = if self.lower.is_empty() {
             &self.from_custom
         } else {
