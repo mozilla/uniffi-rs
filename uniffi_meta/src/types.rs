@@ -114,6 +114,9 @@ pub enum Type {
         key_type: Box<Type>,
         value_type: Box<Type>,
     },
+    Set {
+        inner_type: Box<Type>,
+    },
     // Custom type on the scaffolding side
     Custom {
         module_path: String,
@@ -131,9 +134,9 @@ impl Type {
     // iterate over all types contained in the type but *not including self*.
     pub fn iter_nested_types(&self) -> TypeIterator<'_> {
         match self {
-            Type::Optional { inner_type } | Type::Sequence { inner_type } => {
-                inner_type.iter_types()
-            }
+            Type::Optional { inner_type }
+            | Type::Sequence { inner_type }
+            | Type::Set { inner_type } => inner_type.iter_types(),
             Type::Map {
                 key_type,
                 value_type,
@@ -189,7 +192,9 @@ impl Type {
 
         // Recursively rename nested types
         match self {
-            Type::Optional { inner_type } | Type::Sequence { inner_type } => {
+            Type::Optional { inner_type }
+            | Type::Sequence { inner_type }
+            | Type::Set { inner_type } => {
                 inner_type.rename_recursive(name_transformer);
             }
             Type::Map {

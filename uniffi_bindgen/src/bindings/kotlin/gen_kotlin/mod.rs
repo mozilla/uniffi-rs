@@ -648,6 +648,7 @@ impl<T: AsType> AsCodeType for T {
                 key_type,
                 value_type,
             } => Box::new(compounds::MapCodeType::new(*key_type, *value_type)),
+            Type::Set { inner_type } => Box::new(compounds::SetCodeType::new(*inner_type)),
             Type::Custom { name, builtin, .. } => {
                 Box::new(custom::CustomCodeType::new(name, builtin.as_codetype()))
             }
@@ -777,6 +778,10 @@ mod filters {
                 "Map<{}, {}>",
                 fully_qualified_type_label(key_type, ci, config)?,
                 fully_qualified_type_label(value_type, ci, config)?
+            )),
+            Type::Set { inner_type } => Ok(format!(
+                "Set<{}>",
+                fully_qualified_type_label(inner_type, ci, config)?
             )),
             Type::Enum { .. }
             | Type::Record { .. }

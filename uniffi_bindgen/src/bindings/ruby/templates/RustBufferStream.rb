@@ -276,6 +276,23 @@ class RustBufferStream
     items
   end
 
+  {% when Type::Set { inner_type } -%}
+  # The Set<T> type for {{ self::canonical_name(inner_type) }}.
+
+  def read{{ canonical_type_name }}
+    count = unpack_from 4, 'l>'
+
+    raise InternalError, 'Unexpected negative set size' if count.negative?
+
+    items = Set.new
+
+    count.times do
+      items.add read{{ self::canonical_name(inner_type).borrow()|class_name_rb }}
+    end
+
+    items
+  end
+
   {% when Type::Map { key_type: k, value_type: inner_type } -%}
   # The Map<T> type for {{ self::canonical_name(inner_type) }}.
 

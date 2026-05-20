@@ -46,6 +46,7 @@ pub fn ffi_type(ty: &Type, context: &Context) -> Result<FfiType> {
         Type::Optional { .. }
         | Type::Sequence { .. }
         | Type::Map { .. }
+        | Type::Set { .. }
         | Type::Timestamp
         | Type::Duration => FfiType::RustBuffer(None),
         Type::Custom {

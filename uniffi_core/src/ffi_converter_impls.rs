@@ -29,7 +29,7 @@ use crate::{
 use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     convert::TryFrom,
     fmt::{Debug, Display},
     sync::Arc,
@@ -474,6 +474,60 @@ derive_ffi_traits!(impl<K, V, UT> LowerReturn<UT> for HashMap<K, V> where HashMa
 derive_ffi_traits!(impl<K, V, UT> LowerError<UT> for HashMap<K, V> where HashMap<K, V>: Lower<UT>);
 derive_ffi_traits!(impl<K, V, UT> LiftReturn<UT> for HashMap<K, V> where HashMap<K, V>: Lift<UT>);
 derive_ffi_traits!(impl<K, V, UT> LiftRef<UT> for HashMap<K, V> where HashMap<K, V>: Lift<UT>);
+
+unsafe impl<T, UT> Lower<UT> for HashSet<T>
+where
+    T: Lower<UT> + std::hash::Hash + Eq,
+{
+    type FfiType = RustBuffer;
+
+    fn lower(obj: HashSet<T>) -> RustBuffer {
+        Self::lower_into_rust_buffer(obj)
+    }
+
+    fn write(obj: HashSet<T>, buf: &mut Vec<u8>) {
+        // TODO: would be nice not to panic here :-/
+        let len = i32::try_from(obj.len()).unwrap();
+        buf.put_i32(len); // We limit HashSets to i32::MAX entries
+        for item in obj {
+            <T as Lower<UT>>::write(item, buf);
+        }
+    }
+}
+
+unsafe impl<T, UT> Lift<UT> for HashSet<T>
+where
+    T: Lift<UT> + std::hash::Hash + Eq,
+{
+    type FfiType = RustBuffer;
+
+    fn try_lift(buf: RustBuffer) -> Result<HashSet<T>> {
+        Self::try_lift_from_rust_buffer(buf)
+    }
+
+    fn try_read(buf: &mut &[u8]) -> Result<HashSet<T>> {
+        check_remaining(buf, 4)?;
+        let len = usize::try_from(buf.get_i32())?;
+        let mut set = HashSet::with_capacity(len);
+        for _ in 0..len {
+            set.insert(<T as Lift<UT>>::try_read(buf)?);
+        }
+        Ok(set)
+    }
+}
+
+impl<T, UT> TypeId<UT> for HashSet<T>
+where
+    T: TypeId<UT> + std::hash::Hash + Eq,
+{
+    const TYPE_ID_META: MetadataBuffer =
+        MetadataBuffer::from_code(metadata::codes::TYPE_HASH_SET).concat(T::TYPE_ID_META);
+}
+
+derive_ffi_traits!(impl<T, UT> LowerReturn<UT> for HashSet<T> where HashSet<T>: Lower<UT>);
+derive_ffi_traits!(impl<T, UT> LowerError<UT> for HashSet<T> where HashSet<T>: Lower<UT>);
+derive_ffi_traits!(impl<T, UT> LiftReturn<UT> for HashSet<T> where HashSet<T>: Lift<UT>);
+derive_ffi_traits!(impl<T, UT> LiftRef<UT> for HashSet<T> where HashSet<T>: Lift<UT>);
 
 // For Arc we derive all the traits, but have to write it all out because we need an unsized T bound
 derive_ffi_traits!(impl<T, UT> Lower<UT> for Arc<T> where Arc<T>: FfiConverter<UT>, T: ?Sized);

@@ -64,6 +64,7 @@ pub fn canonical_name(t: &Type) -> String {
         // acccidentally generating name collisions.
         Type::Optional { inner_type } => format!("Optional{}", canonical_name(inner_type)),
         Type::Sequence { inner_type } => format!("Sequence{}", canonical_name(inner_type)),
+        Type::Set { inner_type } => format!("Set{}", canonical_name(inner_type)),
         Type::Map {
             key_type,
             value_type,
@@ -213,6 +214,7 @@ mod filters {
             Literal::Some { inner } => default_rb_inner(inner)?,
             Literal::EmptySequence => "[]".into(),
             Literal::EmptyMap => "{}".into(),
+            Literal::EmptySet => "Set.new".into(),
             Literal::Enum(v, type_) => match type_ {
                 Type::Enum { name, .. } => {
                     format!("{}::{}", class_name_rb_inner(name)?, enum_name_rb_inner(v)?)
@@ -252,6 +254,7 @@ mod filters {
             Type::Sequence { .. } => "[]".to_string(),
             Type::Bytes => "\"\".b".to_string(),
             Type::Map { .. } => "{}".to_string(),
+            Type::Set { .. } => "Set.new".to_string(),
             // Named types with no-arg constructors
             Type::Record { name, .. } | Type::Object { name, .. } => {
                 format!("{}.new", class_name_rb_inner(name)?)
@@ -380,6 +383,14 @@ mod filters {
                     format!("{nm}.map {{ |v| {coerce_code} }}")
                 }
             }
+            Type::Set { inner_type: t } => {
+                let coerce_code = coerce_rb_inner("v", ns, t, custom_types)?;
+                if coerce_code == "v" {
+                    nm.to_string()
+                } else {
+                    format!("{nm}.map {{ |v| {coerce_code} }}.to_set")
+                }
+            }
             Type::Map { value_type: t, .. } => {
                 let k_coerce_code = coerce_rb_inner("k", ns, &Type::String, custom_types)?;
                 let v_coerce_code = coerce_rb_inner("v", ns, t, custom_types)?;
@@ -421,6 +432,7 @@ mod filters {
             | Type::Record { .. }
             | Type::Optional { .. }
             | Type::Sequence { .. }
+            | Type::Set { .. }
             | Type::Map { .. } => format!(
                 "RustBuffer.check_lower_{}({})",
                 class_name_rb_inner(&canonical_name(type_))?,
@@ -503,6 +515,7 @@ mod filters {
             | Type::Record { .. }
             | Type::Optional { .. }
             | Type::Sequence { .. }
+            | Type::Set { .. }
             | Type::Timestamp
             | Type::Duration
             | Type::Map { .. } => format!(
@@ -593,6 +606,7 @@ mod filters {
             Type::Record { .. }
             | Type::Optional { .. }
             | Type::Sequence { .. }
+            | Type::Set { .. }
             | Type::Timestamp
             | Type::Duration
             | Type::Map { .. } => format!(

@@ -14,6 +14,7 @@
 # helpers directly inline like we're doing here.
 
 require 'ffi'
+require 'set'
 
 
 module {{ ci.namespace()|class_name_rb }}

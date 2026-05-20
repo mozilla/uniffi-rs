@@ -225,6 +225,17 @@ class RustBufferBuilder
     end
   end
 
+  {% when Type::Set { inner_type } -%}
+  # The Set<T> type for {{ self::canonical_name(inner_type) }}.
+
+  def write_{{ canonical_type_name }}(items)
+    pack_into(4, 'l>', items.size)
+
+    items.each do |item|
+      self.write_{{ self::canonical_name(inner_type).borrow()|class_name_rb }}(item)
+    end
+  end
+
   {% when Type::Map { key_type: k, value_type: inner_type } -%}
   # The Map<T> type for {{ self::canonical_name(inner_type) }}.
 

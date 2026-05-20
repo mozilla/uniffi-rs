@@ -44,6 +44,9 @@ pub fn canonical_name(ty: &Type) -> String {
             canonical_name(value_type),
         ),
         Type::Box { inner_type } => format!("Box{}", canonical_name(inner_type)),
+        Type::Set { inner_type } => {
+            format!("Set{}", canonical_name(inner_type))
+        }
     }
 }
 
@@ -91,6 +94,9 @@ pub fn map_type(mut ty: Type, context: &Context) -> Result<Type> {
         } => Type::Map {
             key_type: Box::new(map_type(*key_type, context)?),
             value_type: Box::new(map_type(*value_type, context)?),
+        },
+        Type::Set { inner_type } => Type::Set {
+            inner_type: Box::new(map_type(*inner_type, context)?),
         },
         // All other types can be returned unchanged
         _ => ty,

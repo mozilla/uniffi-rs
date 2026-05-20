@@ -97,6 +97,9 @@
 {%- when Type::Map { key_type, value_type } %}
 {%- include "MapTemplate.swift" %}
 
+{%- when Type::Set { inner_type } %}
+{%- include "SetTemplate.swift" %}
+
 {%- else %}
 {%- endmatch %}
 {%- endfor %}

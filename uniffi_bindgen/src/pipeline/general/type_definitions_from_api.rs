@@ -70,6 +70,12 @@ pub fn type_definitions(
                     self_type,
                 }));
             }
+            Type::Set { inner_type } => {
+                type_definitions.push(TypeDefinition::Set(SetType {
+                    inner: (*inner_type).map_node(context)?,
+                    self_type,
+                }));
+            }
             Type::Record {
                 namespace: namespace_name,
                 name,

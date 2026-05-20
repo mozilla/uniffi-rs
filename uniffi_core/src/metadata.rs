@@ -71,6 +71,7 @@ pub mod codes {
     pub const TYPE_TRAIT_INTERFACE: u8 = 24;
     pub const TYPE_CALLBACK_TRAIT_INTERFACE: u8 = 25;
     pub const TYPE_BOX: u8 = 26;
+    pub const TYPE_HASH_SET: u8 = 27;
     pub const TYPE_UNIT: u8 = 255;
 
     // Literal codes for LiteralMetadata
@@ -82,6 +83,7 @@ pub mod codes {
     pub const LIT_SOME: u8 = 5;
     pub const LIT_EMPTY_SEQ: u8 = 6;
     pub const LIT_EMPTY_MAP: u8 = 7;
+    pub const LIT_EMPTY_SET: u8 = 8;
 
     // DefaultValue codes
     pub const DEFVALUE_DEFAULT: u8 = 0;

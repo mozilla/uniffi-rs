@@ -30,6 +30,10 @@ val three = Three(obj)
 
 assert(makeZero().inner == "ZERO")
 assert(makeRecordWithBytes().someBytes.contentEquals(byteArrayOf(0, 1, 2, 3, 4)))
+
+assert(makeHashSet("hello") == setOf("hello"))
+val hashSet: Set<String> = setOf("a", "b", "c")
+assert(returnHashSet(hashSet) == hashSet)
 assert(join(listOf("a", "b", "c"), ":") == "a:b:c")
 
 try {
@@ -73,6 +77,7 @@ assert(recordWithImplicitDefaults.afloat == 0f)
 assert(recordWithImplicitDefaults.adouble == 0.0)
 assert(recordWithImplicitDefaults.vec.isEmpty())
 assert(recordWithImplicitDefaults.map == emptyMap<String, String>())
+assert(recordWithImplicitDefaults.set == emptySet<String>())
 assert(recordWithImplicitDefaults.someBytes.size == 0)
 assert(recordWithImplicitDefaults.customInteger == 0)
 

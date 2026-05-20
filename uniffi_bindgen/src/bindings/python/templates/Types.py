@@ -75,6 +75,9 @@
 {%- when TypeDefinition::Map(map) %}
 {%- include "MapTemplate.py" %}
 
+{%- when TypeDefinition::Set(set) %}
+{%- include "SetTemplate.py" %}
+
 {%- when TypeDefinition::Enum(e) %}
 {# For enums, there are either an error *or* an enum, they can't be both. #}
 {%- if e.self_type.is_used_as_error %}

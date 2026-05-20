@@ -42,6 +42,7 @@ pub fn render_default(default: &general::DefaultValue, context: &Context) -> Res
             Type::Optional { .. } => "None".to_string(),
             Type::Map { .. } => "{}".to_string(),
             Type::Sequence { .. } => "[]".to_string(),
+            Type::Set { .. } => "{*()}".to_string(),
             Type::Custom { builtin, .. } => {
                 return render_default(
                     &general::DefaultValue::Default(general::TypeNode {
@@ -77,6 +78,7 @@ pub fn render_literal(lit: &general::Literal, context: &Context) -> Result<Strin
         general::Literal::Float(value, _) => value.clone(),
         general::Literal::EmptySequence => "[]".to_string(),
         general::Literal::EmptyMap => "{}".to_string(),
+        general::Literal::EmptySet => "{*()}".to_string(),
         general::Literal::None => "None".to_string(),
         general::Literal::Some { inner } => match **inner {
             general::DefaultValue::Literal(ref lit) => render_literal(lit, context)?,

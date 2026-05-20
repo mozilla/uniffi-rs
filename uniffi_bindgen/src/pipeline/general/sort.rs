@@ -140,6 +140,7 @@ impl DependencyLogic for TypeDefinitionDependencyLogic {
             | TypeDefinition::Optional(OptionalType { self_type, .. })
             | TypeDefinition::Sequence(SequenceType { self_type, .. })
             | TypeDefinition::Map(MapType { self_type, .. })
+            | TypeDefinition::Set(SetType { self_type, .. })
             | TypeDefinition::Record(Record { self_type, .. })
             | TypeDefinition::Enum(Enum { self_type, .. })
             | TypeDefinition::Interface(Interface { self_type, .. })
@@ -156,7 +157,8 @@ impl DependencyLogic for TypeDefinitionDependencyLogic {
             TypeDefinition::Simple(_) => vec![],
             TypeDefinition::Box(BoxedType { inner, .. })
             | TypeDefinition::Optional(OptionalType { inner, .. })
-            | TypeDefinition::Sequence(SequenceType { inner, .. }) => {
+            | TypeDefinition::Sequence(SequenceType { inner, .. })
+            | TypeDefinition::Set(SetType { inner, .. }) => {
                 vec![inner.canonical_name.clone()]
             }
             TypeDefinition::Map(MapType { key, value, .. }) => {

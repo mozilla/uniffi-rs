@@ -13,7 +13,7 @@ Concepts from the UDL file map into Swift as follows:
 * An enum declared `enum T` or `[Enum] interface T` is represented as a Swift
   `enum T` with appropriate variants.
 * Optional types are represented using Swift's builtin optional type syntax `T?`.
-* Sequences are represented as Swift arrays, and Maps as Swift dictionaries.
+* Sequences are represented as Swift arrays, Maps as Swift dictionaries, and Sets as Swift Sets.
 * Errors are represented as Swift enums that conform to the `Error` protocol.
 * Function calls that have an associated error type are marked with `throws`,
   and hence must be called using one of Swift's `try` syntax variants.

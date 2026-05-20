@@ -2,7 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::{collections::HashMap, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
 mod callback_interface;
 
@@ -182,6 +185,16 @@ fn make_hashmap(k: i8, v: u64) -> HashMap<i8, u64> {
 
 #[uniffi::export]
 fn return_hashmap(h: HashMap<i8, u64>) -> HashMap<i8, u64> {
+    h
+}
+
+#[uniffi::export]
+fn make_hash_set(v: String) -> HashSet<String> {
+    HashSet::from([v])
+}
+
+#[uniffi::export]
+fn return_hash_set(h: HashSet<String>) -> HashSet<String> {
     h
 }
 
@@ -468,6 +481,8 @@ pub struct RecordWithImplicitDefaults {
     vec: Vec<bool>,
     #[uniffi(default)]
     map: HashMap<String, String>,
+    #[uniffi(default)]
+    set: HashSet<String>,
     #[uniffi(default)]
     some_bytes: Vec<u8>,
     #[uniffi(default)]

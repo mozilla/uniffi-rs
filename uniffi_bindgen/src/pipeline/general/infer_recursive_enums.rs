@@ -126,7 +126,8 @@ fn type_names_in_type(ty: &Type) -> Vec<String> {
         Type::Enum { name, .. } | Type::Record { name, .. } => vec![name.clone()],
         Type::Box { inner_type }
         | Type::Optional { inner_type }
-        | Type::Sequence { inner_type } => type_names_in_type(inner_type),
+        | Type::Sequence { inner_type }
+        | Type::Set { inner_type } => type_names_in_type(inner_type),
         Type::Map {
             key_type,
             value_type,

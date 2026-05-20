@@ -115,3 +115,39 @@ impl CodeType for MapCodeType {
         }
     }
 }
+
+#[derive(Debug)]
+pub struct SetCodeType {
+    inner: Type,
+}
+
+impl SetCodeType {
+    pub fn new(inner: Type) -> Self {
+        Self { inner }
+    }
+}
+
+impl CodeType for SetCodeType {
+    fn type_label(&self) -> String {
+        format!(
+            "Set<{}>",
+            super::SwiftCodeOracle.find(&self.inner).type_label()
+        )
+    }
+
+    fn canonical_name(&self) -> String {
+        format!(
+            "Set{}",
+            super::SwiftCodeOracle.find(&self.inner).canonical_name()
+        )
+    }
+
+    fn default(&self, default: &DefaultValue) -> Result<String> {
+        match default {
+            DefaultValue::Default | DefaultValue::Literal(Literal::EmptySequence) => {
+                Ok("Set()".into())
+            }
+            _ => bail!("Invalid literal for set type: {default:?}"),
+        }
+    }
+}
