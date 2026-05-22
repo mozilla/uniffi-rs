@@ -35,6 +35,9 @@ pub fn type_rs(ty: &Type, context: &Context) -> Result<String> {
         Type::Float64 => "::std::primitive::f64".into(),
         Type::Boolean => "::std::primitive::bool".into(),
         Type::String => "::std::string::String".into(),
+        Type::Optional { inner_type } => {
+            format!("::std::option::Option::<{}>", type_rs(inner_type, context)?)
+        }
         Type::Record { orig_name, .. }
         | Type::Enum { orig_name, .. }
         | Type::Custom { orig_name, .. } => {
@@ -58,6 +61,9 @@ pub fn type_kt(ty: &Type, context: &Context) -> Result<String> {
         Type::Float64 => "kotlin.Double".into(),
         Type::Boolean => "kotlin.Boolean".into(),
         Type::String => "kotlin.String".into(),
+        Type::Optional { inner_type } => {
+            format!("{}?", type_kt(inner_type, context)?)
+        }
         Type::Record {
             namespace, name, ..
         }
@@ -299,7 +305,44 @@ impl TypeNode {
             .iter()
             .map(|ffi_type| ffi_type.jni_signature())
             .collect();
-        let ret = format!("L{};", self.type_kt.replace(".", "/").replace("`", ""));
+        let ret = self.jni_return_signature();
         format!("({args}){ret}")
+    }
+
+    fn jni_return_signature(&self) -> String {
+        let mut type_name = self.type_kt.as_str();
+
+        if let Some(inner) = type_name.strip_suffix("?") {
+            // Some optional types get special-cased.
+            // For others, remove the trailing `?`.
+            match inner {
+                // Optional primitives are passed as the boxed versions of themselves
+                "kotlin.Byte" => return "Ljava/lang/Byte;".into(),
+                "kotlin.Short" => return "Ljava/lang/Short;".into(),
+                "kotlin.Int" => return "Ljava/lang/Int;".into(),
+                "kotlin.Long" => return "Ljava/lang/Long;".into(),
+                "kotlin.Float" => return "Ljava/lang/Float;".into(),
+                "kotlin.Double" => return "Ljava/lang/Double;".into(),
+                "kotlin.Boolean" => return "Ljava/lang/Boolean;".into(),
+                // The boxed class comes from Kotlin for unsigned types
+                "kotlin.UByte" => return "Lkotlin/UByte;".into(),
+                "kotlin.UShort" => return "Lkotlin/UShort;".into(),
+                "kotlin.UInt" => return "Lkotlin/UInt;".into(),
+                "kotlin.ULong" => return "Lkotlin/ULong;".into(),
+                inner => type_name = inner,
+            }
+        }
+
+        match type_name {
+            // Primitive types
+            "kotlin.Byte" | "kotlin.UByte" => "B".into(),
+            "kotlin.Short" | "kotlin.UShort" => "S".into(),
+            "kotlin.Int" | "kotlin.UInt" => "I".into(),
+            "kotlin.Long" | "kotlin.ULong" => "J".into(),
+            "kotlin.Float" => "F".into(),
+            "kotlin.Double" => "D".into(),
+            "kotlin.Boolean" => "Z".into(),
+            type_name => format!("L{};", type_name.replace(".", "/").replace("`", "")),
+        }
     }
 }
