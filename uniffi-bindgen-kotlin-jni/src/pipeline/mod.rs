@@ -4,6 +4,7 @@
 
 mod callables;
 mod context;
+mod defaults;
 mod ffi_types;
 mod names;
 mod nodes;
@@ -17,7 +18,7 @@ use std::collections::{HashMap, HashSet};
 use anyhow::{anyhow, bail, Result};
 use context::Context;
 use ffi_types::FfiTypeOracle;
-use heck::{ToLowerCamelCase, ToUpperCamelCase};
+use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use indexmap::IndexSet;
 use uniffi_bindgen::pipeline::{general, initial};
 use uniffi_pipeline::{MapNode, Node, Pipeline};
