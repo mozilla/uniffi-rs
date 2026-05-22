@@ -48,6 +48,7 @@ impl Root {
                 seen.insert(match type_def {
                     TypeDefinition::Record(r) => r.self_type.id,
                     TypeDefinition::Enum(e) => e.self_type.id,
+                    TypeDefinition::Optional(o) => o.self_type.id,
                 })
             })
     }

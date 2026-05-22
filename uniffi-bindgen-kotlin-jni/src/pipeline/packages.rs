@@ -30,6 +30,9 @@ pub fn map_type_definitions(
             general::TypeDefinition::Enum(en) => {
                 mapped.push(TypeDefinition::Enum(en.map_node(context)?));
             }
+            general::TypeDefinition::Optional(opt) => {
+                mapped.push(TypeDefinition::Optional(opt.map_node(context)?));
+            }
             // All other variants are still TODO
             _ => (),
         }

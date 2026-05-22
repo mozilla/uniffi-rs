@@ -24,6 +24,8 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
     {%- filter indent(4) %}{% include "record.rs" %}{% endfilter %}
     {%- when TypeDefinition::Enum(en) %}
     {%- filter indent(4) %}{% include "enum.rs" %}{% endfilter %}
+    {%- when TypeDefinition::Optional(opt) %}
+    {%- filter indent(4) %}{% include "optional.rs" %}{% endfilter %}
     {%- endmatch %}
     {%- endfor %}
 }

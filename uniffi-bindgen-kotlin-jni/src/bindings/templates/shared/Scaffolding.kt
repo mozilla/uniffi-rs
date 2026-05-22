@@ -1,5 +1,6 @@
 object Scaffolding {
     {%- for (jni_method_name, callable) in root.jni_methods() %}
+    @JvmName("{{ jni_method_name }}")
     @JvmStatic external fun {{ jni_method_name }}(
         {%- for ffi_arg in callable.ffi_arguments() %}
         {{ ffi_arg.name_kt() }}: {{ ffi_arg.ty.type_kt() }},
