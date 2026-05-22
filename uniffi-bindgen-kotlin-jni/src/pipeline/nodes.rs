@@ -53,6 +53,7 @@ pub struct Field {
     pub name: String,
     pub index: usize,
     pub ty: TypeNode,
+    pub default: Option<DefaultValueNode>,
     pub docstring: Option<String>,
     pub ffi_fields: Vec<FfiField>,
 }
@@ -159,4 +160,46 @@ pub enum FfiType {
     Boolean,
     String,
     ByteArray,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::Literal))]
+#[map_node(defaults::map_literal)]
+pub struct LiteralNode {
+    pub lit_kt: String,
+    pub lit: Literal,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::DefaultValue))]
+#[map_node(defaults::map_default)]
+pub struct DefaultValueNode {
+    pub default_kt: String,
+    pub default: DefaultValue,
+}
+
+/// Default value for a field/argument
+///
+/// This sets the arg/field type in the case where the user just specified `default`.
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::DefaultValue))]
+pub enum DefaultValue {
+    Literal(Literal),
+    Default(TypeNode),
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::Literal))]
+pub enum Literal {
+    Boolean(bool),
+    String(String),
+    UInt(u64, Radix, TypeNode),
+    Int(i64, Radix, TypeNode),
+    Float(String, TypeNode),
+    Enum(String, TypeNode),
+    EmptySequence,
+    EmptyMap,
+    EmptySet,
+    None,
+    Some { inner: Box<DefaultValue> },
 }
