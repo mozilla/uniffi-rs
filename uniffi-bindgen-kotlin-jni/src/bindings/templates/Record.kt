@@ -3,7 +3,9 @@
 data class {{ type_name }} (
     {%- for field in rec.fields.iter() %}
     {% if rec.immutable %}val {% else %}var {% endif %}
-    {{- field.name_kt() }}: {{ field.ty.type_kt -}},
+    {{- field.name_kt() }}: {{ field.ty.type_kt -}}
+    {%- if let Some(default) = field.default %} = {{ default.default_kt }}{% endif -%}
+    ,
     {%- endfor %}
 ) {
     companion object
