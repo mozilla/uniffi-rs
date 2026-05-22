@@ -36,3 +36,102 @@ fun lowerString(v: kotlin.String): kotlin.String? = v
 
 fun liftBytes(v: kotlin.ByteArray?): kotlin.ByteArray = v!!
 fun lowerBytes(v: kotlin.ByteArray): kotlin.ByteArray? = v
+
+fun liftOptionUByte(v: kotlin.Long): kotlin.UByte? {
+    return if (v == kotlin.Long.MAX_VALUE) { null } else { v.toUByte() }
+}
+fun lowerOptionUByte(v: kotlin.UByte?): kotlin.Long {
+    return if (v == null) { kotlin.Long.MAX_VALUE } else { v.toLong() }
+}
+
+fun liftOptionByte(v: kotlin.Long): kotlin.Byte? {
+    return if (v == kotlin.Long.MAX_VALUE) { null } else { v.toByte() }
+}
+fun lowerOptionByte(v: kotlin.Byte?): kotlin.Long {
+    return if (v == null) { kotlin.Long.MAX_VALUE } else { v.toLong() }
+}
+
+fun liftOptionUShort(v: kotlin.Long): kotlin.UShort? {
+    return if (v == kotlin.Long.MAX_VALUE) { null } else { v.toUShort() }
+}
+fun lowerOptionUShort(v: kotlin.UShort?): kotlin.Long {
+    return if (v == null) { kotlin.Long.MAX_VALUE } else { v.toLong() }
+}
+
+fun liftOptionShort(v: kotlin.Long): kotlin.Short? {
+    return if (v == kotlin.Long.MAX_VALUE) { null } else { v.toShort() }
+}
+fun lowerOptionShort(v: kotlin.Short?): kotlin.Long {
+    return if (v == null) { kotlin.Long.MAX_VALUE } else { v.toLong() }
+}
+
+fun liftOptionUInt(v: kotlin.Long): kotlin.UInt? {
+    return if (v == kotlin.Long.MAX_VALUE) { null } else { v.toUInt() }
+}
+fun lowerOptionUInt(v: kotlin.UInt?): kotlin.Long {
+    return if (v == null) { kotlin.Long.MAX_VALUE } else { v.toLong() }
+}
+
+fun liftOptionInt(v: kotlin.Long): kotlin.Int? {
+    return if (v == kotlin.Long.MAX_VALUE) { null } else { v.toInt() }
+}
+fun lowerOptionInt(v: kotlin.Int?): kotlin.Long {
+    return if (v == null) { kotlin.Long.MAX_VALUE } else { v.toLong() }
+}
+
+fun liftOptionBoolean(v: kotlin.Long): kotlin.Boolean? {
+    return if (v == kotlin.Long.MAX_VALUE) { null } else { v == 1L }
+}
+fun lowerOptionBoolean(v: kotlin.Boolean?): kotlin.Long {
+    return if (v == null) { kotlin.Long.MAX_VALUE } else { if (v) { 1 } else { 0 } }
+}
+
+fun liftOptionString(v: kotlin.String?): kotlin.String? = v
+fun lowerOptionString(v: kotlin.String?): kotlin.String? = v
+
+
+fun liftOptionFloat(v: kotlin.Int): kotlin.Float? {
+    return if (v == 0xFFFF_FFFF.toInt()) {
+        null
+    } else {
+        kotlin.Float.fromBits(v)
+    }
+}
+
+fun lowerOptionFloat(v: kotlin.Float?): kotlin.Int {
+    return if (v == null) {
+        0xFFFF_FFFF.toInt()
+    } else {
+        val bits = v.toRawBits()
+        if (bits == 0xFFFF_FFFF.toInt()) {
+            // The float was encoded using our special-cased NaN value.
+            // Convert it to the "preferred" NaN value
+            0xFFC0_0000.toInt()
+        } else {
+            bits
+        }
+    }
+}
+
+fun liftOptionDouble(v: kotlin.Long): kotlin.Double? {
+    return if (v.toULong() == 0xFFFF_FFFF_FFFF_FFFFuL) {
+        null
+    } else {
+        kotlin.Double.fromBits(v)
+    }
+}
+
+fun lowerOptionDouble(v: kotlin.Double?): kotlin.Long {
+    return if (v == null) {
+        0xFFFF_FFFF_FFFF_FFFFuL.toLong()
+    } else {
+        val bits = v.toRawBits()
+        if (bits.toULong() == 0xFFFF_FFFF_FFFF_FFFFuL) {
+            // The float was encoded using our special-cased NaN value.
+            // Convert it to the "preferred" NaN value
+            0xFFF8_0000
+        } else {
+            bits
+        }
+    }
+}
