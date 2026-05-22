@@ -1,10 +1,12 @@
 {%- let type_name = en.self_type.type_kt %}
 
 {%- if let KotlinEnumKind::EnumClass { .. } = en.kotlin_kind %}
+@JvmName("{{ en.self_type.lower_fn_kt() }}")
 fun {{ en.self_type.lower_fn_kt() }}(value: {{ type_name }}): kotlin.Int {
     return value.ordinal
 }
 
+@JvmName("{{ en.self_type.lift_fn_kt() }}")
 fun {{ en.self_type.lift_fn_kt() }}(value: kotlin.Int): {{ type_name }} {
     {%- if en.use_entries %}
     return {{ type_name }}.entries[value]
@@ -23,6 +25,7 @@ class {{ en.self_type.lowered_type_kt() }}(
 )
 {%- endif %}
 
+@JvmName("{{ en.self_type.lower_fn_kt() }}")
 fun {{ en.self_type.lower_fn_kt() }}(value: {{ type_name }}): {{ en.self_type.lowered_type_kt() }} {
     when (value) {
         {%- for v in en.variants %}
@@ -59,6 +62,7 @@ fun {{ en.self_type.lower_fn_kt() }}(value: {{ type_name }}): {{ en.self_type.lo
     }
 }
 
+@JvmName("{{ en.self_type.lift_fn_kt() }}")
 fun {{ en.self_type.lift_fn_kt() }}(
     {%- for ffi_field in en.ffi_fields %}
     v{{ ffi_field.index }}: {{ ffi_field.ty.type_kt() }},
