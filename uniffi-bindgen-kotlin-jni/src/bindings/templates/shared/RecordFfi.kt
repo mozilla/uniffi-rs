@@ -9,6 +9,7 @@ class {{ rec.self_type.lowered_type_kt() }}(
 )
 {%- endif %}
 
+@JvmName("{{ rec.self_type.lower_fn_kt() }}")
 fun {{ rec.self_type.lower_fn_kt() }}(rec: {{ type_name }}): {{ rec.self_type.lowered_type_kt() }} {
     // Prepare by deconstructing all recursive types
     {%- for field in rec.fields %}
@@ -28,6 +29,7 @@ fun {{ rec.self_type.lower_fn_kt() }}(rec: {{ type_name }}): {{ rec.self_type.lo
     {%- endif %}
 }
 
+@JvmName("{{ rec.self_type.lift_fn_kt() }}")
 fun {{ rec.self_type.lift_fn_kt() }}(
     {%- for ffi_type in rec.ffi_types() %}
     v{{ loop.index0 }}: {{ ffi_type.type_kt() }},

@@ -11,5 +11,7 @@ class InternalException(message: kotlin.String) : Exception(message)
 {% include "RecordFfi.kt" %}
 {%- when TypeDefinition::Enum(en) %}
 {% include "EnumFfi.kt" %}
+{%- when TypeDefinition::Optional(opt) %}
+{% include "OptionalFfi.kt" %}
 {%- endmatch %}
 {%- endfor %}
