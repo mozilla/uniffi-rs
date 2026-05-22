@@ -109,6 +109,14 @@ impl FfiTypeOracle {
                     self.user_type_map
                         .insert(en.self_type.ty.clone(), all_ffi_types);
                 }
+                general::TypeDefinition::Optional(opt) => {
+                    if standard_ffi_type_mapping(&opt.self_type.ty).is_none() {
+                        let mut ffi_types = vec![FfiType::Boolean];
+                        ffi_types.extend(self.get_ffi_types(&opt.inner.ty)?);
+                        self.user_type_map
+                            .insert(opt.self_type.ty.clone(), ffi_types);
+                    }
+                }
                 _ => (),
             }
         }
