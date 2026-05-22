@@ -36,6 +36,7 @@ fn map_fields(input: Vec<general::Field>, context: &Context) -> Result<Vec<Field
                 name: input.name,
                 index,
                 ty,
+                default: input.default.map_node(context)?,
                 docstring: input.docstring,
                 ffi_fields,
             })
