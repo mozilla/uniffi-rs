@@ -49,6 +49,7 @@ nav:
   - ./types/builtin_types.md
   - ./types/enumerations.md
   - ./types/records.md
+  - ./types/bytes.md
   - 'Functions':
     - ./types/functions.md
     - ./types/errors.md
@@ -84,6 +85,7 @@ nav:
 
 - 'Bindings':
   - ./bindings.md
+  - ./configuration.md
   - ./foreign_traits.md
 
   - 'Kotlin':
