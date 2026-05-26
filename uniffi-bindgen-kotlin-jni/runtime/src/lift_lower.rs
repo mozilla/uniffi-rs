@@ -184,3 +184,343 @@ pub unsafe fn lower_option_string(env: *mut JNIEnv, value: Option<String>) -> Re
         Some(value) => JniString::from(value).into_jstring(env),
     })
 }
+
+/// Lift a Vec<u8>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lift_vec_u8(env: *mut JNIEnv, value: jbyteArray) -> Result<Vec<u8>> {
+    let len = ((**env).v1_2.GetArrayLength)(env, value);
+    let data = ((**env).v1_2.GetPrimitiveArrayCritical)(env, value, std::ptr::null_mut());
+    if data.is_null() {
+        bail!("lift_vec_u8: GetPrimitiveArrayCritical failed");
+    }
+    let slice = std::slice::from_raw_parts(data.cast::<u8>(), len as usize);
+    let vec = slice.to_vec();
+    // JNI_ABORT releases the array data without committing any changes back,
+    // which is safe since we only copied the data.
+    ((**env).v1_2.ReleasePrimitiveArrayCritical)(env, value, data, JNI_ABORT);
+    Ok(vec)
+}
+
+/// Lower a Vec<u8>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lower_vec_u8(env: *mut JNIEnv, value: Vec<u8>) -> Result<jbyteArray> {
+    let array = ((**env).v1_2.NewByteArray)(env, value.len() as i32);
+    ((**env).v1_2.SetByteArrayRegion)(
+        env,
+        array,
+        0,
+        value.len() as i32,
+        value.as_ptr().cast::<i8>(),
+    );
+    Ok(array)
+}
+
+/// Lift a Vec<i8>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lift_vec_i8(env: *mut JNIEnv, value: jbyteArray) -> Result<Vec<i8>> {
+    let len = ((**env).v1_2.GetArrayLength)(env, value);
+    let data = ((**env).v1_2.GetPrimitiveArrayCritical)(env, value, std::ptr::null_mut());
+    if data.is_null() {
+        bail!("lift_vec_i8: GetPrimitiveArrayCritical failed");
+    }
+    let slice = std::slice::from_raw_parts(data.cast::<i8>(), len as usize);
+    let vec = slice.to_vec();
+    // JNI_ABORT releases the array data without committing any changes back,
+    // which is safe since we only copied the data.
+    ((**env).v1_2.ReleasePrimitiveArrayCritical)(env, value, data, JNI_ABORT);
+    Ok(vec)
+}
+
+/// Lower a Vec<i8>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lower_vec_i8(env: *mut JNIEnv, value: Vec<i8>) -> Result<jbyteArray> {
+    let array = ((**env).v1_2.NewByteArray)(env, value.len() as i32);
+    ((**env).v1_2.SetByteArrayRegion)(
+        env,
+        array,
+        0,
+        value.len() as i32,
+        value.as_ptr().cast::<i8>(),
+    );
+    Ok(array)
+}
+
+/// Lift a Vec<u16>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lift_vec_u16(env: *mut JNIEnv, value: jbyteArray) -> Result<Vec<u16>> {
+    let len = ((**env).v1_2.GetArrayLength)(env, value);
+    let data = ((**env).v1_2.GetPrimitiveArrayCritical)(env, value, std::ptr::null_mut());
+    if data.is_null() {
+        bail!("lift_vec_u16: GetPrimitiveArrayCritical failed");
+    }
+    let slice = std::slice::from_raw_parts(data.cast::<u16>(), len as usize);
+    let vec = slice.to_vec();
+    // JNI_ABORT releases the array data without committing any changes back,
+    // which is safe since we only copied the data.
+    ((**env).v1_2.ReleasePrimitiveArrayCritical)(env, value, data, JNI_ABORT);
+    Ok(vec)
+}
+
+/// Lower a Vec<u16>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lower_vec_u16(env: *mut JNIEnv, value: Vec<u16>) -> Result<jbyteArray> {
+    let array = ((**env).v1_2.NewShortArray)(env, value.len() as i32);
+    ((**env).v1_2.SetShortArrayRegion)(
+        env,
+        array,
+        0,
+        value.len() as i32,
+        value.as_ptr().cast::<i16>(),
+    );
+    Ok(array)
+}
+
+/// Lift a Vec<i16>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lift_vec_i16(env: *mut JNIEnv, value: jbyteArray) -> Result<Vec<i16>> {
+    let len = ((**env).v1_2.GetArrayLength)(env, value);
+    let data = ((**env).v1_2.GetPrimitiveArrayCritical)(env, value, std::ptr::null_mut());
+    if data.is_null() {
+        bail!("lift_vec_i16: GetPrimitiveArrayCritical failed");
+    }
+    let slice = std::slice::from_raw_parts(data.cast::<i16>(), len as usize);
+    let vec = slice.to_vec();
+    // JNI_ABORT releases the array data without committing any changes back,
+    // which is safe since we only copied the data.
+    ((**env).v1_2.ReleasePrimitiveArrayCritical)(env, value, data, JNI_ABORT);
+    Ok(vec)
+}
+
+/// Lower a Vec<i16>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lower_vec_i16(env: *mut JNIEnv, value: Vec<i16>) -> Result<jbyteArray> {
+    let array = ((**env).v1_2.NewShortArray)(env, value.len() as i32);
+    ((**env).v1_2.SetShortArrayRegion)(
+        env,
+        array,
+        0,
+        value.len() as i32,
+        value.as_ptr().cast::<i16>(),
+    );
+    Ok(array)
+}
+
+/// Lift a Vec<u32>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lift_vec_u32(env: *mut JNIEnv, value: jbyteArray) -> Result<Vec<u32>> {
+    let len = ((**env).v1_2.GetArrayLength)(env, value);
+    let data = ((**env).v1_2.GetPrimitiveArrayCritical)(env, value, std::ptr::null_mut());
+    if data.is_null() {
+        bail!("lift_vec_u32: GetPrimitiveArrayCritical failed");
+    }
+    let slice = std::slice::from_raw_parts(data.cast::<u32>(), len as usize);
+    let vec = slice.to_vec();
+    // JNI_ABORT releases the array data without committing any changes back,
+    // which is safe since we only copied the data.
+    ((**env).v1_2.ReleasePrimitiveArrayCritical)(env, value, data, JNI_ABORT);
+    Ok(vec)
+}
+
+/// Lower a Vec<u32>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lower_vec_u32(env: *mut JNIEnv, value: Vec<u32>) -> Result<jbyteArray> {
+    let array = ((**env).v1_2.NewIntArray)(env, value.len() as i32);
+    ((**env).v1_2.SetIntArrayRegion)(
+        env,
+        array,
+        0,
+        value.len() as i32,
+        value.as_ptr().cast::<i32>(),
+    );
+    Ok(array)
+}
+
+/// Lift a Vec<i32>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lift_vec_i32(env: *mut JNIEnv, value: jbyteArray) -> Result<Vec<i32>> {
+    let len = ((**env).v1_2.GetArrayLength)(env, value);
+    let data = ((**env).v1_2.GetPrimitiveArrayCritical)(env, value, std::ptr::null_mut());
+    if data.is_null() {
+        bail!("lift_vec_i32: GetPrimitiveArrayCritical failed");
+    }
+    let slice = std::slice::from_raw_parts(data.cast::<i32>(), len as usize);
+    let vec = slice.to_vec();
+    // JNI_ABORT releases the array data without committing any changes back,
+    // which is safe since we only copied the data.
+    ((**env).v1_2.ReleasePrimitiveArrayCritical)(env, value, data, JNI_ABORT);
+    Ok(vec)
+}
+
+/// Lower a Vec<i32>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lower_vec_i32(env: *mut JNIEnv, value: Vec<i32>) -> Result<jbyteArray> {
+    let array = ((**env).v1_2.NewIntArray)(env, value.len() as i32);
+    ((**env).v1_2.SetIntArrayRegion)(
+        env,
+        array,
+        0,
+        value.len() as i32,
+        value.as_ptr().cast::<i32>(),
+    );
+    Ok(array)
+}
+
+/// Lift a Vec<u64>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lift_vec_u64(env: *mut JNIEnv, value: jbyteArray) -> Result<Vec<u64>> {
+    let len = ((**env).v1_2.GetArrayLength)(env, value);
+    let data = ((**env).v1_2.GetPrimitiveArrayCritical)(env, value, std::ptr::null_mut());
+    if data.is_null() {
+        bail!("lift_vec_u64: GetPrimitiveArrayCritical failed");
+    }
+    let slice = std::slice::from_raw_parts(data.cast::<u64>(), len as usize);
+    let vec = slice.to_vec();
+    // JNI_ABORT releases the array data without committing any changes back,
+    // which is safe since we only copied the data.
+    ((**env).v1_2.ReleasePrimitiveArrayCritical)(env, value, data, JNI_ABORT);
+    Ok(vec)
+}
+
+/// Lower a Vec<u64>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lower_vec_u64(env: *mut JNIEnv, value: Vec<u64>) -> Result<jbyteArray> {
+    let array = ((**env).v1_2.NewLongArray)(env, value.len() as i32);
+    ((**env).v1_2.SetLongArrayRegion)(
+        env,
+        array,
+        0,
+        value.len() as i32,
+        value.as_ptr().cast::<i64>(),
+    );
+    Ok(array)
+}
+
+/// Lift a Vec<i64>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lift_vec_i64(env: *mut JNIEnv, value: jbyteArray) -> Result<Vec<i64>> {
+    let len = ((**env).v1_2.GetArrayLength)(env, value);
+    let data = ((**env).v1_2.GetPrimitiveArrayCritical)(env, value, std::ptr::null_mut());
+    if data.is_null() {
+        bail!("lift_vec_i64: GetPrimitiveArrayCritical failed");
+    }
+    let slice = std::slice::from_raw_parts(data.cast::<i64>(), len as usize);
+    let vec = slice.to_vec();
+    // JNI_ABORT releases the array data without committing any changes back,
+    // which is safe since we only copied the data.
+    ((**env).v1_2.ReleasePrimitiveArrayCritical)(env, value, data, JNI_ABORT);
+    Ok(vec)
+}
+
+/// Lower a Vec<i64>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lower_vec_i64(env: *mut JNIEnv, value: Vec<i64>) -> Result<jbyteArray> {
+    let array = ((**env).v1_2.NewLongArray)(env, value.len() as i32);
+    ((**env).v1_2.SetLongArrayRegion)(
+        env,
+        array,
+        0,
+        value.len() as i32,
+        value.as_ptr().cast::<i64>(),
+    );
+    Ok(array)
+}
+
+/// Lift a Vec<f32>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lift_vec_f32(env: *mut JNIEnv, value: jbyteArray) -> Result<Vec<f32>> {
+    let len = ((**env).v1_2.GetArrayLength)(env, value);
+    let data = ((**env).v1_2.GetPrimitiveArrayCritical)(env, value, std::ptr::null_mut());
+    if data.is_null() {
+        bail!("lift_vec_f32: GetPrimitiveArrayCritical failed");
+    }
+    let slice = std::slice::from_raw_parts(data.cast::<f32>(), len as usize);
+    let vec = slice.to_vec();
+    // JNI_ABORT releases the array data without committing any changes back,
+    // which is safe since we only copied the data.
+    ((**env).v1_2.ReleasePrimitiveArrayCritical)(env, value, data, JNI_ABORT);
+    Ok(vec)
+}
+
+/// Lower a Vec<f32>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lower_vec_f32(env: *mut JNIEnv, value: Vec<f32>) -> Result<jbyteArray> {
+    let array = ((**env).v1_2.NewFloatArray)(env, value.len() as i32);
+    ((**env).v1_2.SetFloatArrayRegion)(
+        env,
+        array,
+        0,
+        value.len() as i32,
+        value.as_ptr().cast::<f32>(),
+    );
+    Ok(array)
+}
+
+/// Lift a Vec<f64>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lift_vec_f64(env: *mut JNIEnv, value: jbyteArray) -> Result<Vec<f64>> {
+    let len = ((**env).v1_2.GetArrayLength)(env, value);
+    let data = ((**env).v1_2.GetPrimitiveArrayCritical)(env, value, std::ptr::null_mut());
+    if data.is_null() {
+        bail!("lift_vec_f64: GetPrimitiveArrayCritical failed");
+    }
+    let slice = std::slice::from_raw_parts(data.cast::<f64>(), len as usize);
+    let vec = slice.to_vec();
+    // JNI_ABORT releases the array data without committing any changes back,
+    // which is safe since we only copied the data.
+    ((**env).v1_2.ReleasePrimitiveArrayCritical)(env, value, data, JNI_ABORT);
+    Ok(vec)
+}
+
+/// Lower a Vec<f64>
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lower_vec_f64(env: *mut JNIEnv, value: Vec<f64>) -> Result<jbyteArray> {
+    let array = ((**env).v1_2.NewDoubleArray)(env, value.len() as i32);
+    ((**env).v1_2.SetDoubleArrayRegion)(
+        env,
+        array,
+        0,
+        value.len() as i32,
+        value.as_ptr().cast::<f64>(),
+    );
+    Ok(array)
+}
