@@ -167,6 +167,8 @@ pub struct SequenceType {
     pub self_type: TypeNode,
     // Size of each item, when packed in a FFI buffer
     pub item_size: usize,
+    // Is this lifted/lowered as a primitive array
+    pub is_primitive_array: bool,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -248,6 +250,11 @@ pub enum FfiType {
     Boolean,
     String,
     ByteArray,
+    ShortArray,
+    IntArray,
+    LongArray,
+    FloatArray,
+    DoubleArray,
     ByteBuffer,
 }
 
