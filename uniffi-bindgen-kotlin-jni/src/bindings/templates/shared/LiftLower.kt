@@ -37,6 +37,36 @@ fun lowerString(v: kotlin.String): kotlin.String? = v
 fun liftBytes(v: kotlin.ByteArray?): kotlin.ByteArray = v!!
 fun lowerBytes(v: kotlin.ByteArray): kotlin.ByteArray? = v
 
+fun liftVecByte(value: kotlin.ByteArray?): kotlin.collections.List<kotlin.Byte> = value!!.toList()
+fun lowerVecByte(value: kotlin.collections.List<kotlin.Byte>): kotlin.ByteArray? = value.toByteArray()
+
+fun liftVecUByte(value: kotlin.ByteArray?): kotlin.collections.List<kotlin.UByte> = value!!.asUByteArray().toList()
+fun lowerVecUByte(value: kotlin.collections.List<kotlin.UByte>): kotlin.ByteArray = value.toUByteArray().asByteArray()
+
+fun liftVecShort(value: kotlin.ShortArray?): kotlin.collections.List<kotlin.Short> = value!!.toList()
+fun lowerVecShort(value: kotlin.collections.List<kotlin.Short>): kotlin.ShortArray? = value.toShortArray()
+
+fun liftVecUShort(value: kotlin.ShortArray?): kotlin.collections.List<kotlin.UShort> = value!!.asUShortArray().toList()
+fun lowerVecUShort(value: kotlin.collections.List<kotlin.UShort>): kotlin.ShortArray = value.toUShortArray().asShortArray()
+
+fun liftVecInt(value: kotlin.IntArray?): kotlin.collections.List<kotlin.Int> = value!!.toList()
+fun lowerVecInt(value: kotlin.collections.List<kotlin.Int>): kotlin.IntArray? = value.toIntArray()
+
+fun liftVecUInt(value: kotlin.IntArray?): kotlin.collections.List<kotlin.UInt> = value!!.asUIntArray().toList()
+fun lowerVecUInt(value: kotlin.collections.List<kotlin.UInt>): kotlin.IntArray = value.toUIntArray().asIntArray()
+
+fun liftVecLong(value: kotlin.LongArray?): kotlin.collections.List<kotlin.Long> = value!!.toList()
+fun lowerVecLong(value: kotlin.collections.List<kotlin.Long>): kotlin.LongArray? = value.toLongArray()
+
+fun liftVecULong(value: kotlin.LongArray?): kotlin.collections.List<kotlin.ULong> = value!!.asULongArray().toList()
+fun lowerVecULong(value: kotlin.collections.List<kotlin.ULong>): kotlin.LongArray = value.toULongArray().asLongArray()
+
+fun liftVecFloat(value: kotlin.FloatArray?): kotlin.collections.List<kotlin.Float> = value!!.toList()
+fun lowerVecFloat(value: kotlin.collections.List<kotlin.Float>): kotlin.FloatArray? = value.toFloatArray()
+
+fun liftVecDouble(value: kotlin.DoubleArray?): kotlin.collections.List<kotlin.Double> = value!!.toList()
+fun lowerVecDouble(value: kotlin.collections.List<kotlin.Double>): kotlin.DoubleArray? = value.toDoubleArray()
+
 fun liftOptionUByte(v: kotlin.Long): kotlin.UByte? {
     return if (v == kotlin.Long.MAX_VALUE) { null } else { v.toUByte() }
 }

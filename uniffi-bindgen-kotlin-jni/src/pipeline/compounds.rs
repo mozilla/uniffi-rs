@@ -21,10 +21,25 @@ pub fn map_sequence(input: general::SequenceType, context: &Context) -> Result<S
     layout_builder.extend(&input.inner.ty, context)?;
     layout_builder.pad_to_align();
 
+    let is_primitive_array = matches!(
+        input.inner.ty,
+        Type::Int8
+            | Type::UInt8
+            | Type::Int16
+            | Type::UInt16
+            | Type::Int32
+            | Type::UInt32
+            | Type::Int64
+            | Type::UInt64
+            | Type::Float32
+            | Type::Float64
+    );
+
     Ok(SequenceType {
         inner: input.inner.map_node(context)?,
         self_type: input.self_type.map_node(context)?,
         item_size: layout_builder.size(),
+        is_primitive_array,
     })
 }
 
