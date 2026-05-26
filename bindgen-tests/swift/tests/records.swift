@@ -37,3 +37,5 @@ assert(
     fieldRec: SimpleRec(a: 42)
   )
 )
+// methods
+assert(SimpleRec(a: 42).roundtrip() == SimpleRec(a: 42))

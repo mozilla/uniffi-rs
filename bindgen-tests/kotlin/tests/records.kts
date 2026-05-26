@@ -33,3 +33,5 @@ assert(
     fieldRec=SimpleRec(a=42.toUByte())
   )
 )
+// methods
+assert(SimpleRec(a=42.toUByte()).roundtrip() == SimpleRec(a=42.toUByte()))

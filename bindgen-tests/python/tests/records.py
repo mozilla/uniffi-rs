@@ -41,5 +41,8 @@ class TestRecords(unittest.TestCase):
           )
         )
 
+    def test_methods(self):
+        self.assertEqual(SimpleRec(a=42).roundtrip(), SimpleRec(a=42))
+
 if __name__ == '__main__':
     unittest.main()

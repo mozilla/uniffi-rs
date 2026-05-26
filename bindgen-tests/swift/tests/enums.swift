@@ -38,3 +38,5 @@ assert(ExplicitValuedEnum.thirteenth.rawValue == 13);
 assert(GappedEnum.one.rawValue == 10);
 assert(GappedEnum.two.rawValue == 11); // Sequential value after ONE (10+1)
 assert(GappedEnum.three.rawValue == 14); // Explicit value again
+// Enum methods
+assert(EnumWithData.a(value: 20, value2: 40).roundtrip() == EnumWithData.a(value: 20, value2: 40))
