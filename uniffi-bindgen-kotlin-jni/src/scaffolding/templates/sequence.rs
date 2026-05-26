@@ -38,6 +38,8 @@ unsafe fn {{ lift_from_parts }}(
     result
 }
 
+{% if !seq.is_primitive_array %}
+
 unsafe fn {{ seq.self_type.lower_fn_rs() }}(
     uniffi_env: *mut uniffi_jni::JNIEnv,
     value: {{ type_name }},
@@ -53,6 +55,8 @@ unsafe fn {{ seq.self_type.lift_fn_rs() }}(
     let (ptr, capacity) = uniffi_jni::lift_buffer(uniffi_env, byte_buffer)?;
     {{ lift_from_parts }}(ptr, capacity)
 }
+
+{%- endif %}
 
 unsafe fn {{ seq.self_type.write_fn_rs() }}(
     buf_ptr: *mut ::std::primitive::u8,

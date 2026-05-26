@@ -23,9 +23,16 @@ pub fn standard_ffi_type_mapping(ty: &Type) -> Option<Vec<FfiType>> {
         Type::Boolean => Some(vec![FfiType::Boolean]),
         Type::String => Some(vec![FfiType::String]),
         Type::Bytes => Some(vec![FfiType::ByteArray]),
-        Type::Sequence { .. } | Type::Map { .. } | Type::Set { .. } => {
-            Some(vec![FfiType::ByteBuffer])
-        }
+        Type::Sequence { inner_type } => match &**inner_type {
+            Type::Int8 | Type::UInt8 => Some(vec![FfiType::ByteArray]),
+            Type::Int16 | Type::UInt16 => Some(vec![FfiType::ShortArray]),
+            Type::Int32 | Type::UInt32 => Some(vec![FfiType::IntArray]),
+            Type::Int64 | Type::UInt64 => Some(vec![FfiType::LongArray]),
+            Type::Float32 => Some(vec![FfiType::FloatArray]),
+            Type::Float64 => Some(vec![FfiType::DoubleArray]),
+            _ => Some(vec![FfiType::ByteBuffer]),
+        },
+        Type::Map { .. } | Type::Set { .. } => Some(vec![FfiType::ByteBuffer]),
         // Interfaces are passed as 64-bit handle
         Type::Interface { .. } | Type::CallbackInterface { .. } => Some(vec![FfiType::Int64]),
         Type::Optional { inner_type } => match &**inner_type {
@@ -142,6 +149,11 @@ impl FfiType {
             // value.
             Self::String => "String?",
             Self::ByteArray => "kotlin.ByteArray?",
+            Self::ShortArray => "kotlin.ShortArray?",
+            Self::IntArray => "kotlin.IntArray?",
+            Self::LongArray => "kotlin.LongArray?",
+            Self::FloatArray => "kotlin.FloatArray?",
+            Self::DoubleArray => "kotlin.DoubleArray?",
             Self::ByteBuffer => "java.nio.ByteBuffer?",
         }
     }
@@ -158,6 +170,11 @@ impl FfiType {
             // JNI uses the `jstring` type, we convert to `String` in the lift/lower functions.
             Self::String => "uniffi_jni::jstring",
             Self::ByteArray => "uniffi_jni::jbyteArray",
+            Self::ShortArray => "uniffi_jni::jshortArray",
+            Self::IntArray => "uniffi_jni::jintArray",
+            Self::LongArray => "uniffi_jni::jlongArray",
+            Self::FloatArray => "uniffi_jni::jfloatArray",
+            Self::DoubleArray => "uniffi_jni::jdoubleArray",
             Self::ByteBuffer => "uniffi_jni::jobject",
         }
     }
@@ -172,7 +189,14 @@ impl FfiType {
             Self::Float32 => "0.0f",
             Self::Float64 => "0.0",
             Self::Boolean => "false",
-            Self::String | Self::ByteArray | Self::ByteBuffer => "null",
+            Self::String
+            | Self::ByteArray
+            | Self::ShortArray
+            | Self::IntArray
+            | Self::LongArray
+            | Self::FloatArray
+            | Self::DoubleArray
+            | Self::ByteBuffer => "null",
         }
     }
 
@@ -189,6 +213,11 @@ impl FfiType {
             Self::String => "Ljava/lang/String;",
             Self::ByteBuffer => "Ljava/nio/ByteBuffer;",
             Self::ByteArray => "[B",
+            Self::ShortArray => "[S",
+            Self::IntArray => "[I",
+            Self::LongArray => "[J",
+            Self::FloatArray => "[F",
+            Self::DoubleArray => "[D",
         }
     }
 
@@ -202,7 +231,14 @@ impl FfiType {
             Self::Float32 => "f",
             Self::Float64 => "d",
             Self::Boolean => "z",
-            Self::String | Self::ByteArray | Self::ByteBuffer => "l",
+            Self::String
+            | Self::ByteArray
+            | Self::ShortArray
+            | Self::IntArray
+            | Self::LongArray
+            | Self::FloatArray
+            | Self::DoubleArray
+            | Self::ByteBuffer => "l",
         }
     }
 }

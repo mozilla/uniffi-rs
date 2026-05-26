@@ -1,3 +1,4 @@
+@file:OptIn(kotlin.ExperimentalUnsignedTypes::class)
 package uniffi
 
 class InternalException(message: kotlin.String) : Exception(message)
