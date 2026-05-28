@@ -31,7 +31,17 @@ pub fn vtable(methods: &[initial::Method], context: &Context) -> Result<VTable> 
             .iter()
             .enumerate()
             .map(|(i, meth)| {
-                let meth: Method = meth.clone().map_node(context)?;
+                let meth = Method {
+                    callable: callable::method_callable_with_kind(
+                        meth,
+                        CallableKind::VTableMethod {
+                            self_type: context.self_type()?,
+                            for_callback_interface: true,
+                        },
+                        context,
+                    )?,
+                    docstring: meth.docstring.clone(),
+                };
                 Ok(VTableMethod {
                     callable: meth.callable,
                     ffi_type: FfiType::Function(FfiFunctionTypeName(format!(
