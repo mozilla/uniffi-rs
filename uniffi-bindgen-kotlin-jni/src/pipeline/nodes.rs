@@ -268,6 +268,7 @@ pub enum ArgumentFfi {
     /// Use custom/optimized lift and lower functions
     Custom {
         ffi_args: Vec<FfiArgument>,
+        type_kt: String,
         lift_fn_rs: String,
         lower_fn_rs: String,
         lift_fn_kt: String,
