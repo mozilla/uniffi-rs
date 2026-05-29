@@ -192,6 +192,7 @@ fn argument_ffi(
                 // Kotlin won't keep a reference to the argument.
                 lift_fn_kt: ty.lift_fn_kt(),
                 lower_fn_rs: ty.lower_fn_rs(),
+                type_kt: ty.type_kt.clone(),
             }
         }
         (Type::Interface { imp, .. }, true) if imp.has_callback_interface() && receiver => {
@@ -209,6 +210,23 @@ fn argument_ffi(
                 // Kotlin won't keep a reference to the argument.
                 lift_fn_kt: ty.lift_fn_kt(),
                 lower_fn_rs: ty.lower_fn_rs(),
+                type_kt: ty.type_kt.clone(),
+            }
+        }
+        (Type::Bytes, true) => {
+            // For this case we Lift java.nio.ByteBuffer directly into a `&[u8]` slice.
+            //
+            // This is only supported for Kotlin -> Rust calls.  For other calls use the normal
+            // lift/lower functions, which will fail to compile if the user tries to use `&[u8]`
+            // with them.
+            ArgumentFfi::Custom {
+                ffi_args: allocator.create_ffi_args(&[FfiType::ByteBuffer]),
+                lower_fn_kt: "lowerBytesRef".into(),
+                lift_fn_rs: "uniffi_jni::lift_bytes_ref".into(),
+                lift_fn_kt: ty.lift_fn_kt(),
+                lower_fn_rs: ty.lower_fn_rs(),
+                // Unlike the non-ref case these input a `ByteBuffer` directly
+                type_kt: "java.nio.ByteBuffer".into(),
             }
         }
         _ => ArgumentFfi::Standard {
@@ -264,8 +282,8 @@ impl Callable {
         self.arguments
             .iter()
             .map(|a| match &a.default {
-                None => format!("{}: {}", a.name_kt(), a.ty.type_kt),
-                Some(d) => format!("{}: {} = {}", a.name_kt(), a.ty.type_kt, d.default_kt),
+                None => format!("{}: {}", a.name_kt(), a.type_kt()),
+                Some(d) => format!("{}: {} = {}", a.name_kt(), a.type_kt(), d.default_kt),
             })
             .collect::<Vec<_>>()
             .join(" , ")
@@ -401,6 +419,13 @@ impl Argument {
         }
     }
 
+    pub fn type_kt(&self) -> &str {
+        match &self.ffi {
+            ArgumentFfi::Custom { type_kt, .. } => type_kt,
+            ArgumentFfi::Standard { .. } => &self.ty.type_kt,
+        }
+    }
+
     // Function to lower the argument from Rust
     pub fn lower_fn_rs(&self) -> String {
         match &self.ffi {
@@ -448,6 +473,8 @@ impl Argument {
                     format!("&*{name}")
                 }
             }
+            // Bytes references are also special-cased and don't need an extra reference.
+            (true, Type::Bytes) => name,
             // All other refs just need `&`
             (true, _) => format!("&{name}"),
             _ => name,

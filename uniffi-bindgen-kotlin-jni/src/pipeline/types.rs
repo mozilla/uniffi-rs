@@ -87,7 +87,7 @@ pub fn type_rs(ty: &Type, context: &Context) -> Result<String> {
         }
         Type::Duration => "::std::time::Duration".into(),
         Type::Timestamp => "::std::time::SystemTime".into(),
-        _ => todo!(),
+        Type::Bytes => "::std::vec::Vec<::std::primitive::u8>".into(),
     })
 }
 
@@ -146,7 +146,7 @@ pub fn type_kt(ty: &Type, context: &Context) -> Result<String> {
         Type::Box { inner_type } => type_kt(inner_type, context)?,
         Type::Duration => "java.time.Duration".into(),
         Type::Timestamp => "java.time.Instant".into(),
-        _ => todo!(),
+        Type::Bytes => "kotlin.ByteArray".into(),
     })
 }
 
@@ -171,7 +171,7 @@ impl TypeNode {
             Type::Float64 => "uniffi_jni::lower_f64".into(),
             Type::Boolean => "uniffi_jni::lower_bool".into(),
             Type::String => "uniffi_jni::lower_string".into(),
-            Type::Bytes => "uniffi_jni::lower_bytes".into(),
+            Type::Bytes => "uniffi_jni::lower_vec_u8".into(),
             Type::Optional { inner_type } => match &**inner_type {
                 Type::Boolean => "uniffi_jni::lower_option_bool".into(),
                 Type::Int8 => "uniffi_jni::lower_option_i8".into(),
@@ -220,7 +220,7 @@ impl TypeNode {
             Type::Float64 => "uniffi_jni::lift_f64".into(),
             Type::Boolean => "uniffi_jni::lift_bool".into(),
             Type::String => "uniffi_jni::lift_string".into(),
-            Type::Bytes => "uniffi_jni::lift_bytes".into(),
+            Type::Bytes => "uniffi_jni::lift_vec_u8".into(),
             Type::Optional { inner_type } => match &**inner_type {
                 Type::Boolean => "uniffi_jni::lift_option_bool".into(),
                 Type::Int8 => "uniffi_jni::lift_option_i8".into(),
