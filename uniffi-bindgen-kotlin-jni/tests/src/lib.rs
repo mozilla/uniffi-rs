@@ -100,6 +100,11 @@ mod test {
         run_tests(test_dir(), "tests/time.kts");
     }
 
+    #[test]
+    fn test_bytes() {
+        run_tests(test_dir(), "tests/bytes.kts");
+    }
+
     fn test_dir() -> &'static Utf8Path {
         static TEST_TEMPDIR: OnceLock<Utf8PathBuf> = OnceLock::new();
         TEST_TEMPDIR.get_or_init(|| {

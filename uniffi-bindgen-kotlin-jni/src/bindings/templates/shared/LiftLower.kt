@@ -37,6 +37,15 @@ fun lowerString(v: kotlin.String): kotlin.String? = v
 fun liftBytes(v: kotlin.ByteArray?): kotlin.ByteArray = v!!
 fun lowerBytes(v: kotlin.ByteArray): kotlin.ByteArray? = v
 
+// Optimized path for passing byte references from Kotlin -> Rust.
+// These are `&[u8]` on Rust and `ByteBuffer` on Kotlin.
+fun lowerBytesRef(v: java.nio.ByteBuffer): java.nio.ByteBuffer? {
+    if (!v.isDirect()) {
+        throw kotlin.IllegalArgumentException("Non-direct byte buffer")
+    }
+    return v
+}
+
 fun liftVecByte(value: kotlin.ByteArray?): kotlin.collections.List<kotlin.Byte> = value!!.toList()
 fun lowerVecByte(value: kotlin.collections.List<kotlin.Byte>): kotlin.ByteArray? = value.toByteArray()
 
