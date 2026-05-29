@@ -524,3 +524,18 @@ pub unsafe fn lower_vec_f64(env: *mut JNIEnv, value: Vec<f64>) -> Result<jbyteAr
     );
     Ok(array)
 }
+
+/// Lift Kotlin Byte buffer to a `&[u8]` value
+///
+/// Note: this is only supported in the Kotlin -> Rust direction.
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lift_bytes_ref<'a>(env: *mut JNIEnv, byte_buffer: jobject) -> Result<&'a [u8]> {
+    let ptr = ((**env).v1_4.GetDirectBufferAddress)(env, byte_buffer).cast::<u8>();
+    if ptr.is_null() {
+        bail!("lift_bytes_ref: GetDirectBufferAddress failed");
+    }
+    let capacity = ((**env).v1_4.GetDirectBufferCapacity)(env, byte_buffer) as usize;
+    Ok(std::slice::from_raw_parts(ptr, capacity))
+}

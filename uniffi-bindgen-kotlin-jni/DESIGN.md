@@ -39,6 +39,8 @@ For arguments that are passed by reference, including method receivers,
 we optimize passing the values in certain cases:
 
 * Interfaces handles are passed without an `clone` call.
+* `&[u8]` values are passed from Kotlin -> Rust by inputting a `java.nio.ByteBuffer`.
+  This allows us to implement a zero-copy strategy.
 
 ## Deconstructable types
 
