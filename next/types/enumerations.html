@@ -2469,6 +2469,7 @@
 <p>proc-macros allow you to use <code>#[uniffi::export]</code> on an <code>impl</code> block for an <code>enum</code>.
 and the bindings will generate a method which calls into the Rust method.
 But take care - every time one of the methods is called, the entire enum will be copied by-value across the FFI.</p>
+<p>Constructors are not supported for enums.</p>
 <h2 id="recursive-enums">Recursive enums</h2>
 <p>Enums that reference themselves are supported. UniFFI automatically detects the cycle and generates appropriate bindings. Use <code>Box&lt;T&gt;</code> in variant fields to satisfy Rust's ownership rules:</p>
 <div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Enum)]</span>
