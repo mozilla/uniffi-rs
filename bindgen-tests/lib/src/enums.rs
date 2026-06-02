@@ -11,11 +11,18 @@ pub enum EnumNoData {
     C,
 }
 
-#[derive(uniffi::Enum)]
+#[derive(uniffi::Enum, Clone)]
 pub enum EnumWithData {
     A { value: u8, value2: u16 },
     B(String, u32),
     C,
+}
+
+#[uniffi::export]
+impl EnumWithData {
+    fn roundtrip(&self) -> Self {
+        self.clone()
+    }
 }
 
 #[derive(uniffi::Enum)]

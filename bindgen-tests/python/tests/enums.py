@@ -49,5 +49,8 @@ class TestEnums(unittest.TestCase):
         self.assertEqual(GappedEnum.TWO.value, 11) # Sequential value after ONE (10+1)
         self.assertEqual(GappedEnum.THREE.value, 14) # Explicit value again
 
+    def test_methods(self):
+        self.assertEqual(EnumWithData.A(1, 0).roundtrip(), EnumWithData.A(1, 0))
+
 if __name__ == '__main__':
     unittest.main()

@@ -7,6 +7,13 @@ pub struct SimpleRec {
     pub a: u8,
 }
 
+#[uniffi::export]
+impl SimpleRec {
+    fn roundtrip(&self) -> Self {
+        SimpleRec { a: self.a }
+    }
+}
+
 #[derive(uniffi::Record)]
 pub struct UnitRec;
 
