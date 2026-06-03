@@ -36,8 +36,13 @@ mod test {
     }
 
     #[test]
-    fn test_compound_types() {
-        run_tests(test_dir(), "tests/compound_types.py");
+    fn test_collections() {
+        run_tests(test_dir(), "tests/collections_test.py");
+    }
+
+    #[test]
+    fn test_options() {
+        run_tests(test_dir(), "tests/options.py");
     }
 
     #[test]

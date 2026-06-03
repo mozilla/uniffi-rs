@@ -12,10 +12,16 @@ use std::sync::{
     Arc,
 };
 
-use crate::callback_interfaces::CallbackInterfaceNumbers;
 use crate::errors::TestError;
+use crate::{
+    callback_interfaces::CallbackInterfaceNumbers, enums::EnumWithData, interfaces::TestInterface,
+    records::SimpleRec,
+};
 
-#[uniffi::export(with_foreign)]
+/// Trait interface that can be implemented by both Rust and the foreign side
+///
+/// This is the main thing we'll test
+#[uniffi::export(rust, foreign)]
 pub trait TestTraitInterface: Send + Sync {
     /// No-op function, this tests if that we can make calls at all
     fn noop(&self);
@@ -23,7 +29,15 @@ pub trait TestTraitInterface: Send + Sync {
     fn get_value(&self) -> u32;
     /// Set the internal value
     fn set_value(&self, value: u32);
+
+    // Test inputting/outputting different types
+    fn roundtrip_record(&self, value: SimpleRec) -> SimpleRec;
+    fn roundtrip_enum(&self, value: EnumWithData) -> EnumWithData;
+    fn roundtrip_interface(&self, value: Arc<TestInterface>) -> Arc<TestInterface>;
+
     /// Method aimed at maximizing the complexity
+    ///
+    /// This inputs a bunch of different types and also can throw an error
     ///
     /// This should return an error if `numbers.a == numbers.b` otherwise it should return numbers back
     /// unchanged.
@@ -46,6 +60,30 @@ pub fn invoke_test_trait_interface_get_value(interface: Arc<dyn TestTraitInterfa
 #[uniffi::export]
 pub fn invoke_test_trait_interface_set_value(interface: Arc<dyn TestTraitInterface>, value: u32) {
     interface.set_value(value)
+}
+
+#[uniffi::export]
+pub fn invoke_test_trait_interface_roundtrip_record(
+    interface: Arc<dyn TestTraitInterface>,
+    rec: SimpleRec,
+) -> SimpleRec {
+    interface.roundtrip_record(rec)
+}
+
+#[uniffi::export]
+pub fn invoke_test_trait_interface_roundtrip_enum(
+    interface: Arc<dyn TestTraitInterface>,
+    en: EnumWithData,
+) -> EnumWithData {
+    interface.roundtrip_enum(en)
+}
+
+#[uniffi::export]
+pub fn invoke_test_trait_interface_roundtrip_interface(
+    interface: Arc<dyn TestTraitInterface>,
+    iface: Arc<TestInterface>,
+) -> Arc<TestInterface> {
+    interface.roundtrip_interface(iface)
 }
 
 #[uniffi::export]
@@ -77,6 +115,18 @@ impl TestTraitInterface for TestTraitInterfaceImpl {
 
     fn set_value(&self, value: u32) {
         self.value.store(value, Ordering::Relaxed);
+    }
+
+    fn roundtrip_record(&self, value: SimpleRec) -> SimpleRec {
+        value
+    }
+
+    fn roundtrip_enum(&self, value: EnumWithData) -> EnumWithData {
+        value
+    }
+
+    fn roundtrip_interface(&self, value: Arc<TestInterface>) -> Arc<TestInterface> {
+        value
     }
 
     fn throw_if_equal(
@@ -159,6 +209,37 @@ impl AsyncTestTraitInterface for TestTraitInterfaceImpl {
     }
 
     async fn throw_if_equal(
+        &self,
+        numbers: CallbackInterfaceNumbers,
+    ) -> Result<CallbackInterfaceNumbers, TestError> {
+        if numbers.a == numbers.b {
+            Err(TestError::Failure1)
+        } else {
+            Ok(numbers)
+        }
+    }
+}
+
+/// Rust-only trait interface: no foreign impl.
+/// A single method is enough to smoke-test the foreign-only codegen path.
+#[uniffi::export(rust)]
+pub trait TestRustOnlyTraitInterface: Send + Sync {
+    fn throw_if_equal(
+        &self,
+        numbers: CallbackInterfaceNumbers,
+    ) -> Result<CallbackInterfaceNumbers, TestError>;
+}
+
+/// Create an implementation of the interface in Rust
+#[uniffi::export]
+pub fn create_rust_only_test_trait_interface() -> Arc<dyn TestRustOnlyTraitInterface> {
+    Arc::new(TestRustOnlyTraitInterfaceImpl)
+}
+
+pub struct TestRustOnlyTraitInterfaceImpl;
+
+impl TestRustOnlyTraitInterface for TestRustOnlyTraitInterfaceImpl {
+    fn throw_if_equal(
         &self,
         numbers: CallbackInterfaceNumbers,
     ) -> Result<CallbackInterfaceNumbers, TestError> {
