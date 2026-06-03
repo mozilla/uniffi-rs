@@ -1337,18 +1337,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#foreign-traits" class="md-nav__link">
+  <a href="#specifying-what-crosses-the-ffi-boundary" class="md-nav__link">
     <span class="md-ellipsis">
-      Foreign traits.
+      Specifying what crosses the FFI boundary
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#callback-interfaces" class="md-nav__link">
+  <a href="#foreign-traits" class="md-nav__link">
     <span class="md-ellipsis">
-      Callback Interfaces
+      Foreign traits
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#callback-interfaces-deprecated" class="md-nav__link">
+    <span class="md-ellipsis">
+      Callback Interfaces (deprecated)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deprecated-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deprecated syntax
     </span>
   </a>
   
@@ -2344,18 +2362,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#foreign-traits" class="md-nav__link">
+  <a href="#specifying-what-crosses-the-ffi-boundary" class="md-nav__link">
     <span class="md-ellipsis">
-      Foreign traits.
+      Specifying what crosses the FFI boundary
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#callback-interfaces" class="md-nav__link">
+  <a href="#foreign-traits" class="md-nav__link">
     <span class="md-ellipsis">
-      Callback Interfaces
+      Foreign traits
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#callback-interfaces-deprecated" class="md-nav__link">
+    <span class="md-ellipsis">
+      Callback Interfaces (deprecated)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deprecated-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deprecated syntax
     </span>
   </a>
   
@@ -2392,30 +2428,62 @@
 for an important exception.</p>
 <p>For traits implemented in Rust, these will appear to the foreign side exactly like an <a href="interfaces.html">objects</a>.
 If the trait is exported as shown above, only Rust implemented traits will be able to be used.</p>
-<h2 id="foreign-traits">Foreign traits.</h2>
-<p>It's possible to export the trait as a "foreign" trait by using <code>#[uniffi::export(with_foreign)]</code>.
-This allows for the trait to also be implemented by foreign bindings - meaning the bindings can implement
-an object and store it in Records or Enums, or pass them into Rust functions etc.</p>
-<div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export(with_foreign)]</span>
+<h2 id="specifying-what-crosses-the-ffi-boundary">Specifying what crosses the FFI boundary</h2>
+<p>Use the <code>rust</code> and <code>foreign</code> flags to describe which implementations are available in the FFI for this trait:</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>#[uniffi::export]</code></td>
+<td>Default is Rust implementations only</td>
+</tr>
+<tr>
+<td><code>#[uniffi::export(rust)]</code></td>
+<td>Explicit Rust implementations only</td>
+</tr>
+<tr>
+<td><code>#[uniffi::export(rust, foreign)]</code></td>
+<td>Both Rust and foreign implementations</td>
+</tr>
+<tr>
+<td><code>#[uniffi::export(foreign)]</code></td>
+<td>Foreign implementations only</td>
+</tr>
+</tbody>
+</table>
+<h2 id="foreign-traits">Foreign traits</h2>
+<p>If the <code>uniffi::export</code> specified <code>foreign</code>, the trait can be implemented by foreign bindings - meaning
+the bindings can implement an object and it's able to be used with functions, Records and Enums etc.</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export(rust, foreign)]</span>
 <span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">Person</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">name</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">String</span><span class="p">;</span>
 <span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">age</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="kt">u32</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
+<p>If you never expose a Rust implementation over the FFI, using <code>#[uniffi::export(foreign)]</code> will avoid unused Rust scaffolding code.</p>
 <p>See the <a href="../foreign_traits.html">foreign trait documentation</a> documentation for more.</p>
-<h2 id="callback-interfaces">Callback Interfaces</h2>
-<p>Callback interfaces are very similar to, and pre-date Foreign traits.
+<h2 id="callback-interfaces-deprecated">Callback Interfaces (deprecated)</h2>
+<p>Callback interfaces are very similar to, and pre-date general trait support.
 Due to backwards compatibility, they appear in all signatures and Record/Enum definitions as <code>Box&lt;dyn TraitName&gt;</code> instead of <code>Arc&lt;&gt;</code>.
 This makes them less useful in general - because Foreign traits offer all the same capabilities but don't have this limitation,
-you should consider callback interfaces soft deprecated and use Foreign Traits instead.</p>
+you should consider callback interfaces soft deprecated and use Foreign Traits instead.
+It's possible (but not planned) that callback interfaces will get in the way of some future work and be removed.</p>
 <p>See <a href="../types/callback_interfaces.html">their documentation for more</a></p>
-<p>However, if you really do want to use them from proc-macros, you would use <code>#[uniffi::export(callback_interface)]</code></p>
+<p>If you really do want to use them from proc-macros, use <code>#[uniffi::export(callback_interface)]</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export(callback_interface)]</span>
 <span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">Person</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">name</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">String</span><span class="p">;</span>
 <span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">age</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="kt">u32</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
+<h2 id="deprecated-syntax">Deprecated syntax</h2>
+<p>The <code>with_foreign</code> flag is a deprecated alias for <code>rust, foreign</code> but still accepted for
+backwards compatibility. We might remove it later, please use the new syntax.</p>
 
 
 

@@ -2323,8 +2323,18 @@ a <a href="udl/errors.html">compatible error type</a> - see below for more on er
 <span class="w">  </span><span class="k">fn</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span><span class="w"> </span><span class="n">KeyChainError</span><span class="o">&gt;</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>If you are using macros add <code>#[uniffi::export(with_foreign)]</code> above the trait.
-Otherwise define this trait in your UDL file:</p>
+<p>If you are using macros, add <code>#[uniffi::export(rust, foreign)]</code> above the trait to allow both Rust
+and foreign implementations, or <code>#[uniffi::export(foreign)]</code> if you only export foreign
+implementations:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Both Rust and foreign implementations:</span>
+<span class="cp">#[uniffi::export(rust, foreign)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">Keychain</span><span class="p">:</span><span class="w"> </span><span class="nb">Send</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">Sync</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Debug</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
+
+<span class="c1">// Foreign implementation exported only:</span>
+<span class="cp">#[uniffi::export(foreign)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">Keychain</span><span class="p">:</span><span class="w"> </span><span class="nb">Send</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">Sync</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Debug</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p>Otherwise define this trait in your UDL file:</p>
 <div class="highlight"><pre><span></span><code><span class="p">[</span><span class="nd">Trait</span><span class="p">,</span> <span class="nd">WithForeign</span><span class="p">]</span>
 <span class="k">interface</span> <span class="nc">Keychain</span> <span class="p">{</span>
     <span class="p">[</span><span class="nd">Throws</span><span class="p">=</span><span class="n">KeyChainError</span><span class="p">]</span>
@@ -2334,7 +2344,7 @@ Otherwise define this trait in your UDL file:</p>
     <span class="kt">void</span> <span class="nf">put</span><span class="p">(</span><span class="nc">string</span> <span class="nv">key</span><span class="p">,</span> <span class="nc">string</span> <span class="nv">data</span><span class="p">);</span>
 <span class="p">};</span>
 </code></pre></div>
-<p>The <code>with_foreign</code> / <code>WithForeign</code> attributes specify that you want to enable support for foreign implementations of that trait as well as Rust ones.
+<p>The <code>rust, foreign</code> / <code>WithForeign</code> attributes specify that you want to enable support for foreign implementations of that trait as well as Rust ones.
 Note that <a href="https://github.com/mozilla/uniffi-rs/issues/2263">references in foreign trait methods aren't supported</a>, so all parameters must be passed by value.</p>
 <h2 id="2-allow-it-to-be-passed-into-rust">2. Allow it to be passed into Rust</h2>
 <p>Here, we define a new object with a constructor which takes a keychain.</p>
