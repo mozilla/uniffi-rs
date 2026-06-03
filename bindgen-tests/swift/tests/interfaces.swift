@@ -8,6 +8,10 @@ let interface = TestInterface.init(value: 20);
 assert(interface.getValue() == 20);
 assert(cloneInterface(interface: interface).getValue() == 20);
 
+// Test optional interfaces
+assert(roundtripOptionalInterface(interface: nil) == nil);
+assert(roundtripOptionalInterface(interface: TestInterface.init(value: 20))?.getValue() == 20);
+
 assert(TestInterface.secondaryConstructor(value: 20).getValue() == 40)
 
 // Test records that store interfaces

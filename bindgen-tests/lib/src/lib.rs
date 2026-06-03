@@ -10,8 +10,8 @@ pub mod bytes;
 #[cfg(feature = "callback_interfaces")]
 pub mod callback_interfaces;
 
-#[cfg(feature = "compound_types")]
-pub mod compound_types;
+#[cfg(feature = "collections")]
+pub mod collections;
 
 #[cfg(feature = "custom_types")]
 pub mod custom_types;
@@ -33,6 +33,9 @@ pub mod futures;
 
 #[cfg(feature = "interfaces")]
 pub mod interfaces;
+
+#[cfg(feature = "options")]
+pub mod options;
 
 #[cfg(feature = "primitive_types")]
 pub mod primitive_types;

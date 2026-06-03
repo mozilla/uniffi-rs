@@ -21,5 +21,18 @@ class TestErrors(unittest.TestCase):
         func_with_error(200)
         func_with_flat_error(1)
 
+    def test_rust_error_no_data_returns(self):
+        with self.assertRaises(TestErrorNoData.Failure1):
+            func_with_error_no_data(0)
+
+        with self.assertRaises(TestErrorNoData.Failure2):
+            func_with_error_no_data(1)
+
+        with self.assertRaises(TestErrorNoData.Failure3):
+            func_with_error_no_data(2)
+
+        # This shouldn't throw
+        func_with_error_no_data(200)
+
 if __name__ == '__main__':
     unittest.main()

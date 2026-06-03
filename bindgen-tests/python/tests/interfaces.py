@@ -7,6 +7,11 @@ class TestErrors(unittest.TestCase):
         self.assertEqual(interface.get_value(), 20)
         self.assertEqual(clone_interface(interface).get_value(), 20)
 
+    def test_optional_interface(self):
+        self.assertEqual(roundtrip_optional_interface(None), None)
+        interface = TestInterface(20)
+        self.assertEqual(roundtrip_optional_interface(interface).get_value(), 20)
+
     def test_secondary_constructor(self):
         interface = TestInterface.secondary_constructor(20)
         self.assertEqual(interface.get_value(), 40)

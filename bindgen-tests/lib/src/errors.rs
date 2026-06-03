@@ -29,6 +29,19 @@ pub enum TestFlatError {
     IoError(io::Error),
 }
 
+/// Error enum with no data.
+///
+/// This is subtly different than a flat error
+#[derive(uniffi::Error, thiserror::Error, Debug)]
+pub enum TestErrorNoData {
+    #[error("Failure1")]
+    Failure1,
+    #[error("Failure2")]
+    Failure2,
+    #[error("Failure3")]
+    Failure3,
+}
+
 #[uniffi::export]
 pub fn func_with_error(input: u32) -> Result<(), TestError> {
     match input {
@@ -48,6 +61,16 @@ pub fn func_with_flat_error(input: u32) -> Result<(), TestFlatError> {
             io::ErrorKind::NotFound,
             "NotFound".to_string(),
         ))),
+        _ => Ok(()),
+    }
+}
+
+#[uniffi::export]
+pub fn func_with_error_no_data(input: u32) -> Result<(), TestErrorNoData> {
+    match input {
+        0 => Err(TestErrorNoData::Failure1),
+        1 => Err(TestErrorNoData::Failure2),
+        2 => Err(TestErrorNoData::Failure3),
         _ => Ok(()),
     }
 }

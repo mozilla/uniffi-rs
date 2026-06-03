@@ -34,6 +34,15 @@ class TestErrors < Test::Unit::TestCase
     assert_raises(TestFlatError::IoError) { UniffiBindgenTests.func_with_flat_error(0) }
   end
 
+  def test_error_no_data
+    assert_raises(TestErrorNoData::Failure1) { UniffiBindgenTests.func_with_error_no_data(0) }
+    assert_raises(TestErrorNoData::Failure2) { UniffiBindgenTests.func_with_error_no_data(1) }
+    assert_raises(TestErrorNoData::Failure3) { UniffiBindgenTests.func_with_error_no_data(2) }
+
+    # Should not raise
+    UniffiBindgenTests.func_with_error_no_data(200)
+  end
+
   # Should not raise
   def test_success
     UniffiBindgenTests.func_with_error 100

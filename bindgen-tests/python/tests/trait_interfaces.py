@@ -26,6 +26,15 @@ class TraitImpl(TestTraitInterface):
             raise TestError.Failure1()
         return numbers
 
+    def roundtrip_record(self, value):
+        return value
+
+    def roundtrip_enum(self, value):
+        return value
+
+    def roundtrip_interface(self, value):
+        return value
+
 class TestTraitInterfaces(unittest.TestCase):
     def check_rust_impl(self, rust_trait_impl):
         rust_trait_impl.noop()
@@ -37,6 +46,11 @@ class TestTraitInterfaces(unittest.TestCase):
         self.assertEqual(
             rust_trait_impl.throw_if_equal(CallbackInterfaceNumbers(a=10, b=11)),
             CallbackInterfaceNumbers(a=10, b=11))
+        self.assertEqual(rust_trait_impl.roundtrip_record(SimpleRec(a=10)), SimpleRec(a=10))
+        self.assertEqual(
+            rust_trait_impl.roundtrip_enum(EnumWithData.A(10, 20)),
+            EnumWithData.A(10, 20))
+        self.assertEqual(rust_trait_impl.roundtrip_interface(TestInterface(20)).get_value(), 20)
 
     def check_py_impl(self, py_trait_impl):
         invoke_test_trait_interface_noop(py_trait_impl)
@@ -56,6 +70,15 @@ class TestTraitInterfaces(unittest.TestCase):
             ),
             CallbackInterfaceNumbers(a=10, b=11)
         )
+        self.assertEqual(
+            invoke_test_trait_interface_roundtrip_record(py_trait_impl, SimpleRec(a=10)),
+            SimpleRec(a=10))
+        self.assertEqual(
+            invoke_test_trait_interface_roundtrip_enum(py_trait_impl, EnumWithData.A(10, 20)),
+            EnumWithData.A(10, 20))
+        self.assertEqual(
+            invoke_test_trait_interface_roundtrip_interface(py_trait_impl, TestInterface(20)).get_value(),
+            20)
 
     def test_rust_impl(self):
         self.check_rust_impl(create_test_trait_interface(42))
@@ -165,6 +188,18 @@ class TestAsyncTraitInterfaces(unittest.IsolatedAsyncioTestCase):
         await self.check_async_py_impl(impl)
         del impl
         self.assertEqual(AsyncTraitImpl.ref_count, 0)
+
+class TestRustOnlyTraitInterfaces(unittest.TestCase):
+    def check_rust_only_impl(self, impl):
+        with self.assertRaises(TestError.Failure1):
+            impl.throw_if_equal(CallbackInterfaceNumbers(a=10, b=10))
+        self.assertEqual(
+            impl.throw_if_equal(CallbackInterfaceNumbers(a=10, b=11)),
+            CallbackInterfaceNumbers(a=10, b=11)
+        )
+
+    def test_rust_only_impl(self):
+        self.check_rust_only_impl(create_rust_only_test_trait_interface())
 
 class ForeignOnlyImpl(TestForeignOnlyTraitInterface):
     def throw_if_equal(self, numbers):

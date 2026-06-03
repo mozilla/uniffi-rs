@@ -4,6 +4,10 @@ val testInterface = TestInterface(20u)
 assert(testInterface.getValue() == 20u)
 assert(cloneInterface(testInterface).getValue() == 20u)
 
+// Test optional interfaces
+assert(roundtripOptionalInterface(null) == null)
+assert(roundtripOptionalInterface(TestInterface(20u))?.getValue() == 20u)
+
 // Test secondary constructors
 assert(TestInterface.secondaryConstructor(20u).getValue() == 40u)
 

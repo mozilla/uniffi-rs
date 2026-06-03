@@ -23,6 +23,13 @@ class TestInterfaces < Test::Unit::TestCase
     assert_equal 20, cloned.get_value
   end
 
+  def test_optional_interface
+    assert_nil UniffiBindgenTests.roundtrip_optional_interface(nil)
+
+    iface = TestInterface.new 20
+    assert_equal 20, UniffiBindgenTests.roundtrip_optional_interface(iface).get_value
+  end
+
   def test_secondary_constructor
     iface = TestInterface.secondary_constructor 20
 

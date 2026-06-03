@@ -17,14 +17,15 @@ url = "2.5"
 uniffi-bindgen-tests-external-types-source = { path = "../external-types" }
 
 [features]
-default = ["simple_fns", "primitive_types", "records", "enums", "compound_types", "interfaces",
+default = ["simple_fns", "primitive_types", "records", "enums", "collections", "options", "interfaces",
     "custom_types", "errors", "callback_interfaces", "futures", "trait_interfaces", "defaults",
     "references", "external-types", "renames", "bytes", "recursive_types", "time", "rust_traits"]
 simple_fns = []
 primitive_types = []
 records = []
 enums = []
-compound_types = []
+collections = []
+options = []
 interfaces = []
 custom_types = []
 errors = []

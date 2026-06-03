@@ -44,6 +44,14 @@ pub fn clone_interface(interface: Arc<TestInterface>) -> Arc<TestInterface> {
     interface
 }
 
+// Test optional interfaces
+#[uniffi::export]
+pub fn roundtrip_optional_interface(
+    interface: Option<Arc<TestInterface>>,
+) -> Option<Arc<TestInterface>> {
+    interface
+}
+
 // Test interfaces in records
 #[derive(uniffi::Record)]
 pub struct TwoTestInterfaces {

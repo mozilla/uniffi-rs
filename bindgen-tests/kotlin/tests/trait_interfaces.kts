@@ -18,6 +18,12 @@ class TraitImpl(var value: UInt) : TestTraitInterface {
         }
         return numbers
     }
+
+    override fun roundtripRecord(value: SimpleRec): SimpleRec = value
+
+    override fun roundtripEnum(value: EnumWithData): EnumWithData = value
+
+    override fun roundtripInterface(value: TestInterface): TestInterface = value
 }
 
 fun checkRustImpl(rustTraitImpl: TestTraitInterface) {
@@ -35,6 +41,12 @@ fun checkRustImpl(rustTraitImpl: TestTraitInterface) {
         rustTraitImpl.throwIfEqual(CallbackInterfaceNumbers(a=10u, b=11u)) ==
         CallbackInterfaceNumbers(a=10u, b=11u)
     )
+    assert(rustTraitImpl.roundtripRecord(SimpleRec(a=10.toUByte())) == SimpleRec(a=10.toUByte()))
+    assert(
+        rustTraitImpl.roundtripEnum(EnumWithData.A(10.toUByte(), 20.toUShort())) ==
+        EnumWithData.A(10.toUByte(), 20.toUShort())
+    )
+    assert(rustTraitImpl.roundtripInterface(TestInterface(20u)).getValue() == 20u)
 }
 
 fun checkKtImpl(ktTraitImpl: TestTraitInterface) {
@@ -58,6 +70,15 @@ fun checkKtImpl(ktTraitImpl: TestTraitInterface) {
             CallbackInterfaceNumbers(a=10u, b=11u)
         ) == CallbackInterfaceNumbers(a=10u, b=11u)
     )
+    assert(
+        invokeTestTraitInterfaceRoundtripRecord(ktTraitImpl, SimpleRec(a=10.toUByte())) ==
+        SimpleRec(a=10.toUByte())
+    )
+    assert(
+        invokeTestTraitInterfaceRoundtripEnum(ktTraitImpl, EnumWithData.A(10.toUByte(), 20.toUShort())) ==
+        EnumWithData.A(10.toUByte(), 20.toUShort())
+    )
+    assert(invokeTestTraitInterfaceRoundtripInterface(ktTraitImpl, TestInterface(20u)).getValue() == 20u)
 }
 
 checkRustImpl(createTestTraitInterface(42u))
@@ -152,6 +173,22 @@ runBlocking {
         roundtripAsyncTestTraitInterfaceList(listOf(AsyncTraitImpl(42u)))[0]
     )
 }
+
+// Rust-only trait: smoke-test for the #[uniffi::export(rust)] codegen path
+fun checkRustOnlyImpl(impl: TestRustOnlyTraitInterface) {
+    try {
+        impl.throwIfEqual(CallbackInterfaceNumbers(a=10u, b=10u))
+        throw RuntimeException("Expected TestException.Failure1")
+    } catch (e: TestException.Failure1) {
+        // expected
+    }
+    assert(
+        impl.throwIfEqual(CallbackInterfaceNumbers(a=10u, b=11u)) ==
+        CallbackInterfaceNumbers(a=10u, b=11u)
+    )
+}
+
+checkRustOnlyImpl(createRustOnlyTestTraitInterface())
 
 // Foreign-only trait: smoke-test for the #[uniffi::export(foreign)] codegen path
 class ForeignOnlyImpl : TestForeignOnlyTraitInterface {

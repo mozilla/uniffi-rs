@@ -38,3 +38,28 @@ do {
 // These shouldn't throw
 try! funcWithError(input: 200);
 try! funcWithFlatError(input: 1);
+
+// Error enum with no data
+do {
+    try funcWithErrorNoData(input: 0);
+    fatalError("funcWithErrorNoData should have thrown")
+} catch TestErrorNoData.Failure1 {
+    // Expected
+}
+
+do {
+    try funcWithErrorNoData(input: 1);
+    fatalError("funcWithErrorNoData should have thrown")
+} catch TestErrorNoData.Failure2 {
+    // Expected
+}
+
+do {
+    try funcWithErrorNoData(input: 2);
+    fatalError("funcWithErrorNoData should have thrown")
+} catch TestErrorNoData.Failure3 {
+    // Expected
+}
+
+// This shouldn't throw
+try! funcWithErrorNoData(input: 200);

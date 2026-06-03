@@ -35,8 +35,13 @@ mod test {
     }
 
     #[test]
-    fn test_compound_types() {
-        run_tests(test_dir(), "tests/compound_types.swift");
+    fn test_collections() {
+        run_tests(test_dir(), "tests/collections.swift");
+    }
+
+    #[test]
+    fn test_options() {
+        run_tests(test_dir(), "tests/options.swift");
     }
 
     #[test]
