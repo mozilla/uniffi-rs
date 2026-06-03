@@ -152,3 +152,29 @@ runBlocking {
         roundtripAsyncTestTraitInterfaceList(listOf(AsyncTraitImpl(42u)))[0]
     )
 }
+
+// Foreign-only trait: smoke-test for the #[uniffi::export(foreign)] codegen path
+class ForeignOnlyImpl : TestForeignOnlyTraitInterface {
+    override fun throwIfEqual(numbers: CallbackInterfaceNumbers): CallbackInterfaceNumbers {
+        if (numbers.a == numbers.b) {
+            throw TestException.Failure1()
+        }
+        return numbers
+    }
+}
+
+fun checkForeignOnlyImpl(impl: TestForeignOnlyTraitInterface) {
+    try {
+        invokeTestForeignOnlyTraitThrowIfEqual(impl, CallbackInterfaceNumbers(a=10u, b=10u))
+        throw RuntimeException("Expected TestException.Failure1")
+    } catch (e: TestException.Failure1) {
+        // expected
+    }
+    assert(
+        invokeTestForeignOnlyTraitThrowIfEqual(impl, CallbackInterfaceNumbers(a=10u, b=11u)) ==
+        CallbackInterfaceNumbers(a=10u, b=11u)
+    )
+}
+
+checkForeignOnlyImpl(ForeignOnlyImpl())
+checkForeignOnlyImpl(roundtripTestForeignOnlyTrait(ForeignOnlyImpl()))

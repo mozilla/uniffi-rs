@@ -39,7 +39,6 @@ pub mod codes {
     pub const TRAIT_METHOD: u8 = 10;
     pub const UNIFFI_TRAIT: u8 = 11;
     pub const TRAIT_INTERFACE: u8 = 12;
-    pub const CALLBACK_TRAIT_INTERFACE: u8 = 13;
     pub const OBJECT_TRAIT_IMPL: u8 = 14;
     pub const CUSTOM_TYPE: u8 = 15;
 
@@ -69,10 +68,14 @@ pub mod codes {
     pub const TYPE_CUSTOM: u8 = 22;
     pub const TYPE_RESULT: u8 = 23;
     pub const TYPE_TRAIT_INTERFACE: u8 = 24;
-    pub const TYPE_CALLBACK_TRAIT_INTERFACE: u8 = 25;
     pub const TYPE_BOX: u8 = 26;
     pub const TYPE_HASH_SET: u8 = 27;
     pub const TYPE_UNIT: u8 = 255;
+
+    // TraitKind sub-codes.
+    pub const TRAIT_KIND_RUST_ONLY: u8 = 0;
+    pub const TRAIT_KIND_BOTH: u8 = 1;
+    pub const TRAIT_KIND_FOREIGN_ONLY: u8 = 2;
 
     // Literal codes for LiteralMetadata
     pub const LIT_STR: u8 = 0;

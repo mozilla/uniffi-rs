@@ -7,6 +7,7 @@ use super::*;
 use_prev_node!(initial::EnumShape);
 use_prev_node!(initial::ObjectImpl);
 use_prev_node!(initial::Radix);
+use_prev_node!(initial::TraitKind);
 use_prev_node!(initial::Type, types::map_type);
 
 /// Initial IR, this stores the metadata and other data

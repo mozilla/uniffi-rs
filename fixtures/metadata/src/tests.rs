@@ -686,6 +686,36 @@ mod test_function_metadata {
     #[uniffi::export]
     fn input_trait_with_foreign(val: Arc<dyn TraitWithForeign>) {}
 
+    // Test that explicit `rust` flag produces TraitKind::RustOnly
+    #[uniffi::export(rust)]
+    pub trait TraitExplicitRust: Send + Sync {
+        fn test_method(&self) -> String;
+    }
+
+    #[allow(unused)]
+    #[uniffi::export]
+    fn input_trait_explicit_rust(val: Arc<dyn TraitExplicitRust>) {}
+
+    // Test the canonical `rust, foreign` bare-flag syntax (equivalent to `with_foreign`)
+    #[uniffi::export(rust, foreign)]
+    pub trait TraitImplsAny: Send + Sync {
+        fn test_method(&self) -> String;
+    }
+
+    #[allow(unused)]
+    #[uniffi::export]
+    fn input_trait_impls_any(val: Arc<dyn TraitImplsAny>) {}
+
+    // Test the canonical `foreign` bare-flag syntax (foreign-only, Arc-based)
+    #[uniffi::export(foreign)]
+    pub trait TraitImplsForeign: Send + Sync {
+        fn test_method(&self) -> String;
+    }
+
+    #[allow(unused)]
+    #[uniffi::export]
+    fn input_trait_impls_foreign(val: Arc<dyn TraitImplsForeign>) {}
+
     #[test]
     fn test_function() {
         check_metadata(
@@ -952,7 +982,7 @@ mod test_function_metadata {
                 name: "CalculatorDisplay".into(),
                 orig_name: None,
                 remote: false,
-                imp: ObjectImpl::Trait,
+                imp: ObjectImpl::Trait(TraitKind::RustOnly),
                 docstring: None,
             },
         );
@@ -967,7 +997,7 @@ mod test_function_metadata {
                 name: "TraitWithForeign".into(),
                 orig_name: None,
                 remote: false,
-                imp: ObjectImpl::CallbackTrait,
+                imp: ObjectImpl::Trait(TraitKind::Both),
                 docstring: None,
             },
         );
@@ -982,7 +1012,7 @@ mod test_function_metadata {
                 return_type: Some(Type::Object {
                     module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                     name: "CalculatorDisplay".into(),
-                    imp: ObjectImpl::Trait,
+                    imp: ObjectImpl::Trait(TraitKind::RustOnly),
                 }),
                 module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 self_name: "CalculatorRenamed".into(),
@@ -1038,7 +1068,7 @@ mod test_function_metadata {
                             module_path: "uniffi_fixture_metadata::tests::test_function_metadata"
                                 .into(),
                             name: "TraitWithForeign".into(),
-                            imp: ObjectImpl::CallbackTrait,
+                            imp: ObjectImpl::Trait(TraitKind::Both),
                         },
                     ),
                 ],
@@ -1083,6 +1113,128 @@ mod test_function_metadata {
                 takes_self_by_arc: false,
                 checksum: Some(
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_LOGGER_LOG.checksum(),
+                ),
+                docstring: None,
+            },
+        );
+    }
+
+    #[test]
+    fn test_explicit_rust_metadata() {
+        // Explicit `rust` flag also produces TraitKind::RustOnly
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_INTERFACE_TRAITEXPLICITRUST,
+            ObjectMetadata {
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
+                name: "TraitExplicitRust".into(),
+                orig_name: None,
+                remote: false,
+                imp: ObjectImpl::Trait(TraitKind::RustOnly),
+                docstring: None,
+            },
+        );
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_INPUT_TRAIT_EXPLICIT_RUST,
+            FnMetadata {
+                inputs: vec![FnParamMetadata::simple(
+                    "val",
+                    Type::Object {
+                        module_path: "uniffi_fixture_metadata::tests::test_function_metadata"
+                            .into(),
+                        name: "TraitExplicitRust".into(),
+                        imp: ObjectImpl::Trait(TraitKind::RustOnly),
+                    },
+                )],
+                return_type: None,
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
+                name: "input_trait_explicit_rust".into(),
+                orig_name: None,
+                is_async: false,
+                throws: None,
+                checksum: Some(
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_INPUT_TRAIT_EXPLICIT_RUST
+                        .checksum(),
+                ),
+                docstring: None,
+            },
+        );
+    }
+
+    #[test]
+    fn test_impls_any_metadata() {
+        // `rust, foreign` should produce the same metadata as `with_foreign`
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_INTERFACE_TRAITIMPLSANY,
+            ObjectMetadata {
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
+                name: "TraitImplsAny".into(),
+                orig_name: None,
+                remote: false,
+                imp: ObjectImpl::Trait(TraitKind::Both),
+                docstring: None,
+            },
+        );
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_INPUT_TRAIT_IMPLS_ANY,
+            FnMetadata {
+                inputs: vec![FnParamMetadata::simple(
+                    "val",
+                    Type::Object {
+                        module_path: "uniffi_fixture_metadata::tests::test_function_metadata"
+                            .into(),
+                        name: "TraitImplsAny".into(),
+                        imp: ObjectImpl::Trait(TraitKind::Both),
+                    },
+                )],
+                return_type: None,
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
+                name: "input_trait_impls_any".into(),
+                orig_name: None,
+                is_async: false,
+                throws: None,
+                checksum: Some(
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_INPUT_TRAIT_IMPLS_ANY.checksum(),
+                ),
+                docstring: None,
+            },
+        );
+    }
+
+    #[test]
+    fn test_impls_foreign_metadata() {
+        // `foreign` should produce the same metadata as the removed `foreign_only` flag
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_INTERFACE_TRAITIMPLSFOREIGN,
+            ObjectMetadata {
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
+                name: "TraitImplsForeign".into(),
+                orig_name: None,
+                remote: false,
+                imp: ObjectImpl::Trait(TraitKind::ForeignOnly),
+                docstring: None,
+            },
+        );
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_INPUT_TRAIT_IMPLS_FOREIGN,
+            FnMetadata {
+                inputs: vec![FnParamMetadata::simple(
+                    "val",
+                    Type::Object {
+                        module_path: "uniffi_fixture_metadata::tests::test_function_metadata"
+                            .into(),
+                        name: "TraitImplsForeign".into(),
+                        imp: ObjectImpl::Trait(TraitKind::ForeignOnly),
+                    },
+                )],
+                return_type: None,
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
+                name: "input_trait_impls_foreign".into(),
+                orig_name: None,
+                is_async: false,
+                throws: None,
+                checksum: Some(
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_INPUT_TRAIT_IMPLS_FOREIGN
+                        .checksum(),
                 ),
                 docstring: None,
             },

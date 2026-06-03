@@ -114,18 +114,12 @@ pub(crate) fn expand_export(
         ExportItem::Trait {
             items,
             self_ident,
-            with_foreign,
+            trait_kind,
             callback_interface_only: false,
             docstring,
             args,
         } => trait_interface::gen_trait_scaffolding(
-            &mod_path,
-            args,
-            self_ident,
-            items,
-            udl_mode,
-            with_foreign,
-            docstring,
+            &mod_path, args, self_ident, items, udl_mode, trait_kind, docstring,
         ),
         ExportItem::Trait {
             items,

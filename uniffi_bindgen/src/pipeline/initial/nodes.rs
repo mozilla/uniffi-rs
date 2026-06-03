@@ -9,6 +9,7 @@ use super::*;
 use_prev_node!(uniffi_meta::EnumShape);
 use_prev_node!(uniffi_meta::ObjectImpl);
 use_prev_node!(uniffi_meta::Radix);
+use_prev_node!(uniffi_meta::TraitKind);
 
 /// Root node of the Initial IR
 #[derive(Debug, Clone, PartialEq, Eq, Node, MapNode)]

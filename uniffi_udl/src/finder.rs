@@ -23,7 +23,7 @@ use anyhow::{bail, Result};
 
 use super::TypeCollector;
 use crate::attributes::{InterfaceAttributes, TypedefAttributes};
-use uniffi_meta::{ObjectImpl, Type};
+use uniffi_meta::{ObjectImpl, TraitKind, Type};
 
 // We broke this, so try and be as helpful as possible.
 static ERR_TYPEDEF_EXTERN: &str = r#"`typedef extern` is no longer supported.
@@ -181,12 +181,12 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
                 "trait" => Type::Object {
                     module_path,
                     name,
-                    imp: ObjectImpl::Trait,
+                    imp: ObjectImpl::Trait(TraitKind::RustOnly),
                 },
                 "callback" | "trait_with_foreign" => Type::Object {
                     module_path,
                     name,
-                    imp: ObjectImpl::CallbackTrait,
+                    imp: ObjectImpl::Trait(TraitKind::Both),
                 },
                 // "extern" gets a special error to help upgrading
                 "extern" => bail!(ERR_TYPEDEF_EXTERN),
@@ -338,10 +338,10 @@ mod test {
                     Type::Object { name, module_path, imp: ObjectImpl::Struct } if name == "Interface2" && module_path.is_empty()));
                 assert!(matches!(
                     types.get_type_definition("Trait").unwrap(),
-                    Type::Object { name, module_path, imp: ObjectImpl::Trait } if name == "Trait" && module_path.is_empty()));
+                    Type::Object { name, module_path, imp: ObjectImpl::Trait(TraitKind::RustOnly) } if name == "Trait" && module_path.is_empty()));
                 assert!(matches!(
                     types.get_type_definition("Callback").unwrap(),
-                    Type::Object { name, module_path, imp: ObjectImpl::CallbackTrait } if name == "Callback" && module_path.is_empty()));
+                    Type::Object { name, module_path, imp: ObjectImpl::Trait(TraitKind::Both) } if name == "Callback" && module_path.is_empty()));
                 assert!(matches!(
                     types.get_type_definition("R1").unwrap(),
                     Type::Record { name, module_path } if name == "R1" && module_path.is_empty()));

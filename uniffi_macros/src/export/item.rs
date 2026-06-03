@@ -11,7 +11,7 @@ use super::attributes::{
     ExportFnArgs, ExportImplArgs, ExportStructArgs, ExportTraitArgs, ExportedImplFnAttributes,
 };
 use crate::util::extract_docstring;
-use uniffi_meta::UniffiTraitDiscriminants;
+use uniffi_meta::{TraitKind, UniffiTraitDiscriminants};
 
 /// Collect and sort traits deterministically.
 /// HashSet iteration order is random per process; sorting ensures reproducible builds.
@@ -35,7 +35,7 @@ pub(super) enum ExportItem {
     Trait {
         self_ident: Ident,
         items: Vec<ImplItem>,
-        with_foreign: bool,
+        trait_kind: TraitKind,
         callback_interface_only: bool,
         docstring: String,
         args: ExportTraitArgs,
@@ -154,8 +154,26 @@ impl ExportItem {
 
     fn from_trait(item: syn::ItemTrait, attr_args: TokenStream) -> syn::Result<Self> {
         let args: ExportTraitArgs = syn::parse(attr_args)?;
-        let with_foreign = args.callback_interface.is_some() || args.with_foreign.is_some();
-        let callback_interface_only = args.callback_interface.is_some();
+        let (trait_kind, callback_interface_only) = if args.rust.is_some() || args.foreign.is_some()
+        {
+            // Canonical bare-flag syntax: `rust`, `foreign`, or `rust, foreign`
+            let kind = match (args.rust.is_some(), args.foreign.is_some()) {
+                (true, false) => TraitKind::RustOnly,
+                (false, true) => TraitKind::ForeignOnly,
+                (true, true) => TraitKind::Both,
+                (false, false) => unreachable!(),
+            };
+            (kind, false)
+        } else {
+            // Legacy flag-style syntax (kept for backward compatibility)
+            let cb_only = args.callback_interface.is_some();
+            let kind = if args.with_foreign.is_some() || cb_only {
+                TraitKind::Both
+            } else {
+                TraitKind::RustOnly
+            };
+            (kind, cb_only)
+        };
 
         if !item.generics.params.is_empty() || item.generics.where_clause.is_some() {
             return Err(syn::Error::new_spanned(
@@ -211,7 +229,7 @@ impl ExportItem {
         Ok(Self::Trait {
             items,
             self_ident,
-            with_foreign,
+            trait_kind,
             callback_interface_only,
             docstring,
             args,

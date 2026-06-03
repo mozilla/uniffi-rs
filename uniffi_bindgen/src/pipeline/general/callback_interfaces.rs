@@ -56,10 +56,11 @@ pub fn vtable(methods: &[initial::Method], context: &Context) -> Result<VTable> 
 }
 
 pub fn vtable_for_interface(int: &initial::Interface, context: &Context) -> Result<Option<VTable>> {
-    Ok(match int.imp {
-        ObjectImpl::CallbackTrait => Some(vtable(&int.methods, context)?),
-        _ => None,
-    })
+    if int.imp.has_callback_interface() {
+        Ok(Some(vtable(&int.methods, context)?))
+    } else {
+        Ok(None)
+    }
 }
 
 pub fn ffi_definitions(

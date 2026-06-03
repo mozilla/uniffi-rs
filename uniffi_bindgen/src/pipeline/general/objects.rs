@@ -130,7 +130,7 @@ pub fn interface_methods(
 ) -> Result<Vec<Method>> {
     let self_type = context.self_type()?;
     let kind = match imp {
-        ObjectImpl::Trait | ObjectImpl::CallbackTrait => CallableKind::VTableMethod {
+        ObjectImpl::Trait(_) => CallableKind::VTableMethod {
             self_type,
             for_callback_interface: false,
         },
