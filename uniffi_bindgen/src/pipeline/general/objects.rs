@@ -102,8 +102,8 @@ pub fn constructors(
 
 pub fn methods_with_kind(
     methods: Vec<initial::Method>,
-    kind: CallableKind,
     context: &Context,
+    create_kind: impl Fn(&initial::Method) -> CallableKind,
 ) -> Result<Vec<Method>> {
     let mut mapped = Vec::with_capacity(methods.len());
     for meth in methods {
@@ -111,7 +111,7 @@ pub fn methods_with_kind(
             continue;
         }
         mapped.push(Method {
-            callable: callable::method_callable_with_kind(&meth, kind.clone(), context)?,
+            callable: callable::method_callable_with_kind(&meth, create_kind(&meth), context)?,
             docstring: meth.docstring,
         })
     }
@@ -120,7 +120,10 @@ pub fn methods_with_kind(
 
 pub fn methods(methods: Vec<initial::Method>, context: &Context) -> Result<Vec<Method>> {
     let self_type = context.self_type()?;
-    methods_with_kind(methods, CallableKind::Method { self_type }, context)
+    methods_with_kind(methods, context, |meth| CallableKind::Method {
+        self_type: self_type.clone(),
+        takes_self_by_arc: meth.takes_self_by_arc,
+    })
 }
 
 pub fn interface_methods(
@@ -129,14 +132,16 @@ pub fn interface_methods(
     context: &Context,
 ) -> Result<Vec<Method>> {
     let self_type = context.self_type()?;
-    let kind = match imp {
+    methods_with_kind(methods, context, |meth| match imp {
         ObjectImpl::Trait(_) => CallableKind::VTableMethod {
-            self_type,
+            self_type: self_type.clone(),
             for_callback_interface: false,
         },
-        ObjectImpl::Struct => CallableKind::Method { self_type },
-    };
-    methods_with_kind(methods, kind, context)
+        ObjectImpl::Struct => CallableKind::Method {
+            self_type: self_type.clone(),
+            takes_self_by_arc: meth.takes_self_by_arc,
+        },
+    })
 }
 
 pub fn callback_interface_methods(
@@ -144,9 +149,8 @@ pub fn callback_interface_methods(
     context: &Context,
 ) -> Result<Vec<Method>> {
     let self_type = context.self_type()?;
-    let kind = CallableKind::VTableMethod {
-        self_type,
+    methods_with_kind(methods, context, |_| CallableKind::VTableMethod {
+        self_type: self_type.clone(),
         for_callback_interface: true,
-    };
-    methods_with_kind(methods, kind, context)
+    })
 }

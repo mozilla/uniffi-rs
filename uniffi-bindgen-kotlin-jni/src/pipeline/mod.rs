@@ -1,0 +1,49 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+mod callables;
+mod callbacks;
+mod compounds;
+mod context;
+mod custom;
+mod defaults;
+mod enums;
+mod ffi_buffer;
+mod ffi_types;
+mod interfaces;
+mod names;
+mod nodes;
+mod packages;
+mod records;
+mod root;
+mod types;
+mod utraits;
+
+use std::collections::{HashMap, HashSet};
+
+use anyhow::{anyhow, bail, Result};
+use context::Context;
+use ffi_buffer::FfiBufferLayoutBuilder;
+use ffi_types::FfiTypeOracle;
+use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
+use indexmap::IndexSet;
+use uniffi_bindgen::pipeline::{general, initial};
+use uniffi_pipeline::{MapNode, Node, Pipeline};
+
+use crate::config::{Config, CustomTypeConfig};
+pub use initial::Root as InitialRoot;
+pub use nodes::*;
+
+pub fn pipeline() -> Pipeline<initial::Root, Root> {
+    general::pipeline("kotlin").pass::<Root, Context>(Context::default())
+}
+
+pub fn pipeline_for_scaffolding(pkg_name: String) -> Pipeline<initial::Root, Root> {
+    let context = Context {
+        scaffolding_crate_name: Some(pkg_name.replace("-", "_")),
+        ..Context::default()
+    };
+
+    general::pipeline("kotlin").pass::<Root, Context>(context)
+}

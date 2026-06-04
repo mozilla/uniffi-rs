@@ -218,10 +218,12 @@ mod tests {
             orig_name: name.to_string(),
         });
         TypeDefinition::Enum(Enum {
+            module_path: "my_crate".into(),
             name: name.to_string(),
             orig_name: name.to_string(),
             is_flat: false,
             self_type,
+            discr_specified: false,
             discr_type: discr_type_node.clone(),
             uniffi_trait_methods: UniffiTraitMethods::default(),
             shape: EnumShape::Enum,
@@ -254,10 +256,12 @@ mod tests {
             orig_name: name.to_string(),
         });
         TypeDefinition::Enum(Enum {
+            module_path: "my_crate".into(),
             name: name.to_string(),
             orig_name: name.to_string(),
             is_flat: true,
             self_type,
+            discr_specified: false,
             discr_type: discr_type_node.clone(),
             uniffi_trait_methods: UniffiTraitMethods::default(),
             shape: EnumShape::Enum,
@@ -319,10 +323,12 @@ mod tests {
             })
             .collect();
         TypeDefinition::Enum(Enum {
+            module_path: "my_crate".into(),
             name: name.to_string(),
             orig_name: name.to_string(),
             is_flat: false,
             self_type,
+            discr_specified: false,
             discr_type: discr_type_node,
             uniffi_trait_methods: UniffiTraitMethods::default(),
             shape: EnumShape::Enum,
@@ -341,6 +347,7 @@ mod tests {
             orig_name: name.to_string(),
         });
         TypeDefinition::Record(Record {
+            module_path: "my_crate".into(),
             name: name.to_string(),
             orig_name: name.to_string(),
             self_type,
