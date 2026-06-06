@@ -20,10 +20,15 @@ do {
     // It's okay!
 }
 
-// Test that rust timestamps behave like swift timestamps
+// Test that rust timestamps behave like swift timestamps.
+// Sleep briefly between each call: Date uses Double (CFAbsoluteTime) which has
+// ~100–200 ns precision at current epoch, so without a gap the ordering can
+// flip intermittently due to floating-point rounding in the FFI conversion.
 let swiftBefore = Date.init()
+Thread.sleep(forTimeInterval: 0.01)
 let rustNow = now()
+Thread.sleep(forTimeInterval: 0.01)
 let swiftAfter = Date.init()
 
-assert(swiftBefore <= rustNow)
-assert(swiftAfter >= rustNow)
+assert(swiftBefore < rustNow)
+assert(swiftAfter > rustNow)
