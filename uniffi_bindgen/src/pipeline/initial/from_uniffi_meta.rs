@@ -264,6 +264,7 @@ impl UniffiMetaConverter {
             uniffi_traits: self.uniffi_traits,
             trait_impls: self.trait_impls,
             orig_names: self.orig_names,
+            ..Context::default()
         };
 
         let mut root = Root {

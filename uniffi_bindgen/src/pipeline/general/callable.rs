@@ -13,6 +13,7 @@ pub fn function_callable(func: &initial::Function, context: &Context) -> Result<
     let name = rename::func(func.name.clone(), context)?;
 
     Ok(Callable {
+        id: func.id,
         name,
         orig_name: func.orig_name.clone(),
         async_data: function_async_data(func, context)?,
@@ -51,6 +52,7 @@ pub fn method_callable_with_kind(
     let name = rename::method(meth.name.clone(), context)?;
 
     Ok(Callable {
+        id: meth.id,
         name,
         orig_name: meth.orig_name.clone(),
         arguments,
@@ -86,6 +88,7 @@ pub fn constructor_callable(cons: &initial::Constructor, context: &Context) -> R
     let name = rename::method(cons.name.clone(), context)?;
 
     Ok(Callable {
+        id: cons.id,
         name,
         orig_name: cons.orig_name.clone(),
         async_data: constructor_async_data(cons, interface_name, imp, context)?,

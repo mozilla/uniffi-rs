@@ -35,6 +35,8 @@ pub struct Namespace {
 pub struct Function {
     #[map_node(self.orig_name.unwrap_or_else(|| self.name.clone()))]
     pub orig_name: String,
+    #[map_node(context.new_callable_id())]
+    pub id: u64,
     pub name: String,
     pub is_async: bool,
     pub inputs: Vec<Argument>,
@@ -58,6 +60,8 @@ pub enum TypeDefinition {
 pub struct Constructor {
     #[map_node(self.orig_name.unwrap_or_else(|| self.name.clone()))]
     pub orig_name: String,
+    #[map_node(context.new_callable_id())]
+    pub id: u64,
     pub name: String,
     pub is_async: bool,
     pub inputs: Vec<Argument>,
@@ -72,6 +76,8 @@ pub struct Constructor {
 pub struct Method {
     #[map_node(self.orig_name.unwrap_or_else(|| self.name.clone()))]
     pub orig_name: String,
+    #[map_node(context.new_callable_id())]
+    pub id: u64,
     pub name: String,
     pub is_async: bool,
     pub inputs: Vec<Argument>,
