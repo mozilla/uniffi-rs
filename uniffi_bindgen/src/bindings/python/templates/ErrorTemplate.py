@@ -83,7 +83,7 @@ class {{ e.self_type.ffi_converter_name }}(_UniffiConverterRustBuffer):
         if variant == {{ loop.index }}:
             return {{ type_name }}.{{ variant.name }}(
                 {%- if e.is_flat %}
-                {{ string_type_node.ffi_converter_name }}.read(buf),
+                {{ builtin_types.string.ffi_converter_name }}.read(buf),
                 {%- else %}
                 {%- for field in variant.fields %}
                 {{ field.ty.ffi_converter_name }}.read(buf),
