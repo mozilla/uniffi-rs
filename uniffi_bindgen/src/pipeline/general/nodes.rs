@@ -102,6 +102,7 @@ pub struct Method {
 /// Common data from Function/Method/Constructor
 #[derive(Debug, Clone, Node, MapNode)]
 pub struct Callable {
+    pub id: u64,
     pub name: String,
     pub orig_name: String,
     pub async_data: Option<AsyncData>,
@@ -429,6 +430,7 @@ pub struct TypeNode {
     ///     Many bindings will create a `UniffiConverter[canonical_name]` class.
     ///   - Creating a unique key for a type
     pub canonical_name: String,
+    pub id: u64,
     pub is_used_as_error: bool,
     pub ffi_type: FfiType,
     pub ty: Type,
