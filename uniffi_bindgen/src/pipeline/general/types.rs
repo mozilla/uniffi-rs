@@ -6,6 +6,7 @@ use super::*;
 
 pub fn map_type_node(ty: Type, context: &Context) -> Result<TypeNode> {
     Ok(TypeNode {
+        id: context.get_type_id(&ty)?,
         canonical_name: canonical_name(&ty),
         is_used_as_error: context.type_is_used_as_error(&ty),
         ffi_type: ffi_types::ffi_type(&ty, context)?,
@@ -109,5 +110,50 @@ pub fn map_type(mut ty: Type, context: &Context) -> Result<Type> {
         },
         // All other types can be returned unchanged
         _ => ty,
+    })
+}
+
+pub fn type_for_record(rec: &initial::Record, context: &Context) -> Result<Type> {
+    Ok(Type::Record {
+        namespace: context.namespace_name()?,
+        name: rec.name.clone(),
+        orig_name: rec.orig_name.clone(),
+    })
+}
+
+pub fn type_for_enum(en: &initial::Enum, context: &Context) -> Result<Type> {
+    Ok(Type::Enum {
+        namespace: context.namespace_name()?,
+        name: en.name.clone(),
+        orig_name: en.orig_name.clone(),
+    })
+}
+
+pub fn type_for_interface(int: &initial::Interface, context: &Context) -> Result<Type> {
+    Ok(Type::Interface {
+        namespace: context.namespace_name()?,
+        name: int.name.clone(),
+        orig_name: int.orig_name.clone(),
+        imp: int.imp,
+    })
+}
+
+pub fn type_for_callback_interface(
+    cbi: &initial::CallbackInterface,
+    context: &Context,
+) -> Result<Type> {
+    Ok(Type::CallbackInterface {
+        namespace: context.namespace_name()?,
+        name: cbi.name.clone(),
+        orig_name: cbi.orig_name.clone(),
+    })
+}
+
+pub fn type_for_custom_type(custom: &initial::CustomType, context: &Context) -> Result<Type> {
+    Ok(Type::Custom {
+        namespace: context.namespace_name()?,
+        name: custom.name.clone(),
+        orig_name: custom.orig_name.clone(),
+        builtin: Box::new(custom.builtin.clone()),
     })
 }

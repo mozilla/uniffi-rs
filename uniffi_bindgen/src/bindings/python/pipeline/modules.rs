@@ -31,7 +31,7 @@ pub fn map_namespace(namespace: general::Namespace, context: &Context) -> Result
         ffi_rustbuffer_reserve: namespace.ffi_rustbuffer_reserve,
         ffi_uniffi_contract_version: namespace.ffi_uniffi_contract_version,
         correct_contract_version: namespace.correct_contract_version,
-        string_type_node: namespace.string_type_node.map_node(context)?,
+        builtin_types: context.builtin_types()?,
     };
     // Generate exported names after mapping everything else.  This way we're sure all the renames
     // have taken effect.
