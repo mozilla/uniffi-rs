@@ -35,6 +35,7 @@ Each example has the following structure:
   * Kotlin `tests/bindings/test_<namespace>.kts`
   * Swift `tests/bindings/test_<namespace>.swift`
   * Python `tests/bindings/test_<namespace>.py`
+  * Ruby `tests/bindings/test_<namespace>.rb`
 
 If you want to try them out, you will need:
 
@@ -65,5 +66,5 @@ With that in place, try the following:
     This will generate the foreign-language bindings for Kotlin, which load the compiled Rust code
     and use the C FFI generated above to interact with it.
     You can view the generated code in `./src/uniffi/<namespace>/<namespace>.kt`.
-  * Try using `--language swift` or `--language python` to explore the foreign-language bindings
+  * Try using `--language swift`, `--language python`, or `--language ruby` to explore the foreign-language bindings
     generated for other languages.

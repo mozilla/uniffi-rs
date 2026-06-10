@@ -1,3 +1,11 @@
+{%- if func.is_async() %}
+
+def self.{{ func.name()|fn_name_rb }}({%- call rb::arg_list_decl(func) %}{% endcall -%})
+  {%- call rb::setup_args(func) %}{% endcall %}
+  {% call rb::to_ffi_call_async(func) %}{% endcall %}
+end
+{%- else %}
+
 {%- match func.return_type() -%}
 {%- when Some with (return_type) %}
 
@@ -14,3 +22,4 @@ def self.{{ func.name()|fn_name_rb }}({%- call rb::arg_list_decl(func) %}{% endc
   {% call rb::to_ffi_call(func) %}{% endcall %}
 end
 {% endmatch %}
+{%- endif %}

@@ -219,7 +219,7 @@ The behavior of the generated scaffolding will be:
 
 ## Custom types in the bindings code
 
-*Note: The facility described in this document is not yet available for the Ruby bindings.*
+Ruby supports the same `[bindings.ruby.custom_types]` configuration; see `[examples/custom-types/uniffi.toml](https://github.com/mozilla/uniffi-rs/blob/main/examples/custom-types/uniffi.toml)`.
 
 By default, the foreign bindings just see the builtin type - eg, the bindings will get an integer
 for the `Handle`.

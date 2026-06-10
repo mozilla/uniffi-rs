@@ -36,9 +36,16 @@ pub fn channel<T>() -> (Sender<T>, Receiver<T>) {
 impl<T> Sender<T> {
     /// Send a value to the receiver
     pub fn send(self, value: T) {
-        let mut inner = self.0.lock().unwrap();
-        inner.value = Some(value);
-        if let Some(waker) = inner.waker.take() {
+        let waker = {
+            let mut inner = self.0.lock().unwrap();
+            inner.value = Some(value);
+            inner.waker.take()
+        };
+        // Wake AFTER releasing the lock. The waker eventually invokes the
+        // continuation callback, which crosses the FII and needs a runtime
+        // lock (e.g. Ruby's GVL). The calling thread holds that lock and may
+        // re-poll the future (Receiver::poll needs `inner`) - ABBA deadlock.
+        if let Some(waker) = waker {
             waker.wake();
         }
     }

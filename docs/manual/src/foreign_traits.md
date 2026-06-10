@@ -1,7 +1,7 @@
 # Foreign traits
 
 UniFFI traits can be implemented by foreign code.
-This means traits implemented in Python/Swift/Kotlin etc can provide Rust code with capabilities not easily implemented in Rust, such as:
+This means traits implemented in Python/Swift/Kotlin/Ruby, etc. can provide Rust code with capabilities not easily implemented in Rust, such as:
 
  * device APIs not directly available to Rust.
  * provide glue to clip together Rust components at runtime.

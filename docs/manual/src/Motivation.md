@@ -30,7 +30,7 @@ Using UniFFI, you can:
 * Run `uniffi-bindgen generate ... -l kotlin` (see [the bindgen docs](./tutorial/foreign_language_bindings.md) for omitted arg details)
   to generate a Kotlin library that can load your shared library
   and expose it to Kotlin code using your nice high-level component API!
-  * Or `-l swift` or `-l python` to produce bindings for other languages.
+  * Or `-l swift` or `-l python` or `-l ruby` to produce bindings for other languages.
 
 ## Why?
 

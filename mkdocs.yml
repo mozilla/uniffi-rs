@@ -101,6 +101,7 @@ nav:
     - ./swift/xcode.md
 
   - 'Python': ./python/configuration.md
+  - 'Ruby': ./ruby/configuration.md
 
   - 'WASM':
     - ./wasm/configuration.md

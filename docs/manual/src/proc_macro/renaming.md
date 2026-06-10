@@ -87,3 +87,11 @@ let result = renamedFunction(record: record)
 let obj = RenamedObject.renamedConstructor(value: 123)
 let value = obj.renamedMethod()
 ```
+
+```ruby
+# Ruby
+record = RenamedRecord.new(renamed_field: 42)
+result = renamed_function(record)
+obj = RenamedObject.renamed_constructor(123)
+value = obj.renamed_method
+```

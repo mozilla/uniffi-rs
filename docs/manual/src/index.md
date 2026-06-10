@@ -19,9 +19,11 @@ This process can take place either during the build process or be manually initi
 UniFFI comes with full support for Kotlin, Swift and Python; unless specified otherwise, you can expect all features in
 this manual will work for these languages.
 
-We also have partial legacy support for Ruby; the UniFFI team keeps the existing Ruby support working but tends to not
-add new features to that language. It seems possible that Ruby support will be split into its own crate at some point, but
-in the meantime we welcome improvements and contributions to Ruby.
+UniFFI also ships Ruby bindings. Most features described in this manual work for Ruby as well;
+see the [Ruby configuration](./ruby/configuration.md) page for language-specific options.
+The UniFFI team keeps the existing Ruby support working but tends to not add new features to that language.
+A few features are not yet available on Ruby (like docstrings in generated bindings).
+It seems possible that Ruby support will be split into its own crate at some point.
 
 There are also many 3rd party bindings - please see our [README](https://github.com/mozilla/uniffi-rs/blob/main/README.md) for references.
 These languages may require older versions of UniFFI and may have partial or non-existant support for some features; see the

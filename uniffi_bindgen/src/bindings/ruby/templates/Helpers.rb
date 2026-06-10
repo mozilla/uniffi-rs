@@ -24,40 +24,24 @@ UNIFFI_CALLBACK_UNEXPECTED_ERROR = 2
 
 # Call a method on a callback interface object, catching and reporting errors
 # to Rust via the call_status.
-def self.uniffi_trait_interface_call(call_status, make_call, write_return_value)
+# If error_type is provided, known errors of that type are reported as UNIFFI_CALLBACK_ERROR;
+# all other errors are reported as UNIFFI_CALLBACK_UNEXPECTED_ERROR.
+def self.uniffi_trait_interface_call(call_status, make_call, write_return_value, error_type = nil, lower_error = nil)
   begin
     write_return_value.call make_call.call
-  rescue => e
-    call_status[:code] = UNIFFI_CALLBACK_UNEXPECTED_ERROR
-    buf = {{ "e.inspect"|lower_rb(&Type::String, config) }}
+  rescue StandardError => e
+    buf = if !error_type.nil? && uniffi_is_error_type?(e, error_type)
+      call_status[:code] = UNIFFI_CALLBACK_ERROR
+      lower_error.call e
+    else
+      call_status[:code] = UNIFFI_CALLBACK_UNEXPECTED_ERROR
+      {{ "e.inspect"|lower_rb(&Type::String, config) }}
+    end
+
     error_buf = call_status[:error_buf]
     error_buf[:capacity] = buf[:capacity]
     error_buf[:len] = buf[:len]
     error_buf[:data] = buf[:data]
-  end
-end
-
-# Same as above, but for methods that can throw a specific error type
-def self.uniffi_trait_interface_call_with_error(call_status, make_call, write_return_value, error_type, lower_error)
-  begin
-    result = make_call.call
-    write_return_value.call result
-  rescue StandardError => e
-    if uniffi_is_error_type?(e, error_type)
-      call_status[:code] = UNIFFI_CALLBACK_ERROR
-      buf = lower_error.call e
-      error_buf = call_status[:error_buf]
-      error_buf[:capacity] = buf[:capacity]
-      error_buf[:len] = buf[:len]
-      error_buf[:data] = buf[:data]
-    else
-      call_status[:code] = UNIFFI_CALLBACK_UNEXPECTED_ERROR
-      buf = {{ "e.inspect"|lower_rb(&Type::String, config) }}
-      error_buf = call_status[:error_buf]
-      error_buf[:capacity] = buf[:capacity]
-      error_buf[:len] = buf[:len]
-      error_buf[:data] = buf[:data]
-    end
   end
 end
 

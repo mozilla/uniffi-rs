@@ -1,6 +1,6 @@
 # Generating bindings
 
-"Bindings" is the term for the non-Rust side of the environment - the generated Python, Swift or Kotlin code which drives the examples.
+"Bindings" is the term for the non-Rust side of the environment - the generated Python, Swift, Kotlin or Ruby code which drives the examples.
 
 UniFFI comes with a `uniffi_bindgen` which generates these bindings. For introductory
 information, see [Foreign Language Bindings in the tutorial](./tutorial/foreign_language_bindings.md).

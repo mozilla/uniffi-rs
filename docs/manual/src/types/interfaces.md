@@ -155,8 +155,6 @@ class PyButton(uniffi_module.Button):
 uniffi_module.press(PyButton())
 ```
 
-Note: This is currently only supported on Python, Kotlin, and Swift.
-
 ### Traits example
 
 See the ["traits" example](https://github.com/mozilla/uniffi-rs/tree/main/examples/traits) for more.

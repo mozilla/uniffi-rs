@@ -52,6 +52,7 @@ Each binding maps `[ByRef] bytes` to a natural zero-copy type:
 | Kotlin  | `java.nio.ByteBuffer`    | Must be a *direct* buffer (`ByteBuffer.allocateDirect(...)`). |
 | Swift   | `Data`                   | The call runs inside `Data.withUnsafeBytes`.                  |
 | Python  | `bytes`                  | The `bytes` object's stable internal pointer is used.         |
+| Ruby    | `String(BINARY)`         | Uses `String` with `Encoding::BINARY`.                        |
 
 Passing a non-direct `ByteBuffer` from Kotlin raises an
 `IllegalArgumentException` at the call site, matching JNA's

@@ -40,14 +40,14 @@ This has a few advantages:
     * Swift
         * Add a Swift test case file in `bindgen-tests/swift/tests`
         * Add a test function for the new test case in `bindgen-tests/swift/src/lib.rs`
-    * Kotlin: TODO
-    * Python: TODO
-    * Ruby: TODO
+    * Kotlin: TODO (see `bindgen-tests/kotlin/` — partially implemented)
+    * Python: see `bindgen-tests/python/tests/`
+    * Ruby: see `bindgen-tests/ruby/tests/`
 
 ## Migration plan
 
-The tests are only currently supported for Swift, the next step is making them work for the other
-bindings languages.
+Swift was the first language migrated; Ruby and Python suites also exist under `bindgen-tests/`.
+Kotlin support is still being ported.
 
 After that, we'll want to keep the existing fixtures for a while, since these tests may not be testing everything.
 New tests should be added here if possible.
