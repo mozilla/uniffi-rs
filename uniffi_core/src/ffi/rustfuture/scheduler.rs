@@ -79,20 +79,27 @@ impl<Callback: RustFutureCallback> Scheduler<Callback> {
         }
     }
 
-    pub fn wake(&mut self) {
+    /// Wake the scheduler, returning the stored callback (if any) without calling it.
+    ///
+    /// The caller must invoke the returned callback AFTER releasing the scheduler lock
+    /// to prevent deadlocks with foreign language runtimes.
+    pub fn wake(&mut self) -> Option<Callback> {
         match self {
             // If we had a continuation set, then call it and transition to the `Empty` state.
             Self::Set(_) => {
                 let Self::Set(callback) = mem::replace(self, Self::Empty) else {
                     unreachable!();
                 };
-                callback.invoke(RustFuturePoll::Wake);
+                Some(callback)
             }
             // If we were in the `Empty` state, then transition to `Waked`.  The next time `store`
             // is called, we will immediately call the continuation.
-            Self::Empty => *self = Self::Waked,
+            Self::Empty => {
+                *self = Self::Waked;
+                None
+            }
             // This is a no-op if we were in the `Cancelled` or `Waked` state.
-            _ => (),
+            _ => None,
         }
     }
 

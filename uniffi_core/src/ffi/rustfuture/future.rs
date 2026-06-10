@@ -262,7 +262,16 @@ where
 
     unsafe fn waker_wake(ptr: *const ()) {
         trace!("RustFuture::waker_wake called ({ptr:?})");
-        Self::recreate_arc(ptr).scheduler.lock().unwrap().wake();
+        let arc = Self::recreate_arc(ptr);
+        // Take the callback out under the lock, then invoke it AFTER releasing
+        // the lock. The callback may re-enter foreign code that blocks on a
+        // runtime lock, which could deadlock if we still held the scheduler lock.
+        let callback = arc.scheduler.lock().unwrap().wake();
+        drop(arc);
+
+        if let Some(callback) = callback {
+            callback.invoke(RustFuturePoll::Wake);
+        }
     }
 
     unsafe fn waker_wake_by_ref(ptr: *const ()) {
@@ -270,7 +279,11 @@ where
         // For wake_by_ref, we can use the pointer directly, without consuming it to re-create the
         // arc.
         let ptr = ptr.cast::<Self>();
-        (*ptr).scheduler.lock().unwrap().wake();
+        let callback = (*ptr).scheduler.lock().unwrap().wake();
+
+        if let Some(callback) = callback {
+            callback.invoke(RustFuturePoll::Wake);
+        }
     }
 
     unsafe fn waker_drop(ptr: *const ()) {
