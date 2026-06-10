@@ -221,7 +221,7 @@ mod filters {
 
     /// Return the Ruby default value for an FFI return type (used in async error callbacks).
     #[askama::filter_fn]
-    pub fn ffi_return_default_rb(
+    pub fn ffi_default_value_rb(
         return_type: &Type,
         _: &dyn askama::Values,
     ) -> Result<String, askama::Error> {

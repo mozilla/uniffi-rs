@@ -30,7 +30,6 @@ module UniffiCallbackInterface{{ cbi_name|class_name_rb }}
   # Callback method for {{ method.name() }}
   {{ method.name()|enum_name_rb }}_CALLBACK = Proc.new do |uniffi_handle, {%- for arg in method.arguments() %} {{ arg.name()|var_name_rb }},{% endfor %} uniffi_out_return, uniffi_call_status|
     uniffi_obj = {{ cbi_name|class_name_rb }}.uniffi_handle_map.get(uniffi_handle)
-
     {%- call rb::make_call_proc(method) %}{% endcall %}
     {%- call rb::write_return_value_proc(method) %}{% endcall %}
     {%- call rb::sync_throws_dispatch(method) %}{% endcall %}

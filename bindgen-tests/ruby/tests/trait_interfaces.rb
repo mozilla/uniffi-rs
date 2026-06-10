@@ -157,6 +157,138 @@ class TestTraitInterfaces < Test::Unit::TestCase
   end
 end
 
+class TestAsyncTraitInterfaces < Test::Unit::TestCase
+  include UniffiBindgenTests
+
+  class AsyncTraitImpl < AsyncTestTraitInterface
+    @@ref_count = 0
+
+    def self.reset_ref_count
+      @@ref_count = 0
+    end
+
+    def self.ref_count
+      @@ref_count
+    end
+
+    def self.define_finalizer
+      Proc.new { |_id| @@ref_count -= 1 }
+    end
+
+    def initialize(value)
+      @value = value
+      @@ref_count += 1
+      ObjectSpace.define_finalizer(self, self.class.define_finalizer)
+    end
+
+    def noop
+    end
+
+    def get_value
+      @value
+    end
+
+    def set_value(value)
+      @value = value
+    end
+
+    def throw_if_equal(numbers)
+      if numbers.a == numbers.b
+        raise UniffiBindgenTests::TestError::Failure1.new
+      end
+      numbers
+    end
+  end
+
+  def check_async_rust_impl(async_rust_trait_impl)
+    async_rust_trait_impl.noop
+
+    assert_equal 42, async_rust_trait_impl.get_value
+
+    async_rust_trait_impl.set_value(43)
+    assert_equal 43, async_rust_trait_impl.get_value
+
+    assert_raises(TestError::Failure1) do
+      async_rust_trait_impl.throw_if_equal(CallbackInterfaceNumbers.new(a: 10, b: 10))
+    end
+
+    assert_equal(
+      async_rust_trait_impl.throw_if_equal(CallbackInterfaceNumbers.new(a: 10, b: 11)),
+      CallbackInterfaceNumbers.new(a: 10, b: 11)
+    )
+  end
+
+  def check_async_rb_impl(async_rb_trait_impl)
+    UniffiBindgenTests.invoke_async_test_trait_interface_noop async_rb_trait_impl
+
+    assert_equal 42, UniffiBindgenTests.invoke_async_test_trait_interface_get_value(async_rb_trait_impl)
+    UniffiBindgenTests.invoke_async_test_trait_interface_set_value async_rb_trait_impl, 43
+    assert_equal 43, UniffiBindgenTests.invoke_async_test_trait_interface_get_value(async_rb_trait_impl)
+
+    assert_raises(TestError::Failure1) do
+      async_rb_trait_impl.throw_if_equal(CallbackInterfaceNumbers.new(a: 10, b: 10))
+    end
+
+    assert_equal(
+      async_rb_trait_impl.throw_if_equal(CallbackInterfaceNumbers.new(a: 10, b: 11)),
+      CallbackInterfaceNumbers.new(a: 10, b: 11)
+    )
+  end
+
+  def test_async_rust_impl
+    check_async_rust_impl UniffiBindgenTests.create_async_test_trait_interface(42)	
+  end
+
+  def test_async_rust_impl_roundtripped
+    impl = UniffiBindgenTests.roundtrip_async_test_trait_interface(
+      UniffiBindgenTests.create_async_test_trait_interface(42)
+    )
+
+    check_async_rust_impl impl
+  end
+
+  def test_async_rust_impl_roundtripped_list
+    impl = UniffiBindgenTests.roundtrip_async_test_trait_interface_list(
+      [UniffiBindgenTests.create_async_test_trait_interface(42)]
+    )[0]
+
+    check_async_rust_impl impl
+  end
+
+  def test_async_rb_impl
+    impl = AsyncTraitImpl.new(42)
+    check_async_rb_impl impl
+    # rubocop:disable Lint/UselessAssignment
+    impl = nil
+    # rubocop:enable Lint/UselessAssignment
+    GC.start
+
+    assert_equal 0, AsyncTraitImpl.ref_count
+  end
+
+  def test_async_rb_impl_roundtripped
+    impl = UniffiBindgenTests.roundtrip_async_test_trait_interface(AsyncTraitImpl.new(42))
+    check_async_rb_impl impl
+    # rubocop:disable Lint/UselessAssignment
+    impl = nil
+    # rubocop:enable Lint/UselessAssignment
+    GC.start
+
+    assert_equal 0, AsyncTraitImpl.ref_count
+  end
+
+  def test_async_rb_impl_roundtripped_list
+    impl = UniffiBindgenTests.roundtrip_async_test_trait_interface_list([AsyncTraitImpl.new(42)])[0]
+    check_async_rb_impl impl
+    # rubocop:disable Lint/UselessAssignment
+    impl = nil
+    # rubocop:enable Lint/UselessAssignment
+    GC.start
+
+    assert_equal 0, AsyncTraitImpl.ref_count
+  end
+end
+
 class TestRustOnlyTraitInterfaces < Test::Unit::TestCase
   include UniffiBindgenTests
 

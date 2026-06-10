@@ -54,11 +54,11 @@ end
 class UniffiCancelled < RuntimeError; end
 
 # Handle map for storing Threads executing foreign async callbacks.
-UNIFFI_FOREIGN_FUTURE_THREAD_MAP = UniffiHandleMap.new
+UNIFFI_FOREIGN_FUTURE_HANDLE_MAP = UniffiHandleMap.new
 
 # Dropped callback: cancels the executing thread when rust drops the future
 UNIFFI_FOREIGN_FUTURE_DROPPED_CALLBACK = Proc.new do |handle|
-  thread = UNIFFI_FOREIGN_FUTURE_THREAD_MAP.remove(handle)
+  thread = UNIFFI_FOREIGN_FUTURE_HANDLE_MAP.remove(handle)
   thread.raise(UniffiCancelled, "Future was canceled") if thread&.alive?
 end
 

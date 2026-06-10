@@ -109,7 +109,7 @@ values[{{- field_num - 1 -}}]
 {%- macro to_ffi_call_async(func, prefix = "") -%}
     ::{{ ci.namespace()|class_name_rb }}.uniffi_rust_call_async(
       UniFFILib.{{ func.ffi_func().name() }}(
-        {%- if !prefix.is_empty() %}{{- prefix }},{% endif -%}
+        {%- if !prefix.is_empty() %}{{- prefix }},{% endif %}
         {%- call _arg_list_ffi_call(func) %}{% endcall -%}
       ),
       :{{ func.ffi_rust_future_poll(ci) }},
@@ -140,7 +140,7 @@ values[{{- field_num - 1 -}}]
 {%- endmacro %}
 
 {#- Thin wrapper: delegates to to_ffi_call_async with an explicit prefix. -#}
-{%- macro to_ffi_call_async_prefix(func, prefix) -%}
+{%- macro to_ffi_call_with_prefix_async(prefix, func) -%}
     {%- call to_ffi_call_async(func, prefix) %}{% endcall %}
 {%- endmacro %}
 
@@ -199,7 +199,7 @@ values[{{- field_num - 1 -}}]
       result_struct = UniFFILib::{{ method|foreign_future_result_rb }}.new
       {%- match method.return_type() %}
       {%- when Some with (return_type) %}
-      result_struct[:return_value] = {{ return_type|ffi_return_default_rb }}
+      result_struct[:return_value] = {{ return_type|ffi_default_value_rb }}
       {%- when None %}
       {%- endmatch %}
 

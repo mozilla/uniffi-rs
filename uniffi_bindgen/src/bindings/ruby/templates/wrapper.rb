@@ -16,7 +16,7 @@
 require 'ffi'
 require 'set'
 
-{%- if ci.has_callback_definitions() %}
+{%- if ci.has_callback_definitions() || ci.has_async_fns() %}
 require 'monitor'
 {%- endif %}
 

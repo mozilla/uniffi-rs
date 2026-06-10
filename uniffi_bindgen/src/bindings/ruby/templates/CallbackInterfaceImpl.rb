@@ -15,93 +15,25 @@ module UniffiCallbackInterface{{ cbi_name|class_name_rb }}
 
   {%- for (ffi_callback, method)  in vtable_methods.iter() %}
 
+  {%- if method.is_async() %}
+  # Async callback method for {{ method.name() }}
+  {{ method.name()|enum_name_rb }}_CALLBACK = Proc.new do |uniffi_handle, {%- for arg in method.arguments() %} {{ arg.name()|var_name_rb }},{% endfor %} uniffi_future_callback, uniffi_callback_data, uniffi_out_dropped_callback|
+    uniffi_obj = CallbackInterface{{ cbi_name|class_name_rb }}FfiConverter.lift uniffi_handle
+    {%- call rb::make_call_proc(method) %}{% endcall %}
+    {%- call rb::async_handle_success_proc(method) %}{% endcall %}
+    {%- call rb::async_handle_error_proc(method) %}{% endcall %}
+    {%- call rb::async_throws_dispatch(method) %}{% endcall %}
+  end
+
+  {%- else %}
   # Callback method for {{ method.name() }}
   {{ method.name()|enum_name_rb }}_CALLBACK = Proc.new do |uniffi_handle, {%- for arg in method.arguments() %} {{ arg.name()|var_name_rb }},{% endfor %} uniffi_out_return, uniffi_call_status|
     uniffi_obj = {{ self::canonical_name(cbi.as_type().borrow()) }}FfiConverter.lift uniffi_handle
-
-    make_call = Proc.new do
-      uniffi_obj.{{ method.name()|fn_name_rb }}(
-        {%- for arg in method.arguments() %}
-        {{ arg.name()|lift_rb(arg.as_type().borrow(), config) }}{% if !loop.last %},{% endif %}
-        {%- endfor %}
-      )
-    end
-
-    {%- match method.return_type() %}
-    {%- when Some with (return_type) %}
-    write_return_value = Proc.new do |v|
-      lowered = {{ "v"|lower_rb(return_type, config) }}
-      {%- let ffi_type_name = return_type|ffi_write_return_rb %}
-      {%- if ffi_type_name == "rustbuffer" %}
-      # Write a RustBuffer struct into the out pointer
-      out_buf = RustBuffer.new uniffi_out_return
-      out_buf[:capacity] = lowered[:capacity]
-      out_buf[:len] = lowered[:len]
-      out_buf[:data] = lowered[:data]
-      {%- else %}
-      uniffi_out_return.{{ ffi_type_name }}(lowered)
-      {%- endif %}
-    end
-    {%- when None %}
-    # No return value, so do nothing.
-    write_return_value = Proc.new { |_v| }
-    {%- endmatch %}
-
-    {%- match method.throws_type() %}
-    {%- when None %}
-    ::{{ ci.namespace()|class_name_rb }}.uniffi_trait_interface_call(
-      uniffi_call_status,
-      make_call,
-      write_return_value
-    )
-    {%- when Some with (error_type) %}
-    {%- match error_type %}
-    {%- when Type::Enum { name, .. } %}
-    ::{{ ci.namespace()|class_name_rb }}.uniffi_trait_interface_call_with_error(
-      uniffi_call_status,
-      make_call,
-      write_return_value,
-      {{ name|class_name_rb }},
-      Proc.new { |e| {{ "e"|lower_rb(error_type, config) }} }
-    )
-    {%- when Type::Object { name, .. } %}
-    ::{{ ci.namespace()|class_name_rb }}.uniffi_trait_interface_call_with_error(
-      uniffi_call_status,
-      make_call,
-      write_return_value,
-      {{ name|class_name_rb }},
-      Proc.new { |e| {{ "e"|lower_rb(error_type, config) }} }
-    )
-    {%- when Type::Custom { builtin, .. } %}
-    {%- match builtin.borrow() %}
-    {%- when Type::Enum { name, .. } %}
-    ::{{ ci.namespace()|class_name_rb }}.uniffi_trait_interface_call_with_error(
-      uniffi_call_status,
-      make_call,
-      write_return_value,
-      {{ name|class_name_rb }},
-      Proc.new { |e| {{ "e"|lower_rb(builtin, config) }} }
-    )
-    {%- when Type::Object { name, .. } %}
-    ::{{ ci.namespace()|class_name_rb }}.uniffi_trait_interface_call_with_error(
-      uniffi_call_status,
-      make_call,
-      write_return_value,
-      {{ name|class_name_rb }},
-      Proc.new { |e| {{ "e"|lower_rb(builtin, config) }} }
-    )
-    {%- else %}
-    raise RuntimeError, "Unsupported custom error type for callback interface"
-    {%- endmatch %}
-    {%- else %}
-    ::{{ ci.namespace()|class_name_rb }}.uniffi_trait_interface_call(
-      uniffi_call_status,
-      make_call,
-      write_return_value
-    )
-    {%- endmatch %}
-    {%- endmatch %}
+    {%- call rb::make_call_proc(method) %}{% endcall %}
+    {%- call rb::write_return_value_proc(method) %}{% endcall %}
+    {%- call rb::sync_throws_dispatch(method) %}{% endcall %}
   end
+  {%- endif %}
   {%- endfor %}
 
   # Free callback: removes the handle from the map.

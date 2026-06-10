@@ -2,7 +2,7 @@
 
 def self.{{ func.name()|fn_name_rb }}({%- call rb::arg_list_decl(func) %}{% endcall -%})
   {%- call rb::setup_args(func) %}{% endcall %}
-  result = {% call rb::to_ffi_call_async(func) %}{% endcall %}
+  {% call rb::to_ffi_call_async(func) %}{% endcall %}
 end
 {%- else %}
 

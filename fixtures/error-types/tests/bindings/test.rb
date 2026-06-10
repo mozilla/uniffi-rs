@@ -29,6 +29,12 @@ class TestErrorTypes < Test::Unit::TestCase
     assert_equal 'because uniffi told me so', e.link(0)
   end
 
+  def test_async_error_interface
+    e = assert_raises(ErrorTypes::ErrorInterface) { ErrorTypes.aoops }
+
+    assert_equal 'async-oops', e.message
+  end
+
   def test_get_error_returns_without_raising
     e = ErrorTypes.get_error 'the error'
 
