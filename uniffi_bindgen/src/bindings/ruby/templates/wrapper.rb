@@ -26,6 +26,9 @@ module {{ ci.namespace()|class_name_rb }}
   {%- if ci.has_callback_definitions() %}
   {% include "HandleMap.rb" %}
   {%- endif %}
+  {%- if ci.has_async_fns() && !ci.has_callback_definitions() %}
+  {% include "HandleMap.rb" %}
+  {%- endif %}
   {% include "RustBufferTemplate.rb" %}
   {% include "RustBufferStream.rb" %}
   {% include "RustBufferBuilder.rb" %}
@@ -34,6 +37,9 @@ module {{ ci.namespace()|class_name_rb }}
   {% include "ErrorTemplate.rb" %}
 
   {% include "NamespaceLibraryTemplate.rb" %}
+  {%- if ci.has_async_fns() %}
+  {% include "Async.rb" %}
+  {%- endif %}
   {%- if ci.has_callback_definitions() %}
   {% include "CallbackInterfaceRuntime.rb" %}
   {%- endif %}
