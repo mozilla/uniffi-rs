@@ -54,7 +54,13 @@ impl TimerFuture {
             let mut shared_state: MutexGuard<_> = thread_shared_state.lock().unwrap();
             shared_state.completed = true;
 
-            if let Some(waker) = shared_state.waker.take() {
+            // Release the lock BEFORE waking to avoid deadlocks: waker.wake()
+            // may invoke a foreign callback that re-polls this future, which
+            // would need to acquire shared_state again.
+            let waker = shared_state.waker.take();
+            drop(shared_state);
+
+            if let Some(waker) = waker {
                 waker.wake();
             }
         });

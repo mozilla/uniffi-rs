@@ -16,7 +16,7 @@
 require 'ffi'
 require 'set'
 
-{%- if ci.has_callback_definitions() %}
+{%- if ci.has_callback_definitions() || ci.has_async_fns() %}
 require 'monitor'
 {%- endif %}
 
@@ -24,6 +24,9 @@ module {{ ci.namespace()|class_name_rb }}
   {% include "Helpers.rb" %}
 
   {%- if ci.has_callback_definitions() %}
+  {% include "HandleMap.rb" %}
+  {%- endif %}
+  {%- if ci.has_async_fns() && !ci.has_callback_definitions() %}
   {% include "HandleMap.rb" %}
   {%- endif %}
   {% include "RustBufferTemplate.rb" %}
@@ -34,6 +37,9 @@ module {{ ci.namespace()|class_name_rb }}
   {% include "ErrorTemplate.rb" %}
 
   {% include "NamespaceLibraryTemplate.rb" %}
+  {%- if ci.has_async_fns() %}
+  {% include "Async.rb" %}
+  {%- endif %}
   {%- if ci.has_callback_definitions() %}
   {% include "CallbackInterfaceRuntime.rb" %}
   {%- endif %}

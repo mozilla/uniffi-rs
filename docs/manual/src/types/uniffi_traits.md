@@ -38,12 +38,14 @@ The bindings will generate:
 * Python: The object will have a `__repr__` method that returns the value implemented by the `Debug` trait.
 * Swift: Will generate a `public var debugDescription: String {..}` method on the object, allowing, eg, `String(reflecting: ob)` to be used.
 * Kotlin: Will generate `override fun toString(): String {..}` (although will prefer the `Display` implementation if it exists).
+* Ruby: Will generate `#inspect` (Debug) and `#to_s` (Display) methods.
 
 Whereas `Eq` would generate:
 
 * Python: The object will have `__eq__(self, other)` and `__ne__(self, other)` methods.
 * Swift: Will generate `public static func == (self: .., other: ..)`
 * Kotlin: Will generate `override fun equals(other: Any?): Boolean` and have the object extend `Comparable<>`.
+* Ruby: Will generate `#==` and `#hash` methods.
 
 etc.
 

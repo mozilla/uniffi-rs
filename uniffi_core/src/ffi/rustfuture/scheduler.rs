@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use std::mem;
+use std::sync::Mutex;
 
 use crate::{RustFutureContinuationBoundCallback, RustFuturePoll};
 
@@ -18,9 +19,12 @@ use crate::{RustFutureContinuationBoundCallback, RustFuturePoll};
 ///   immediately or the next time we get a callback.
 /// * If `cancel()` is called, the same will happen and the schedule will stay in the cancelled
 ///   state, invoking any future callbacks as soon as they're stored.
+///
+/// All callbacks are invoked outside the internal lock to prevent ABBA deadlocks with foreign
+/// runtime locks. See `wake()` for more details.
 
 #[derive(Debug)]
-pub enum Scheduler<Callback = RustFutureContinuationBoundCallback> {
+enum State<Callback> {
     /// No continuations set, neither wake() nor cancel() called.
     Empty,
     /// `wake()` was called when there was no continuation set.  The next time `store` is called,
@@ -31,6 +35,10 @@ pub enum Scheduler<Callback = RustFutureContinuationBoundCallback> {
     Cancelled,
     /// Continuation set, the next time `wake()`  is called is called, we should invoke it.
     Set(Callback),
+}
+
+pub struct Scheduler<Callback = RustFutureContinuationBoundCallback> {
+    state: Mutex<State<Callback>>,
 }
 
 /// Callback function that the scheduler stores
@@ -52,57 +60,95 @@ impl<Callback: RustFutureCallback> Default for Scheduler<Callback> {
 
 impl<Callback: RustFutureCallback> Scheduler<Callback> {
     pub fn new() -> Self {
-        Self::Empty
+        Self {
+            state: Mutex::new(State::Empty),
+        }
     }
 
     /// Store new continuation data if we are in the `Empty` state.  If we are in the `Waked` or
     /// `Cancelled` state, call the continuation immediately with the data.
-    pub fn store(&mut self, callback: Callback) {
-        match self {
-            Self::Empty => *self = Self::Set(callback),
-            Self::Set(_) => {
-                trace!(
-                    "store: observed `Self::Set` state.  Is poll() being called from multiple threads at once?"
-                );
-                let Self::Set(old_callback) = mem::replace(self, Self::Set(callback)) else {
-                    unreachable!();
-                };
-                old_callback.invoke(RustFuturePoll::Wake);
+    pub fn store(&self, callback: Callback) {
+        let to_invoke = {
+            let mut state = self.state.lock().unwrap();
+
+            match *state {
+                State::Empty => {
+                    *state = State::Set(callback);
+                    None
+                }
+                State::Set(_) => {
+                    trace!(
+                        "store: observed `Self::Set` state.  Is poll() being called from multiple threads at once?"
+                    );
+                    let State::Set(old_callback) = mem::replace(&mut *state, State::Set(callback))
+                    else {
+                        unreachable!();
+                    };
+                    Some((old_callback, RustFuturePoll::Wake))
+                }
+                State::Waked => {
+                    *state = State::Empty;
+                    Some((callback, RustFuturePoll::Wake))
+                }
+                State::Cancelled => Some((callback, RustFuturePoll::Ready)),
             }
-            Self::Waked => {
-                *self = Self::Empty;
-                callback.invoke(RustFuturePoll::Wake);
-            }
-            Self::Cancelled => {
-                callback.invoke(RustFuturePoll::Ready);
-            }
+        };
+
+        if let Some((cb, poll)) = to_invoke {
+            cb.invoke(poll);
         }
     }
 
-    pub fn wake(&mut self) {
-        match self {
-            // If we had a continuation set, then call it and transition to the `Empty` state.
-            Self::Set(_) => {
-                let Self::Set(callback) = mem::replace(self, Self::Empty) else {
-                    unreachable!();
-                };
-                callback.invoke(RustFuturePoll::Wake);
+    /// Wake the scheduler.
+    ///
+    /// If a continuation callback is stored, it will be invoked with `RustFuturePoll::Wake`.
+    /// The callback is always invoked after releasing the internal lock to prevenet ABBA
+    /// deadlocks: the callback crosses the FFI into a foreign runtime that may need to acquire
+    /// a runtime lock (e.g. Ruby GVL or similar), while the foreign calling thread holds that
+    /// runtime lock and may call cancel/free (which require this lock).
+    pub fn wake(&self) {
+        let callback = {
+            let mut state = self.state.lock().unwrap();
+
+            match *state {
+                // If we had a continuation set, then call it and transition to the `Empty` state.
+                State::Set(_) => {
+                    let State::Set(callback) = mem::replace(&mut *state, State::Empty) else {
+                        unreachable!();
+                    };
+                    Some(callback)
+                }
+                // If we were in the `Empty` state, then transition to `Waked`.  The next time `store`
+                // is called, we will immediately call the continuation.
+                State::Empty => {
+                    *state = State::Waked;
+                    None
+                }
+                // This is a no-op if we were in the `Cancelled` or `Waked` state.
+                _ => None,
             }
-            // If we were in the `Empty` state, then transition to `Waked`.  The next time `store`
-            // is called, we will immediately call the continuation.
-            Self::Empty => *self = Self::Waked,
-            // This is a no-op if we were in the `Cancelled` or `Waked` state.
-            _ => (),
+        };
+
+        if let Some(cb) = callback {
+            cb.invoke(RustFuturePoll::Wake);
         }
     }
 
-    pub fn cancel(&mut self) {
-        if let Self::Set(callback) = mem::replace(self, Self::Cancelled) {
-            callback.invoke(RustFuturePoll::Ready);
+    pub fn cancel(&self) {
+        let callback = {
+            let mut state = self.state.lock().unwrap();
+            match mem::replace(&mut *state, State::Cancelled) {
+                State::Set(cb) => Some(cb),
+                _ => None,
+            }
+        };
+
+        if let Some(cb) = callback {
+            cb.invoke(RustFuturePoll::Ready);
         }
     }
 
     pub fn is_cancelled(&self) -> bool {
-        matches!(self, Self::Cancelled)
+        matches!(*self.state.lock().unwrap(), State::Cancelled)
     }
 }

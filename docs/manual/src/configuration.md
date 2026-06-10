@@ -11,7 +11,7 @@ We support:
 * a "global configuration" for your project, as described below.
 
 In all cases, you should see the documentation for the builtin bindings
-([Kotlin](./kotlin/configuration.md), [Python](./python/configuration.md), [Swift](./swift/configuration.md)), or external bindings docs.
+([Kotlin](./kotlin/configuration.md), [Python](./python/configuration.md), [Swift](./swift/configuration.md), [Ruby](./ruby/configuration.md)), or external bindings docs.
 
 # Global configuration
 

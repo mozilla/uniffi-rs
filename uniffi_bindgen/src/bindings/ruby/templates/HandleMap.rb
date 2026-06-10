@@ -51,6 +51,11 @@ class UniffiHandleMap
       obj
     end
   end
+
+  # Used for testing/debugging purposes
+  def size
+    @lock.synchronize { @map.size }
+  end
 end
 
 private_constant :UniffiHandleMap

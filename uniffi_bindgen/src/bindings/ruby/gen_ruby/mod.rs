@@ -219,6 +219,38 @@ mod filters {
         })
     }
 
+    /// Return the Ruby default value for an FFI return type (used in async error callbacks).
+    #[askama::filter_fn]
+    pub fn ffi_default_value_rb(
+        return_type: &Type,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
+        let ffi_type = FfiType::from(return_type);
+        Ok(match &ffi_type {
+            FfiType::Int8
+            | FfiType::UInt8
+            | FfiType::Int16
+            | FfiType::UInt16
+            | FfiType::Int32
+            | FfiType::UInt32
+            | FfiType::Int64
+            | FfiType::UInt64
+            | FfiType::Handle => "0".to_string(),
+            FfiType::Float32 | FfiType::Float64 => "0.0".to_string(),
+            FfiType::RustBuffer(_) => "RustBuffer.new".to_string(),
+            _ => panic!("Unsupported FFI return type for callback: {ffi_type:?}"),
+        })
+    }
+
+    /// Return the ForeignFutureResult struct name for a method's return type.
+    #[askama::filter_fn]
+    pub fn foreign_future_result_rb(
+        method: &Method,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
+        Ok(method.foreign_future_ffi_result_struct().name().to_string())
+    }
+
     fn default_rb_inner(default: &DefaultValue) -> Result<String, askama::Error> {
         let DefaultValue::Literal(literal) = default else {
             unimplemented!("not supported.");

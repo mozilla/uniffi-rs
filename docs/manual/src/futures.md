@@ -1,6 +1,6 @@
 # Async/Future support
 
-UniFFI supports exposing async Rust functions over the FFI. It can convert a Rust `Future`/`async fn` to and from foreign native futures (`async`/`await` in Python/Swift, `suspend fun` in Kotlin etc.)
+UniFFI supports exposing async Rust functions over the FFI. It can convert a Rust `Future`/`async fn` to and from foreign native futures (`async`/`await` in Python/Swift/Ruby, `suspend fun` in Kotlin etc.)
 
 Check out the [examples](https://github.com/mozilla/uniffi-rs/tree/main/examples/futures) or the more terse and thorough [fixtures](https://github.com/mozilla/uniffi-rs/tree/main/fixtures/futures).
 
@@ -96,6 +96,12 @@ Use `uniffi_set_event_loop()` to handle this case.
 It should be called before the Rust code makes the async call and passed an eventloop to use.
 
 Note that `uniffi_set_event_loop` cannot be glob-imported because it's not part of the library's `__all__`.
+
+### Ruby: thread-based async
+
+Unlike Python and Swift, Ruby has no native async/await. When Rust calls an async Ruby callback
+method, UniFFI spawns a new OS thread for each invocation. There is no event loop requirement,
+though a Fiber scheduler is supported for the Ruby -> Rust polling direction.
 
 ## Cancelling async code.
 

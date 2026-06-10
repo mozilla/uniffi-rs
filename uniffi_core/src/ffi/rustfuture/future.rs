@@ -184,7 +184,7 @@ pub struct RustFuture<FfiType, Callback = RustFutureContinuationBoundCallback> {
     // This Mutex should never block if our code is working correctly, since there should not be
     // multiple threads calling [Self::poll] and/or [Self::complete] at the same time.
     future: Mutex<WrappedFuture<FfiType>>,
-    scheduler: Mutex<Scheduler<Callback>>,
+    scheduler: Scheduler<Callback>,
 }
 
 impl<FfiType, Callback> RustFuture<FfiType, Callback>
@@ -198,7 +198,7 @@ where
     {
         Self {
             future: Mutex::new(WrappedFuture::new(future)),
-            scheduler: Mutex::new(Scheduler::new()),
+            scheduler: Scheduler::new(),
         }
     }
 
@@ -213,16 +213,16 @@ where
             trace!("RustFuture::poll is ready (cancelled: {cancelled})");
             callback.invoke(RustFuturePoll::Ready)
         } else {
-            self.scheduler.lock().unwrap().store(callback);
+            self.scheduler.store(callback);
         }
     }
 
     pub fn is_cancelled(&self) -> bool {
-        self.scheduler.lock().unwrap().is_cancelled()
+        self.scheduler.is_cancelled()
     }
 
     pub fn cancel(&self) {
-        self.scheduler.lock().unwrap().cancel();
+        self.scheduler.cancel();
     }
 
     pub fn complete(&self, call_status: &mut RustCallStatus) -> FfiType
@@ -234,7 +234,7 @@ where
 
     pub fn free(&self) {
         // Call cancel() to send any leftover data to the continuation callback
-        self.scheduler.lock().unwrap().cancel();
+        self.scheduler.cancel();
         // Ensure we drop our inner future, releasing all held references
         self.future.lock().unwrap().free();
     }
@@ -262,7 +262,7 @@ where
 
     unsafe fn waker_wake(ptr: *const ()) {
         trace!("RustFuture::waker_wake called ({ptr:?})");
-        Self::recreate_arc(ptr).scheduler.lock().unwrap().wake();
+        Self::recreate_arc(ptr).scheduler.wake();
     }
 
     unsafe fn waker_wake_by_ref(ptr: *const ()) {
@@ -270,7 +270,7 @@ where
         // For wake_by_ref, we can use the pointer directly, without consuming it to re-create the
         // arc.
         let ptr = ptr.cast::<Self>();
-        (*ptr).scheduler.lock().unwrap().wake();
+        (*ptr).scheduler.wake();
     }
 
     unsafe fn waker_drop(ptr: *const ()) {

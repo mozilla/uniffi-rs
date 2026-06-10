@@ -98,6 +98,14 @@ cargo run --bin uniffi-bindgen generate src/math.udl --language swift
 ```
 then check out `src/math.swift`
 
+### Ruby
+
+Run
+```
+cargo run --bin uniffi-bindgen generate src/math.udl --language ruby
+```
+then check out `src/math.rb`
+
 Note that these commands could be integrated as part of your gradle/Xcode build process.
 
 This is it, you have an MVP integration of UniFFI in your project.
