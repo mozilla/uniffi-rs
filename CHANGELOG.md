@@ -15,6 +15,9 @@
   rather than a flat `uniffi.toml`-style override. Old-style files will produce a warning and be ignored.
   See [#2866](https://github.com/mozilla/uniffi-rs/issues/2866)
 - `[ByRef] bytes` UDL arguments now map to `&[u8]` on the Rust side instead of `&Vec<u8>`. UDL-defined functions whose Rust implementations take `&Vec<u8>` must change to `&[u8]`. Proc-macro signatures (`fn foo(x: &[u8])`) are unchanged. On the Kotlin side, call sites must now pass a *direct* `java.nio.ByteBuffer` rather than `ByteArray`; migrate with `ByteBuffer.allocateDirect(arr.size).put(arr).flip()`. Swift (`Data`) and Python (`bytes`) call sites are unchanged. ([#2878](https://github.com/mozilla/uniffi-rs/pull/2878))
+- Reworked the experimental pipeline bindgen code.  Any external binding generators using this will
+  need to be reworked as well.  See [#2787](https://github.com/mozilla/uniffi-rs/pull/2787) for
+  examples of how this can be done.
 
 ### What's Fixed
 
@@ -68,9 +71,6 @@
   library directly without a UDL file.
 - Removed the `[Swift|Kotlin|Python|Ruby]BindingGenerator` types.  Use `uniffi::generate` instead
   to generate these bindings.
-- Reworked the experimental pipeline bindgen code.  Any external binding generators using this will
-  need to be reworked as well.  See [#2787](https://github.com/mozilla/uniffi-rs/pull/2787) for
-  examples of how this can be done.
 
 ### What's Deprecated?
 - `BindgenCrateConfigSupplier`.  Use the new `BindgenPaths` type instead.
