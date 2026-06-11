@@ -313,7 +313,7 @@ pub struct Interface {
     pub docstring: Option<String>,
     #[map_node(objects::constructors(self.constructors, context)?)]
     pub constructors: Vec<Constructor>,
-    #[map_node(objects::interface_methods(self.methods, self.imp, context)?)]
+    #[map_node(objects::interface_methods(self.methods, context)?)]
     pub methods: Vec<Method>,
     pub trait_impls: Vec<ObjectTraitImpl>,
     pub imp: ObjectImpl,
