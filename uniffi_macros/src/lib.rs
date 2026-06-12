@@ -240,7 +240,7 @@ pub fn include_scaffolding(udl_stem: TokenStream) -> TokenStream {
             Ok(path) => path.display().to_string(),
             Err(_) => {
                 return quote! {
-                    compile_error!("This macro assumes the crate has a build.rs script, but $OUT_DIR is not present");
+                    compile_error!("This macro assumes to be run as part of the crate build, but `CARGO_MANIFEST_DIR` is not present");
                 }.into();
             }
         };
