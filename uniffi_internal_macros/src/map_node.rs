@@ -348,6 +348,7 @@ impl VariantAttrs {
     }
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Default, Clone)]
 struct FieldAttrs {
     from: Option<Ident>,
@@ -394,6 +395,7 @@ impl Parse for TypeAttr {
     }
 }
 
+#[allow(clippy::large_enum_variant)]
 enum FieldAttr {
     From(Ident),
     Expr(Expr),
