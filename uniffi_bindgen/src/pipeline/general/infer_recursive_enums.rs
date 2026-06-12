@@ -202,6 +202,7 @@ mod tests {
 
     fn make_type_node(ty: Type) -> TypeNode {
         TypeNode {
+            id: 0, // not used for these tests
             canonical_name: "Test".to_string(),
             is_used_as_error: false,
             ffi_type: FfiType::RustBuffer(None),

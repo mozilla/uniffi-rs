@@ -2,10 +2,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::collections::BTreeMap;
+use std::{
+    collections::BTreeMap,
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        Arc,
+    },
+};
 
 use super::*;
 
+#[derive(Default)]
 pub struct Context {
     // Map crate names to namespace names
     //
@@ -27,6 +34,8 @@ pub struct Context {
         BTreeMap<uniffi_meta::Type, uniffi_meta::ObjectTraitImplMetadata>,
     >,
     pub orig_names: BTreeMap<(String, String), String>,
+    // Uses an arc so we get a shared counter even if the context is cloned.
+    pub callable_id_counter: Arc<AtomicU64>,
 }
 
 impl Context {
@@ -44,6 +53,10 @@ impl Context {
             Some(orig_name) => orig_name.to_string(),
             None => type_name.to_string(),
         }
+    }
+
+    pub fn new_callable_id(&self) -> u64 {
+        self.callable_id_counter.fetch_add(1, Ordering::Relaxed)
     }
 
     pub fn methods_for_type(&self, module_path: &str, type_name: &str) -> Result<Vec<Method>> {

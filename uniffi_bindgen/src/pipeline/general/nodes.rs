@@ -13,11 +13,32 @@ use_prev_node!(initial::Type, types::map_type);
 /// Initial IR, this stores the metadata and other data
 #[derive(Debug, Clone, Node, MapNode)]
 #[map_node(from(initial::Root))]
-#[map_node(update_context(context.update_from_root(&self)?))]
+#[map_node(root::map_root)]
 pub struct Root {
     /// In library mode, the library path the user passed to us
     pub cdylib: Option<String>,
     pub namespaces: IndexMap<String, Namespace>,
+    pub builtin_types: BuiltinTypes,
+}
+
+/// Type nodes for builtin types
+///
+/// This is useful when bindings want to use one of these types. For example `Type::String` is
+/// needed to handle exceptions and `Type::UInt32` is used for enum discriminants.  This struct
+/// gives them an easy way to access the `TypeNode` those types.
+#[derive(Debug, Clone, Node)]
+pub struct BuiltinTypes {
+    pub u8: TypeNode,
+    pub i8: TypeNode,
+    pub u16: TypeNode,
+    pub i16: TypeNode,
+    pub u32: TypeNode,
+    pub i32: TypeNode,
+    pub u64: TypeNode,
+    pub i64: TypeNode,
+    pub f32: TypeNode,
+    pub f64: TypeNode,
+    pub string: TypeNode,
 }
 
 /// A Namespace is a crate which exposes a uniffi api.
@@ -43,9 +64,6 @@ pub struct Namespace {
     pub ffi_uniffi_contract_version: RustFfiFunctionName,
     // Correct contract version value
     pub correct_contract_version: String,
-    // TypeNode for String.  Strings are used in error handling, this ensures that the FFI
-    // converters for them are always defined and easy to lookup.
-    pub string_type_node: TypeNode,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -102,6 +120,7 @@ pub struct Method {
 /// Common data from Function/Method/Constructor
 #[derive(Debug, Clone, Node, MapNode)]
 pub struct Callable {
+    pub id: u64,
     pub name: String,
     pub orig_name: String,
     pub async_data: Option<AsyncData>,
@@ -429,6 +448,7 @@ pub struct TypeNode {
     ///     Many bindings will create a `UniffiConverter[canonical_name]` class.
     ///   - Creating a unique key for a type
     pub canonical_name: String,
+    pub id: u64,
     pub is_used_as_error: bool,
     pub ffi_type: FfiType,
     pub ty: Type,
