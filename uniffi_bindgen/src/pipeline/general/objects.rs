@@ -123,19 +123,9 @@ pub fn methods(methods: Vec<initial::Method>, context: &Context) -> Result<Vec<M
     methods_with_kind(methods, CallableKind::Method { self_type }, context)
 }
 
-pub fn interface_methods(
-    methods: Vec<initial::Method>,
-    imp: ObjectImpl,
-    context: &Context,
-) -> Result<Vec<Method>> {
+pub fn interface_methods(methods: Vec<initial::Method>, context: &Context) -> Result<Vec<Method>> {
     let self_type = context.self_type()?;
-    let kind = match imp {
-        ObjectImpl::Trait(_) => CallableKind::VTableMethod {
-            self_type,
-            for_callback_interface: false,
-        },
-        ObjectImpl::Struct => CallableKind::Method { self_type },
-    };
+    let kind = CallableKind::Method { self_type };
     methods_with_kind(methods, kind, context)
 }
 
