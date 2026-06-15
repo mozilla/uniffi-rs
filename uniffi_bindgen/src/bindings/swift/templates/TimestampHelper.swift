@@ -7,12 +7,17 @@ fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Date {
         let seconds: Int64 = try readInt(&buf)
         let nanoseconds: UInt32 = try readInt(&buf)
+        // Build the Date from whole seconds first, then add the nanoseconds as a
+        // separate TimeInterval.  Date stores CFAbsoluteTime (seconds since 2001),
+        // so adding a small fraction to the ~7.8e8 base is twice as precise as
+        // adding it to the ~1.76e9 Unix-epoch value, because the smaller magnitude
+        // leaves more mantissa bits for the sub-second part.
         if seconds >= 0 {
-            let delta = Double(seconds) + (Double(nanoseconds) / 1.0e9)
-            return Date.init(timeIntervalSince1970: delta)
+            return Date(timeIntervalSince1970: Double(seconds))
+                .addingTimeInterval(Double(nanoseconds) / 1.0e9)
         } else {
-            let delta = Double(seconds) - (Double(nanoseconds) / 1.0e9)
-            return Date.init(timeIntervalSince1970: delta)
+            return Date(timeIntervalSince1970: Double(seconds))
+                .addingTimeInterval(-Double(nanoseconds) / 1.0e9)
         }
     }
 
