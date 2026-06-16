@@ -70,16 +70,23 @@
 
 {%- macro call_async(callable) -%}
     uniffiRustCallAsync(
-{%- if callable.self_type().is_some() %}
+
+{%- match callable.self_type() %}
+{%- when Some(Type::Object { .. }) %}
         callWithHandle { uniffiHandle ->
             UniffiLib.{{ callable.ffi_func().name() }}(
                 uniffiHandle,
                 {% call arg_list_lowered(callable) %}{% endcall %}
             )
         },
+{%- when Some(t) %}
+        UniffiLib.{{ callable.ffi_func().name() }}(
+            {{- t|lower_fn }}(this),
+            {% call arg_list_lowered(callable) %}{% endcall %}
+        ),
 {%- else %}
         UniffiLib.{{ callable.ffi_func().name() }}({% call arg_list_lowered(callable) %}{% endcall %}),
-{%- endif %}
+{%- endmatch %}
         {{ callable|async_poll(ci) }},
         {{ callable|async_complete(ci) }},
         {{ callable|async_free(ci) }},

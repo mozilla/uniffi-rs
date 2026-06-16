@@ -28,6 +28,9 @@ class TestFutures(unittest.IsolatedAsyncioTestCase):
         obj2 = await async_roundtrip_obj(obj)
         self.assertEqual(await obj2.name(), "Alice")
 
+        rec = AsyncRecord(name="Bob")
+        assert(await rec.get_name() == "Bob")
+
     async def test_async_callback_interfaces(self):
         class AsyncCallbackImpl:
             ref_count = 0

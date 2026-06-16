@@ -97,6 +97,18 @@ impl AsyncInterface {
     }
 }
 
+#[derive(uniffi::Record)]
+pub struct AsyncRecord {
+    name: String,
+}
+
+#[uniffi::export]
+impl AsyncRecord {
+    pub async fn get_name(&self) -> String {
+        self.name.clone()
+    }
+}
+
 #[uniffi::export]
 pub async fn async_roundtrip_obj(v: Arc<AsyncInterface>) -> Arc<AsyncInterface> {
     v

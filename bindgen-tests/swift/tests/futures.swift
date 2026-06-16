@@ -79,6 +79,10 @@ Task {
     let obj2Name = await obj2.name()
     assert(obj2Name == "Alice")
 
+    let rec = AsyncRecord(name: "Bob")
+    let recName = await rec.getName()
+    assert(recName == "Bob")
+
     dispatchGroup.leave()
 }
 dispatchGroup.wait()
