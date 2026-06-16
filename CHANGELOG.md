@@ -4,11 +4,11 @@
 
 <!-- next-header -->
 
-## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.2...NEXT_HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.2...HEAD).
 
-## [[UnreleasedUniFFIVersion]] (backend crates: v0.31.2) - (_2026-06-16_)
+## v0.31.2 (backend crates: v0.31.2) - (_2026-06-16_)
 
 ### What's Fixed
 
@@ -18,7 +18,7 @@
 - Swift: Prevent strict concurrency warning with callback interface tables
 - Swift: Preserve leading U+FEFF byte order mark in FfiConverterString
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.1...HEAD).
+[All changes in v0.31.2](https://github.com/mozilla/uniffi-rs/compare/v0.31.1...v0.31.2).
 
 ## v0.31.1 (backend crates: v0.31.1) - (_2026-04-10_)
 
