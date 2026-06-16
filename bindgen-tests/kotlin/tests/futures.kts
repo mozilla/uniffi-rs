@@ -35,6 +35,9 @@ runBlocking {
 
     val obj2 = asyncRoundtripObj(obj)
     assert(obj2.name() == "Alice")
+
+    val rec = AsyncRecord("Bob")
+    assert(rec.getName() == "Bob")
 }
 
 

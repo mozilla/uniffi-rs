@@ -94,9 +94,13 @@ public convenience init(
         {% call is_try(callable) %}{% endcall %} await uniffiRustCallAsync(
             rustFutureFunc: {
                 {{ callable.ffi_func().name() }}(
-                    {%- if callable.self_type().is_some() %}
-                    self.uniffiCloneHandle(){% if !callable.arguments().is_empty() %},{% endif %}
-                    {% endif %}
+                    {%- match callable.self_type() %}
+                    {%-     when Some(Type::Object { .. }) %}
+                        self.uniffiCloneHandle(){% if !callable.arguments().is_empty() %},{% endif %}
+                    {%-     when Some(t) %}
+                        {{ t|lower_fn }}(self){% if !callable.arguments().is_empty() %},{% endif %}
+                    {%-     when None %}
+                    {%- endmatch %}
                     {%- for arg in callable.arguments() -%}
                     {{ arg|lower_fn }}({{ arg.name()|var_name }}){% if !loop.last %},{% endif %}
                     {%- endfor %}
