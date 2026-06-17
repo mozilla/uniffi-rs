@@ -532,6 +532,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#ruby" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ruby
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1951,6 +1960,29 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../ruby/configuration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Ruby
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
     
@@ -1960,10 +1992,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8" >
         
           
-          <label class="md-nav__link" for="__nav_7_7" id="__nav_7_7_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_8" id="__nav_7_8_label" tabindex="0">
             
   
   
@@ -1976,8 +2008,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7_7">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_8">
             <span class="md-nav__icon md-icon"></span>
             WASM
           </label>
@@ -2498,6 +2530,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#ruby" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ruby
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2589,6 +2630,11 @@ then have a look at <code>src/uniffi/math/math.kt</code></p>
 <div class="highlight"><pre><span></span><code>cargo run --bin uniffi-bindgen generate src/math.udl --language swift
 </code></pre></div>
 then check out <code>src/math.swift</code></p>
+<h3 id="ruby">Ruby</h3>
+<p>Run
+<div class="highlight"><pre><span></span><code>cargo run --bin uniffi-bindgen generate src/math.udl --language ruby
+</code></pre></div>
+then check out <code>src/math.rb</code></p>
 <p>Note that these commands could be integrated as part of your gradle/Xcode build process.</p>
 <p>This is it, you have an MVP integration of UniFFI in your project.</p>
 

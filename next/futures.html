@@ -1476,6 +1476,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#ruby-thread-based-async" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ruby: thread-based async
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1910,6 +1919,29 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="ruby/configuration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Ruby
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
     
@@ -1919,10 +1951,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8" >
         
           
-          <label class="md-nav__link" for="__nav_7_7" id="__nav_7_7_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_8" id="__nav_7_8_label" tabindex="0">
             
   
   
@@ -1935,8 +1967,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7_7">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_8">
             <span class="md-nav__icon md-icon"></span>
             WASM
           </label>
@@ -2409,6 +2441,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#ruby-thread-based-async" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ruby: thread-based async
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2443,7 +2484,7 @@
 
 
 <h1 id="asyncfuture-support">Async/Future support</h1>
-<p>UniFFI supports exposing async Rust functions over the FFI. It can convert a Rust <code>Future</code>/<code>async fn</code> to and from foreign native futures (<code>async</code>/<code>await</code> in Python/Swift, <code>suspend fun</code> in Kotlin etc.)</p>
+<p>UniFFI supports exposing async Rust functions over the FFI. It can convert a Rust <code>Future</code>/<code>async fn</code> to and from foreign native futures (<code>async</code>/<code>await</code> in Python/Swift/Ruby, <code>suspend fun</code> in Kotlin etc.)</p>
 <p>Check out the <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/futures">examples</a> or the more terse and thorough <a href="https://github.com/mozilla/uniffi-rs/tree/main/fixtures/futures">fixtures</a>.</p>
 <p>We've also <a href="internals/async-overview.html">documentation on the internals of how this works</a>.</p>
 <h2 id="example">Example</h2>
@@ -2516,6 +2557,10 @@ functions run outside of the eventloop, for example:</p>
 Use <code>uniffi_set_event_loop()</code> to handle this case.
 It should be called before the Rust code makes the async call and passed an eventloop to use.</p>
 <p>Note that <code>uniffi_set_event_loop</code> cannot be glob-imported because it's not part of the library's <code>__all__</code>.</p>
+<h3 id="ruby-thread-based-async">Ruby: thread-based async</h3>
+<p>Unlike Python and Swift, Ruby has no native async/await. When Rust calls an async Ruby callback
+method, UniFFI spawns a new OS thread for each invocation. There is no event loop requirement,
+though a Fiber scheduler is supported for the Ruby -&gt; Rust polling direction.</p>
 <h2 id="cancelling-async-code">Cancelling async code.</h2>
 <p>We don't directly support cancellation in UniFFI even when the underlying platforms do.
 You should build your cancellation in a separate, library specific channel; for example, exposing a <code>cancel()</code> method that sets a flag that the library checks periodically.</p>

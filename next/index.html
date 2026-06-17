@@ -1875,6 +1875,29 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="ruby/configuration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Ruby
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
     
@@ -1884,10 +1907,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8" >
         
           
-          <label class="md-nav__link" for="__nav_7_7" id="__nav_7_7_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_8" id="__nav_7_8_label" tabindex="0">
             
   
   
@@ -1900,8 +1923,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7_7">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_8">
             <span class="md-nav__icon md-icon"></span>
             WASM
           </label>
@@ -2388,9 +2411,11 @@ This process can take place either during the build process or be manually initi
 <h2 id="supported-languages">Supported languages</h2>
 <p>UniFFI comes with full support for Kotlin, Swift and Python; unless specified otherwise, you can expect all features in
 this manual will work for these languages.</p>
-<p>We also have partial legacy support for Ruby; the UniFFI team keeps the existing Ruby support working but tends to not
-add new features to that language. It seems possible that Ruby support will be split into its own crate at some point, but
-in the meantime we welcome improvements and contributions to Ruby.</p>
+<p>UniFFI also ships Ruby bindings. Most features described in this manual work for Ruby as well;
+see the <a href="ruby/configuration.html">Ruby configuration</a> page for language-specific options.
+The UniFFI team keeps the existing Ruby support working but tends to not add new features to that language.
+A few features are not yet available on Ruby (like docstrings in generated bindings).
+It seems possible that Ruby support will be split into its own crate at some point.</p>
 <p>There are also many 3rd party bindings - please see our <a href="https://github.com/mozilla/uniffi-rs/blob/main/README.md">README</a> for references.
 These languages may require older versions of UniFFI and may have partial or non-existant support for some features; see the
 documentation for those bindings for details.</p>

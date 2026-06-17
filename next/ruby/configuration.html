@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="ffi_converter_traits.html">
+        <link rel="prev" href="../python/configuration.html">
       
       
-        <link rel="next" href="foreign_calls.html">
+        <link rel="next" href="../wasm/configuration.html">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +20,7 @@
     
     
       
-        <title>Foreign -> Rust calls - The UniFFI user guide</title>
+        <title>Ruby - The UniFFI user guide</title>
       
     
     
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#foreign-rust-calls" class="md-skip">
+        <a href="#configuration" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Foreign -&gt; Rust calls
+              Ruby
             
           </span>
         </div>
@@ -1409,18 +1409,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
         
           
           <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
@@ -1436,7 +1438,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             Bindings
@@ -1815,10 +1817,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../ruby/configuration.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Ruby
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="configuration.html" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1829,6 +1853,53 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#available-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Available options
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Examples
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1914,20 +1985,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
         
           
           <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
@@ -1943,7 +2012,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             Internals
@@ -1957,7 +2026,7 @@
   
   
     <li class="md-nav__item">
-      <a href="design_principles.html" class="md-nav__link">
+      <a href="../internals/design_principles.html" class="md-nav__link">
         
   
   
@@ -1980,7 +2049,7 @@
   
   
     <li class="md-nav__item">
-      <a href="crates.html" class="md-nav__link">
+      <a href="../internals/crates.html" class="md-nav__link">
         
   
   
@@ -2026,7 +2095,7 @@
   
   
     <li class="md-nav__item">
-      <a href="lifting_and_lowering.html" class="md-nav__link">
+      <a href="../internals/lifting_and_lowering.html" class="md-nav__link">
         
   
   
@@ -2049,7 +2118,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ffi_converter_traits.html" class="md-nav__link">
+      <a href="../internals/ffi_converter_traits.html" class="md-nav__link">
         
   
   
@@ -2069,32 +2138,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Foreign -&gt; Rust calls
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="rust_calls.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../internals/rust_calls.html" class="md-nav__link">
         
   
   
@@ -2105,62 +2152,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#the-ffi-function" class="md-nav__link">
-    <span class="md-ellipsis">
-      The FFI function
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#rustcallstatus" class="md-nav__link">
-    <span class="md-ellipsis">
-      RustCallStatus
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#method-calls" class="md-nav__link">
-    <span class="md-ellipsis">
-      Method calls
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#panic-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      Panic handling
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2173,7 +2164,7 @@
   
   
     <li class="md-nav__item">
-      <a href="foreign_calls.html" class="md-nav__link">
+      <a href="../internals/foreign_calls.html" class="md-nav__link">
         
   
   
@@ -2196,7 +2187,7 @@
   
   
     <li class="md-nav__item">
-      <a href="object_references.html" class="md-nav__link">
+      <a href="../internals/object_references.html" class="md-nav__link">
         
   
   
@@ -2219,7 +2210,7 @@
   
   
     <li class="md-nav__item">
-      <a href="async-overview.html" class="md-nav__link">
+      <a href="../internals/async-overview.html" class="md-nav__link">
         
   
   
@@ -2242,7 +2233,7 @@
   
   
     <li class="md-nav__item">
-      <a href="async-ffi.html" class="md-nav__link">
+      <a href="../internals/async-ffi.html" class="md-nav__link">
         
   
   
@@ -2265,7 +2256,7 @@
   
   
     <li class="md-nav__item">
-      <a href="rendering_foreign_bindings.html" class="md-nav__link">
+      <a href="../internals/rendering_foreign_bindings.html" class="md-nav__link">
         
   
   
@@ -2288,7 +2279,7 @@
   
   
     <li class="md-nav__item">
-      <a href="bindings_ir.html" class="md-nav__link">
+      <a href="../internals/bindings_ir.html" class="md-nav__link">
         
   
   
@@ -2311,7 +2302,7 @@
   
   
     <li class="md-nav__item">
-      <a href="bindings_ir_pipeline.html" class="md-nav__link">
+      <a href="../internals/bindings_ir_pipeline.html" class="md-nav__link">
         
   
   
@@ -2383,36 +2374,27 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-ffi-function" class="md-nav__link">
+  <a href="#available-options" class="md-nav__link">
     <span class="md-ellipsis">
-      The FFI function
+      Available options
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#rustcallstatus" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
-      RustCallStatus
+      Prerequisites
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#method-calls" class="md-nav__link">
+  <a href="#examples" class="md-nav__link">
     <span class="md-ellipsis">
-      Method calls
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#panic-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      Panic handling
+      Examples
     </span>
   </a>
   
@@ -2437,74 +2419,58 @@
   
 
 
-<h1 id="foreign-rust-calls">Foreign -&gt; Rust calls</h1>
-<p>What happens when code in the foreign language makes a call to Rust?
-The <a href="lifting_and_lowering.html">lifting and lowering</a> docs describe this at a high-level, this document will explore the details.</p>
-<p>This document only describes non-async Rust calls.
-See the <a href="async-ffi.html">Async FFI</a> docs for a description of async calls.</p>
-<h2 id="the-ffi-function">The FFI function</h2>
-<p>For each exported Rust function, an FFI function is generated.
-This <code>extern "C"</code> function is exported in the Rust library and its what's called by the foreign code.</p>
-<p>Different bindings use different techniques to call these functions.
-For example, Python uses <a href="https://docs.python.org/3/library/ctypes.html">ctypes</a> to call into a dynamic library, while Swift links to a static library and calls the C functions directly.</p>
-<p>The signature for the FFI function is:
-* Arguments:
-  * The <a href="lifting_and_lowering.html">lowered type</a> for each argument of the Rust function
-  * A <code>RustCallStatus</code> out pointer
-* Returns:
-  * For non-unit type returns: the <a href="lifting_and_lowering.html">lowered type</a> of the return value for the Rust function
-  * For unit type returns: <code>void</code> (i.e. no return value, which is special-cased in <code>C</code>).</p>
-<h2 id="rustcallstatus">RustCallStatus</h2>
-<p>The last argument for the FFI function is a pointer to a <code>RustCallStatus</code> struct.
-The FFI function writes to this struct to report errors when calling the Rust function.</p>
-<p>Here's the layout for this struct:</p>
-<div class="highlight"><pre><span></span><code><span class="cp">#[repr(C)]</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">RustCallStatus</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">code</span><span class="p">:</span><span class="w"> </span><span class="nc">RustCallStatusCode</span><span class="p">,</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">error_buf</span><span class="p">:</span><span class="w"> </span><span class="nc">RustBuffer</span><span class="p">,</span>
-<span class="p">}</span>
-
-<span class="cp">#[repr(i8)]</span>
-<span class="cp">#[derive(Debug, PartialEq, Eq)]</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="nc">RustCallStatusCode</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">Success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="w">    </span><span class="n">Error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">    </span><span class="n">UnexpectedError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
-<span class="w">    </span><span class="n">Cancelled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="c1">// Only used for async calls</span>
-<span class="p">}</span>
+<h1 id="configuration">Configuration</h1>
+<p>The generated Ruby modules can be configured using a <code>uniffi.toml</code> configuration file.</p>
+<h2 id="available-options">Available options</h2>
+<table>
+<thead>
+<tr>
+<th>Configuration name</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cdylib_name</code></td>
+<td><code>uniffi_{namespace}</code>[^1]</td>
+<td>The name of the compiled Rust library containing the FFI implementation (not needed when using <code>generate --library</code>).</td>
+</tr>
+<tr>
+<td><code>cdylib_path</code></td>
+<td></td>
+<td>An explicit path to the shared library, passed as the <code>ffi_lib</code> argument.</td>
+</tr>
+<tr>
+<td><code>custom_types</code></td>
+<td></td>
+<td>A map which controls how custom types are exposed to Ruby. See the <a href="../types/custom_types.html#custom-types-in-the-bindings-code">custom types section of the manual</a></td>
+</tr>
+<tr>
+<td><code>rename</code></td>
+<td></td>
+<td>A map to rename types, functions, methods, and their members in the generated Ruby bindings. See the <a href="../renaming.html">renaming section</a>.</td>
+</tr>
+<tr>
+<td><code>exclude</code></td>
+<td></td>
+<td>A list of crate names to exclude when generating bindings for a library (library mode).</td>
+</tr>
+</tbody>
+</table>
+<p>[^1]: The namespace is derived from the crate name or UDL file name.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>Ruby bindings require the <a href="https://github.com/ffi/ffi"><code>ffi</code> gem</a>. See <a href="https://github.com/mozilla/uniffi-rs/blob/main/docs/contributing.md">docs/contributing.md</a> for setup instructions.</p>
+<h2 id="examples">Examples</h2>
+<p>Custom Types:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Assuming a Custom Type named Url using a String as the builtin.</span>
+<span class="k">[bindings.ruby.custom_types.Url]</span>
+<span class="n">type_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;URI&quot;</span>
+<span class="n">imports</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;uri&quot;</span><span class="p">]</span>
+<span class="n">lift</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;URI.parse({})&quot;</span>
+<span class="n">lower</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{}.to_s&quot;</span>
 </code></pre></div>
-<p>When the foreign code calls the Rust FFI function, it initializes <code>RustCallStatus.code</code> to <code>RustCallStatus::Success</code> and <code>RustCallStatus.error_buf</code> to an empty RustBuffer.  After calling the real Rust function, the generated FFI function writes to this struct:</p>
-<ul>
-<li>If the function returns successfully (i.e. it runs normally and returns <code>Ok</code> value for <code>Result</code> return types), then nothing is written.
-  Since the foreign bindings initialize <code>code=RustCallStatus::Success</code>, this will be interpreted as a successful call.</li>
-<li>If a <code>Result::Err</code> value is returned then:</li>
-<li>The generated Rust code sets <code>code</code> to <code>RustCallStatusCode::Error</code></li>
-<li>The generated Rust code serializes the error into a <code>RustBuffer</code> and stores that in <code>error_buf</code>.</li>
-<li>The foreign bindings are responsible for deserializing that error into an exception value and
-    throwing that exception.</li>
-<li>A placeholder value is returned (e.g. <code>0</code> or an empty <code>RustBuffer</code>);</li>
-<li>If an unexpected error happens, for example a failure when lifting the arguments, then:</li>
-<li>The generated Rust code sets <code>code</code> to <code>RustCallStatusCode::InternalError</code></li>
-<li>The generated Rust code tries to serialize the error message to a <code>RustBuffer</code> and store it <code>error_buf</code>.
-    However, it's possible this fails in which case <code>error_buf</code> not be written to.</li>
-<li>A placeholder value is returned</li>
-<li>The foreign bindings are responsible throwing some sort of UniFFI internal exception.
-    If possible, this exception should contain the error message.</li>
-</ul>
-<h2 id="method-calls">Method calls</h2>
-<p>Method calls work the same as function calls, except there's an extra argument for the object handle.
-This means the arguments are:</p>
-<ul>
-<li>The object handle (<code>void *</code>).
-  This is cloned before making the call as described in <a href="object_references.html">object references</a>.</li>
-<li>The lowered type for each Rust argument</li>
-<li>A <code>RustCallStatus</code> out pointer</li>
-</ul>
-<h2 id="panic-handling">Panic handling</h2>
-<p>UniFFI uses <code>std::panic::catch_unwind</code> to try to catch any panics in the Rust code.
-The main reason is to prevent them from moving up the call stack into the foreign language's frames, which would almost certainly lead to a crash.
-Panics are treated as unexpected errors as described above.
-UniFFI can't always catch panics, for example when the Rust panic handler is set to <code>abort</code>.</p>
+<p>Refer to <a href="https://github.com/mozilla/uniffi-rs/blob/main/examples/custom-types/uniffi.toml"><code>examples/custom-types/uniffi.toml</code></a> for a complete example.</p>
 
 
 

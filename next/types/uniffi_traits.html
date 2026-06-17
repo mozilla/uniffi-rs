@@ -1829,6 +1829,29 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../ruby/configuration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Ruby
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
     
@@ -1838,10 +1861,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8" >
         
           
-          <label class="md-nav__link" for="__nav_7_7" id="__nav_7_7_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_8" id="__nav_7_8_label" tabindex="0">
             
   
   
@@ -1854,8 +1877,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7_7">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_8">
             <span class="md-nav__icon md-icon"></span>
             WASM
           </label>
@@ -2334,12 +2357,14 @@ with the matching Rust:
 <li>Python: The object will have a <code>__repr__</code> method that returns the value implemented by the <code>Debug</code> trait.</li>
 <li>Swift: Will generate a <code>public var debugDescription: String {..}</code> method on the object, allowing, eg, <code>String(reflecting: ob)</code> to be used.</li>
 <li>Kotlin: Will generate <code>override fun toString(): String {..}</code> (although will prefer the <code>Display</code> implementation if it exists).</li>
+<li>Ruby: Will generate <code>#inspect</code> (Debug) and <code>#to_s</code> (Display) methods.</li>
 </ul>
 <p>Whereas <code>Eq</code> would generate:</p>
 <ul>
 <li>Python: The object will have <code>__eq__(self, other)</code> and <code>__ne__(self, other)</code> methods.</li>
 <li>Swift: Will generate <code>public static func == (self: .., other: ..)</code></li>
 <li>Kotlin: Will generate <code>override fun equals(other: Any?): Boolean</code> and have the object extend <code>Comparable&lt;&gt;</code>.</li>
+<li>Ruby: Will generate <code>#==</code> and <code>#hash</code> methods.</li>
 </ul>
 <p>etc.</p>
 <p>External bindings may not support these, so they might be ignored.</p>
