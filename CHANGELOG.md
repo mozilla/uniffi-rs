@@ -21,11 +21,9 @@
 
 ### What's Fixed
 
-- Kotlin: Fixed JNA direct-mapped `u8`/`u16` return values by widening the internal return carrier to `Int`, which avoids signedness mismatches during checksum validation and other direct-return paths on Android ARM32. ([#2897](https://github.com/mozilla/uniffi-rs/pull/2897))
 - Fixed bug that sometimes prevented renaming items inside a submodule [#2792](https://github.com/mozilla/uniffi-rs/pull/2792)
 - Exempted `UniFfiTag` from `clippy::exhaustive_structs` since downstream projects may depend on it [#2809](https://github.com/mozilla/uniffi-rs/pull/2809)
 - Ruby: Code for all kinds of enums and custom types is now correctly generated #2880 and #2891
-- Swift: Fixed `FfiConverterString` silently stripping a leading U+FEFF byte order mark from Rust strings.
 
 ### ⚠️ Breaking Changes for external bindings authors ⚠️
 
@@ -52,7 +50,18 @@
 - `#[uniffi::export(async_runtime = "tokio")]` can now be applied to trait exports, wrapping each method's FFI scaffolding future in `async_compat::Compat` the same way it does for inherent impls and free functions ([#2899](https://github.com/mozilla/uniffi-rs/pull/2899)).
 - Added support for using `HashSet` with proc-macros
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.1...HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.2...HEAD).
+
+## v0.31.2 (backend crates: v0.31.2) - (_2026-06-16_)
+
+### What's Fixed
+
+- Kotlin: Fixed JNA direct-mapped `u8`/`u16` return values by widening the internal return carrier to `Int`, which avoids signedness mismatches during checksum validation and other direct-return paths on Android ARM32. ([#2897](https://github.com/mozilla/uniffi-rs/pull/2897))
+- Kotlin: Fix async functions that return an external/RustBuffer type
+- Swift: Fixed `FfiConverterString` silently stripping a leading U+FEFF byte order mark from Rust strings.
+- Swift: Prevent strict concurrency warning with callback interface tables
+
+[All changes in v0.31.2](https://github.com/mozilla/uniffi-rs/compare/v0.31.1...v0.31.2).
 
 ## v0.31.1 (backend crates: v0.31.1) - (_2026-04-10_)
 
