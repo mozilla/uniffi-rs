@@ -338,12 +338,6 @@ fn variant_value(v: &Variant) -> syn::Result<TokenStream> {
             "UniFFI disciminant values must be a literal integer",
         ));
     };
-    if !intlit.suffix().is_empty() {
-        return Err(syn::Error::new_spanned(
-            intlit,
-            "integer literals with suffix not supported by UniFFI here",
-        ));
-    }
     let digits = if negate {
         format!("-{}", intlit.base10_digits())
     } else {

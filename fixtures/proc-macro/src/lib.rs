@@ -292,7 +292,9 @@ fn get_mixed_enum(v: Option<MixedEnum>) -> MixedEnum {
 #[derive(uniffi::Enum)]
 pub enum ReprU8 {
     One = 1,
+    // Two is reserved to check enum value skipping
     Three = 0x3,
+    Four = 4u8,
 }
 
 #[uniffi::export]
