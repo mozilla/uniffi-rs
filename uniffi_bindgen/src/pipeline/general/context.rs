@@ -21,6 +21,7 @@ pub struct Context {
     // Maps namespaces to exclude tables from the TOML config
     pub exclude_sets: HashMap<String, HashSet<String>>,
     pub type_id_map: HashMap<Type, u64>,
+    pub from_unexpected_callback_error_impls: HashSet<Type>,
 }
 
 impl Context {
@@ -36,6 +37,7 @@ impl Context {
             rename_tables: HashMap::default(),
             exclude_sets: HashMap::default(),
             type_id_map: HashMap::default(),
+            from_unexpected_callback_error_impls: HashSet::default(),
         }
     }
 
@@ -104,6 +106,8 @@ impl Context {
                 .insert(namespace.name.clone(), rename_table);
             self.exclude_sets
                 .insert(namespace.name.clone(), exclude_set);
+            self.from_unexpected_callback_error_impls
+                .extend(root.from_unexpected_callback_error_impls.clone());
         }
         self.populate_type_id_map(root)?;
         Ok(())
@@ -264,5 +268,9 @@ impl Context {
             .get(ty)
             .cloned()
             .ok_or_else(|| anyhow!("Type not in type_id_map: {ty:?} {:#?}", self.type_id_map))
+    }
+
+    pub fn type_has_from_unexpected_callback_error_impl(&self, ty: &Type) -> bool {
+        self.from_unexpected_callback_error_impls.contains(ty)
     }
 }

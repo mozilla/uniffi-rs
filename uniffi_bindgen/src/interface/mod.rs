@@ -113,6 +113,8 @@ pub struct ComponentInterface {
     crate_to_namespace: BTreeMap<String, NamespaceMetadata>,
     // A clone of every CI we know about, including ourself, to help get external type info for bindings.
     all_component_interfaces: Vec<ComponentInterface>,
+    // Should we skip checksum checks, for example because we were loaded from `uniffi_parse_rs`?
+    pub skip_checksum_checks: bool,
 }
 
 impl ComponentInterface {
@@ -385,9 +387,14 @@ impl ComponentInterface {
     }
 
     pub fn namespace_for_module_path(&self, module_path: &str) -> Result<&str> {
-        let crate_name = module_path.split("::").next().unwrap_or(module_path);
+        // Need the `replace()` call to handle items from `uniffi_udl`
+        let crate_name = module_path
+            .split("::")
+            .next()
+            .unwrap_or(module_path)
+            .replace("-", "_");
         self.crate_to_namespace
-            .get(crate_name)
+            .get(&crate_name)
             .map(|n| n.name.as_ref())
             // incase not library mode and we've not been told
             .or_else(|| (module_path == self.crate_name()).then(|| self.namespace()))

@@ -5,7 +5,7 @@
 //! Organize the metadata, transforming it from a simple list to a more tree-like structure.
 
 use anyhow::{anyhow, bail, Result};
-use std::collections::{btree_map::Entry, BTreeMap};
+use std::collections::{btree_map::Entry, BTreeMap, BTreeSet};
 
 use super::*;
 
@@ -39,6 +39,7 @@ pub struct UniffiMetaConverter {
         BTreeMap<uniffi_meta::Type, uniffi_meta::ObjectTraitImplMetadata>,
     >,
     orig_names: BTreeMap<(String, String), String>,
+    from_unexpected_callback_error_impls: BTreeSet<uniffi_meta::Type>,
 }
 
 /// Utility trait used to insert metadata items into a BTreeMap, but bail on duplicates
@@ -225,6 +226,9 @@ impl UniffiMetaConverter {
                     .insert_unique(imp.trait_ty.clone(), imp)?;
             }
             uniffi_meta::Metadata::UdlFile(_) => (),
+            uniffi_meta::Metadata::FromUnexpectedCallbackErrorImpl(meta) => {
+                self.from_unexpected_callback_error_impls.insert(meta.ty);
+            }
         }
         Ok(())
     }
@@ -269,7 +273,13 @@ impl UniffiMetaConverter {
 
         let mut root = Root {
             namespaces: self.namespaces.into_iter().collect(),
+            from_unexpected_callback_error_impls: self
+                .from_unexpected_callback_error_impls
+                .into_iter()
+                .map(|ty| ty.map_node(&context))
+                .collect::<Result<Vec<_>>>()?,
             cdylib: None,
+            checksum_mode: ChecksumMode::Legacy,
         };
 
         // Move child items into their parents
@@ -349,9 +359,14 @@ fn get_namespace<'a>(
     root: &'a mut Root,
     module_path: &str,
 ) -> Result<&'a mut Namespace> {
-    let crate_name = module_path.split("::").next().unwrap();
+    let crate_name = module_path
+        .split("::")
+        .next()
+        .unwrap()
+        // fixup module paths from uniffi_udl;
+        .replace("-", "_");
     let namespace_name = module_path_map
-        .get(crate_name)
+        .get(&crate_name)
         .map(String::as_str)
         .ok_or_else(|| anyhow!("module lookup failed: {module_path:?}"))?;
     root.namespaces

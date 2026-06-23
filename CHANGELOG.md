@@ -19,6 +19,10 @@
   need to be reworked as well.  See [#2787](https://github.com/mozilla/uniffi-rs/pull/2787) for
   examples of how this can be done.
 
+### ⚠️ Breaking Changes for external bindings authors ⚠️
+- The signature for `CrateConfigSupplier::from_cargo_metadata_command` has changed.
+  It now inputs a `MetadataCommand` instance and a `CargoMetadataOptions` rather than just a `no_deps` flag.
+
 ### What's Fixed
 
 - Fixed bug that sometimes prevented renaming items inside a submodule [#2792](https://github.com/mozilla/uniffi-rs/pull/2792)
