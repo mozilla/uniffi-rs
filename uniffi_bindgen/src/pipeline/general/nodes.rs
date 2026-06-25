@@ -73,6 +73,7 @@ pub struct Namespace {
 pub struct Function {
     #[map_node(callable::function_callable(&self, context)?)]
     pub callable: Callable,
+    pub module_path: String,
     pub docstring: Option<String>,
 }
 
@@ -139,7 +140,10 @@ pub enum CallableKind {
     /// Toplevel function
     Function,
     /// Interface/Trait interface method
-    Method { self_type: TypeNode },
+    Method {
+        self_type: TypeNode,
+        takes_self_by_arc: bool,
+    },
     /// Interface constructor
     Constructor { self_type: TypeNode, primary: bool },
     /// Method inside a VTable or a CallbackInterface
@@ -234,6 +238,7 @@ pub struct Record {
     pub fields_kind: FieldsKind,
     #[map_node(context.self_type()?)]
     pub self_type: TypeNode,
+    pub module_path: String,
     pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
@@ -277,6 +282,8 @@ pub struct Enum {
     pub is_flat: bool,
     #[map_node(context.self_type()?)]
     pub self_type: TypeNode,
+    #[map_node(self.discr_type.is_some())]
+    pub discr_specified: bool,
     /// type, this will be a sized integer type that's large enough to store all the discriminant
     /// values. We try to mimic what `rustc` does, but there's no guarantee that this will be
     /// exactly the same type.
@@ -284,6 +291,7 @@ pub struct Enum {
     pub discr_type: TypeNode,
     #[map_node(enums::map_variants(&self.discr_type, self.variants, context)?)]
     pub variants: Vec<Variant>,
+    pub module_path: String,
     pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
@@ -325,6 +333,7 @@ pub struct Interface {
     pub ffi_func_clone: RustFfiFunctionName,
     #[map_node(objects::ffi_free_name(&self.name, context)?)]
     pub ffi_func_free: RustFfiFunctionName,
+    pub module_path: String,
     pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
@@ -348,6 +357,7 @@ pub struct CallbackInterface {
     pub vtable: VTable,
     #[map_node(context.self_type()?)]
     pub self_type: TypeNode,
+    pub module_path: String,
     pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
@@ -393,6 +403,7 @@ pub struct ObjectTraitImpl {
 pub struct CustomType {
     #[map_node(context.self_type()?)]
     pub self_type: TypeNode,
+    pub module_path: String,
     pub orig_name: String,
     #[map_node(rename::type_(&context.namespace_name()?, self.name, context)?)]
     pub name: String,
@@ -620,6 +631,25 @@ pub struct UniffiTraitMethods {
     pub eq_ne: Option<Method>,
     pub hash_hash: Option<Method>,
     pub ord_cmp: Option<Method>,
+}
+
+impl TypeDefinition {
+    pub fn self_type(&self) -> &Type {
+        match self {
+            Self::Interface(int) => &int.self_type.ty,
+            Self::CallbackInterface(cbi) => &cbi.self_type.ty,
+            Self::Record(rec) => &rec.self_type.ty,
+            Self::Enum(en) => &en.self_type.ty,
+            Self::Custom(custom) => &custom.self_type.ty,
+            Self::Simple(type_node) => &type_node.ty,
+            Self::Box(boxed) => &boxed.self_type.ty,
+            Self::Optional(opt) => &opt.self_type.ty,
+            Self::Sequence(seq) => &seq.self_type.ty,
+            Self::Map(map) => &map.self_type.ty,
+            Self::Set(set) => &set.self_type.ty,
+            Self::External(ext) => &ext.self_type.ty,
+        }
+    }
 }
 
 impl FfiDefinition {

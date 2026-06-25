@@ -1,0 +1,156 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+use super::*;
+
+pub fn map_namespace(input: general::Namespace, context: &Context) -> Result<Package> {
+    let mut context = context.clone();
+    context.update_from_namespace(&input);
+    let config = context.config()?.clone();
+    let imports = config
+        .custom_types
+        .values()
+        .flat_map(|c| c.imports.clone())
+        .flatten()
+        .collect();
+
+    Ok(Package {
+        name: context.package_name_for_namespace(&input.name)?.to_string(),
+        crate_name: input.name,
+        config,
+        functions: input.functions.map_node(&context)?,
+        type_definitions: map_type_definitions(input.type_definitions, &context)?,
+        imports,
+    })
+}
+
+pub fn map_type_definitions(
+    type_defs: Vec<general::TypeDefinition>,
+    context: &Context,
+) -> Result<Vec<TypeDefinition>> {
+    let mut mapped = vec![];
+    for type_def in type_defs {
+        match type_def {
+            general::TypeDefinition::Record(rec) => {
+                mapped.push(TypeDefinition::Record(rec.map_node(context)?));
+            }
+            general::TypeDefinition::Enum(en) => {
+                mapped.push(TypeDefinition::Enum(en.map_node(context)?));
+            }
+            general::TypeDefinition::Interface(int) => {
+                mapped.push(TypeDefinition::Interface(interfaces::map_interface(
+                    &int, context,
+                )?));
+                mapped.push(TypeDefinition::Class(int.map_node(context)?));
+            }
+            general::TypeDefinition::CallbackInterface(cbi) => {
+                mapped.push(TypeDefinition::Interface(
+                    callbacks::interface_for_callback_interface(&cbi, context)?,
+                ));
+                mapped.push(TypeDefinition::CallbackInterface(cbi.map_node(context)?));
+            }
+            general::TypeDefinition::Custom(c) => {
+                mapped.push(TypeDefinition::Custom(c.map_node(context)?));
+            }
+            general::TypeDefinition::Optional(opt) => {
+                mapped.push(TypeDefinition::Optional(opt.map_node(context)?));
+            }
+            general::TypeDefinition::Sequence(seq) => {
+                mapped.push(TypeDefinition::Sequence(seq.map_node(context)?));
+            }
+            general::TypeDefinition::Map(map) => {
+                mapped.push(TypeDefinition::Map(map.map_node(context)?));
+            }
+            general::TypeDefinition::Set(set) => {
+                mapped.push(TypeDefinition::Set(set.map_node(context)?));
+            }
+            general::TypeDefinition::Box(inner) => {
+                mapped.push(TypeDefinition::Box(inner.map_node(context)?));
+            }
+            general::TypeDefinition::Simple(inner) => match &inner.ty {
+                Type::Duration => mapped.push(TypeDefinition::Duration(inner.map_node(context)?)),
+                Type::Timestamp => mapped.push(TypeDefinition::Timestamp(inner.map_node(context)?)),
+                _ => (),
+            },
+            // No need to do anything for external definitions since we generate everything in one
+            // Rust module.
+            general::TypeDefinition::External(_) => (),
+        }
+    }
+    Ok(mapped)
+}
+
+impl Package {
+    pub fn name_rs(&self) -> String {
+        names::escape_rust(&self.crate_name)
+    }
+
+    /// JNI methods to define/export from Rust
+    ///
+    /// Generates a list of (jni_method_name, callable) pairs.
+    pub fn jni_methods(&self) -> impl Iterator<Item = (&str, JniMethodKind, &Callable)> {
+        let functions = self.functions.iter().map(|f| {
+            (
+                f.jni_method_name.as_str(),
+                JniMethodKind::Function,
+                &f.callable,
+            )
+        });
+        let methods = self.classes().flat_map(|c| {
+            c.methods.iter().map(|m| {
+                (
+                    m.jni_method_name.as_str(),
+                    JniMethodKind::Method,
+                    &m.callable,
+                )
+            })
+        });
+        let constructors = self.classes().flat_map(|c| {
+            c.constructors.iter().map(|c| {
+                (
+                    c.jni_method_name.as_str(),
+                    JniMethodKind::Function,
+                    &c.callable,
+                )
+            })
+        });
+        let trait_methods = self
+            .uniffi_trait_methods()
+            .flat_map(UniffiTraitMethods::jni_methods);
+
+        functions
+            .chain(methods)
+            .chain(constructors)
+            .chain(trait_methods)
+    }
+
+    pub fn classes(&self) -> impl Iterator<Item = &Class> {
+        self.type_definitions
+            .iter()
+            .filter_map(|type_def| match type_def {
+                TypeDefinition::Class(cls) => Some(cls),
+                _ => None,
+            })
+    }
+
+    pub fn boxes(&self) -> impl Iterator<Item = &BoxedType> {
+        self.type_definitions
+            .iter()
+            .filter_map(|type_def| match type_def {
+                TypeDefinition::Box(b) => Some(b),
+                _ => None,
+            })
+    }
+
+    pub fn uniffi_trait_methods(&self) -> impl Iterator<Item = &UniffiTraitMethods> {
+        self.type_definitions
+            .iter()
+            .filter_map(|type_def| match type_def {
+                TypeDefinition::Class(c) => Some(&c.uniffi_trait_methods),
+                TypeDefinition::Record(r) => Some(&r.uniffi_trait_methods),
+                TypeDefinition::Enum(e) => Some(&e.uniffi_trait_methods),
+                _ => None,
+            })
+    }
+}
