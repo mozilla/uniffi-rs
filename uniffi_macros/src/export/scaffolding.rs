@@ -9,7 +9,7 @@ use std::iter;
 use super::attributes::AsyncRuntime;
 use crate::{
     ffiops,
-    fnsig::{FnKind, FnSignature},
+    fnsig::{FnKind, FnSignature, ReceiverArg},
 };
 
 pub(super) fn gen_fn_scaffolding(
@@ -130,7 +130,7 @@ impl ScaffoldingBits {
         self_ident: &Ident,
         is_trait: bool,
         udl_mode: bool,
-    ) -> Self {
+    ) -> syn::Result<Self> {
         let ident = &sig.ident;
         let self_type = if is_trait {
             quote! { dyn #self_ident }
@@ -151,7 +151,18 @@ impl ScaffoldingBits {
             }
         }));
         let call_params = sig.rust_call_params(true);
-        let rust_fn_call = quote! { uniffi_args.0.#ident(#call_params) };
+        let rust_fn_call = if is_trait {
+            // For traits use the fully-qualified function name to disambiguate
+            let receiver_expr = match sig.require_receiver()? {
+                ReceiverArg::Ref => quote! { &*uniffi_args.0 },
+                ReceiverArg::Arc => quote! { uniffi_args.0 },
+            };
+            quote! { <dyn #self_ident as #self_ident>::#ident(#receiver_expr, #call_params) }
+        } else {
+            // For non-traits use method call syntax, which papers over differences between Arc<T>
+            // and T.  Inherent methods always take precedence over other functions
+            quote! { uniffi_args.0.#ident(#call_params) }
+        };
         // UDL mode adds an extra conversion (#1749)
         let convert_result = if udl_mode && sig.looks_like_result {
             quote! { uniffi_result .map_err(::std::convert::Into::into) }
@@ -159,7 +170,7 @@ impl ScaffoldingBits {
             quote! { uniffi_result }
         };
 
-        Self {
+        Ok(Self {
             param_names: iter::once(quote! { uniffi_self_lowered })
                 .chain(sig.scaffolding_param_names())
                 .collect(),
@@ -169,7 +180,7 @@ impl ScaffoldingBits {
             lift_closure,
             rust_fn_call,
             convert_result,
-        }
+        })
     }
 
     fn new_for_constructor(sig: &FnSignature, self_ident: &Ident, udl_mode: bool) -> Self {
@@ -215,10 +226,10 @@ pub(super) fn gen_ffi_function(
     } = match &sig.kind {
         FnKind::Function => ScaffoldingBits::new_for_function(sig, udl_mode),
         FnKind::Method { self_ident, .. } => {
-            ScaffoldingBits::new_for_method(sig, self_ident, false, udl_mode)
+            ScaffoldingBits::new_for_method(sig, self_ident, false, udl_mode)?
         }
         FnKind::TraitMethod { self_ident, .. } => {
-            ScaffoldingBits::new_for_method(sig, self_ident, true, udl_mode)
+            ScaffoldingBits::new_for_method(sig, self_ident, true, udl_mode)?
         }
         FnKind::Constructor { self_ident, .. } => {
             ScaffoldingBits::new_for_constructor(sig, self_ident, udl_mode)

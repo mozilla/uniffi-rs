@@ -230,6 +230,12 @@ impl FnSignature {
         quote! { #(#args),* }
     }
 
+    pub fn require_receiver(&self) -> syn::Result<ReceiverArg> {
+        self.receiver
+            .clone()
+            .ok_or_else(|| syn::Error::new(self.span, "Expected receiver argument"))
+    }
+
     /// Parameters expressions for each of our arguments
     pub fn params(&self) -> impl Iterator<Item = TokenStream> + '_ {
         self.args.iter().map(NamedArg::param)
@@ -465,6 +471,7 @@ impl Arg {
     }
 }
 
+#[derive(Clone)]
 pub(crate) enum ReceiverArg {
     Ref,
     Arc,
