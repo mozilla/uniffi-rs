@@ -1126,4 +1126,43 @@ mod test {
             "checksum comparisons should compare the widened Int carrier directly"
         );
     }
+
+    #[test]
+    fn checksum_checks_mask_direct_return_to_16_bits() {
+        // The JNA direct-return carrier is a 32-bit `Int`, but the native checksum
+        // function returns a `u16`. On AArch64 the upper bits of the return register are
+        // unspecified (AAPCS64 leaves narrowing to the caller and does not guarantee zero-
+        // or sign-extension), so JNA can read back arbitrary garbage in the high 16 bits
+        // and the comparison never matches. Masking to the low 16 bits keeps the comparison
+        // correct on every architecture, since the checksum always lives in the low 16 bits
+        // regardless of how the carrier is widened.
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test_crate {
+                u16 get_value();
+            };
+            "#,
+            "test_crate",
+        )
+        .unwrap();
+        let config = Config {
+            package_name: Some("uniffi.test_crate".to_string()),
+            cdylib_name: Some("test_crate".to_string()),
+            ..Config::default()
+        };
+
+        let bindings = generate_bindings(&config, &ci).unwrap();
+        let checksum_checks = bindings
+            .split("private fun uniffiCheckApiChecksums")
+            .nth(1)
+            .expect("generated checksum checks")
+            .split("/**")
+            .next()
+            .expect("end of generated checksum checks");
+
+        assert!(
+            checksum_checks.contains("and 0xFFFF) !="),
+            "checksum comparisons should mask the direct return to the low 16 bits"
+        );
+    }
 }
