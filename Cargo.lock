@@ -2273,6 +2273,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-scaffolding-tests"
+version = "1.0.0"
+dependencies = [
+ "uniffi",
+]
+
+[[package]]
 name = "uniffi_bindgen"
 version = "0.31.2"
 dependencies = [

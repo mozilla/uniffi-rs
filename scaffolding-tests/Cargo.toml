@@ -1,0 +1,9 @@
+[package]
+name = "uniffi-scaffolding-tests"
+version = "1.0.0"
+
+[lib]
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[dependencies]
+uniffi = { path = "../uniffi" }

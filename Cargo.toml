@@ -42,6 +42,7 @@ members = [
   "bindgen-tests/swift/omit-labels",
   "bindgen-tests/swift/bridging-header-compile",
   "bindgen-tests/swift/link-frameworks",
+  "scaffolding-tests",
 
   "fixtures/benchmarks",
   "fixtures/coverall",
