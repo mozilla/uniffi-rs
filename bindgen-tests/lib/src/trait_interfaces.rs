@@ -28,7 +28,9 @@ pub trait TestTraitInterface: Send + Sync {
     /// Get the internal value
     fn get_value(&self) -> u32;
     /// Set the internal value
-    fn set_value(&self, value: u32);
+    ///
+    /// Also, input an Arc to test that code path
+    fn set_value(self: Arc<Self>, value: u32);
 
     // Test inputting/outputting different types
     fn roundtrip_record(&self, value: SimpleRec) -> SimpleRec;
@@ -47,6 +49,16 @@ pub trait TestTraitInterface: Send + Sync {
     ) -> Result<CallbackInterfaceNumbers, TestError>;
 }
 
+impl dyn TestTraitInterface {
+    // Inherent method with the same name as the trait method name.
+    //
+    // UniFFI should use a fully-qualified function syntax to ensure the trait method is called.
+    #[allow(unused)]
+    fn get_value(&self) -> u32 {
+        10000
+    }
+}
+
 #[uniffi::export]
 pub fn invoke_test_trait_interface_noop(interface: Arc<dyn TestTraitInterface>) {
     interface.noop()
@@ -54,7 +66,7 @@ pub fn invoke_test_trait_interface_noop(interface: Arc<dyn TestTraitInterface>) 
 
 #[uniffi::export]
 pub fn invoke_test_trait_interface_get_value(interface: Arc<dyn TestTraitInterface>) -> u32 {
-    interface.get_value()
+    <dyn TestTraitInterface as TestTraitInterface>::get_value(interface.as_ref())
 }
 
 #[uniffi::export]
@@ -113,7 +125,7 @@ impl TestTraitInterface for TestTraitInterfaceImpl {
         self.value.load(Ordering::Relaxed)
     }
 
-    fn set_value(&self, value: u32) {
+    fn set_value(self: Arc<Self>, value: u32) {
         self.value.store(value, Ordering::Relaxed);
     }
 
