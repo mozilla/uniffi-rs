@@ -4,7 +4,11 @@
 
 <!-- next-header -->
 
-## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+
+[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.0...NEXT_HEAD).
+
+## [[UnreleasedUniFFIVersion]] (backend crates: v0.32.0) - (_2026-06-30_)
 
 ### ⚠️ Breaking Changes ⚠️
 - Kotlin and Python now fail to generate bindings when there are async primary constructors.
