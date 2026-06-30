@@ -120,7 +120,7 @@ private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
 @Suppress("UNUSED_PARAMETER")
 private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     {%- for (name, expected_checksum) in ci.iter_checksums() %}
-    if (lib.{{ name }}() != {{ expected_checksum }}) {
+    if ((lib.{{ name }}() and 0xFFFF) != {{ expected_checksum }}) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     {%- endfor %}
