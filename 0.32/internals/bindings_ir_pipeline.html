@@ -1,0 +1,2786 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="bindings_ir.html">
+      
+      
+        <link rel="next" href="../Upgrading.html">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
+    
+    
+      
+        <title>Bindings IR Pipeline - The UniFFI user guide</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.2afb09e1.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#bindings-ir-pipeline" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../index.html" title="The UniFFI user guide" class="md-header__button md-logo" aria-label="The UniFFI user guide" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            The UniFFI user guide
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Bindings IR Pipeline
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mozilla/uniffi-rs" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="The UniFFI user guide" class="md-nav__button md-logo" aria-label="The UniFFI user guide" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    The UniFFI user guide
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mozilla/uniffi-rs" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    UniFFI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Motivation.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Motivation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Tutorial
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Tutorial
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Getting_started.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Getting started
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/Prerequisites.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Prerequisites
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/udl_file.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Describing the interface
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/Rust_scaffolding.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Rust scaffolding
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/foreign_language_bindings.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Foreign-language bindings
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    UniFFI type model
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            UniFFI type model
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/namespace.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Namespace
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/builtin_types.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Built-in types
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/enumerations.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Enumerations
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/records.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Records
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/bytes.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Byte buffers (&amp;[u8])
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Functions
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
+            <span class="md-nav__icon md-icon"></span>
+            Functions
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/functions.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Functions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/errors.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Throwing errors
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/interfaces.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Interfaces, Objects and Traits
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/callback_interfaces.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Callback interfaces
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/remote_ext_types.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Remote and External types
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/custom_types.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Custom types
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/defaults.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Default values
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/uniffi_traits.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Exposing standard Rust traits
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Describing the interface
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Describing the interface
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../describing.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Describing the interface
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    UDL Files
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            UDL Files
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../udl/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    The UDL file
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../udl/enumerations.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Enums in UDL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../udl/errors.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Errors in UDL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../udl/functions.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Functions in UDL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../udl/interfaces.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Interfaces in UDL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../udl/records.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Records in UDL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../udl/external_types.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Using types defined outside a UDL.
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../udl/docstrings.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docstrings
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Proc macros
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            Proc macros
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc_macro/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Procedural Macros: Attributes and Derives
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc_macro/enumerations.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Enumerations
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc_macro/errors.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    The uniffi::Error derive
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc_macro/functions.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Functions, Constructors, Methods
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc_macro/interfaces.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    The uniffi::Object derive
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc_macro/records.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    The uniffi::Record derive
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc_macro/traits.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Traits
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc_macro/renaming.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Renaming via proc-macros
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc_macro/docstrings.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docstrings
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../renaming.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Renaming and excluding items
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../futures.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Async/Future support
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Bindings
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Bindings
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bindings.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Generating bindings
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Customizing the bindings generation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../foreign_traits.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Foreign traits
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_4" id="__nav_7_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Kotlin
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_4">
+            <span class="md-nav__icon md-icon"></span>
+            Kotlin
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kotlin/configuration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Configuration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kotlin/gradle.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Integrating with Gradle
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kotlin/lifetimes.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Kotlin Lifetimes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_5" id="__nav_7_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Swift
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_5">
+            <span class="md-nav__icon md-icon"></span>
+            Swift
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../swift/overview.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Swift Bindings
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../swift/uniffi-bindgen-swift.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    uniffi-bindgen-swift
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../swift/configuration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Configuration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../swift/module.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Compiling a Swift module
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../swift/xcode.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Integrating with Xcode
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python/configuration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Python
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ruby/configuration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Ruby
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_8" id="__nav_7_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    WASM
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_8">
+            <span class="md-nav__icon md-icon"></span>
+            WASM
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wasm/configuration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    WASM
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Internals
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Internals
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="design_principles.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Design Principles
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="crates.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Navigating the code
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../glossary.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    UniFFI Glossary
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lifting_and_lowering.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Lifting, Lowering and Serialization
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ffi_converter_traits.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Ffi converter traits
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="rust_calls.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Foreign -&gt; Rust calls
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="foreign_calls.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Rust -&gt; Foreign calls
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="object_references.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Managing Object References
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="async-overview.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    UniFFI Async Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="async-ffi.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    UniFFI Async FFI details
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="rendering_foreign_bindings.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Rendering Foreign Bindings
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="bindings_ir.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    The UniFFI Bindings IR
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Bindings IR Pipeline
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="bindings_ir_pipeline.html" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Bindings IR Pipeline
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Nodes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mapnode" class="md-nav__link">
+    <span class="md-ellipsis">
+      MapNode
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#context-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Context types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Module structure
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assembling-a-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      Assembling a pipeline
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#starting-a-ir-for-binding-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Starting a IR for binding generation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#peeking-behind-the-curtains-with-the-pipeline-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      Peeking behind the curtains with the pipeline CLI
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Upgrading.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Upgrading v0.28.x -&gt; v0.29.x
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Nodes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mapnode" class="md-nav__link">
+    <span class="md-ellipsis">
+      MapNode
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#context-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Context types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Module structure
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assembling-a-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      Assembling a pipeline
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#starting-a-ir-for-binding-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Starting a IR for binding generation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#peeking-behind-the-curtains-with-the-pipeline-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      Peeking behind the curtains with the pipeline CLI
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="bindings-ir-pipeline">Bindings IR Pipeline</h1>
+<p><strong>Note:</strong> the Bindings IR is currently an experiment.
+It's checked in so that we can use it for the gecko-js external binding generator.
+Our current recommendation for other external bindings authors is to avoid using it for now since we haven't fully committed to this new system and expect it to change.</p>
+<p>The Bindings IR pipeline is used to transform different <a href="bindings_ir.html">intermediate representations of the generated bindings</a>.</p>
+<ul>
+<li>The foundational code lives in the <code>uniffi_pipeline</code> crate.
+  This defines things like the <code>Node</code> and <code>MapNode</code> traits.</li>
+<li>The macro code lives in the <code>uniffi_internal_macros</code> crate.
+  This defines derive macros for <code>Node</code> and <code>MapNode</code>.</li>
+<li><code>uniffi_bindgen</code> defines the general pipeline.
+  This converts <code>uniffi_meta</code> metadata to the initial IR then converts that to the general IR.</li>
+<li>Finally, each language defines their own pipeline, which extends the general pipeline and outputs a language-specific IR.</li>
+</ul>
+<h2 id="nodes">Nodes</h2>
+<p>Types inside an IR are called "nodes" and they must derive a <code>Node</code> trait impl.
+The top-level node is always named <code>Root</code>.
+When this document talks about converting between two IRs, this means converting between the root nodes of those IRs.</p>
+<p><code>Node</code> trait provides functionality for walking the IR tree.</p>
+<ul>
+<li><code>Node::visit()</code> and <code>Node::try_visit()</code> allows you to visit all descendants with a given type.</li>
+<li><code>Node::has_descendant()</code> tests if a predicate is true for any descendant.</li>
+</ul>
+<p>These are useful when you want to populate a node field using it's descendants.  For example,
+building up the FFI definitions by visiting all functions/methods inside a namespace.</p>
+<p>Node methods input a closure that inputs a node type, for example <code>root_node.visit(|func: Function| ...)</code>.
+<code>visit()</code> will walk the node tree and call that closure with all matching nodes.  The methods panic
+if there are no descendant types with the input node type.  This checks the types involved, not the
+values.  If there is a <code>Vec&lt;Function&gt;</code> field then <code>visit()</code> will not panic, even if the vec is empty.</p>
+<h2 id="mapnode">MapNode</h2>
+<p>The <code>MapNode</code> trait is used to convert from one node to another and is defined like this:</p>
+<div class="highlight"><pre><span></span><code><span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">MapNode</span><span class="o">&lt;</span><span class="n">Output</span><span class="p">,</span><span class="w"> </span><span class="n">Context</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">map_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">Context</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Output</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li><code>Self</code> is a node type from the previous IR</li>
+<li><code>Output</code> is a node type from current IR</li>
+<li><code>Context</code> is a generic context type which can be used to pass data to descendant nodes.</li>
+</ul>
+<p>Here's an example of how a <code>MapNode</code> implementation might look:</p>
+<div class="highlight"><pre><span></span><code><span class="k">impl</span><span class="w"> </span><span class="n">MapNode</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">,</span><span class="w"> </span><span class="n">Context</span><span class="o">&gt;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">prev_ir</span><span class="p">::</span><span class="n">Namespace</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">map_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">Context</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// Create a new context for our descendants</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">child_context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="n">clone</span><span class="p">();</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">context</span><span class="p">;</span>
+<span class="w">        </span><span class="n">context</span><span class="p">.</span><span class="n">set_namespace_name</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">.</span><span class="n">name</span><span class="p">);</span>
+<span class="w">        </span><span class="c1">// Map the previous `Namespace` node into the current version</span>
+<span class="w">        </span><span class="nb">Ok</span><span class="p">(</span><span class="n">Namespace</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// New fields are usually populated by calling a function</span>
+<span class="w">            </span><span class="n">ffi_definitions</span><span class="p">:</span><span class="w"> </span><span class="nc">generate_ffi_definitions</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">)</span><span class="o">?</span><span class="p">,</span>
+<span class="w">            </span><span class="c1">// Existing fields are usually converted using recursive `map_node` calls.</span>
+<span class="w">            </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nc">self</span><span class="p">.</span><span class="n">name</span><span class="p">,</span>
+<span class="w">            </span><span class="n">functions</span><span class="p">:</span><span class="w"> </span><span class="nc">self</span><span class="p">.</span><span class="n">functions</span><span class="p">.</span><span class="n">map_node</span><span class="p">(</span><span class="n">context</span><span class="p">)</span><span class="o">?</span><span class="p">,</span>
+<span class="w">            </span><span class="n">type_definitions</span><span class="p">:</span><span class="w"> </span><span class="nc">self</span><span class="p">.</span><span class="n">type_definitions</span><span class="p">.</span><span class="n">map_node</span><span class="p">(</span><span class="n">context</span><span class="p">)</span><span class="o">?</span><span class="p">,</span>
+<span class="w">            </span><span class="c1">// ...</span>
+<span class="w">        </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><code>MapNode</code> can be derived automatically.  For the previous impl that would look like:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Node, MapNode)]</span>
+<span class="c1">// Use `#[map_node(from([type_name]))]` to declare the type we&#39;re mapping from</span>
+<span class="cp">#[map_node(from(prev_ir::Namespace))]</span>
+<span class="c1">// Use `#[map_node(update_context([expr]))]` update the context for descendant `map_node()` calls.</span>
+<span class="cp">#[map_node(update_context(context.set_namespace_name(&amp;self.name)))]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Namespace</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Use `#[map_node(expr)]` to manually define the expression to populate a field.</span>
+<span class="w">    </span><span class="cp">#[map_node(generate_ffi_definitions(&amp;self, context)?)]</span>
+<span class="w">    </span><span class="n">ffi_definitions</span><span class="p">:</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">FfiDefinition</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="c1">// If no `#[map_node]` attribute is present, then fields will be mapped using recursive</span>
+<span class="w">    </span><span class="c1">// `map_node()` calls.</span>
+<span class="w">    </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="w">    </span><span class="n">functions</span><span class="p">:</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Function</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">type_definitions</span><span class="p">:</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">TypeDefinition</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="c1">// Note: The derived impl will convert fields in the order they&#39;re defined in.  This means we</span>
+<span class="w">    </span><span class="c1">// need to put `ffi_definitions` first, so that we can take a reference to `self` before `self`</span>
+<span class="w">    </span><span class="c1">// is deconstructed for the `map_node` calls.</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The <code>MapNode</code> derive macro supports a few other attributes:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Node, MapNode)]</span>
+<span class="cp">#[map_node(from(prev_ir::TypeNode))]</span>
+<span class="c1">// When the type itself has the `#[map_node([path-to-function])]` attribute, then that function will</span>
+<span class="c1">// be used for the entire mapping logic. In this case `MapNode::map_node` will forward the call</span>
+<span class="c1">// `types::map_type_node`.</span>
+<span class="c1">//</span>
+<span class="c1">// Use this as an escape hatch for mappings that can&#39;t be auto-generated.</span>
+<span class="cp">#[map_node(types::map_type_node)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">TypeNode</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">//...</span>
+<span class="p">}</span>
+
+<span class="cp">#[derive(Node, MapNode)]</span>
+<span class="cp">#[map_node(from(uniffi_meta::Type))]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="nc">Type</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Use `#[map_node(from)]` on variants/fields when they&#39;ve been renamed from the previous IR</span>
+<span class="w">    </span><span class="cp">#[map_node(from(Object))]</span>
+<span class="w">    </span><span class="n">Interface</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cp">#[map_node(from(prev_name_field))]</span>
+<span class="w">        </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="w">        </span><span class="c1">// ...</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="c1">// Use `#[map_node(added)]` for variants that have been added in this IR.  The generated code</span>
+<span class="w">    </span><span class="c1">// will not try to map these variants since they didn&#39;t exist in the previous IR</span>
+<span class="w">    </span><span class="cp">#[map_node(added)]</span>
+<span class="w">    </span><span class="n">External</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// ...</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>A common pattern is wanting mapping an enum to a struct so that we can add fields that apply to all
+variants.  This can be achieved like this:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Node, MapNode)]</span>
+<span class="cp">#[map_node(from(uniffi_meta::Type))]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">TypeNode</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cp">#[map_node(ffi_types::ffi_type(&amp;self, context)?)]</span>
+<span class="w">    </span><span class="n">ffi_type</span><span class="p">:</span><span class="w"> </span><span class="nc">FfiType</span><span class="p">,</span>
+<span class="w">    </span><span class="cp">#[map_node(self)]</span>
+<span class="w">    </span><span class="n">ty</span><span class="p">:</span><span class="w"> </span><span class="nc">Type</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Finally, if a type hasn't changed at all between IRs, then it can be re-used using the
+<code>use_prev_node!</code> macro.  Note this only works if none of the fields have been changed either.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Radix is a very simple Enum and doesn&#39;t change between IRs</span>
+<span class="n">use_prev_node</span><span class="o">!</span><span class="p">(</span><span class="n">uniffi_meta</span><span class="p">::</span><span class="n">Radix</span><span class="p">);</span>
+<span class="c1">// Sometimes we want to map unchanged types using a function.  For example, applying rename</span>
+<span class="c1">// logic to certain `Type` variants.  This can be achieved by specifying the map function as the</span>
+<span class="c1">// second argument.</span>
+<span class="n">use_prev_node</span><span class="o">!</span><span class="p">(</span><span class="n">uniffi_meta</span><span class="p">::</span><span class="n">Type</span><span class="p">,</span><span class="w"> </span><span class="n">types</span><span class="p">::</span><span class="n">map_type</span><span class="p">);</span>
+</code></pre></div>
+<h2 id="context-types">Context types</h2>
+<p>The <code>Context</code> type provides a way for nodes to pass data from one node down to the <code>map_node()</code>
+methods of descendant nodes. Here are some examples of how it's used:</p>
+<ul>
+<li>Passing the crate name down so it can be used to derive FFI function names.</li>
+<li>Passing the namespace name down so it can be used to determine which types are external.</li>
+<li>Passing the current type down so it can be used to populate <code>CallableKind::Method.self_type</code>.</li>
+</ul>
+<p><code>Context</code> can also be used to store data from outside the pass.  For example, to implement the
+renaming logic in the general pass, it needs to know the key in the TOML file that contains the
+rename map (<code>python</code>, <code>kotlin</code>, <code>swift</code> etc).  To handle this, the <code>general::Context</code> struct is
+constructed with that key stored inside it.</p>
+<p>Finally, <code>Context</code> types also act as marker types for the <code>MapNode</code> trait.  For example, the above
+code wants to call <code>types::map_type</code> when mapping <code>Type</code> for one pass, but it shouldn't be called
+for the next pass. This works because the <code>MapNode</code> impl is specific to the <code>Context</code> type for the
+pass.</p>
+<h2 id="module-structure">Module structure</h2>
+<p>Each IR will typically have a module dedicated to them with the following structure:</p>
+<ul>
+<li><code>mod.rs</code> -- Top-level module.</li>
+<li><code>nodes.rs</code> -- Node definitions with <code>MapNode</code> derives.</li>
+<li><code>context.rs</code> -- Defines the <code>Context</code> struct</li>
+<li><em>other submodules</em> -- Define functions to implement the IR pass</li>
+</ul>
+<h2 id="assembling-a-pipeline">Assembling a pipeline</h2>
+<p>Pipelines are assembled by adding a series of passes that map one root node to another.</p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Pipeline defined `uniffi_bindgen::pipeline::general`</span>
+<span class="c1">//</span>
+<span class="c1">// This is the shared start for all bindings pipelines.</span>
+<span class="c1">// It maps `uniffi_bindgen::pipeline::initial::Root` to</span>
+<span class="c1">// `uniffi_bindgen::pipeline::general::Root`</span>
+<span class="c1">//</span>
+<span class="c1">// Note that the context is constructed with `bindings_toml_key`.  This is how you can pass data</span>
+<span class="c1">// from outside the pass into the `map_node` methods.</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">pipeline</span><span class="p">(</span><span class="n">bindings_toml_key</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="kt">str</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Pipeline</span><span class="o">&lt;</span><span class="n">initial</span><span class="p">::</span><span class="n">Root</span><span class="p">,</span><span class="w"> </span><span class="n">Root</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">new_pipeline</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="n">pass</span><span class="p">::</span><span class="o">&lt;</span><span class="n">Root</span><span class="p">,</span><span class="w"> </span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Context</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">bindings_toml_key</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// Pipeline defined `uniffi_bindgen::python::pipeline`</span>
+<span class="c1">//</span>
+<span class="c1">// This extends the general pipeline to map to</span>
+<span class="c1">// `uniffi_bindgen::python::pipeline::Root`</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">pipeline</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Pipeline</span><span class="o">&lt;</span><span class="n">initial</span><span class="p">::</span><span class="n">Root</span><span class="p">,</span><span class="w"> </span><span class="n">Root</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">general</span><span class="p">::</span><span class="n">pipeline</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="n">pass</span><span class="p">::</span><span class="o">&lt;</span><span class="n">Root</span><span class="p">,</span><span class="w"> </span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Context</span><span class="p">::</span><span class="n">default</span><span class="p">())</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="starting-a-ir-for-binding-generation">Starting a IR for binding generation</h2>
+<p>The first step is creating a skeleton for your IR:</p>
+<ul>
+<li>Define <code>pipeline</code> module in your crate.</li>
+<li>Define a <code>Context</code> type in <code>pipeline/context.rs</code>.  To start with, this can be an empty struct that
+  derives <code>Default</code>.</li>
+<li>Define the IR nodes in <code>pipeline/node.rs</code>.  To start, this can just be <code>use_prev_node!</code> macros for
+  each node from the general IR.</li>
+<li>Setup imports (optional).</li>
+<li><code>pipeline/mod.rs</code> file will normally import <code>nodes::*</code>, <code>anyhow::{anyhow, bail, Result}</code> and
+     other items that are commonly used in the IR.</li>
+<li>The other mods will normally import <code>super::*</code>.</li>
+<li>This step is definitely not necessary, it's just how pipeline modules are typically setup.</li>
+</ul>
+<p>From there you can evolve the code to match your needs.  For example:</p>
+<ul>
+<li><strong>Adding a new field</strong><ol>
+<li>Copy and paste the type definition from the general IR into your <code>nodes.rs</code> file.</li>
+<li>Remove any <code>#[map_node]</code> attributes.</li>
+<li>Add <code>#[map_node(from(general::[NodeType]))</code> to the type itself.</li>
+<li>Add the new field with a <code>#[map_node([expression_to_generate_field])</code> attribute.</li>
+<li>Find any types that reference the changed type and repeat steps 1-3.</li>
+</ol>
+</li>
+<li><strong>Mapping an enum to a struct</strong><ol>
+<li>Define a new struct type.
+   If your enum is named <code>Foo</code>, this will typically be named <code>FooNode</code>.</li>
+<li>Add a field that stores the original enum.  Wrap this with a <code>#[map_node(self)]</code> attribute.</li>
+<li>Add a new field, with a <code>#[map_node(expr)]</code> attribute</li>
+<li>Find any types that reference the changed type and repeat steps 1-3 from adding a new field.</li>
+</ol>
+</li>
+</ul>
+<h2 id="peeking-behind-the-curtains-with-the-pipeline-cli">Peeking behind the curtains with the <code>pipeline</code> CLI</h2>
+<p>Use the <code>pipeline</code> subcommand from any UniFFI CLI to inspect IR data at various stages of the pipeline.</p>
+<ul>
+<li>Build a UniFFI crate that you'd like to inspect, for example <code>cargo build -p uniffi-example-arithmetic</code></li>
+<li>Run the <a href="../tutorial/foreign_language_bindings.html">uniffi-bindgen CLI</a>, with these arguments <code>pipeline --library path/to/library.so_a_or_dll [language]</code></li>
+<li>For example, in the UniFFI repo, <code>cargo run -p uniffi-bindgen-cli -- pipeline --library target/debug/libarithmetical.so python</code></li>
+</ul>
+<p>This will print out:</p>
+<ul>
+<li>The initial IR</li>
+<li>The diff after each pass</li>
+<li>The final IR</li>
+</ul>
+<p>This is a lot of data.  Use CLI flags to reduce it to a reasonable amount:</p>
+<ul>
+<li><code>-p</code>, <code>--pass</code> only show a single pass.</li>
+<li>Use <code>-p final</code> to only show the final pass in the process, which can be usefull when you're adding pass functions and want to see their effects.</li>
+<li><code>-t</code>, <code>--type</code> to only show one node type (e.g. <code>-t Record</code> or <code>-t Interface</code>).</li>
+<li><code>-n</code>, <code>--name</code> to only show with nodes with a specific name</li>
+</ul>
+<p>Alternatively, if you want to see the full IR for each pass, you can use <code>--no-diff</code> to print it out.
+Piping to a pager like <code>less</code> is highly recommended in this case.</p>
+<p>You can test this out yourself by running the following command to follow the <code>add</code> function as it moves through the IR pipeline:</p>
+<p><code>cargo run -p uniffi-bindgen-cli -- pipeline --library target/debug/libarithmetical.so python -t Function -n add | less</code></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+    
+  </body>
+</html>
