@@ -4,11 +4,11 @@
 
 <!-- next-header -->
 
-## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.0...NEXT_HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.0...HEAD).
 
-## [[UnreleasedUniFFIVersion]] (backend crates: v0.32.0) - (_2026-06-30_)
+## v0.32.0 (backend crates: v0.32.0) - (_2026-06-30_)
 
 ### ⚠️ Breaking Changes ⚠️
 - Kotlin and Python now fail to generate bindings when there are async primary constructors.
@@ -55,7 +55,7 @@
 - Added support for using `HashSet` with proc-macros
 - Allow literal number suffix with `derive(uniffi::Enum)`([#2926](https://github.com/mozilla/uniffi-rs/pull/2926))
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.2...HEAD).
+[All changes in v0.32.0](https://github.com/mozilla/uniffi-rs/compare/v0.31.2...v0.32.0).
 
 ## v0.31.2 (backend crates: v0.31.2) - (_2026-06-16_)
 
