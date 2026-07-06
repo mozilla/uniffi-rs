@@ -44,4 +44,23 @@ mod test {
             uniffi_meta::Metadata::Record(r) if r.module_path == "crate_name" && r.name == "Empty" && r.fields.is_empty()
         ));
     }
+
+    #[test]
+    fn test_async_by_mut_ref_bytes_rejected() {
+        let err = parse_udl(
+            r#"
+            namespace test {
+                [Async]
+                void bad([ByMutRef] bytes buf);
+            };
+        "#,
+            "test",
+        )
+        .unwrap_err();
+        assert!(
+            err.to_string()
+                .contains("[ByMutRef] is not supported in async functions"),
+            "unexpected error: {err}"
+        );
+    }
 }

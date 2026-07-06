@@ -15,6 +15,17 @@ use uniffi_meta::{
     MethodMetadata, TraitMethodMetadata,
 };
 
+/// Zero-copy `[ByMutRef] bytes` is unsound across an async boundary: Rust may
+/// resume on another thread after the foreign caller has continued and freed
+/// or moved the buffer. Reject it during UDL conversion (belt-and-braces
+/// alongside the proc-macro guard).
+fn reject_async_by_mut_ref(is_async: bool, inputs: &[FnParamMetadata]) -> Result<()> {
+    if is_async && inputs.iter().any(|p| p.by_mut_ref) {
+        bail!("[ByMutRef] is not supported in async functions");
+    }
+    Ok(())
+}
+
 impl APIConverter<FieldMetadata> for weedle::argument::Argument<'_> {
     fn convert(&self, ci: &mut InterfaceCollector) -> Result<FieldMetadata> {
         match self {
@@ -61,11 +72,16 @@ impl APIConverter<FnParamMetadata> for weedle::argument::SingleArgument<'_> {
                 &v.value, &type_,
             )?)),
         };
-        let by_ref = ArgumentAttributes::try_from(self.attributes.as_ref())?.by_ref();
+        let attrs = ArgumentAttributes::try_from(self.attributes.as_ref())?;
+        // A `[ByMutRef]` arg is also `by_ref` (it *is* a borrow), matching the
+        // proc-macro `&mut [u8]` which sets both.
+        let by_mut_ref = attrs.by_mut_ref();
+        let by_ref = attrs.by_ref() || by_mut_ref;
         Ok(FnParamMetadata {
             name: self.identifier.0.to_string(),
             ty: type_,
             by_ref,
+            by_mut_ref,
             optional: self.optional.is_some(),
             default,
         })
@@ -97,13 +113,15 @@ impl APIConverter<FnMetadata> for weedle::namespace::OperationNamespaceMember<'_
                 None => bail!("unknown type for error: {name}"),
             },
         };
+        let inputs = self.args.body.list.convert(ci)?;
+        reject_async_by_mut_ref(is_async, &inputs)?;
         Ok(FnMetadata {
             module_path: ci.module_path(),
             name,
             orig_name: None,
             is_async,
             return_type,
-            inputs: self.args.body.list.convert(ci)?,
+            inputs,
             throws,
             docstring: self.docstring.as_ref().map(|v| convert_docstring(&v.0)),
             checksum: None,
@@ -120,15 +138,18 @@ impl APIConverter<ConstructorMetadata> for weedle::interface::ConstructorInterfa
         let throws = attributes
             .get_throws_err()
             .map(|name| ci.get_type(name).expect("invalid throws type"));
+        let is_async = attributes.is_async();
+        let inputs = self.args.body.list.convert(ci)?;
+        reject_async_by_mut_ref(is_async, &inputs)?;
         Ok(ConstructorMetadata {
             module_path: ci.module_path(),
             name: String::from(attributes.get_name().unwrap_or("new")),
             orig_name: None,
             // We don't know the name of the containing `Object` at this point, fill it in later.
             self_name: Default::default(),
-            is_async: attributes.is_async(),
+            is_async,
             // Also fill in checksum_fn_name later, since it depends on object_name
-            inputs: self.args.body.list.convert(ci)?,
+            inputs,
             throws,
             checksum: None,
             docstring: self.docstring.as_ref().map(|v| convert_docstring(&v.0)),
@@ -157,23 +178,26 @@ impl APIConverter<MethodMetadata> for weedle::interface::OperationInterfaceMembe
         };
 
         let takes_self_by_arc = attributes.get_self_by_arc();
+        let name = match self.identifier {
+            None => bail!("anonymous methods are not supported {:?}", self),
+            Some(id) => {
+                let name = id.0.to_string();
+                if name == "new" {
+                    bail!("the method name \"new\" is reserved for the default constructor");
+                }
+                name
+            }
+        };
+        let inputs = self.args.body.list.convert(ci)?;
+        reject_async_by_mut_ref(is_async, &inputs)?;
         Ok(MethodMetadata {
             module_path: ci.module_path(),
             // We don't know the name of the containing `Object` at this point, fill it in later.
             self_name: Default::default(),
-            name: match self.identifier {
-                None => bail!("anonymous methods are not supported {:?}", self),
-                Some(id) => {
-                    let name = id.0.to_string();
-                    if name == "new" {
-                        bail!("the method name \"new\" is reserved for the default constructor");
-                    }
-                    name
-                }
-            },
+            name,
             orig_name: None,
             is_async,
-            inputs: self.args.body.list.convert(ci)?,
+            inputs,
             return_type,
             throws,
             takes_self_by_arc,
@@ -204,23 +228,26 @@ impl APIConverter<TraitMethodMetadata> for weedle::interface::OperationInterface
         };
 
         let takes_self_by_arc = attributes.get_self_by_arc();
+        let name = match self.identifier {
+            None => bail!("anonymous methods are not supported {:?}", self),
+            Some(id) => {
+                let name = id.0.to_string();
+                if name == "new" {
+                    bail!("the method name \"new\" is reserved for the default constructor");
+                }
+                name
+            }
+        };
+        let inputs = self.args.body.list.convert(ci)?;
+        reject_async_by_mut_ref(is_async, &inputs)?;
         Ok(TraitMethodMetadata {
             module_path: ci.module_path(),
             trait_name: Default::default(), // we'll fill these in later.
             index: Default::default(),
-            name: match self.identifier {
-                None => bail!("anonymous methods are not supported {:?}", self),
-                Some(id) => {
-                    let name = id.0.to_string();
-                    if name == "new" {
-                        bail!("the method name \"new\" is reserved for the default constructor");
-                    }
-                    name
-                }
-            },
+            name,
             orig_name: None,
             is_async,
-            inputs: self.args.body.list.convert(ci)?,
+            inputs,
             return_type,
             throws,
             takes_self_by_arc,

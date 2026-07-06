@@ -29,10 +29,14 @@ mod filters {
     }
 
     /// Render the Rust type of a function/method/constructor argument.
-    /// `[ByRef] bytes` lowers to `&[u8]` so scaffolding matches the
-    /// zero-copy FFI path; other by-ref args get a plain `&` prefix.
+    /// `[ByMutRef] bytes` lowers to `&mut [u8]` (checked first) and
+    /// `[ByRef] bytes` to `&[u8]`, so scaffolding matches the zero-copy FFI
+    /// path; other by-ref args get a plain `&` prefix.
     #[askama::filter_fn]
     pub fn arg_rs(arg: &Argument, _values: &dyn askama::Values) -> Result<String, askama::Error> {
+        if arg.is_borrowed_bytes_mut() {
+            return Ok("&mut [u8]".to_string());
+        }
         if arg.is_borrowed_bytes() {
             return Ok("&[u8]".to_string());
         }
