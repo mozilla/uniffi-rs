@@ -195,6 +195,7 @@ pub struct Argument {
     pub name: String,
     pub ty: TypeNode,
     pub by_ref: bool,
+    pub by_mut_ref: bool,
     pub optional: bool,
     pub default: Option<DefaultValueNode>,
 }
@@ -202,15 +203,28 @@ pub struct Argument {
 impl Argument {
     /// Returns the Python FfiConverter class name for this argument.
     ///
-    /// For a borrowed `Bytes` (`&[u8]`) argument this routes through
-    /// `_UniffiFfiConverterByRefBytes`, which does zero-copy lowering.
-    /// For every other argument it returns the converter attached to the
-    /// argument's type.
+    /// A `&mut [u8]` (`by_mut_ref`) routes through
+    /// `_UniffiFfiConverterByMutRefBytes` (writable `bytearray`); a read-only
+    /// `&[u8]` (`by_ref`) through `_UniffiFfiConverterByRefBytes`; everything
+    /// else uses the converter attached to the argument's type.
     pub fn ffi_converter_name(&self) -> String {
-        if self.by_ref && matches!(self.ty.ty, Type::Bytes) {
+        if self.by_mut_ref && matches!(self.ty.ty, Type::Bytes) {
+            "_UniffiFfiConverterByMutRefBytes".to_string()
+        } else if self.by_ref && matches!(self.ty.ty, Type::Bytes) {
             "_UniffiFfiConverterByRefBytes".to_string()
         } else {
             self.ty.ffi_converter_name.clone()
+        }
+    }
+
+    /// Python parameter type annotation. `&mut [u8]` requires a writable
+    /// buffer, so it is annotated `bytearray`; everything else uses the
+    /// type's own annotation.
+    pub fn param_type_name(&self) -> String {
+        if self.by_mut_ref && matches!(self.ty.ty, Type::Bytes) {
+            "bytearray".to_string()
+        } else {
+            self.ty.type_name.clone()
         }
     }
 }
