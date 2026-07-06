@@ -90,6 +90,7 @@ members = [
   "fixtures/wasm-unstable-single-threaded",
   "fixtures/multi-arch-extract",
   "fixtures/mutable-records",
+  "fixtures/mut-bytes",
 ]
 
 resolver = "2"

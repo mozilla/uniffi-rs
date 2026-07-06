@@ -2276,6 +2276,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-fixture-mut-bytes"
+version = "0.22.0"
+dependencies = [
+ "uniffi",
+]
+
+[[package]]
 name = "uniffi-fixture-mutable-records"
 version = "0.22.0"
 dependencies = [
