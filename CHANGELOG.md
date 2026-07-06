@@ -22,6 +22,14 @@
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.0...HEAD).
 
+### What's New?
+
+- Zero-copy `&mut [u8]` / `[ByMutRef] bytes` arguments. A **synchronous** exported function can now borrow a foreign-owned byte buffer and write to it in place — no copy in or out. Swift (`inout Data`), Python (`bytearray`), and Kotlin (direct `java.nio.ByteBuffer`) support it; `&mut [u8]` in an `async` function is an error. See [the manual](https://mozilla.github.io/uniffi-rs/next/types/bytes.html). ([#2868](https://github.com/mozilla/uniffi-rs/pull/2868))
+
+### What's New for external bindings authors
+
+- `[ByMutRef] bytes` / `&mut [u8]` arguments cross the FFI as the same `ForeignBytes` value as `[ByRef]` / `&[u8]` — the two are ABI-identical. Metadata carries the mutable flag as `FnParamMetadata.by_mut_ref` (read it via `is_borrowed_bytes_mut()`); a generator that wants a writable foreign buffer reads that flag, otherwise the argument acts like a read-only borrow. This bumps the metadata contract version to 31. ([#2868](https://github.com/mozilla/uniffi-rs/pull/2868))
+
 ## v0.32.0 (backend crates: v0.32.0) - (_2026-06-30_)
 
 ### ⚠️ Breaking Changes ⚠️
