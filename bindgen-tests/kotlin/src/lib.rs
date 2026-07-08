@@ -149,7 +149,7 @@ mod test {
 
         let output = command
             .output()
-            .expect("Failed to spawn `python3` when running test script");
+            .expect("Failed to spawn `kotlinc` when running test script");
         // The `output()` call above sets up pipes to print stdout/stderr.  This allows it to be
         // integrated with the Rust test harness's output handling.
         print!("{}", String::from_utf8_lossy(&output.stdout));
@@ -157,7 +157,7 @@ mod test {
             println!("---------------------------------------- STDERR ----------------------------------------");
             print!("{}", String::from_utf8_lossy(&output.stderr));
             println!("----------------------------------------------------------------------------------------");
-            panic!("running `python` to run test script failed ({:?})", command);
+            panic!("running `kotlinc` to run test script failed ({command:?})",);
         }
         jar_file
     }
@@ -177,7 +177,7 @@ mod test {
 
         let output = command
             .output()
-            .expect("Failed to spawn `python3` when running test script");
+            .expect("Failed to spawn `kotlinc` when running test script");
         // The `output()` call above sets up pipes to print stdout/stderr.  This allows it to be
         // integrated with the Rust test harness's output handling.
         print!("{}", String::from_utf8_lossy(&output.stdout));
@@ -185,10 +185,7 @@ mod test {
             println!("---------------------------------------- STDERR ----------------------------------------");
             print!("{}", String::from_utf8_lossy(&output.stderr));
             println!("----------------------------------------------------------------------------------------");
-            panic!(
-                "running `kotlinc` to run test script failed ({:?})",
-                command
-            );
+            panic!("running `kotlinc` to run test script failed ({command:?})",);
         }
     }
 
