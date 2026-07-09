@@ -6,6 +6,17 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's New?
+- Added `uniffi_parse_rs`, which generates metadata by parsing Rust sources directly.
+  This allows using the macros syntax to describe your interface, without requiring you to build the
+  library before generating bindings.
+  See [#2841](https://github.com/mozilla/uniffi-rs/pull/2841).
+  Use `uniffi-bindgen [generation-options] src:[rust-crate-name]` to test this out.
+- Added `uniffi-bindgen-kotlin-jni`, an experimental JNI-based Kotlin bindgen.
+  Benchmarks show large improvements in performance and we believe this will be more stable than the
+  current Kotlin bindings.  However, the code is very fresh so use at your own risk.
+  See [#2911](https://github.com/mozilla/uniffi-rs/pull/2911).
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.0...HEAD).
 
 ## v0.32.0 (backend crates: v0.32.0) - (_2026-06-30_)
