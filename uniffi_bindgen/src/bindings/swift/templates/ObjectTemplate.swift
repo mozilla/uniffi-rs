@@ -183,7 +183,7 @@ public func {{ ffi_converter_name }}_lift(_ handle: UInt64) throws -> {{ type_na
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> UInt64 {
+@Sendable public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> UInt64 {
     return {{ ffi_converter_name }}.lower(value)
 }
 
@@ -224,7 +224,7 @@ public func {{ ffi_converter_name }}__as_error_lift(_ buf: RustBuffer) throws ->
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-public func {{ ffi_converter_name }}__as_error_lower(_ value: {{ type_name }}) -> RustBuffer {
+@Sendable public func {{ ffi_converter_name }}__as_error_lower(_ value: {{ type_name }}) -> RustBuffer {
     return {{ ffi_converter_name }}__as_error.lower(value)
 }
 
