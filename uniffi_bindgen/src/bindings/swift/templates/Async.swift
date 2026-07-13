@@ -49,9 +49,9 @@ fileprivate func uniffiFutureContinuationCallback(handle: UInt64, pollResult: In
 
 {%- if ci.has_async_callback_interface_definition() %}
 private func uniffiTraitInterfaceCallAsync<T>(
-    makeCall: @escaping () async throws -> T,
-    handleSuccess: @escaping (T) -> (),
-    handleError: @escaping (Int8, RustBuffer) -> (),
+    makeCall: @escaping @Sendable () async throws -> T,
+    handleSuccess: @escaping @Sendable (T) -> (),
+    handleError: @escaping @Sendable (Int8, RustBuffer) -> (),
     droppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
 ) {
     let task = Task {
@@ -80,10 +80,10 @@ private func uniffiTraitInterfaceCallAsync<T>(
 }
 
 private func uniffiTraitInterfaceCallAsyncWithError<T, E>(
-    makeCall: @escaping () async throws -> T,
-    handleSuccess: @escaping (T) -> (),
-    handleError: @escaping (Int8, RustBuffer) -> (),
-    lowerError: @escaping (E) -> RustBuffer,
+    makeCall: @escaping @Sendable () async throws -> T,
+    handleSuccess: @escaping @Sendable (T) -> (),
+    handleError: @escaping @Sendable (Int8, RustBuffer) -> (),
+    lowerError: @escaping @Sendable (E) -> RustBuffer,
     droppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
 ) {
     let task = Task {

@@ -121,6 +121,6 @@ public func {{ ffi_converter_name }}_lift(_ buf: RustBuffer) throws -> {{ type_n
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> RustBuffer {
+@Sendable public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> RustBuffer {
     return {{ ffi_converter_name }}.lower(value)
 }

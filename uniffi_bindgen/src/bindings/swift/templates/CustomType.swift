@@ -86,7 +86,7 @@ public func FfiConverterType{{ name }}_lift(_ value: {{ ffi_type_name }}) throws
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-public func FfiConverterType{{ name }}_lower(_ value: {{ type_name }}) -> {{ ffi_type_name }} {
+@Sendable public func FfiConverterType{{ name }}_lower(_ value: {{ type_name }}) -> {{ ffi_type_name }} {
     return FfiConverterType{{ name }}.lower(value)
 }
 

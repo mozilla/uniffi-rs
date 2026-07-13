@@ -31,7 +31,16 @@ fileprivate struct {{ trait_impl }} {
             uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
             {%- endif %}
         ) in
-            let makeCall = {
+            {%- for arg in ffi_callback.arguments() %}
+            {%- if let FfiType::RustBuffer(_) = arg.type_() %}
+            {# RustBuffer is not a Sendable type because it stores a pointer.
+             # However, we coordinate with the Rust side of the FFI to ensure it's used in a thread-safe manner.
+             -#}
+            nonisolated(unsafe) let {{ arg.name()|var_name }} = {{ arg.name()|var_name }}
+            {%- endif %}
+            {%- endfor %}
+
+            let makeCall: @Sendable () {% if meth.is_async() %}async {% endif %}throws -> {{ meth.return_type()|return_type_name }} = {
                 () {% if meth.is_async() %}async {% endif %}throws -> {% match meth.return_type() %}{% when Some(t) %}{{ t|type_name }}{% when None %}(){% endmatch %} in
                 guard let uniffiObj = try? {{ ffi_converter_name }}.handleMap.get(handle: uniffiHandle) else {
                     throw UniffiInternalError.unexpectedStaleHandle
@@ -68,7 +77,7 @@ fileprivate struct {{ trait_impl }} {
             {%- endmatch %}
             {%- else %}
 
-            let uniffiHandleSuccess = { (returnValue: {{ meth.return_type()|return_type_name }}) in
+            let uniffiHandleSuccess: @Sendable ({{ meth.return_type()|return_type_name }}) -> () = { (returnValue) in
                 uniffiFutureCallback(
                     uniffiCallbackData,
                     {{ meth.foreign_future_ffi_result_struct().name()|ffi_struct_name }}(
@@ -79,7 +88,7 @@ fileprivate struct {{ trait_impl }} {
                     )
                 )
             }
-            let uniffiHandleError = { (statusCode, errorBuf) in
+            let uniffiHandleError: @Sendable (Int8, RustBuffer) -> () = { (statusCode, errorBuf) in
                 uniffiFutureCallback(
                     uniffiCallbackData,
                     {{ meth.foreign_future_ffi_result_struct().name()|ffi_struct_name }}(
