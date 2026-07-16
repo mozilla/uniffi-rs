@@ -2,20 +2,30 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import Foundation
 import uniffi_bindgen_tests
 
-var callbackRefCount = 0;
+// We want to mutate callbackRefCount from async swift code.
+// The simplest way to do that seems to be to mark it `nonisolated(unsafe)`.
+nonisolated(unsafe) var callbackRefCount = 0;
+// Let's use this lock whenever we mutate callbackRefCount, just to make sure that everything is
+// thread-safe.
+nonisolated(unsafe) var callbackRefCountLock = NSLock()
 
 final class Callback: TestCallbackInterface, @unchecked Sendable {
     var value: UInt32;
 
     init(value: UInt32) {
         self.value = value;
-        callbackRefCount += 1
+        callbackRefCountLock.withLock {
+            callbackRefCount += 1
+        }
     }
 
     deinit {
-        callbackRefCount -= 1
+        callbackRefCountLock.withLock {
+            callbackRefCount -= 1
+        }
     }
 
     func noop() {}
@@ -52,4 +62,6 @@ assert(invokeTestCallbackInterfaceEcho(cbi: cbi, s: "test-string") == "test-stri
 
 // The previcalls created a bunch of callback interface references.  Make sure they've been cleaned
 // up and the only remaining reference is for our `cbi` variable.
-assert(callbackRefCount == 1)
+callbackRefCountLock.withLock {
+    assert(callbackRefCount == 1)
+}
