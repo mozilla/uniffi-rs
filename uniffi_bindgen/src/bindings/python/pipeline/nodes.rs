@@ -309,18 +309,16 @@ pub struct Field {
 
 #[derive(Debug, Clone, Node, MapNode)]
 #[map_node(from(general::Enum))]
+#[map_node(enums::map_enum)]
 pub struct Enum {
-    #[map_node(names::type_name(&self.name))]
     pub name: String,
     /// Is this a "flat" enum -- one with no associated data
     pub is_flat: bool,
     pub shape: EnumShape,
-    #[map_node(enums::map_variants(self.variants, self.shape, context)?)]
     pub variants: Vec<Variant>,
     pub discr_type: TypeNode,
     pub docstring: Option<String>,
     pub self_type: TypeNode,
-    #[map_node(interfaces::map_constructors(&self.name, self.constructors, context)?)]
     pub constructors: Vec<Constructor>,
     pub methods: Vec<Method>,
     pub uniffi_trait_methods: UniffiTraitMethods,
@@ -334,6 +332,12 @@ pub struct Variant {
     pub fields_kind: FieldsKind,
     pub fields: Vec<Field>,
     pub docstring: Option<String>,
+    /// Name of the generated class.
+    ///
+    /// This is not what users normally use to reference the variant, that's `Enum.VARIANT_NAME`.
+    /// Instead, this what we use when defining the python class,
+    /// before we assign the enum class attribute to it.
+    pub class_name_py: String,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
