@@ -17,6 +17,9 @@
   current Kotlin bindings.  However, the code is very fresh so use at your own risk.
   See [#2911](https://github.com/mozilla/uniffi-rs/pull/2911).
 
+### What's Fixed
+- Kotlin: Fixed messages for error classes that inherit `Throwable`, but not `Exception`.
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.0...HEAD).
 
 ## v0.32.0 (backend crates: v0.32.0) - (_2026-06-30_)
