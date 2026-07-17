@@ -13,7 +13,9 @@ class TraitImpl(var value: UInt) : TestTraitInterface {
     }
 
     override fun throwIfEqual(numbers: CallbackInterfaceNumbers): CallbackInterfaceNumbers {
-        if (numbers.a == numbers.b) {
+        if (numbers.a == 6u && numbers.b == 7u) {
+            throw UnexpectedFailure()
+        } else if (numbers.a == numbers.b) {
             throw TestException.Failure1()
         }
         return numbers
@@ -25,6 +27,12 @@ class TraitImpl(var value: UInt) : TestTraitInterface {
 
     override fun roundtripInterface(value: TestInterface): TestInterface = value
 }
+
+// Unexpected error that we'll throw.
+//
+// This inherits from Throwable, since we want to support errors that don't subclass Exception
+// (https://github.com/mozilla/uniffi-rs/issues/2903)
+class UnexpectedFailure : Throwable("unexpected failure")
 
 fun checkRustImpl(rustTraitImpl: TestTraitInterface) {
     rustTraitImpl.noop()
@@ -64,6 +72,17 @@ fun checkKtImpl(ktTraitImpl: TestTraitInterface) {
     } catch (e: TestException.Failure1) {
         // Expected
     }
+    // Test unexpected errors
+    try {
+        invokeTestTraitInterfaceThrowIfEqual(
+            ktTraitImpl,
+            CallbackInterfaceNumbers(a=6u, b=7u)
+        )
+        throw RuntimeException("Expected Kotlin implementation to throw an UnexpectedFailure")
+    } catch(e: TestException.Failure2) {
+        assert(e.data.contains("unexpected failure"))
+    }
+
     assert(
         invokeTestTraitInterfaceThrowIfEqual(
             ktTraitImpl,

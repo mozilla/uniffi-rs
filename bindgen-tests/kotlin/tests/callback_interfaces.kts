@@ -14,7 +14,7 @@ class CallbackImpl(var value: UInt) : TestCallbackInterface {
 
     override fun throwIfEqual(numbers: CallbackInterfaceNumbers): CallbackInterfaceNumbers {
         if (numbers.a == 6u && numbers.b == 7u) {
-            throw RuntimeException("unexpected failure")
+            throw UnexpectedFailure()
         } else if (numbers.a == numbers.b) {
             throw TestException.Failure1()
         } else {
@@ -26,6 +26,12 @@ class CallbackImpl(var value: UInt) : TestCallbackInterface {
         return s
     }
 }
+
+// Unexpected error that we'll throw.
+//
+// This inherits from Throwable, since we want to support errors that don't subclass Exception
+// (https://github.com/mozilla/uniffi-rs/issues/2903)
+class UnexpectedFailure : Throwable("unexpected failure")
 
 // Construct a callback interface to pass to rust
 val cbi = CallbackImpl(42u)
