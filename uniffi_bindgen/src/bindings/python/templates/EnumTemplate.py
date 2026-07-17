@@ -31,92 +31,17 @@ class {{ type_name }}:
     def __init__(self):
         raise RuntimeError("{{ type_name }} cannot be instantiated directly")
 
-    # Each enum variant is a nested class of the enum itself.
-    {% for variant in e.variants -%}
-    @dataclass
-    class {{ variant.name }}:
-        {{ variant.docstring|docstring(8) -}}
-
-    {%-  if variant.has_unnamed_fields() %}
-        def __init__(self, *values):
-            if len(values) != {{ variant.fields.len() }}:
-                raise TypeError(f"Expected {{ variant.fields.len() }} arguments, found {len(values)}")
-            self._values = values
-
-        def __getitem__(self, index):
-            return self._values[index]
-
-    {% filter indent(8) %}
-    {% include "UniffiTraitImpls.py" %}
-    {% endfilter %}
-
-    {# "builtin" methods not handled by a uniffi_trait #}
-    {%-     if uniffi_trait_methods.display_fmt.is_none() %}
-        def __str__(self):
-            return f"{{ type_name }}.{{ variant.name }}{self._values!r}"
-    {%-     endif %}
-
-    {%-     if uniffi_trait_methods.eq_eq.is_none() %}
-        def __eq__(self, other):
-            if not isinstance(other, {{ type_name }}):
-                return NotImplemented
-            if not other.is_{{ variant.name }}():
-                return False
-            return self._values == other._values
-    {%-     endif %}
-
-    {%-  else %}
-        def __init__(self, {% for field in variant.fields %}
-        {{- field.name }}: {{- field.type_annotation}}
-        {%- if let Some(default) = field.default %} = {{ default.arg_literal }}{% endif %}
-        {%- if !loop.last %}, {% endif %}
-        {%- endfor %}):
-        {%- for field in variant.fields %}
-            {%- match field.default %}
-            {%- when None %}
-            self.{{ field.name }} = {{ field.name }}
-            {%- when Some(default) %}
-            {%- if default.is_arg_literal() %}
-            self.{{ field.name }} = {{ field.name }}
-            {%- else %}
-            if {{ field.name }} is {{ default.arg_literal }}:
-                self.{{ field.name }} = {{ default.py_default }}
-            else:
-                self.{{ field.name }} = {{ field.name }}
-            {%- endif %}
-            {%- endmatch %}
-            {# not sure what to do with docstrings - see #2552, suggests putting them after the field init #}
-            {{ field.docstring|docstring(8) -}}
-        {%- endfor %}
-            pass
-
-    {% filter indent(8) %}
-    {%      include "UniffiTraitImpls.py" %}
-    {% endfilter %}
-    {# "builtin" methods not handled by a uniffi_trait #}
-    {%-     if uniffi_trait_methods.display_fmt.is_none() %}
-        def __str__(self):
-            return "{{ type_name }}.{{ variant.name }}({% for field in variant.fields %}{{ field.name }}={}{% if loop.last %}{% else %}, {% endif %}{% endfor %})".format({% for field in variant.fields %}self.{{ field.name }}{% if loop.last %}{% else %}, {% endif %}{% endfor %})
-    {%-     endif %}
-    {%-     if uniffi_trait_methods.eq_eq.is_none() %}
-        def __eq__(self, other):
-            if not isinstance(other, {{ type_name }}):
-                return NotImplemented
-            if not other.is_{{ variant.name }}():
-                return False
-            {%- for field in variant.fields %}
-            if self.{{ field.name }} != other.{{ field.name }}:
-                return False
-            {%- endfor %}
-            return True
-    {%-     endif %}
-    {%-  endif %}
-
-    {% endfor %}
+    {#-
+     # The enum type stores each variant as a class attribute, IOW as nested classes.
+     # However, we can't set that value yet since we haven't defined the variant classes
+     #}
+    {%- for variant in e.variants %}
+    {{ variant.name }}: type = None # type: ignore
+    {%- endfor %}
 
     # For each variant, we have `is_NAME` and `is_name` methods for easily checking
     # whether an instance is that variant.
-    {% for variant in e.variants -%}
+    {%- for variant in e.variants %}
     def is_{{ variant.name }}(self) -> bool:
         return isinstance(self, {{ type_name }}.{{ variant.name }})
 
@@ -125,7 +50,7 @@ class {{ type_name }}:
     def is_{{ variant.name.to_snake_case() }}(self) -> bool:
         return isinstance(self, {{ type_name }}.{{ variant.name }})
     {%- endif %}
-    {% endfor %}
+    {%- endfor %}
 
     {%- for meth in e.methods -%}
     {%- let callable = meth.callable %}
@@ -136,11 +61,92 @@ class {{ type_name }}:
         {%- endfilter %}
     {%- endfor %}
 
-# Now, a little trick - we make each nested variant class be a subclass of the main
-# enum class, so that method calls and instance checks etc will work intuitively.
-# We might be able to do this a little more neatly with a metaclass, but this'll do.
+# Each enum variant is a nested class of the enum itself.
 {% for variant in e.variants -%}
-{{ type_name }}.{{ variant.name }} = type("{{ type_name }}.{{ variant.name }}", ({{ type_name }}.{{variant.name}}, {{ type_name }},), {})  # type: ignore
+@dataclass
+class {{ variant.class_name_py }}({{ type_name }}):
+    {{ variant.docstring|docstring(8) -}}
+
+{%-  if variant.has_unnamed_fields() %}
+    def __init__(self, *values):
+        if len(values) != {{ variant.fields.len() }}:
+            raise TypeError(f"Expected {{ variant.fields.len() }} arguments, found {len(values)}")
+        self._values = values
+
+    def __getitem__(self, index):
+        return self._values[index]
+
+{% filter indent(4) %}
+{% include "UniffiTraitImpls.py" %}
+{% endfilter %}
+
+{# "builtin" methods not handled by a uniffi_trait #}
+{%-     if uniffi_trait_methods.display_fmt.is_none() %}
+    def __str__(self):
+        return f"{{ type_name }}.{{ variant.name }}{self._values!r}"
+{%-     endif %}
+
+{%-     if uniffi_trait_methods.eq_eq.is_none() %}
+    def __eq__(self, other):
+        if not isinstance(other, {{ type_name }}):
+            return NotImplemented
+        if not other.is_{{ variant.name }}():
+            return False
+        return self._values == other._values
+{%-     endif %}
+
+{%-  else %}
+    def __init__(self, {% for field in variant.fields %}
+    {{- field.name }}: {{- field.type_annotation}}
+    {%- if let Some(default) = field.default %} = {{ default.arg_literal }}{% endif %}
+    {%- if !loop.last %}, {% endif %}
+    {%- endfor %}):
+    {%- for field in variant.fields %}
+        {%- match field.default %}
+        {%- when None %}
+        self.{{ field.name }} = {{ field.name }}
+        {%- when Some(default) %}
+        {%- if default.is_arg_literal() %}
+        self.{{ field.name }} = {{ field.name }}
+        {%- else %}
+        if {{ field.name }} is {{ default.arg_literal }}:
+            self.{{ field.name }} = {{ default.py_default }}
+        else:
+            self.{{ field.name }} = {{ field.name }}
+        {%- endif %}
+        {%- endmatch %}
+        {# not sure what to do with docstrings - see #2552, suggests putting them after the field init #}
+        {{ field.docstring|docstring(8) -}}
+    {%- endfor %}
+        pass
+
+{% filter indent(4) %}
+{%      include "UniffiTraitImpls.py" %}
+{% endfilter %}
+{# "builtin" methods not handled by a uniffi_trait #}
+{%-     if uniffi_trait_methods.display_fmt.is_none() %}
+    def __str__(self):
+        return "{{ type_name }}.{{ variant.name }}({% for field in variant.fields %}{{ field.name }}={}{% if loop.last %}{% else %}, {% endif %}{% endfor %})".format({% for field in variant.fields %}self.{{ field.name }}{% if loop.last %}{% else %}, {% endif %}{% endfor %})
+{%-     endif %}
+{%-     if uniffi_trait_methods.eq_eq.is_none() %}
+    def __eq__(self, other):
+        if not isinstance(other, {{ type_name }}):
+            return NotImplemented
+        if not other.is_{{ variant.name }}():
+            return False
+        {%- for field in variant.fields %}
+        if self.{{ field.name }} != other.{{ field.name }}:
+            return False
+        {%- endfor %}
+        return True
+{%-     endif %}
+{%-  endif %}
+
+{% endfor %}
+
+# Now, make each nested variant class be a subclass of the main enum class.
+{% for variant in e.variants -%}
+{{ type_name }}.{{ variant.name }} = {{ variant.class_name_py }}
 {% endfor %}
 
 {% endif %}
