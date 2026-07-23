@@ -143,6 +143,7 @@ impl From<uniffi_meta::FnParamMetadata> for Argument {
             name: meta.name,
             type_: meta.ty,
             by_ref: meta.by_ref,
+            by_mut_ref: meta.by_mut_ref,
             optional: meta.optional,
             default: meta.default,
         }
@@ -186,6 +187,7 @@ pub struct Argument {
     pub(super) name: String,
     pub(super) type_: Type,
     pub(super) by_ref: bool,
+    pub(super) by_mut_ref: bool,
     pub(super) optional: bool,
     pub(super) default: Option<DefaultValue>,
 }
@@ -207,6 +209,13 @@ impl Argument {
     /// `ForeignBytes` FFI path instead of the owned `RustBuffer` path.
     pub fn is_borrowed_bytes(&self) -> bool {
         self.by_ref && matches!(self.type_, Type::Bytes)
+    }
+
+    /// True for zero-copy `&mut [u8]` / `[ByMutRef] bytes` arguments. Always
+    /// implies `is_borrowed_bytes()`; the mutable distinction drives foreign
+    /// codegen only (the FFI path is the same `ForeignBytes` route).
+    pub fn is_borrowed_bytes_mut(&self) -> bool {
+        self.by_mut_ref && matches!(self.type_, Type::Bytes)
     }
 
     pub fn default_value(&self) -> Option<&DefaultValue> {
@@ -448,6 +457,7 @@ mod test {
             name: "buf".into(),
             type_: Type::Bytes,
             by_ref: true,
+            by_mut_ref: false,
             optional: false,
             default: None,
         };
@@ -461,6 +471,7 @@ mod test {
             name: "buf".into(),
             type_: Type::Bytes,
             by_ref: false,
+            by_mut_ref: false,
             optional: false,
             default: None,
         };
@@ -478,6 +489,7 @@ mod test {
                 name: "a".to_string(),
                 type_: Type::Int32,
                 by_ref: false,
+                by_mut_ref: false,
                 optional: true,
                 default: None,
             }],
@@ -491,5 +503,36 @@ mod test {
         assert!(f.iter_types().any(|t| matches!(t, Type::Int32)));
         assert!(f.iter_types().any(|t| matches!(t, Type::Int64)));
         assert!(f.iter_types().any(|t| matches!(t, Type::Int8)));
+    }
+
+    #[test]
+    fn test_by_mut_ref_bytes_is_borrowed_bytes_mut() {
+        let arg = Argument {
+            name: "buf".to_string(),
+            type_: Type::Bytes,
+            by_ref: true,
+            by_mut_ref: true,
+            optional: false,
+            default: None,
+        };
+        assert!(arg.is_borrowed_bytes());
+        assert!(arg.is_borrowed_bytes_mut());
+        // Still ABI-identical to &[u8]: routed to ForeignBytes.
+        let ffi_arg = FfiArgument::from(&arg);
+        assert!(matches!(ffi_arg.type_, FfiType::ForeignBytes));
+    }
+
+    #[test]
+    fn test_by_ref_bytes_is_not_mut() {
+        let arg = Argument {
+            name: "buf".to_string(),
+            type_: Type::Bytes,
+            by_ref: true,
+            by_mut_ref: false,
+            optional: false,
+            default: None,
+        };
+        assert!(arg.is_borrowed_bytes());
+        assert!(!arg.is_borrowed_bytes_mut());
     }
 }

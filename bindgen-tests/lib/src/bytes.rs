@@ -16,3 +16,20 @@ pub fn sum_bytes_procmacro(buf: &[u8]) -> u32 {
 pub fn first_byte_procmacro(buf: &[u8]) -> Option<u8> {
     buf.first().copied()
 }
+
+/// Zero-copy `&mut [u8]` — proc-macro path. Overwrites `buf` with a known
+/// pattern (`buf[i] = i as u8`). The caller observes the writes in place.
+#[uniffi::export]
+pub fn fill_bytes_procmacro(buf: &mut [u8]) {
+    for (i, b) in buf.iter_mut().enumerate() {
+        *b = i as u8;
+    }
+}
+
+/// Zero-copy `&mut [u8]` — proc-macro path. Increments every byte, wrapping.
+#[uniffi::export]
+pub fn increment_bytes_procmacro(buf: &mut [u8]) {
+    for b in buf.iter_mut() {
+        *b = b.wrapping_add(1);
+    }
+}

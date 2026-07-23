@@ -1,0 +1,6 @@
+namespace uniffi_mut_bytes {
+    // Zero-copy `&mut [u8]` via UDL `[ByMutRef]`. Rust writes land in the
+    // caller's buffer in place.
+    void fill_bytes_udl([ByMutRef] bytes buf);
+    void increment_bytes_udl([ByMutRef] bytes buf);
+};

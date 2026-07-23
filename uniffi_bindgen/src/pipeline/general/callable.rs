@@ -130,6 +130,7 @@ pub fn map_func_args(
                 name: rename::func_arg(arg.name, fn_name, context)?,
                 ty: arg.ty.map_node(context)?,
                 by_ref: arg.by_ref,
+                by_mut_ref: arg.by_mut_ref,
                 optional: arg.optional,
                 default: arg.default.map_node(context)?,
             })
@@ -155,6 +156,7 @@ pub fn map_method_args(
                 name: rename::method_arg(arg.name, fn_name, context)?,
                 ty: arg.ty.map_node(context)?,
                 by_ref: arg.by_ref,
+                by_mut_ref: arg.by_mut_ref,
                 optional: arg.optional,
                 default: arg.default.map_node(context)?,
             })

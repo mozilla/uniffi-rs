@@ -57,3 +57,44 @@ Each binding maps `[ByRef] bytes` to a natural zero-copy type:
 Passing a non-direct `ByteBuffer` from Kotlin raises an
 `IllegalArgumentException` at the call site, matching JNA's
 `getDirectBufferPointer` requirement.
+
+## Mutable buffers (`&mut [u8]` / `[ByMutRef] bytes`)
+
+A **synchronous** function can take `&mut [u8]` (or `[ByMutRef] bytes` in
+UDL) to borrow a foreign-owned buffer and write to it. The writes land in
+the caller's buffer — no copy in or out.
+
+```rust
+#[uniffi::export]
+pub fn fill(buf: &mut [u8]) {
+    // The caller sees these writes once the call returns.
+    for (i, b) in buf.iter_mut().enumerate() {
+        *b = i as u8;
+    }
+}
+```
+
+```idl
+namespace example {
+    void fill([ByMutRef] bytes buf);
+};
+```
+
+Every `&[u8]` rule above still holds. Two more:
+
+- **Synchronous only.** `&mut [u8]` / `[ByMutRef]` in an `async` function
+  fails to compile (proc-macro) or generate (UDL). An async call can
+  resume on another thread after the caller has moved on and freed the
+  buffer.
+- **Pass a writable buffer.** Each binding needs a mutable buffer type and
+  rejects a read-only one.
+
+Each binding maps a mutable argument to a writable type:
+
+| Binding | Foreign type                 | Note                                                |
+|---------|------------------------------|-----------------------------------------------------|
+| Kotlin  | direct `java.nio.ByteBuffer` | The same direct buffer as `[ByRef]`; writes land in it. |
+| Swift   | `inout Data`                 | The call runs inside `Data.withUnsafeMutableBytes`. |
+| Python  | `bytearray`                  | Pass `bytes` and it fails — `bytes` is immutable.   |
+
+Ruby doesn't support `&mut [u8]`.

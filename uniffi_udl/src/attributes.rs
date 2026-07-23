@@ -25,6 +25,7 @@ use uniffi_meta::{Checksum, ObjectImpl, TraitKind};
 #[derive(Debug, Clone, Checksum)]
 pub(super) enum Attribute {
     ByRef,
+    ByMutRef,
     Enum,
     Error,
     Name(String),
@@ -64,6 +65,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
             // Matches plain named attributes like "[ByRef"].
             weedle::attribute::ExtendedAttribute::NoArgs(attr) => match (attr.0).0 {
                 "ByRef" => Ok(Attribute::ByRef),
+                "ByMutRef" => Ok(Attribute::ByMutRef),
                 "Enum" => Ok(Attribute::Enum),
                 "Error" => Ok(Attribute::Error),
                 "Custom" => Ok(Attribute::Custom { crate_name: None }),
@@ -312,14 +314,20 @@ impl<T: TryInto<FunctionAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
 
 /// Represents UDL attributes that might appear on a function argument.
 ///
-/// This supports the `[ByRef]` attribute for arguments that should be passed
-/// by reference in the generated Rust scaffolding.
+/// This supports the `[ByRef]` and `[ByMutRef]` attributes for arguments that
+/// should be passed by (mutable) reference in the generated Rust scaffolding.
 #[derive(Debug, Clone, Checksum, Default)]
 pub(super) struct ArgumentAttributes(Vec<Attribute>);
 
 impl ArgumentAttributes {
     pub fn by_ref(&self) -> bool {
         self.0.iter().any(|attr| matches!(attr, Attribute::ByRef))
+    }
+
+    pub fn by_mut_ref(&self) -> bool {
+        self.0
+            .iter()
+            .any(|attr| matches!(attr, Attribute::ByMutRef))
     }
 }
 
@@ -330,9 +338,14 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for ArgumentAttribut
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::ByRef => Ok(()),
+            Attribute::ByMutRef => Ok(()),
             _ => bail!(format!("{attr:?} not supported for arguments")),
         })?;
-        Ok(Self(attrs))
+        let this = Self(attrs);
+        if this.by_ref() && this.by_mut_ref() {
+            bail!("[ByRef] and [ByMutRef] cannot be combined on one argument");
+        }
+        Ok(this)
     }
 }
 
@@ -847,6 +860,33 @@ mod test {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[]").unwrap();
         let attrs = ArgumentAttributes::try_from(&node).unwrap();
         assert!(!attrs.by_ref());
+    }
+
+    #[test]
+    fn test_by_mut_ref_attribute() {
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[ByMutRef]").unwrap();
+        let attrs = ArgumentAttributes::try_from(&node).unwrap();
+        assert!(attrs.by_mut_ref());
+        assert!(!attrs.by_ref());
+    }
+
+    #[test]
+    fn test_by_ref_only() {
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[ByRef]").unwrap();
+        let attrs = ArgumentAttributes::try_from(&node).unwrap();
+        assert!(attrs.by_ref());
+        assert!(!attrs.by_mut_ref());
+    }
+
+    #[test]
+    fn test_by_ref_and_by_mut_ref_conflict() {
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[ByRef, ByMutRef]").unwrap();
+        let err = ArgumentAttributes::try_from(&node).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "[ByRef] and [ByMutRef] cannot be combined on one argument"
+        );
     }
 
     #[test]

@@ -1,0 +1,8 @@
+[bindings.kotlin]
+package_name = "uniffi.fixture.mut_bytes"
+
+[bindings.python]
+cdylib_name = "uniffi_mut_bytes"
+
+[bindings.swift]
+cdylib_name = "uniffi_mut_bytes"

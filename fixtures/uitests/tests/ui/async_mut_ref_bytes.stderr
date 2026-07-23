@@ -1,0 +1,5 @@
+error: `&mut [u8]` arguments are not supported in async functions: Rust may resume on another thread after the foreign caller has continued and freed or moved the buffer. Use a synchronous function, or take `Vec<u8>` / `&[u8]` instead.
+ --> tests/ui/async_mut_ref_bytes.rs:7:5
+  |
+7 | pub async fn bad_async_mut_bytes(buf: &mut [u8]) {
+  |     ^^^^^

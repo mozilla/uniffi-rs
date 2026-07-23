@@ -248,6 +248,11 @@ pub(super) fn gen_ffi_function(
     Ok(if !sig.is_async {
         let scaffolding_fn_ffi_buffer_version =
             ffi_buffer_scaffolding_fn(&ffi_ident, &ffi_return_ty, &param_types, true);
+        let uniffi_args_binding = if sig.has_mut_ref_bytes() {
+            quote! { mut uniffi_args }
+        } else {
+            quote! { uniffi_args }
+        };
         quote! {
             #[doc(hidden)]
             #[unsafe(no_mangle)]
@@ -260,7 +265,7 @@ pub(super) fn gen_ffi_function(
                 let uniffi_lift_args = #lift_closure;
                 ::uniffi::rust_call(call_status, || {
                     let result = match uniffi_lift_args() {
-                        ::std::result::Result::Ok(uniffi_args) => {
+                        ::std::result::Result::Ok(#uniffi_args_binding) => {
                             ::uniffi::deps::trace!("lift_args success: {}", #ffi_fn_name);
                             let uniffi_result = #rust_fn_call;
                             ::uniffi::deps::trace!("call success: {}", #ffi_fn_name);

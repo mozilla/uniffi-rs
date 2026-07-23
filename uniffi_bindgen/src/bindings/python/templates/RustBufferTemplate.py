@@ -124,6 +124,51 @@ class _UniffiFfiConverterByRefBytes:
         raise NotImplementedError("ByRef bytes cannot be written to a buffer: zero-copy &[u8] is only supported in argument position, not nested in records/options/etc.")
 
 
+class _UniffiFfiConverterByMutRefBytes:
+    """Zero-copy converter for `&mut [u8]` / `[ByMutRef] bytes` arguments.
+
+    Only `lower` and `check_lower` are valid — zero-copy byte buffers only
+    flow foreign -> Rust, and only in argument position. Rust writes land
+    directly in the caller's `bytearray`.
+
+    A writable buffer is required: `bytearray` qualifies, `bytes` does not.
+    The caller must keep the source `bytearray` alive for the duration of the
+    FFI call (it is passed as the argument, so it is).
+    """
+
+    @staticmethod
+    def check_lower(value):
+        # `from_buffer` requires a writable buffer; `bytes` is immutable.
+        if not isinstance(value, bytearray):
+            raise TypeError("a bytearray object is required, not {!r}".format(type(value).__name__))
+
+    @staticmethod
+    def lower(value):
+        fb = _UniffiForeignBytes()
+        if len(value) == 0:
+            fb.len = 0
+            fb.data = None
+        else:
+            # Shares memory with `value`; writes through this pointer mutate the
+            # caller's bytearray in place. `value` is alive for the whole call.
+            arr = (ctypes.c_char * len(value)).from_buffer(value)
+            fb.len = len(value)
+            fb.data = ctypes.cast(arr, ctypes.POINTER(ctypes.c_char))
+        return fb
+
+    @staticmethod
+    def lift(value):
+        raise NotImplementedError("ByMutRef bytes cannot be lifted: zero-copy &mut [u8] only flows foreign->Rust")
+
+    @staticmethod
+    def read(buf):
+        raise NotImplementedError("ByMutRef bytes cannot be read from a buffer: zero-copy &mut [u8] is only supported in argument position, not nested in records/options/etc.")
+
+    @staticmethod
+    def write(value, buf):
+        raise NotImplementedError("ByMutRef bytes cannot be written to a buffer: zero-copy &mut [u8] is only supported in argument position, not nested in records/options/etc.")
+
+
 class _UniffiRustBufferStream:
     """
     Helper for structured reading of bytes from a _UniffiRustBuffer

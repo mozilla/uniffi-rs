@@ -99,6 +99,7 @@ fn method_ffi_def(
         name: "uniffi_self".to_string(),
         ty: receiver_ty.clone(),
         by_ref: true,
+        by_mut_ref: false,
         optional: false,
         default: None,
     }];
@@ -177,6 +178,7 @@ mod tests {
             name: "buf".to_string(),
             ty,
             by_ref,
+            by_mut_ref: false,
             optional: false,
             default: None,
         }

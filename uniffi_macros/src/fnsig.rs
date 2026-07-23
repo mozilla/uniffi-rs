@@ -158,6 +158,16 @@ impl FnSignature {
             ));
         }
 
+        if is_async && args.iter().any(|arg| arg.is_mut_ref) {
+            return Err(syn::Error::new(
+                span,
+                "`&mut [u8]` arguments are not supported in async functions: \
+                 Rust may resume on another thread after the foreign caller has \
+                 continued and freed or moved the buffer. Use a synchronous \
+                 function, or take `Vec<u8>` / `&[u8]` instead.",
+            ));
+        }
+
         if !is_async && export_fn_args.async_runtime.is_some() {
             return Err(syn::Error::new(
                 export_fn_args.async_runtime.span(),
@@ -222,6 +232,9 @@ impl FnSignature {
             let ty = &arg.ty;
             match &arg.ref_type {
                 None => quote! { uniffi_args.#idx },
+                Some(ref_type) if arg.is_mut_ref => quote! {
+                    <#ty as ::std::borrow::BorrowMut<#ref_type>>::borrow_mut(&mut uniffi_args.#idx)
+                },
                 Some(ref_type) => quote! {
                     <#ty as ::std::borrow::Borrow<#ref_type>>::borrow(&uniffi_args.#idx)
                 },
@@ -439,6 +452,12 @@ impl FnSignature {
             }
         }
     }
+
+    /// True if any argument is a `&mut [u8]`. Used to decide whether the
+    /// lifted argument tuple must be bound as `mut` (so `BorrowMut` works).
+    pub fn has_mut_ref_bytes(&self) -> bool {
+        self.args.iter().any(|arg| arg.is_mut_ref)
+    }
 }
 
 pub(crate) struct Arg {
@@ -498,6 +517,8 @@ pub(crate) struct NamedArg {
     pub(crate) name: String,
     pub(crate) ty: TokenStream,
     pub(crate) ref_type: Option<Type>,
+    /// `true` when this argument is `&mut [u8]`. Implies `ref_type` is `Some([u8])`.
+    pub(crate) is_mut_ref: bool,
     pub(crate) default: Option<DefaultValue>,
 }
 
@@ -506,7 +527,10 @@ impl NamedArg {
         Ok(match ty {
             Type::Reference(r) => {
                 let inner = &r.elem;
-                let ty = if is_u8_slice(inner) {
+                let is_mut_u8_slice = r.mutability.is_some() && is_u8_slice(inner);
+                let ty = if is_mut_u8_slice {
+                    quote! { ::uniffi::ForeignBytesMut }
+                } else if is_u8_slice(inner) {
                     quote! { ::uniffi::ForeignBytes }
                 } else {
                     ffiops::lift_ref_type(inner)
@@ -515,6 +539,7 @@ impl NamedArg {
                     name: ident_to_string(&ident),
                     ty,
                     ref_type: Some(*inner.clone()),
+                    is_mut_ref: is_mut_u8_slice,
                     default: defaults.remove(&ident),
                     ident,
                 }
@@ -523,6 +548,7 @@ impl NamedArg {
                 name: ident_to_string(&ident),
                 ty: quote! { #ty },
                 ref_type: None,
+                is_mut_ref: false,
                 default: defaults.remove(&ident),
                 ident,
             },
@@ -541,10 +567,12 @@ impl NamedArg {
         let type_id_meta = ffiops::type_id_meta(&self.ty);
         let default_calls = default_value_metadata_calls(&self.default)?;
         let by_ref = self.ref_type.is_some();
+        let by_mut_ref = self.is_mut_ref;
         Ok(quote! {
             .concat_str(#name)
             .concat(#type_id_meta)
             .concat_bool(#by_ref)
+            .concat_bool(#by_mut_ref)
             #default_calls
         })
     }

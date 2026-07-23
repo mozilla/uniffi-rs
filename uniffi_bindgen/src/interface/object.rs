@@ -544,6 +544,7 @@ impl Method {
             name: "ptr".to_string(),
             type_: self.self_type.clone(),
             by_ref: !self.takes_self_by_arc,
+            by_mut_ref: false,
             optional: false,
             default: None,
         }]
