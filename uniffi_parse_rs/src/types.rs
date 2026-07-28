@@ -272,17 +272,22 @@ impl<'ir> RPath<'ir> {
                     by_ref: true,
                     by_mut_ref: false,
                 },
-                Type::Slice(inner) => ArgType {
-                    ty: Type::Vec(inner).try_into_uniffi_meta(
+                Type::Slice(inner) => {
+                    let ty = Type::Vec(inner).try_into_uniffi_meta(
                         self.file_id(),
                         syn_ty.span(),
                         self_ty,
-                    )?,
-                    by_ref: true,
-                    // `&mut [u8]` — zero-copy mutable bytes. Downstream codegen gates
-                    // this on the resolved type being `Bytes`.
-                    by_mut_ref: mutable,
-                },
+                    )?;
+                    // `&mut` only carries mutation intent for `&mut [u8]` (which
+                    // resolves to `Bytes`). Other `&mut [T]` slices are passed by
+                    // value (copied), so flagging them would be misleading.
+                    let by_mut_ref = mutable && matches!(ty, uniffi_meta::Type::Bytes);
+                    ArgType {
+                        ty,
+                        by_ref: true,
+                        by_mut_ref,
+                    }
+                }
                 ty => ArgType {
                     ty: ty.try_into_uniffi_meta(self.file_id(), syn_ty.span(), self_ty)?,
                     by_ref: true,
@@ -1662,6 +1667,21 @@ pub mod tests {
         );
         assert_eq!(
             run_resolve_arg(&ir, &mut cache, "types", "&[TestRecord]", None),
+            Ok(ArgType {
+                ty: uniffi_meta::Type::Sequence {
+                    inner_type: Box::new(uniffi_meta::Type::Record {
+                        module_path: "types".into(),
+                        name: "TestRecord".into(),
+                    }),
+                },
+                by_ref: true,
+                by_mut_ref: false,
+            }),
+        );
+        // A `&mut [T]` slice of non-u8 elements is copied by value, so `&mut`
+        // carries no mutation intent — `by_mut_ref` must stay false.
+        assert_eq!(
+            run_resolve_arg(&ir, &mut cache, "types", "&mut [TestRecord]", None),
             Ok(ArgType {
                 ty: uniffi_meta::Type::Sequence {
                     inner_type: Box::new(uniffi_meta::Type::Record {
