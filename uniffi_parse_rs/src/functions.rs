@@ -132,6 +132,7 @@ impl Argument {
             name: self.ident.unraw().to_string(),
             ty: arg.ty,
             by_ref: arg.by_ref,
+            by_mut_ref: false,
             default,
             optional: false,
         })
