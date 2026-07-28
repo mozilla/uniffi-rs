@@ -7,11 +7,14 @@ class TestTime(unittest.TestCase):
         self.assertEqual(roundtrip_bytes(b'test-data'), b'test-data')
 
     def test_zero_copy_bytes(self):
-        # Zero-copy &[u8] — proc-macro path
+        # Zero-copy &[u8] — proc-macro path. Accepts both bytes and bytearray.
         self.assertEqual(sum_bytes_procmacro(b""), 0)
         self.assertEqual(sum_bytes_procmacro(b"\x01\x02\x03"), 6)
+        self.assertEqual(sum_bytes_procmacro(bytearray([1, 2, 3])), 6)
+        self.assertEqual(sum_bytes_procmacro(bytearray(0)), 0)
         self.assertIsNone(first_byte_procmacro(b""))
         self.assertEqual(first_byte_procmacro(b"\x2a"), 42)
+        self.assertEqual(first_byte_procmacro(bytearray([42])), 42)
 
     def test_zero_copy_bytes_mut(self):
         # Zero-copy &mut [u8] — proc-macro path. Rust writes land in place.

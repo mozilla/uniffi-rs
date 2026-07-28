@@ -218,11 +218,14 @@ impl Argument {
     }
 
     /// Python parameter type annotation. `&mut [u8]` requires a writable
-    /// buffer, so it is annotated `bytearray`; everything else uses the
-    /// type's own annotation.
+    /// buffer, so it is annotated `bytearray`; a read-only `&[u8]` accepts
+    /// either `bytes` or `bytearray`; everything else uses the type's own
+    /// annotation.
     pub fn param_type_name(&self) -> String {
         if self.by_mut_ref && matches!(self.ty.ty, Type::Bytes) {
             "bytearray".to_string()
+        } else if self.by_ref && matches!(self.ty.ty, Type::Bytes) {
+            "typing.Union[bytes, bytearray]".to_string()
         } else {
             self.ty.type_name.clone()
         }

@@ -88,17 +88,17 @@ class _UniffiFfiConverterByRefBytes:
     flow foreign -> Rust, and only in argument position. `lift`, `read`, and
     `write` have no sound implementation here.
 
-    CPython `bytes` objects are immutable and their internal buffer doesn't
-    move for the lifetime of the object; the caller must keep the source
-    `bytes` alive for the duration of the FFI call.
+    Accepts both `bytes` and `bytearray` so an API mixing `&[u8]` and
+    `&mut [u8]` args isn't awkward to call. Rust only reads the slice; the
+    caller must keep the source object alive for the duration of the FFI call
+    (it is passed as the argument, so it is) and must not mutate or resize it
+    from another thread while the call is in flight.
     """
 
     @staticmethod
     def check_lower(value):
-        # Tighter than `bytes-like`: `lower` uses `ctypes.c_char_p` which only
-        # accepts `bytes`/`None`, so fail fast with a matching check.
-        if not isinstance(value, bytes):
-            raise TypeError("a bytes object is required, not {!r}".format(type(value).__name__))
+        if not isinstance(value, (bytes, bytearray)):
+            raise TypeError("a bytes or bytearray object is required, not {!r}".format(type(value).__name__))
 
     @staticmethod
     def lower(value):
@@ -106,7 +106,13 @@ class _UniffiFfiConverterByRefBytes:
         if len(value) == 0:
             fb.len = 0
             fb.data = None
+        elif isinstance(value, bytearray):
+            # Zero-copy view into the bytearray's buffer; Rust only reads it.
+            arr = (ctypes.c_char * len(value)).from_buffer(value)
+            fb.len = len(value)
+            fb.data = ctypes.cast(arr, ctypes.POINTER(ctypes.c_char))
         else:
+            # `bytes` is immutable; its internal buffer is stable for its lifetime.
             fb.len = len(value)
             fb.data = ctypes.cast(ctypes.c_char_p(value), ctypes.POINTER(ctypes.c_char))
         return fb
