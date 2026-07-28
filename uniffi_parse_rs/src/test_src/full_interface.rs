@@ -141,7 +141,7 @@ pub fn trait_fn(a: Arc<dyn TraitInterface>, b: &dyn TraitInterfaceWithForeign, c
 }
 
 #[uniffi::export]
-pub fn bytes_fn(a: Vec<u8>, b: &[u8]) {
+pub fn bytes_fn(a: Vec<u8>, b: &[u8], c: &mut [u8]) {
 }
 
 uniffi::custom_type!(
