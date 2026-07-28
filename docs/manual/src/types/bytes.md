@@ -88,6 +88,12 @@ Every `&[u8]` rule above still holds. Two more:
   buffer.
 - **Pass a writable buffer.** Each binding needs a mutable buffer type and
   rejects a read-only one.
+- **Aliasing is the caller's responsibility.** Rust borrows the buffer for
+  the duration of the call, so the usual aliasing rules apply across the FFI:
+    - Don't pass the same buffer, or overlapping slices, into Rust from
+      separate threads at the same time.
+    - Don't mutate or free the buffer from another thread while a Rust
+      function is borrowing it.
 
 Each binding maps a mutable argument to a writable type:
 
