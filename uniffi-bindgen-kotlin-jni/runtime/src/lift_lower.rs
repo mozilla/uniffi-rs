@@ -539,3 +539,24 @@ pub unsafe fn lift_bytes_ref<'a>(env: *mut JNIEnv, byte_buffer: jobject) -> Resu
     let capacity = ((**env).v1_4.GetDirectBufferCapacity)(env, byte_buffer) as usize;
     Ok(std::slice::from_raw_parts(ptr, capacity))
 }
+
+/// Lift Kotlin Byte buffer to a `&mut [u8]` value
+///
+/// Writes through the returned slice land directly in the direct `ByteBuffer`'s
+/// backing store, so the caller observes them in place.
+///
+/// Note: this is only supported in the Kotlin -> Rust direction.
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lift_bytes_mut_ref<'a>(
+    env: *mut JNIEnv,
+    byte_buffer: jobject,
+) -> Result<&'a mut [u8]> {
+    let ptr = ((**env).v1_4.GetDirectBufferAddress)(env, byte_buffer).cast::<u8>();
+    if ptr.is_null() {
+        bail!("lift_bytes_mut_ref: GetDirectBufferAddress failed");
+    }
+    let capacity = ((**env).v1_4.GetDirectBufferCapacity)(env, byte_buffer) as usize;
+    Ok(std::slice::from_raw_parts_mut(ptr, capacity))
+}
