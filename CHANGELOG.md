@@ -6,6 +6,9 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's Fixed
+- Kotlin: Fixed checksum failure on aarch64 ([#2935](https://github.com/mozilla/uniffi-rs/pull/2935/))
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.0...HEAD).
 
 ## v0.32.0 (backend crates: v0.32.0) - (_2026-06-30_)
