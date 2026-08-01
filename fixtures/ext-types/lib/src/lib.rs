@@ -1,7 +1,8 @@
 use custom_types::Handle;
 use ext_types_custom::{ANestedGuid, Guid, HandleU8, Ouid};
 use ext_types_external_crate::{
-    ExternalCrateDictionary, ExternalCrateInterface, ExternalCrateNonExhaustiveEnum,
+    ExternalCrateDictionary, ExternalCrateEnumInterface, ExternalCrateInterface,
+    ExternalCrateNonExhaustiveEnum,
 };
 use std::sync::Arc;
 use uniffi_one::{
@@ -34,6 +35,7 @@ pub struct CombinedType {
 
     pub ecd: ExternalCrateDictionary,
     pub ecnee: ExternalCrateNonExhaustiveEnum,
+    pub ecei: ExternalCrateEnumInterface,
 }
 
 fn get_combined_type(existing: Option<CombinedType>) -> CombinedType {
@@ -66,6 +68,7 @@ fn get_combined_type(existing: Option<CombinedType>) -> CombinedType {
 
         ecd: ExternalCrateDictionary { sval: "ecd".into() },
         ecnee: ExternalCrateNonExhaustiveEnum::One,
+        ecei: ExternalCrateEnumInterface::Whatever,
     })
 }
 

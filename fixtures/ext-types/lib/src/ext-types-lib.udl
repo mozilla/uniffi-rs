@@ -73,6 +73,11 @@ enum ExternalCrateNonExhaustiveEnum {
     "Two",
 };
 
+[Enum, Remote]
+interface ExternalCrateEnumInterface {
+    Whatever();
+};
+
 // And a new type here to tie them all together.
 dictionary CombinedType {
     UniffiOneEnum uoe;
@@ -94,4 +99,5 @@ dictionary CombinedType {
 
     ExternalCrateDictionary ecd;
     ExternalCrateNonExhaustiveEnum ecnee;
+    ExternalCrateEnumInterface ecei;
 };
