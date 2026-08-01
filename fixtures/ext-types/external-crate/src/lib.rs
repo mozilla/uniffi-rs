@@ -24,3 +24,7 @@ impl ExternalCrateInterface {
         self.sval.clone()
     }
 }
+
+pub enum ExternalCrateEnumInterface {
+    Whatever,
+}

@@ -410,9 +410,11 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttribu
             Attribute::Remote => Ok(()),
             _ => bail!(format!("{attr:?} not supported for interface definition")),
         })?;
-        // If `[Enum]` can only also have `[Traits]`
-        let ok_for_enum =
-            attrs.len() == 1 || attrs.iter().any(|a| matches!(a, Attribute::Traits(_)));
+        // If `[Enum]` also allow any of `[Traits, Remote]`
+        let ok_for_enum = attrs.len() == 1
+            || attrs
+                .iter()
+                .any(|a| matches!(a, Attribute::Traits(_) | Attribute::Remote));
         if attrs.iter().any(|a| matches!(a, Attribute::Enum)) && !ok_for_enum {
             bail!("conflicting attributes on interface definition");
         }
