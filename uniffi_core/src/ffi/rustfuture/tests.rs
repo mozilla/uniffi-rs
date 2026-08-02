@@ -1,11 +1,17 @@
 use once_cell::sync::OnceCell;
 use std::{
+    cell::Cell,
     future::Future,
     mem::ManuallyDrop,
     panic,
     pin::Pin,
-    sync::{Arc, Mutex},
+    sync::{
+        atomic::{AtomicBool, AtomicUsize, Ordering},
+        mpsc, Arc, Mutex,
+    },
     task::{Context, Poll, Waker},
+    thread,
+    time::Duration,
 };
 
 use super::*;
@@ -264,5 +270,220 @@ fn test_wake_during_poll() {
     assert_eq!(
         <String as Lift<crate::UniFfiTag>>::try_lift(return_buf).unwrap(),
         "All done"
+    );
+}
+
+// === Lock discipline: continuations are never invoked while the scheduler is locked ===
+//
+// A continuation callback is foreign code that takes foreign locks.  Swift is the worst case:
+// resuming a continuation from another thread takes the awaiting task's status-record lock, and
+// Swift calls `rust_future_cancel` from a `withTaskCancellationHandler` handler that already holds
+// that same lock.  So if the scheduler invoked callbacks with its own lock held, a completing
+// future and a cancelling foreign thread would deadlock against each other:
+//
+//   waker thread:   Scheduler::wake [scheduler lock] -> continuation -> [foreign lock] BLOCKED
+//   foreign thread: cancel handler  [foreign lock]   -> cancel       -> [scheduler lock] BLOCKED
+//
+// `Scheduler` avoids this by taking the callback out of its state under the lock, releasing the
+// lock, and only then calling foreign code.  These tests drive that interleaving so the property
+// stays true.
+
+thread_local! {
+    /// Whether this thread is inside [ForeignTask::with_lock_held].
+    static HOLDS_FOREIGN_LOCK: Cell<bool> = const { Cell::new(false) };
+}
+
+/// Stands in for the foreign task awaiting a `RustFuture`.
+struct ForeignTask {
+    /// The foreign runtime lock that resuming the continuation needs (Swift's per-task
+    /// status-record lock, Ruby's GVL, ...).
+    ///
+    /// Modelled as re-entrant, because Swift's is: `withStatusRecordLock` detects that the current
+    /// thread already holds the lock and proceeds, which is what lets a cancellation handler
+    /// resume its own task's continuation inline.  Another thread blocks.
+    lock: Mutex<()>,
+    /// Set from inside the continuation, just before it tries to take `lock`.
+    in_callback: AtomicBool,
+    /// How many times the continuation was invoked.  Must always end up at exactly 1.
+    invocations: AtomicUsize,
+    /// The poll result the continuation was invoked with.
+    result: OnceCell<RustFuturePoll>,
+    /// If set, the continuation re-enters the scheduler by cancelling this future.
+    reenter: Mutex<Option<Arc<RustFuture<RustBuffer>>>>,
+}
+
+impl ForeignTask {
+    fn new() -> Arc<Self> {
+        Arc::new(Self {
+            lock: Mutex::new(()),
+            in_callback: AtomicBool::new(false),
+            invocations: AtomicUsize::new(0),
+            result: OnceCell::new(),
+            reenter: Mutex::new(None),
+        })
+    }
+
+    /// Poll `rust_future`, registering this task's continuation.
+    fn poll(self: &Arc<Self>, rust_future: &Arc<RustFuture<RustBuffer>>) {
+        let data = Arc::into_raw(Arc::clone(self)) as u64;
+        Arc::clone(rust_future).poll(RustFutureContinuationBoundCallback {
+            callback: foreign_continuation,
+            data,
+        });
+    }
+
+    fn spin_until_in_callback(&self) {
+        while !self.in_callback.load(Ordering::SeqCst) {
+            std::hint::spin_loop();
+        }
+    }
+
+    /// Run `f` holding the foreign runtime lock, the way Swift runs a cancellation handler.
+    fn with_lock_held<R>(&self, f: impl FnOnce() -> R) -> R {
+        let guard = self.lock.lock().unwrap();
+        HOLDS_FOREIGN_LOCK.with(|held| held.set(true));
+        let result = f();
+        HOLDS_FOREIGN_LOCK.with(|held| held.set(false));
+        drop(guard);
+        result
+    }
+}
+
+extern "C" fn foreign_continuation(data: u64, code: RustFuturePoll) {
+    let task = unsafe { Arc::from_raw(data as *const ForeignTask) };
+    task.invocations.fetch_add(1, Ordering::SeqCst);
+    if let Some(rust_future) = task.reenter.lock().unwrap().take() {
+        // Re-entering the scheduler from inside a continuation only works if the scheduler
+        // released its lock before calling us.
+        rust_future.cancel();
+    }
+    task.in_callback.store(true, Ordering::SeqCst);
+    // Resuming the continuation takes the foreign runtime lock -- unless this thread already holds
+    // it, which is the re-entrant case Swift allows.
+    let _guard = (!HOLDS_FOREIGN_LOCK.with(Cell::get)).then(|| task.lock.lock().unwrap());
+    task.result.set(code).expect("continuation invoked twice");
+}
+
+/// Run `body` on its own thread and fail if it doesn't finish in time, so that a lock-discipline
+/// regression reports as a failure instead of hanging the test run forever.
+fn run_with_watchdog(name: &str, timeout: Duration, body: impl FnOnce() + Send + 'static) {
+    let (tx, rx) = mpsc::channel();
+    thread::spawn(move || {
+        body();
+        // Ignore send errors: the receiver is gone if we already timed out.
+        let _ = tx.send(());
+    });
+    if rx.recv_timeout(timeout).is_err() {
+        panic!("{name} deadlocked (no completion within {timeout:?})");
+    }
+}
+
+// The future completes on a worker thread while the foreign side cancels from a thread that holds
+// the lock the continuation needs.  The handshake makes the interleaving deterministic rather than
+// hoping to hit it.
+#[test]
+fn test_cancel_while_waking_does_not_deadlock() {
+    run_with_watchdog(
+        "test_cancel_while_waking_does_not_deadlock",
+        Duration::from_secs(10),
+        || {
+            let (sender, rust_future) = channel();
+            let task = ForeignTask::new();
+            task.poll(&rust_future);
+
+            // Hold the foreign lock, as Swift does across a whole `swift_task_cancel`, and cancel
+            // from inside it.
+            let waker_thread = task.with_lock_held(|| {
+                // Complete the future from a worker thread.  This wakes the RustFuture, which
+                // invokes the continuation, which blocks on the foreign lock we hold.
+                let waker_thread = thread::spawn(move || sender.send(Ok("All done".into())));
+                task.spin_until_in_callback();
+
+                // The continuation is now blocked on us.  Cancelling must not need anything the
+                // blocked continuation is holding.
+                rust_future.cancel();
+                waker_thread
+            });
+            waker_thread.join().unwrap();
+
+            // The wake won the race, so the continuation was resumed exactly once, with `Wake`.
+            assert_eq!(task.invocations.load(Ordering::SeqCst), 1);
+            assert_eq!(task.result.get(), Some(&RustFuturePoll::Wake));
+            assert!(rust_future.is_cancelled());
+
+            // The foreign side polls again after a `Wake`, and now sees the cancellation.
+            let task2 = ForeignTask::new();
+            task2.poll(&rust_future);
+            assert_eq!(task2.invocations.load(Ordering::SeqCst), 1);
+            assert_eq!(task2.result.get(), Some(&RustFuturePoll::Ready));
+            let (_, call_status) = complete(rust_future);
+            assert_eq!(call_status.code, RustCallStatusCode::Cancelled);
+        },
+    );
+}
+
+// Same AB-BA, run unsynchronized many times over: completion and cancellation race freely, and
+// half the iterations use a future that is already complete before the first poll (the "instant
+// local read" shape that makes the window easy to hit).  Whichever side wins, the continuation is
+// resumed exactly once.
+#[test]
+fn test_cancel_racing_completion_stress() {
+    const ITERATIONS: usize = 5_000;
+    run_with_watchdog(
+        "test_cancel_racing_completion_stress",
+        Duration::from_secs(120),
+        || {
+            for i in 0..ITERATIONS {
+                let (sender, rust_future) = channel();
+                let task = ForeignTask::new();
+                let completes_immediately = i % 2 == 0;
+                if completes_immediately {
+                    sender.send(Ok("All done".into()));
+                }
+
+                let canceller = {
+                    let rust_future = Arc::clone(&rust_future);
+                    let task = Arc::clone(&task);
+                    thread::spawn(move || task.with_lock_held(|| rust_future.cancel()))
+                };
+                task.poll(&rust_future);
+                let waker_thread = (!completes_immediately)
+                    .then(|| thread::spawn(move || sender.send(Ok("All done".into()))));
+
+                canceller.join().unwrap();
+                if let Some(waker_thread) = waker_thread {
+                    waker_thread.join().unwrap();
+                }
+
+                assert_eq!(
+                    task.invocations.load(Ordering::SeqCst),
+                    1,
+                    "iteration {i}: continuation not resumed exactly once"
+                );
+                assert!(task.result.get().is_some(), "iteration {i}");
+                assert!(rust_future.is_cancelled(), "iteration {i}");
+            }
+        },
+    );
+}
+
+// A continuation is free to call back into the scheduler -- Swift's continuation resumption can
+// synchronously run the awaiting task, which may cancel or free the future.
+#[test]
+fn test_continuation_can_reenter_scheduler() {
+    run_with_watchdog(
+        "test_continuation_can_reenter_scheduler",
+        Duration::from_secs(10),
+        || {
+            let (sender, rust_future) = channel();
+            let task = ForeignTask::new();
+            *task.reenter.lock().unwrap() = Some(Arc::clone(&rust_future));
+            task.poll(&rust_future);
+            // Wake the future: the continuation runs and cancels from inside the callback.
+            sender.wake();
+            assert_eq!(task.invocations.load(Ordering::SeqCst), 1);
+            assert_eq!(task.result.get(), Some(&RustFuturePoll::Wake));
+            assert!(rust_future.is_cancelled());
+        },
     );
 }
