@@ -25,10 +25,15 @@ impl Impl {
         let mut methods = vec![];
         for item in imp.items {
             if let ImplItem::Fn(f) = item {
-                if let Some(attrs) = ConstructorAttributes::parse(env, &f.attrs)? {
-                    constructors.push(Constructor::parse(attrs, f)?);
-                } else if let Some(attrs) = MethodAttributes::parse(env, &f.attrs)? {
-                    methods.push(Method::parse(attrs, f)?);
+                // impl-level `cancellable` applies to every async fn in the block.  Sync fns are
+                // skipped rather than rejected, so a block can mix the two.
+                let inherits_cancellable = attrs.cancellable && f.sig.asyncness.is_some();
+                if let Some(mut a) = ConstructorAttributes::parse(env, &f.attrs)? {
+                    a.cancellable |= inherits_cancellable;
+                    constructors.push(Constructor::parse(a, f)?);
+                } else if let Some(mut a) = MethodAttributes::parse(env, &f.attrs)? {
+                    a.cancellable |= inherits_cancellable;
+                    methods.push(Method::parse(a, f)?);
                 }
             }
         }

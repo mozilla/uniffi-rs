@@ -102,7 +102,8 @@ private func uniffiCheckCallStatus<E: Swift.Error>(
             }
 
         case CALL_CANCELLED:
-            fatalError("Cancellation not supported yet")
+            callStatus.errorBuf.deallocate()
+            throw CancellationError()
 
         default:
             throw UniffiInternalError.unexpectedRustCallStatusCode

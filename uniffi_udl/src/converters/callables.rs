@@ -90,6 +90,7 @@ impl APIConverter<FnMetadata> for weedle::namespace::OperationNamespaceMember<'_
         };
         let attrs = FunctionAttributes::try_from(self.attributes.as_ref())?;
         let is_async = attrs.is_async();
+        let is_cancellable = attrs.is_cancellable();
         let throws = match attrs.get_throws_err() {
             None => None,
             Some(name) => match ci.get_type(name) {
@@ -102,6 +103,7 @@ impl APIConverter<FnMetadata> for weedle::namespace::OperationNamespaceMember<'_
             name,
             orig_name: None,
             is_async,
+            is_cancellable,
             return_type,
             inputs: self.args.body.list.convert(ci)?,
             throws,
@@ -127,6 +129,7 @@ impl APIConverter<ConstructorMetadata> for weedle::interface::ConstructorInterfa
             // We don't know the name of the containing `Object` at this point, fill it in later.
             self_name: Default::default(),
             is_async: attributes.is_async(),
+            is_cancellable: attributes.is_cancellable(),
             // Also fill in checksum_fn_name later, since it depends on object_name
             inputs: self.args.body.list.convert(ci)?,
             throws,
@@ -147,6 +150,7 @@ impl APIConverter<MethodMetadata> for weedle::interface::OperationInterfaceMembe
         let return_type = ci.resolve_return_type_expression(&self.return_type)?;
         let attributes = MethodAttributes::try_from(self.attributes.as_ref())?;
         let is_async = attributes.is_async();
+        let is_cancellable = attributes.is_cancellable();
 
         let throws = match attributes.get_throws_err() {
             Some(name) => match ci.get_type(name) {
@@ -173,6 +177,7 @@ impl APIConverter<MethodMetadata> for weedle::interface::OperationInterfaceMembe
             },
             orig_name: None,
             is_async,
+            is_cancellable,
             inputs: self.args.body.list.convert(ci)?,
             return_type,
             throws,
@@ -194,6 +199,7 @@ impl APIConverter<TraitMethodMetadata> for weedle::interface::OperationInterface
         let return_type = ci.resolve_return_type_expression(&self.return_type)?;
         let attributes = MethodAttributes::try_from(self.attributes.as_ref())?;
         let is_async = attributes.is_async();
+        let is_cancellable = attributes.is_cancellable();
 
         let throws = match attributes.get_throws_err() {
             Some(name) => match ci.get_type(name) {
@@ -220,6 +226,7 @@ impl APIConverter<TraitMethodMetadata> for weedle::interface::OperationInterface
             },
             orig_name: None,
             is_async,
+            is_cancellable,
             inputs: self.args.body.list.convert(ci)?,
             return_type,
             throws,

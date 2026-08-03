@@ -66,6 +66,7 @@ impl Function {
             name: names.name,
             orig_name: names.orig_name,
             is_async: self.is_async,
+            is_cancellable: self.attrs.cancellable,
             docstring: self.attrs.docstring.clone(),
             checksum: None,
             inputs: self

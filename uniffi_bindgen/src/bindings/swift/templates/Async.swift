@@ -18,7 +18,7 @@ fileprivate func uniffiRustCallAsync<F, T>(
     defer {
         freeFunc(rustFuture)
     }
-    var pollResult: Int8;
+    var pollResult: Int8 = UNIFFI_RUST_FUTURE_POLL_WAKE
     repeat {
         pollResult = await withUnsafeContinuation {
             pollFunc(
@@ -36,6 +36,57 @@ fileprivate func uniffiRustCallAsync<F, T>(
         errorHandler: errorHandler
     ))
 }
+
+{%- if ci.has_cancellable_fns() %}
+// Holder for a Rust future handle plus its FFI cancel symbol. We capture this
+// in `withTaskCancellationHandler`'s `@Sendable` `onCancel` closure. The cancel
+// function pointer is a plain Swift function type (not `@convention(c)`), so
+// it doesn't satisfy `Sendable` automatically — but the underlying Rust
+// `Scheduler::cancel` is thread-safe by construction. Marking the holder
+// `@unchecked Sendable` matches how `UniffiHandleMap` and generated object
+// types handle the same pattern.
+fileprivate struct UniffiRustFutureCancelHandle: @unchecked Sendable {
+    let handle: UInt64
+    let cancel: (UInt64) -> ()
+}
+
+fileprivate func uniffiRustCallAsyncCancellable<F, T>(
+    rustFutureFunc: () -> UInt64,
+    pollFunc: (UInt64, @escaping UniffiRustFutureContinuationCallback, UInt64) -> (),
+    completeFunc: (UInt64, UnsafeMutablePointer<RustCallStatus>) -> F,
+    freeFunc: (UInt64) -> (),
+    cancelFunc: @escaping (UInt64) -> (),
+    liftFunc: (F) throws -> T,
+    errorHandler: ((RustBuffer) throws -> Swift.Error)?
+) async throws -> T {
+    {{ ensure_init_fn_name }}()
+    let rustFuture = rustFutureFunc()
+    defer {
+        freeFunc(rustFuture)
+    }
+    let cancelHandle = UniffiRustFutureCancelHandle(handle: rustFuture, cancel: cancelFunc)
+    await withTaskCancellationHandler {
+        var pollResult: Int8 = UNIFFI_RUST_FUTURE_POLL_WAKE
+        repeat {
+            pollResult = await withUnsafeContinuation {
+                pollFunc(
+                    rustFuture,
+                    { handle, pollResult in
+                        uniffiFutureContinuationCallback(handle: handle, pollResult: pollResult)
+                    },
+                    uniffiContinuationHandleMap.insert(obj: $0)
+                )
+            }
+        } while pollResult != UNIFFI_RUST_FUTURE_POLL_READY
+    } onCancel: {
+        cancelHandle.cancel(cancelHandle.handle)
+    }
+    return try liftFunc(makeRustCall(
+        { completeFunc(rustFuture, $0) },
+        errorHandler: errorHandler
+    ))
+}
+{%- endif %}
 
 // Callback handlers for an async calls.  These are invoked by Rust when the future is ready.  They
 // lift the return value or error and resume the suspended function.

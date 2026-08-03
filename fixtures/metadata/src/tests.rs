@@ -419,6 +419,7 @@ mod test_metadata {
                 name: "state_method_renamed".into(),
                 orig_name: Some("state_method".into()),
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![],
                 return_type: None,
                 throws: None,
@@ -725,6 +726,7 @@ mod test_function_metadata {
                 name: "test_func_renamed".into(),
                 orig_name: Some("test_func".into()),
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![
                     FnParamMetadata::simple(
                         "person",
@@ -760,6 +762,7 @@ mod test_function_metadata {
                 name: "test_func_no_return".into(),
                 orig_name: None,
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![],
                 return_type: None,
                 throws: None,
@@ -780,6 +783,7 @@ mod test_function_metadata {
                 name: "test_func_that_throws".into(),
                 orig_name: None,
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![],
                 return_type: Some(Type::Enum {
                     module_path: "uniffi_fixture_metadata::tests::state".into(),
@@ -806,6 +810,7 @@ mod test_function_metadata {
                 name: "test_func_no_return_that_throws".into(),
                 orig_name: None,
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![],
                 return_type: None,
                 throws: Some(Type::Enum {
@@ -831,6 +836,7 @@ mod test_function_metadata {
                 name: "add".into(),
                 orig_name: None,
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![
                     FnParamMetadata::simple("a", Type::UInt8),
                     FnParamMetadata::simple("b", Type::UInt8),
@@ -857,6 +863,7 @@ mod test_function_metadata {
                 name: "new".into(),
                 orig_name: None,
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![],
                 throws: None,
                 checksum: Some(
@@ -874,6 +881,7 @@ mod test_function_metadata {
                 name: "new_renamed".into(),
                 orig_name: Some("new2".into()),
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![],
                 throws: None,
                 checksum: Some(
@@ -894,6 +902,7 @@ mod test_function_metadata {
                 name: "test_async_func".into(),
                 orig_name: None,
                 is_async: true,
+                is_cancellable: false,
                 inputs: vec![
                     FnParamMetadata::simple(
                         "person",
@@ -929,6 +938,7 @@ mod test_function_metadata {
                 name: "test_async_func_that_throws".into(),
                 orig_name: None,
                 is_async: true,
+                is_cancellable: false,
                 inputs: vec![],
                 return_type: Some(Type::Enum {
                     module_path: "uniffi_fixture_metadata::tests::state".into(),
@@ -957,6 +967,7 @@ mod test_function_metadata {
                 name: "async_sub".into(),
                 orig_name: None,
                 is_async: true,
+                is_cancellable: false,
                 inputs: vec![
                     FnParamMetadata::simple("a", Type::UInt8),
                     FnParamMetadata::simple("b", Type::UInt8),
@@ -1019,6 +1030,7 @@ mod test_function_metadata {
                 name: "get_display".into(),
                 orig_name: None,
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![],
                 throws: None,
                 takes_self_by_arc: false,
@@ -1042,6 +1054,7 @@ mod test_function_metadata {
                 name: "display_result_renamed".into(),
                 orig_name: Some("display_result".into()),
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![
                     FnParamMetadata::simple("val", Type::String),
                 ],
@@ -1078,6 +1091,7 @@ mod test_function_metadata {
                 name: "input_trait_with_foreign".into(),
                 orig_name: None,
                 is_async: false,
+                is_cancellable: false,
                 throws: None,
                 checksum: Some(
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_INPUT_TRAIT_WITH_FOREIGN
@@ -1107,6 +1121,7 @@ mod test_function_metadata {
                 name: "log".into(),
                 orig_name: None,
                 is_async: false,
+                is_cancellable: false,
                 inputs: vec![FnParamMetadata::simple("message", Type::String)],
                 return_type: None,
                 throws: None,
@@ -1150,6 +1165,7 @@ mod test_function_metadata {
                 name: "input_trait_explicit_rust".into(),
                 orig_name: None,
                 is_async: false,
+                is_cancellable: false,
                 throws: None,
                 checksum: Some(
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_INPUT_TRAIT_EXPLICIT_RUST
@@ -1191,6 +1207,7 @@ mod test_function_metadata {
                 name: "input_trait_impls_any".into(),
                 orig_name: None,
                 is_async: false,
+                is_cancellable: false,
                 throws: None,
                 checksum: Some(
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_INPUT_TRAIT_IMPLS_ANY.checksum(),
@@ -1231,6 +1248,7 @@ mod test_function_metadata {
                 name: "input_trait_impls_foreign".into(),
                 orig_name: None,
                 is_async: false,
+                is_cancellable: false,
                 throws: None,
                 checksum: Some(
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_INPUT_TRAIT_IMPLS_FOREIGN

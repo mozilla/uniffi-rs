@@ -66,6 +66,8 @@ impl ObjectAttributes {
 pub struct ImplAttributes {
     pub name: Option<String>,
     pub async_runtime: Option<LitStr>,
+    /// Applies to every async fn in the block.
+    pub cancellable: bool,
 }
 
 impl ImplAttributes {
@@ -99,6 +101,9 @@ impl ImplAttributes {
                         } else if meta.path.is_ident("async_runtime") {
                             meta.value()?;
                             parsed.async_runtime = Some(meta.input.parse()?);
+                            Ok(())
+                        } else if meta.path.is_ident("cancellable") {
+                            parsed.cancellable = true;
                             Ok(())
                         } else {
                             Err(meta.error("Invalid attribute"))

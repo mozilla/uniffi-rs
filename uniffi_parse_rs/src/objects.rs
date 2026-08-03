@@ -119,6 +119,7 @@ impl Constructor {
             orig_name,
             docstring: self.attrs.docstring.clone(),
             is_async: self.is_async,
+            is_cancellable: self.attrs.cancellable,
             inputs: self
                 .args
                 .iter()
@@ -173,6 +174,7 @@ impl Method {
             orig_name,
             docstring: self.attrs.docstring.clone(),
             is_async: self.is_async,
+            is_cancellable: self.attrs.cancellable,
             takes_self_by_arc: self.self_arg.takes_self_by_arc(ir, cache, module_path)?,
             inputs: self
                 .args
