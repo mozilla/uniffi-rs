@@ -51,7 +51,7 @@ Each binding maps `[ByRef] bytes` to a natural zero-copy type:
 |---------|--------------------------|---------------------------------------------------------------|
 | Kotlin  | `java.nio.ByteBuffer`    | Must be a *direct* buffer (`ByteBuffer.allocateDirect(...)`). |
 | Swift   | `Data`                   | The call runs inside `Data.withUnsafeBytes`.                  |
-| Python  | `bytes` or `bytearray`   | Zero-copy either way; a `bytes` object's buffer is immutable and stable. |
+| Python  | `bytes` or `bytearray`   | Zero-copy either way; the object's stable internal pointer is used in both cases. |
 | Ruby    | `String(BINARY)`         | Uses `String` with `Encoding::BINARY`.                        |
 
 Passing a non-direct `ByteBuffer` from Kotlin raises an
@@ -67,7 +67,6 @@ the caller's buffer — no copy in or out.
 ```rust
 #[uniffi::export]
 pub fn fill(buf: &mut [u8]) {
-    // The caller sees these writes once the call returns.
     for (i, b) in buf.iter_mut().enumerate() {
         *b = i as u8;
     }
@@ -101,6 +100,6 @@ Each binding maps a mutable argument to a writable type:
 |---------|------------------------------|-----------------------------------------------------|
 | Kotlin  | direct `java.nio.ByteBuffer` | The same direct buffer as `[ByRef]`; writes land in it. |
 | Swift   | `inout Data`                 | The call runs inside `Data.withUnsafeMutableBytes`. |
-| Python  | `bytearray`                  | Pass `bytes` and it fails — `bytes` is immutable.   |
+| Python  | `bytearray`                  | `bytes` can't be used as a mutable argument.        |
 
 Ruby doesn't support `&mut [u8]`.
