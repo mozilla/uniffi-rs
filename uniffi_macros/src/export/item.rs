@@ -175,6 +175,16 @@ impl ExportItem {
             (kind, cb_only)
         };
 
+        if args.remote.is_some() && trait_kind.has_foreign() {
+            // Foreign implementations require us to add a hidden `uniffi_foreign_handle` method to
+            // the trait (see `alter_trait`), which is impossible for a trait defined in another
+            // crate.
+            return Err(syn::Error::new(
+                item.ident.span(),
+                "remote traits can't be implemented by foreign code",
+            ));
+        }
+
         if !item.generics.params.is_empty() || item.generics.where_clause.is_some() {
             return Err(syn::Error::new_spanned(
                 &item.generics,

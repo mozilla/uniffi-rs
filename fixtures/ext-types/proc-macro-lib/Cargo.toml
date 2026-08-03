@@ -23,6 +23,7 @@ uniffi = { workspace = true }
 
 uniffi-fixture-ext-types-lib-one = {path = "../uniffi-one"}
 uniffi-fixture-ext-types-custom-types = {path = "../custom-types"}
+uniffi-fixture-ext-types-external-crate = {path = "../external-crate"}
 
 # Reuse one of our examples.
 uniffi-example-custom-types = {path = "../../../examples/custom-types"}

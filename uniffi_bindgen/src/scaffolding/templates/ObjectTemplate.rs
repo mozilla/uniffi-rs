@@ -3,7 +3,13 @@
 #}
 
 {%- if obj.is_trait_interface() %}
-#[::uniffi::export_for_udl{% if obj.has_callback_interface() %}(with_foreign){% endif %}]
+{%- if obj.has_callback_interface() %}
+#[::uniffi::export_for_udl(with_foreign)]
+{%- else if obj.remote() %}
+#[::uniffi::export_for_udl(remote)]
+{%- else %}
+#[::uniffi::export_for_udl]
+{%- endif %}
 pub trait r#{{ obj.name() }} {
     {%- for meth in obj.methods() %}
     {% if meth.is_async() %}async {% endif %}fn r#{{ meth.name() }}(

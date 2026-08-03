@@ -88,6 +88,11 @@ try {
 assert(ct.ecd.sval == "ecd")
 assert(getExternalCrateInterface("foo").value() == "foo")
 
+// A remote trait (ie, UDL `[Trait, Remote] interface`) we can use and pass around.
+val ect = getExternalCrateTrait()
+assert(ect.hello() == "external crate trait says hello")
+assert(invokeExternalCrateTrait(ect) == "external crate trait says hello")
+
 // Test that BindingRenamedType from uniffi-one is renamed to KotlinRenamedType via direct function call
 val renamedType = getBindingRenamedType("external_rename_test")
 assert(renamedType is KotlinRenamedType)

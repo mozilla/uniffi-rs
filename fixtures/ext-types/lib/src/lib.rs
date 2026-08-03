@@ -2,7 +2,7 @@ use custom_types::Handle;
 use ext_types_custom::{ANestedGuid, Guid, HandleU8, Ouid};
 use ext_types_external_crate::{
     ExternalCrateDictionary, ExternalCrateEnumInterface, ExternalCrateInterface,
-    ExternalCrateNonExhaustiveEnum,
+    ExternalCrateNonExhaustiveEnum, ExternalCrateTrait,
 };
 use std::sync::Arc;
 use uniffi_one::{
@@ -253,6 +253,23 @@ fn throw_uniffi_one_error_interface() -> Result<(), UniffiOneErrorInterface> {
 
 fn get_external_crate_interface(val: String) -> Arc<ExternalCrateInterface> {
     Arc::new(ExternalCrateInterface::new(val))
+}
+
+// An implementation of a trait defined in a crate which doesn't use UniFFI.
+struct ExternalCrateTraitImpl;
+
+impl ExternalCrateTrait for ExternalCrateTraitImpl {
+    fn hello(&self) -> String {
+        "external crate trait says hello".to_string()
+    }
+}
+
+fn get_external_crate_trait() -> Arc<dyn ExternalCrateTrait> {
+    Arc::new(ExternalCrateTraitImpl)
+}
+
+fn invoke_external_crate_trait(t: Arc<dyn ExternalCrateTrait>) -> String {
+    t.hello()
 }
 
 fn get_uniffi_one_udl_trait(

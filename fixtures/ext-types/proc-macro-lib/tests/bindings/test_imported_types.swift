@@ -17,6 +17,11 @@ assert(getObjectsType(value: nil).maybeInterface == nil)
 assert(getObjectsType(value: nil).maybeTrait == nil)
 assert(getUniffiOneTrait(t: nil) == nil)
 
+// a `remote` trait we can use and pass around.
+let ect = getExternalCrateTrait()
+assert(ect.hello() == "external crate trait says hello")
+assert(invokeExternalCrateTrait(t: ect) == "external crate trait says hello")
+
 let url = URL(string: "http://example.com/")!;
 assert(getUrl(url: url) ==  url)
 assert(getMaybeUrl(url: url)! == url)

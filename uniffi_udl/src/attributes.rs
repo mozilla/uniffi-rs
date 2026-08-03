@@ -441,6 +441,13 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttribu
         if attrs.iter().any(|a| matches!(a, Attribute::Enum)) && !ok_for_enum {
             bail!("conflicting attributes on interface definition");
         }
+        // Foreign impls need UniFFI to add a hidden method to the trait, which is impossible for a
+        // trait defined in another crate.
+        if attrs.iter().any(|a| matches!(a, Attribute::Remote))
+            && attrs.iter().any(|a| matches!(a, Attribute::WithForeign))
+        {
+            bail!("remote traits can't be implemented by foreign code, so `[Remote]` and `[WithForeign]` conflict");
+        }
         Ok(Self(attrs))
     }
 }
@@ -936,6 +943,28 @@ mod test {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[WithForeign]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
         assert!(attrs.object_impl().is_err())
+    }
+
+    #[test]
+    fn test_remote_trait_attribute() {
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Trait, Remote]").unwrap();
+        let attrs = InterfaceAttributes::try_from(&node).unwrap();
+        assert!(attrs.contains_remote());
+        assert_eq!(
+            attrs.object_impl().unwrap(),
+            ObjectImpl::Trait(TraitKind::RustOnly)
+        );
+
+        // Foreign impls need a hidden method added to the trait, which is impossible for a trait
+        // defined in another crate.
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[Trait, Remote, WithForeign]")
+                .unwrap();
+        let err = InterfaceAttributes::try_from(&node).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "remote traits can't be implemented by foreign code, so `[Remote]` and `[WithForeign]` conflict"
+        );
     }
 
     #[test]

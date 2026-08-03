@@ -101,7 +101,7 @@ fn do_export(
 ) -> TokenStream {
     let gen_output = || {
         let item = syn::parse(input)?;
-        let altered_input = keep_input.then(|| export::alter_input(&item));
+        let altered_input = keep_input.then(|| export::alter_input(&item, attr_args.clone()));
         let output = expand_export(item, attr_args, udl_mode)?;
         Ok(quote! {
             #altered_input

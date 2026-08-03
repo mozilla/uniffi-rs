@@ -26,6 +26,7 @@ use uniffi_meta::UniffiTraitDiscriminants;
 ///
 /// `with_foreign` is a deprecated alias for `rust, foreign`.
 /// `callback_interface` is a deprecated legacy flag for Box-based foreign-only traits.
+/// `remote` is whether the trait is defined in an external non-uniffi-consuming crate.
 #[derive(Default)]
 pub struct ExportTraitArgs {
     pub(crate) async_runtime: Option<AsyncRuntime>,
@@ -37,6 +38,8 @@ pub struct ExportTraitArgs {
     pub(crate) rust: Option<kw::rust>,
     /// Include foreign instances in the FFI bridge.
     pub(crate) foreign: Option<kw::foreign>,
+    /// Is the trait a "remote type".
+    pub(crate) remote: Option<kw::remote>,
 }
 
 impl Parse for ExportTraitArgs {
@@ -75,6 +78,11 @@ impl UniffiAttributeArgs for ExportTraitArgs {
                 foreign: input.parse()?,
                 ..Self::default()
             })
+        } else if lookahead.peek(kw::remote) {
+            Ok(Self {
+                remote: input.parse()?,
+                ..Self::default()
+            })
         } else {
             Err(lookahead.error())
         }
@@ -90,6 +98,7 @@ impl UniffiAttributeArgs for ExportTraitArgs {
             with_foreign: either_attribute_arg(self.with_foreign, other.with_foreign)?,
             rust: either_attribute_arg(self.rust, other.rust)?,
             foreign: either_attribute_arg(self.foreign, other.foreign)?,
+            remote: either_attribute_arg(self.remote, other.remote)?,
         };
         let has_new_flags = merged.rust.is_some() || merged.foreign.is_some();
         let has_legacy_flags = merged.callback_interface.is_some() || merged.with_foreign.is_some();

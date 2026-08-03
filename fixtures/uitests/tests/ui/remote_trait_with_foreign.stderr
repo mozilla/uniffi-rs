@@ -1,0 +1,23 @@
+error: remote traits can't be implemented by foreign code
+ --> tests/ui/remote_trait_with_foreign.rs:7:11
+  |
+7 | pub trait RemoteForeign: Send + Sync {
+  |           ^^^^^^^^^^^^^
+
+error: remote traits can't be implemented by foreign code
+  --> tests/ui/remote_trait_with_foreign.rs:12:11
+   |
+12 | pub trait RemoteRustAndForeign: Send + Sync {
+   |           ^^^^^^^^^^^^^^^^^^^^
+
+error: remote traits can't be implemented by foreign code
+  --> tests/ui/remote_trait_with_foreign.rs:17:11
+   |
+17 | pub trait RemoteWithForeign: Send + Sync {
+   |           ^^^^^^^^^^^^^^^^^
+
+error: remote traits can't be implemented by foreign code
+  --> tests/ui/remote_trait_with_foreign.rs:22:11
+   |
+22 | pub trait RemoteCallbackInterface: Send + Sync {
+   |           ^^^^^^^^^^^^^^^^^^^^^^^

@@ -1,5 +1,6 @@
 use custom_types::Handle;
 use ext_types_custom::{Guid, Ouid2};
+use ext_types_external_crate::ExternalCrateTrait;
 use std::sync::Arc;
 use uniffi_one::{
     UniffiOneEnum, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneRecordContainingInterface,
@@ -169,6 +170,33 @@ impl uniffi_one::UniffiOneTrait for UniffiOneTraitObject {
     fn hello(&self) -> String {
         "uniffi-one-trait-object".to_string()
     }
+}
+
+// A trait from a crate which doesn't use UniFFI - mirror the definition here and mark it
+// `remote`.
+#[uniffi::export(remote)]
+pub trait ExternalCrateTrait: Send + Sync {
+    fn hello(&self) -> String;
+}
+
+// Only Rust can implement it - here's one.
+struct ExternalCrateTraitImpl;
+
+impl ExternalCrateTrait for ExternalCrateTraitImpl {
+    fn hello(&self) -> String {
+        "external crate trait says hello".to_string()
+    }
+}
+
+// And use it.
+#[uniffi::export]
+fn get_external_crate_trait() -> Arc<dyn ExternalCrateTrait> {
+    Arc::new(ExternalCrateTraitImpl)
+}
+
+#[uniffi::export]
+fn invoke_external_crate_trait(t: Arc<dyn ExternalCrateTrait>) -> String {
+    t.hello()
 }
 
 // Some custom types via macros.

@@ -34,6 +34,18 @@ enum LogLevel {
 }
 ```
 
+Traits go through `#[uniffi::export]` rather than `#[uniffi::remote]`, so they use a `remote`
+argument instead:
+
+```rust
+// As above, this mirrors the definition from the remote crate; UniFFI generates the scaffolding
+// but doesn't output the trait itself.
+#[uniffi::export(remote)]
+pub trait Logger: Send + Sync {
+    fn log(&self, message: String);
+}
+```
+
 ## UDL
 
 Wrap the definition with `[Remote]` attribute:
@@ -47,6 +59,23 @@ enum LogLevel {
     "Debug",
     "Trace",
 };
+
+[Trait, Remote]
+interface Logger {
+    void log(string message);
+};
+```
+
+## Remote traits can't be foreign
+
+Supporting foreign implementations of a trait requires UniFFI to change the trait,
+which is impossible for a trait defined externally. `#[uniffi::export(remote, foreign)]` and
+`[Trait, Remote, WithForeign]` are therefore errors — only Rust can implement a remote trait.
+
+At time of writing, the change made to a non-remote trait is a new method:
+```
+#[doc(hidden)]
+fn uniffi_foreign_handle(&self) { ... }
 ```
 
 # External Types

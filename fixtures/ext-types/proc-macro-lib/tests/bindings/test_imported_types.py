@@ -26,6 +26,11 @@ class TestIt(unittest.TestCase):
         self.assertEqual(ot.maybe_interface, None)
         self.assertEqual(get_uniffi_one_trait(None), None)
 
+        # `remote` trait we can use and pass around.
+        t = get_external_crate_trait()
+        self.assertEqual(t.hello(), "external crate trait says hello")
+        self.assertEqual(invoke_external_crate_trait(t), "external crate trait says hello")
+
     def test_get_url(self):
         url = urllib.parse.urlparse("http://example.com/")
         self.assertEqual(get_url(url), url)

@@ -18,6 +18,8 @@ namespace imported_types_lib {
 
     UniffiOneInterface get_uniffi_one_interface();
     ExternalCrateInterface get_external_crate_interface(string val);
+    ExternalCrateTrait get_external_crate_trait();
+    string invoke_external_crate_trait(ExternalCrateTrait t);
     UniffiOneProcMacroType get_uniffi_one_proc_macro_type(UniffiOneProcMacroType t);
     UniffiOneUDLTrait? get_uniffi_one_udl_trait(UniffiOneUDLTrait? t);
 };
@@ -76,6 +78,11 @@ enum ExternalCrateNonExhaustiveEnum {
 [Enum, Remote]
 interface ExternalCrateEnumInterface {
     Whatever();
+};
+
+[Trait, Remote]
+interface ExternalCrateTrait {
+    string hello();
 };
 
 // And a new type here to tie them all together.
