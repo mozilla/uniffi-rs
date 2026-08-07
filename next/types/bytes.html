@@ -634,6 +634,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#mutable-buffers-mut-u8-bymutref-bytes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mutable buffers (&amp;mut [u8] / [ByMutRef] bytes)
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2400,6 +2409,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#mutable-buffers-mut-u8-bymutref-bytes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mutable buffers (&amp;mut [u8] / [ByMutRef] bytes)
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2477,8 +2495,8 @@ use <code>Vec&lt;u8&gt;</code> / <code>bytes</code> instead.</p>
 </tr>
 <tr>
 <td>Python</td>
-<td><code>bytes</code></td>
-<td>The <code>bytes</code> object's stable internal pointer is used.</td>
+<td><code>bytes</code> or <code>bytearray</code></td>
+<td>Zero-copy either way; the object's stable internal pointer is used in both cases.</td>
 </tr>
 <tr>
 <td>Ruby</td>
@@ -2490,6 +2508,66 @@ use <code>Vec&lt;u8&gt;</code> / <code>bytes</code> instead.</p>
 <p>Passing a non-direct <code>ByteBuffer</code> from Kotlin raises an
 <code>IllegalArgumentException</code> at the call site, matching JNA's
 <code>getDirectBufferPointer</code> requirement.</p>
+<h2 id="mutable-buffers-mut-u8-bymutref-bytes">Mutable buffers (<code>&amp;mut [u8]</code> / <code>[ByMutRef] bytes</code>)</h2>
+<p>A <strong>synchronous</strong> function can take <code>&amp;mut [u8]</code> (or <code>[ByMutRef] bytes</code> in
+UDL) to borrow a foreign-owned buffer and write to it. The writes land in
+the caller's buffer — no copy in or out.</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">fill</span><span class="p">(</span><span class="n">buf</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="p">[</span><span class="kt">u8</span><span class="p">])</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">iter_mut</span><span class="p">().</span><span class="n">enumerate</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="o">*</span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="kt">u8</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>namespace<span class="w"> </span>example<span class="w"> </span>{
+<span class="w">    </span>void<span class="w"> </span>fill([ByMutRef]<span class="w"> </span>bytes<span class="w"> </span>buf);
+};
+</code></pre></div>
+<p>Every <code>&amp;[u8]</code> rule above still holds. Two more:</p>
+<ul>
+<li><strong>Synchronous only.</strong> <code>&amp;mut [u8]</code> / <code>[ByMutRef]</code> in an <code>async</code> function
+  fails to compile (proc-macro) or generate (UDL). An async call can
+  resume on another thread after the caller has moved on and freed the
+  buffer.</li>
+<li><strong>Pass a writable buffer.</strong> Each binding needs a mutable buffer type and
+  rejects a read-only one.</li>
+<li><strong>Aliasing is the caller's responsibility.</strong> Rust borrows the buffer for
+  the duration of the call, so the usual aliasing rules apply across the FFI:<ul>
+<li>Don't pass the same buffer, or overlapping slices, into Rust from
+  separate threads at the same time.</li>
+<li>Don't mutate or free the buffer from another thread while a Rust
+  function is borrowing it.</li>
+</ul>
+</li>
+</ul>
+<p>Each binding maps a mutable argument to a writable type:</p>
+<table>
+<thead>
+<tr>
+<th>Binding</th>
+<th>Foreign type</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kotlin</td>
+<td>direct <code>java.nio.ByteBuffer</code></td>
+<td>The same direct buffer as <code>[ByRef]</code>; writes land in it.</td>
+</tr>
+<tr>
+<td>Swift</td>
+<td><code>inout Data</code></td>
+<td>The call runs inside <code>Data.withUnsafeMutableBytes</code>.</td>
+</tr>
+<tr>
+<td>Python</td>
+<td><code>bytearray</code></td>
+<td><code>bytes</code> can't be used as a mutable argument.</td>
+</tr>
+</tbody>
+</table>
+<p>Ruby doesn't support <code>&amp;mut [u8]</code>.</p>
 
 
 
