@@ -12,6 +12,13 @@
   library before generating bindings.
   See [#2841](https://github.com/mozilla/uniffi-rs/pull/2841).
   Use `uniffi-bindgen [generation-options] src:[rust-crate-name]` to test this out.
+- The foreign-callback vtable cell now holds one registration per realm, so several instances of a
+  foreign runtime (Node worker threads, JVM classloaders, Python sub-interpreters) can share one
+  cdylib without the last one to register owning every callback in the process.
+  A realm is identified by bits the bindings tag into the top of the handles they mint.
+  Existing bindings are unaffected and need no regeneration: they register into realm 0 and read
+  back from realm 0.
+  See [#2958](https://github.com/mozilla/uniffi-rs/pull/2958).
 - Added `uniffi-bindgen-kotlin-jni`, an experimental JNI-based Kotlin bindgen.
   Benchmarks show large improvements in performance and we believe this will be more stable than the
   current Kotlin bindings.  However, the code is very fresh so use at your own risk.
