@@ -517,12 +517,14 @@ impl<'a> MetadataReader<'a> {
                 let name = self.read_string()?;
                 let ty = self.read_type()?;
                 let by_ref = self.read_bool()?;
+                let by_mut_ref = self.read_bool()?;
                 let default = self.read_optional_default(&name, &ty)?;
                 Ok(FnParamMetadata {
                     name,
                     ty,
                     default,
                     by_ref,
+                    by_mut_ref,
                     optional: false,
                 })
             })

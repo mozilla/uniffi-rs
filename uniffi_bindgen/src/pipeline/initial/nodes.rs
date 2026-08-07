@@ -135,6 +135,7 @@ pub struct Argument {
     pub name: String,
     pub ty: Type,
     pub by_ref: bool,
+    pub by_mut_ref: bool,
     pub optional: bool,
     pub default: Option<DefaultValue>,
 }
@@ -144,6 +145,12 @@ impl Argument {
     /// `ForeignBytes` FFI path instead of the owned `RustBuffer` path.
     pub fn is_borrowed_bytes(&self) -> bool {
         self.by_ref && matches!(self.ty, Type::Bytes)
+    }
+
+    /// True for zero-copy `&mut [u8]` / `[ByMutRef] bytes` arguments. Implies
+    /// `is_borrowed_bytes()`; drives foreign codegen only.
+    pub fn is_borrowed_bytes_mut(&self) -> bool {
+        self.by_mut_ref && matches!(self.ty, Type::Bytes)
     }
 }
 

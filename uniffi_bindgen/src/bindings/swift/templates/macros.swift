@@ -19,7 +19,9 @@
         args. The `ForeignBytes` value is only guaranteed valid inside the
         scope, so the full FFI call runs inside the innermost closure. #}
     {%- for arg in func.arguments() -%}
-    {%-     if arg|is_borrowed_bytes %}
+    {%-     if arg|is_borrowed_bytes_mut %}
+        FfiConverterByMutRefBytes.lower(&{{ arg.name()|var_name }}) { {{ arg.name()|var_name }}Fb in
+    {%-     else if arg|is_borrowed_bytes %}
         FfiConverterByRefBytes.lower({{ arg.name()|var_name }}) { {{ arg.name()|var_name }}Fb in
     {%-     endif %}
     {%- endfor %}
@@ -137,7 +139,7 @@ public convenience init(
 
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
-        {% if config.omit_argument_labels() %}_ {% endif %}{{ arg.name()|var_name }}: {{ arg|type_name -}}
+        {% if config.omit_argument_labels() %}_ {% endif %}{{ arg.name()|var_name }}: {% if arg|is_borrowed_bytes_mut %}inout {% endif %}{{ arg|type_name -}}
         {%- match arg.default_value() %}
         {%- when Some with(default) %} = {{ default|default_swift(arg) }}
         {%- else %}

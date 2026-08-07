@@ -244,6 +244,7 @@ mod tests {
                     }),
                 },
                 by_ref: false,
+                by_mut_ref: false,
                 optional: false,
                 default: None,
             }],

@@ -1105,6 +1105,17 @@ pub mod filters {
         Ok(arg.is_borrowed_bytes())
     }
 
+    /// Returns `true` if an argument is `&mut [u8]` / mutable borrowed `Bytes`.
+    /// Used by `to_ffi_call` / `arg_list_decl` to thread `inout Data` and open
+    /// the `FfiConverterByMutRefBytes.lower(...) { ... }` scope.
+    #[askama::filter_fn]
+    pub fn is_borrowed_bytes_mut(
+        arg: &Argument,
+        _: &dyn askama::Values,
+    ) -> Result<bool, askama::Error> {
+        Ok(arg.is_borrowed_bytes_mut())
+    }
+
     /// Swift expression to emit at an argument's position in an FFI call.
     ///
     /// For borrowed `Bytes` (`&[u8]`), this is a bare reference to the

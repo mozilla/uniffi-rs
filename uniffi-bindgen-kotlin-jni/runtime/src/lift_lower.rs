@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::ptr::NonNull;
+
 use anyhow::{bail, Result};
 use jni_sys::*;
 
@@ -532,10 +534,52 @@ pub unsafe fn lower_vec_f64(env: *mut JNIEnv, value: Vec<f64>) -> Result<jbyteAr
 /// # Safety
 /// env must point to a valid JNIEnv
 pub unsafe fn lift_bytes_ref<'a>(env: *mut JNIEnv, byte_buffer: jobject) -> Result<&'a [u8]> {
+    let capacity = ((**env).v1_4.GetDirectBufferCapacity)(env, byte_buffer) as usize;
+    let ptr = direct_buffer_ptr(env, byte_buffer, capacity, "lift_bytes_ref")?;
+    Ok(std::slice::from_raw_parts(ptr, capacity))
+}
+
+/// Resolve the backing pointer of a direct `ByteBuffer`.
+///
+/// `GetDirectBufferAddress` may return null for a zero-capacity buffer on some
+/// JVMs, but `slice::from_raw_parts{,_mut}` still requires a non-null, aligned
+/// pointer even for a zero-length slice. Substitute a dangling pointer in that
+/// case. A null pointer with a non-zero capacity is a genuine failure.
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+unsafe fn direct_buffer_ptr(
+    env: *mut JNIEnv,
+    byte_buffer: jobject,
+    capacity: usize,
+    context: &str,
+) -> Result<*mut u8> {
     let ptr = ((**env).v1_4.GetDirectBufferAddress)(env, byte_buffer).cast::<u8>();
     if ptr.is_null() {
-        bail!("lift_bytes_ref: GetDirectBufferAddress failed");
+        if capacity == 0 {
+            Ok(NonNull::dangling().as_ptr())
+        } else {
+            bail!("{context}: GetDirectBufferAddress failed");
+        }
+    } else {
+        Ok(ptr)
     }
+}
+
+/// Lift Kotlin Byte buffer to a `&mut [u8]` value
+///
+/// Writes through the returned slice land directly in the direct `ByteBuffer`'s
+/// backing store, so the caller observes them in place.
+///
+/// Note: this is only supported in the Kotlin -> Rust direction.
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lift_bytes_mut_ref<'a>(
+    env: *mut JNIEnv,
+    byte_buffer: jobject,
+) -> Result<&'a mut [u8]> {
     let capacity = ((**env).v1_4.GetDirectBufferCapacity)(env, byte_buffer) as usize;
-    Ok(std::slice::from_raw_parts(ptr, capacity))
+    let ptr = direct_buffer_ptr(env, byte_buffer, capacity, "lift_bytes_mut_ref")?;
+    Ok(std::slice::from_raw_parts_mut(ptr, capacity))
 }

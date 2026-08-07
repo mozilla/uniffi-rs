@@ -112,7 +112,7 @@ pub fn map_callable(
         } => Some(Argument {
             ty: self_type.clone(),
             by_ref: !takes_self_by_arc,
-            ffi: argument_ffi(self_type, !takes_self_by_arc, true, &mut allocator),
+            ffi: argument_ffi(self_type, !takes_self_by_arc, false, true, &mut allocator),
             index: allocator.next_arg_index(),
             name: "".into(),
             orig_name: "".into(),
@@ -126,7 +126,7 @@ pub fn map_callable(
         } => Some(Argument {
             ty: self_type.clone(),
             by_ref: !takes_self_by_arc,
-            ffi: argument_ffi(self_type, true, true, &mut allocator),
+            ffi: argument_ffi(self_type, true, false, true, &mut allocator),
             index: allocator.next_arg_index(),
             name: "".into(),
             orig_name: "".into(),
@@ -169,7 +169,7 @@ fn map_arguments(
                 orig_name: arg.orig_name,
                 index: allocator.next_arg_index(),
                 optional: arg.optional,
-                ffi: argument_ffi(&ty, arg.by_ref, false, allocator),
+                ffi: argument_ffi(&ty, arg.by_ref, arg.by_mut_ref, false, allocator),
                 ty,
                 by_ref: arg.by_ref,
                 default: arg.default.map_node(context)?,
@@ -181,6 +181,7 @@ fn map_arguments(
 fn argument_ffi(
     ty: &TypeNode,
     by_ref: bool,
+    by_mut_ref: bool,
     receiver: bool,
     allocator: &mut ArgAllocator,
 ) -> ArgumentFfi {
@@ -218,15 +219,22 @@ fn argument_ffi(
             }
         }
         (Type::Bytes, true) => {
-            // For this case we Lift java.nio.ByteBuffer directly into a `&[u8]` slice.
+            // For this case we Lift java.nio.ByteBuffer directly into a `&[u8]` (or
+            // `&mut [u8]` for `[ByMutRef]`) slice. Rust writes through the mutable
+            // slice land directly in the direct buffer's backing store.
             //
             // This is only supported for Kotlin -> Rust calls.  For other calls use the normal
             // lift/lower functions, which will fail to compile if the user tries to use `&[u8]`
             // with them.
+            let lift_fn_rs = if by_mut_ref {
+                "uniffi_jni::lift_bytes_mut_ref"
+            } else {
+                "uniffi_jni::lift_bytes_ref"
+            };
             ArgumentFfi::Custom {
                 ffi_args: allocator.create_ffi_args(&[FfiType::ByteBuffer]),
                 lower_fn_kt: "lowerBytesRef".into(),
-                lift_fn_rs: "uniffi_jni::lift_bytes_ref".into(),
+                lift_fn_rs: lift_fn_rs.into(),
                 lift_fn_kt: ty.lift_fn_kt(),
                 lower_fn_rs: ty.lower_fn_rs(),
                 // Unlike the non-ref case these input a `ByteBuffer` directly

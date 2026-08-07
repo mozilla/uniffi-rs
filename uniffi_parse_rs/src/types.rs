@@ -23,6 +23,8 @@ use crate::{
 pub struct ArgType {
     pub ty: uniffi_meta::Type,
     pub by_ref: bool,
+    /// `true` for `&mut [u8]` args (zero-copy mutable bytes). Always implies `by_ref`.
+    pub by_mut_ref: bool,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -255,10 +257,11 @@ impl<'ir> RPath<'ir> {
         self_ty: Option<&uniffi_meta::Type>,
     ) -> Result<ArgType> {
         Ok(match self.resolve_type(ir, cache, syn_ty)? {
-            Type::Ref { ty, .. } => match *ty {
+            Type::Ref { mutable, ty } => match *ty {
                 Type::Str => ArgType {
                     ty: uniffi_meta::Type::String,
                     by_ref: true,
+                    by_mut_ref: false,
                 },
                 Type::Trait {
                     module_path,
@@ -267,23 +270,34 @@ impl<'ir> RPath<'ir> {
                 } => ArgType {
                     ty: trait_to_uniffi_meta(module_path, name, export_ty),
                     by_ref: true,
+                    by_mut_ref: false,
                 },
-                Type::Slice(inner) => ArgType {
-                    ty: Type::Vec(inner).try_into_uniffi_meta(
+                Type::Slice(inner) => {
+                    let ty = Type::Vec(inner).try_into_uniffi_meta(
                         self.file_id(),
                         syn_ty.span(),
                         self_ty,
-                    )?,
-                    by_ref: true,
-                },
+                    )?;
+                    // `&mut` only carries mutation intent for `&mut [u8]` (which
+                    // resolves to `Bytes`). Other `&mut [T]` slices are passed by
+                    // value (copied), so flagging them would be misleading.
+                    let by_mut_ref = mutable && matches!(ty, uniffi_meta::Type::Bytes);
+                    ArgType {
+                        ty,
+                        by_ref: true,
+                        by_mut_ref,
+                    }
+                }
                 ty => ArgType {
                     ty: ty.try_into_uniffi_meta(self.file_id(), syn_ty.span(), self_ty)?,
                     by_ref: true,
+                    by_mut_ref: false,
                 },
             },
             ty => ArgType {
                 ty: ty.try_into_uniffi_meta(self.file_id(), syn_ty.span(), self_ty)?,
                 by_ref: false,
+                by_mut_ref: false,
             },
         })
     }
@@ -1625,6 +1639,7 @@ pub mod tests {
                     name: "TestRecord".into(),
                 },
                 by_ref: false,
+                by_mut_ref: false,
             }),
         );
         assert_eq!(
@@ -1635,6 +1650,7 @@ pub mod tests {
                     name: "TestRecord".into(),
                 },
                 by_ref: true,
+                by_mut_ref: false,
             }),
         );
         assert_eq!(
@@ -1646,6 +1662,7 @@ pub mod tests {
                     imp: ObjectImpl::Trait(TraitKind::RustOnly),
                 },
                 by_ref: true,
+                by_mut_ref: false,
             }),
         );
         assert_eq!(
@@ -1658,6 +1675,40 @@ pub mod tests {
                     }),
                 },
                 by_ref: true,
+                by_mut_ref: false,
+            }),
+        );
+        // A `&mut [T]` slice of non-u8 elements is copied by value, so `&mut`
+        // carries no mutation intent — `by_mut_ref` must stay false.
+        assert_eq!(
+            run_resolve_arg(&ir, &mut cache, "types", "&mut [TestRecord]", None),
+            Ok(ArgType {
+                ty: uniffi_meta::Type::Sequence {
+                    inner_type: Box::new(uniffi_meta::Type::Record {
+                        module_path: "types".into(),
+                        name: "TestRecord".into(),
+                    }),
+                },
+                by_ref: true,
+                by_mut_ref: false,
+            }),
+        );
+        // `&[u8]` is zero-copy bytes, by-ref but not mutable.
+        assert_eq!(
+            run_resolve_arg(&ir, &mut cache, "types", "&[u8]", None),
+            Ok(ArgType {
+                ty: uniffi_meta::Type::Bytes,
+                by_ref: true,
+                by_mut_ref: false,
+            }),
+        );
+        // `&mut [u8]` is zero-copy mutable bytes.
+        assert_eq!(
+            run_resolve_arg(&ir, &mut cache, "types", "&mut [u8]", None),
+            Ok(ArgType {
+                ty: uniffi_meta::Type::Bytes,
+                by_ref: true,
+                by_mut_ref: true,
             }),
         );
     }

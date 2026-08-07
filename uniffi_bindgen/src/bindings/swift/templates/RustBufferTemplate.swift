@@ -33,6 +33,13 @@ fileprivate extension ForeignBytes {
             data: rawBufferPointer.baseAddress?.assumingMemoryBound(to: UInt8.self)
         )
     }
+
+    init(mutableRawBufferPointer: UnsafeMutableRawBufferPointer) {
+        self.init(
+            len: Int32(mutableRawBufferPointer.count),
+            data: mutableRawBufferPointer.baseAddress?.assumingMemoryBound(to: UInt8.self)
+        )
+    }
 }
 
 // Converter for `&[u8]` / `[ByRef] bytes` arguments.
@@ -71,6 +78,21 @@ fileprivate enum FfiConverterByRefBytes: FfiConverter {
 
     static func write(_ value: Data, into buf: inout [UInt8]) {
         fatalError("ByRef bytes cannot be written to a buffer: zero-copy &[u8] is only supported in argument position, not nested in records/options/etc.")
+    }
+}
+
+// Converter for `&mut [u8]` / `[ByMutRef] bytes` arguments.
+//
+// Zero-copy and foreign -> Rust only, like `FfiConverterByRefBytes`, but the
+// buffer is writable: Rust's writes through the pointer land directly in the
+// caller's `Data`. The scope-bound `lower(_:_body:)` takes the `Data` `inout`
+// and runs the full FFI call inside `withUnsafeMutableBytes`, whose pointer is
+// only valid for the closure's duration.
+fileprivate enum FfiConverterByMutRefBytes {
+    static func lower<R>(_ value: inout Data, _ body: (ForeignBytes) throws -> R) rethrows -> R {
+        return try value.withUnsafeMutableBytes { rawBuf in
+            try body(ForeignBytes(mutableRawBufferPointer: rawBuf))
+        }
     }
 }
 

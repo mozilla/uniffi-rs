@@ -25,7 +25,7 @@ pub use metadata::codes;
 // `docs/uniffi-versioning.md` for details.
 //
 // Once we get to 1.0, then we'll need to update the scheme to something like 100 + major_version
-pub const UNIFFI_CONTRACT_VERSION: u32 = 30;
+pub const UNIFFI_CONTRACT_VERSION: u32 = 31;
 
 /// Similar to std::hash::Hash.
 ///
@@ -266,6 +266,9 @@ pub struct FnParamMetadata {
     pub name: String,
     pub ty: Type,
     pub by_ref: bool,
+    /// `true` for `&mut [u8]` / `[ByMutRef] bytes`. Always implies `by_ref`.
+    /// Drives foreign codegen only; the FFI type is unchanged from `by_ref`.
+    pub by_mut_ref: bool,
     pub optional: bool,
     pub default: Option<DefaultValueMetadata>,
 }
@@ -276,6 +279,7 @@ impl FnParamMetadata {
             name: name.to_string(),
             ty,
             by_ref: false,
+            by_mut_ref: false,
             optional: false,
             default: None,
         }

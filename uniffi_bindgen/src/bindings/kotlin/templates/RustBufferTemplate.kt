@@ -66,7 +66,15 @@ internal open class ForeignBytes : Structure() {
     class ByValue : ForeignBytes(), Structure.ByValue
 }
 
-// Converter for `&[u8]` / `[ByRef] bytes` arguments.
+// Converter for `&[u8]` / `[ByRef] bytes` AND `&mut [u8]` / `[ByMutRef] bytes`
+// arguments.
+//
+// Both take the identical zero-copy path: a direct `ByteBuffer`'s native
+// address is handed to Rust as a borrow for the duration of the (synchronous)
+// call. For `&mut [u8]` arguments Rust may WRITE through this pointer, and the
+// writes land directly in the caller's `ByteBuffer` — there is no read-only
+// direct-buffer distinction at the JNA layer, so callers that pass a buffer
+// they expect to stay unmodified must not use a `&mut [u8]` function.
 //
 // Only `lower` is valid — zero-copy byte buffers only flow foreign -> Rust,
 // and only in argument position. `lift`, `read`, `write`, and
