@@ -5,5 +5,5 @@
 # * ./.circleci/config.yml which also specifies the rust versions used in CI.
 
 [toolchain]
-channel = "1.90.0"
+channel = "1.94.0"
 components = ["clippy", "rustfmt"]
