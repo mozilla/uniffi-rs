@@ -24,10 +24,15 @@ def uniffi_set_event_loop(eventloop: asyncio.BaseEventLoop):
     _UNIFFI_GLOBAL_EVENT_LOOP = eventloop
 
 def _uniffi_get_event_loop():
-    if _UNIFFI_GLOBAL_EVENT_LOOP is not None:
-        return _UNIFFI_GLOBAL_EVENT_LOOP
-    else:
+    # A loop running on this thread owns the futures the call awaits, so it wins. The global is
+    # the fallback for threads that have none, which is what it was added for: preferring it
+    # everywhere hands one loop another loop's future as soon as a process runs two.
+    try:
         return asyncio.get_running_loop()
+    except RuntimeError:
+        if _UNIFFI_GLOBAL_EVENT_LOOP is not None:
+            return _UNIFFI_GLOBAL_EVENT_LOOP
+        raise
 
 # Continuation callback for async functions
 # lift the return value or error and resolve the future, causing the async function to resume.
