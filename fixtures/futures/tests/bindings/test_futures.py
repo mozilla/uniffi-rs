@@ -294,14 +294,14 @@ class TestFutures(unittest.TestCase):
     def test_call_from_a_second_event_loop(self):
         """A call is awaited on the loop making it, not on whichever one was set first.
 
-        `uniffi_set_event_loop` exists so a thread with no loop of its own has one to schedule a
+        `uniffi_set_default_event_loop` exists so a thread with no loop of its own has one to schedule a
         callback on. A thread that IS running a loop needs no such fallback, and taking it there
         builds the poll future on one loop and awaits it from another, which asyncio refuses with
         "got Future attached to a different loop".
         """
         first = asyncio.new_event_loop()
         try:
-            futures.uniffi_set_event_loop(first)
+            futures.uniffi_set_default_event_loop(first)
 
             async def test():
                 self.assertEqual(await always_ready(), True)
@@ -309,7 +309,7 @@ class TestFutures(unittest.TestCase):
             # A second loop, of the kind `asyncio.run` makes: this is the one awaiting the call.
             asyncio.run(test())
         finally:
-            futures.uniffi_set_event_loop(None)
+            futures.uniffi_set_default_event_loop(None)
             first.close()
 
 if __name__ == '__main__':
