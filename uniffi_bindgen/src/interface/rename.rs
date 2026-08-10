@@ -156,7 +156,7 @@ mod tests {
     use crate::interface::{ComponentInterface, Enum, Function, Object, Record};
     use uniffi_meta::{
         EnumMetadata, EnumShape, FieldMetadata, FnMetadata, FnParamMetadata, ObjectImpl,
-        ObjectMetadata, RecordMetadata, Type, VariantMetadata,
+        ObjectMetadata, PassBy, RecordMetadata, Type, VariantMetadata,
     };
 
     fn create_test_ci() -> ComponentInterface {
@@ -243,8 +243,7 @@ mod tests {
                         name: "OldRecord".to_string(),
                     }),
                 },
-                by_ref: false,
-                by_mut_ref: false,
+                pass_by: PassBy::Value,
                 optional: false,
                 default: None,
             }],

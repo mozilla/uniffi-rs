@@ -20,7 +20,7 @@ use uniffi_meta::{
 /// or moved the buffer. Reject it during UDL conversion (belt-and-braces
 /// alongside the proc-macro guard).
 fn reject_async_by_mut_ref(is_async: bool, inputs: &[FnParamMetadata]) -> Result<()> {
-    if is_async && inputs.iter().any(|p| p.by_mut_ref) {
+    if is_async && inputs.iter().any(|p| p.pass_by.is_mut_ref()) {
         bail!("[ByMutRef] is not supported in async functions");
     }
     Ok(())
@@ -73,15 +73,11 @@ impl APIConverter<FnParamMetadata> for weedle::argument::SingleArgument<'_> {
             )?)),
         };
         let attrs = ArgumentAttributes::try_from(self.attributes.as_ref())?;
-        // A `[ByMutRef]` arg is also `by_ref` (it *is* a borrow), matching the
-        // proc-macro `&mut [u8]` which sets both.
-        let by_mut_ref = attrs.by_mut_ref();
-        let by_ref = attrs.by_ref() || by_mut_ref;
+        let pass_by = attrs.pass_by();
         Ok(FnParamMetadata {
             name: self.identifier.0.to_string(),
             ty: type_,
-            by_ref,
-            by_mut_ref,
+            pass_by,
             optional: self.optional.is_some(),
             default,
         })

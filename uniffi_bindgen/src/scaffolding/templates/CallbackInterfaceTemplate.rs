@@ -4,7 +4,7 @@ pub trait r#{{ cbi.name() }} {
     fn r#{{ meth.name() }}(
         {% if meth.takes_self_by_arc()%}self: Arc<Self>{% else %}&self{% endif %},
         {%- for arg in meth.arguments() %}
-        r#{{ arg.name() }}: {% if arg.by_ref() %}&{% endif %}{{ arg.as_type().borrow()|type_rs }},
+        r#{{ arg.name() }}: {% if arg.is_borrowed() %}&{% endif %}{{ arg.as_type().borrow()|type_rs }},
         {%- endfor %}
     )
     {%- match (meth.return_type(), meth.throws_type()) %}

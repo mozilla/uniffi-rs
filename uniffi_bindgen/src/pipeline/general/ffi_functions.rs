@@ -98,8 +98,7 @@ fn method_ffi_def(
     let mut all_args = vec![initial::Argument {
         name: "uniffi_self".to_string(),
         ty: receiver_ty.clone(),
-        by_ref: true,
-        by_mut_ref: false,
+        pass_by: PassBy::Ref,
         optional: false,
         default: None,
     }];
@@ -173,12 +172,11 @@ fn ffi_def(
 mod tests {
     use super::*;
 
-    fn make_arg(ty: Type, by_ref: bool) -> initial::Argument {
+    fn make_arg(ty: Type, pass_by: PassBy) -> initial::Argument {
         initial::Argument {
             name: "buf".to_string(),
             ty,
-            by_ref,
-            by_mut_ref: false,
+            pass_by,
             optional: false,
             default: None,
         }
@@ -187,7 +185,7 @@ mod tests {
     #[test]
     fn byref_bytes_maps_to_foreignbytes() {
         let context = Context::new("test");
-        let arg = make_arg(Type::Bytes, true);
+        let arg = make_arg(Type::Bytes, PassBy::Ref);
         let ffi_arg = argument_to_ffi_argument(&arg, &context).expect("should convert");
         assert!(
             matches!(ffi_arg.ty, FfiType::ForeignBytes),
@@ -199,7 +197,7 @@ mod tests {
     #[test]
     fn owned_bytes_maps_to_rustbuffer() {
         let context = Context::new("test");
-        let arg = make_arg(Type::Bytes, false);
+        let arg = make_arg(Type::Bytes, PassBy::Value);
         let ffi_arg = argument_to_ffi_argument(&arg, &context).expect("should convert");
         assert!(
             matches!(ffi_arg.ty, FfiType::RustBuffer(None)),

@@ -131,8 +131,7 @@ impl Argument {
         Ok(uniffi_meta::FnParamMetadata {
             name: self.ident.unraw().to_string(),
             ty: arg.ty,
-            by_ref: arg.by_ref,
-            by_mut_ref: arg.by_mut_ref,
+            pass_by: arg.pass_by,
             default,
             optional: false,
         })
