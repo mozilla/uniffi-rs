@@ -17,9 +17,9 @@ This is needed if some async functions run outside of the eventloop, for example
       like `pollster` to block on the async call.
 
 In this case, we need an event loop to run the Python async function, but there's no eventloop set
-for the thread.  Use `uniffi_set_event_loop` to force an eventloop to be used in this case.
+for the thread.  Use `uniffi_set_default_event_loop` to force an eventloop to be used in this case.
 """
-def uniffi_set_event_loop(eventloop: asyncio.BaseEventLoop):
+def uniffi_set_default_event_loop(eventloop: asyncio.BaseEventLoop):
     global _UNIFFI_GLOBAL_EVENT_LOOP
     _UNIFFI_GLOBAL_EVENT_LOOP = eventloop
 
