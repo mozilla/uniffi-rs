@@ -2,6 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// Regression test for the async callback interface scaffolding; we want to avoid
+// needing `const_evaluatable_unchecked`, especially given that capability
+// is going to be removed by rustc eventually - see rust#76200.
+#![deny(const_evaluatable_unchecked)]
+
 use std::{
     future::Future,
     pin::Pin,

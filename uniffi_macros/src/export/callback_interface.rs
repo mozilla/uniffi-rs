@@ -595,13 +595,13 @@ fn gen_method_impl_pointer_ffi(
 
                     let (uniffi_callback, uniffi_receiver) = ::uniffi::pointer_ffi::start_foreign_future();
 
-                    let mut uniffi_ffi_buf = [
-                        0_u8;
-                        ::uniffi::ffi_buffer_size!(
+                    let mut uniffi_ffi_buf = {
+                        const UNIFFI_BUF_SIZE: usize = ::uniffi::ffi_buffer_size!(
                             (::uniffi::Handle, #(#scaffolding_param_types,)* ::uniffi::pointer_ffi::BoundCallbackFn),
                             (::std::option::Option<::uniffi::pointer_ffi::BoundCallbackFn>)
-                        )
-                    ];
+                        );
+                        [0_u8; UNIFFI_BUF_SIZE]
+                    };
                     let mut uniffi_args_buf = uniffi_ffi_buf.as_mut_slice();
                     // We're passing the handle by reference, so we can use `clone_for_ref` to
                     // avoid an arc clone
