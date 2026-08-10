@@ -32,7 +32,7 @@ def _uniffi_get_event_loop():
     except RuntimeError:
         if _UNIFFI_GLOBAL_EVENT_LOOP is not None:
             return _UNIFFI_GLOBAL_EVENT_LOOP
-        raise
+        raise RuntimeError("UniFFI error: no running event loop and uniffi_set_default_event_loop not called")
 
 # Continuation callback for async functions
 # lift the return value or error and resolve the future, causing the async function to resume.
