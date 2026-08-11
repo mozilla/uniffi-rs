@@ -1,65 +1,145 @@
 error[E0277]: the trait bound `Foo: FfiConverterArc<UniFfiTag>` is not satisfied
-  --> tests/ui/proc_macro_arc.rs:10:1
-   |
-10 | #[uniffi::export]
-   | ^^^^^^^^^^^^^^^^^ the trait `FfiConverterArc<UniFfiTag>` is not implemented for `Foo`
-   |
-   = help: the trait `LowerReturn<UT>` is implemented for `Arc<T>`
-   = note: required for `Arc<Foo>` to implement `FfiConverter<UniFfiTag>`
-   = note: required for `Arc<Foo>` to implement `uniffi::Lower<UniFfiTag>`
-   = note: required for `Arc<Foo>` to implement `LowerReturn<UniFfiTag>`
-   = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
+ --> tests/ui/proc_macro_arc.rs:10:1
+  |
+ 10 | #[uniffi::export]
+    | ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |
+help: the trait `FfiConverterArc<UniFfiTag>` is not implemented for `Foo`
+   --> tests/ui/proc_macro_arc.rs:8:1
+    |
+  8 | pub struct Foo;
+    | ^^^^^^^^^^^^^^
+help: the trait `LowerReturn<UT>` is implemented for `Arc<T>`
+   --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
+    |
+    |         unsafe impl $(<$($generic),*>)* $crate::LowerReturn<$ut> for $ty $(where $($where)*)*
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: $WORKSPACE/uniffi_core/src/ffi_converter_impls.rs
+    |
+    | derive_ffi_traits!(impl<T, UT> LowerReturn<UT> for Arc<T> where Arc<T>: Lower<UT>, T: ?Sized);
+    | --------------------------------------------------------------------------------------------- in this macro invocation
+    = note: required for `Arc<Foo>` to implement `FfiConverter<UniFfiTag>`
+    = note: required for `Arc<Foo>` to implement `uniffi::Lower<UniFfiTag>`
+    = note: required for `Arc<Foo>` to implement `LowerReturn<UniFfiTag>`
+    = note: this error originates in the attribute macro `uniffi::export` which comes from the expansion of the macro `derive_ffi_traits` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `Foo: FfiConverterArc<UniFfiTag>` is not satisfied
-  --> tests/ui/proc_macro_arc.rs:11:18
-   |
-11 | fn make_foo() -> Arc<Foo> {
-   |                  ^^^^^^^^ the trait `FfiConverterArc<UniFfiTag>` is not implemented for `Foo`
-   |
-   = help: the trait `uniffi::TypeId<UT>` is implemented for `Arc<T>`
-   = note: required for `Arc<Foo>` to implement `FfiConverter<UniFfiTag>`
-   = note: required for `Arc<Foo>` to implement `uniffi::TypeId<UniFfiTag>`
+ --> tests/ui/proc_macro_arc.rs:11:18
+  |
+ 11 | fn make_foo() -> Arc<Foo> {
+    |                  ^^^^^^^^ unsatisfied trait bound
+    |
+help: the trait `FfiConverterArc<UniFfiTag>` is not implemented for `Foo`
+   --> tests/ui/proc_macro_arc.rs:8:1
+    |
+  8 | pub struct Foo;
+    | ^^^^^^^^^^^^^^
+help: the trait `uniffi::TypeId<UT>` is implemented for `Arc<T>`
+   --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
+    |
+    |         impl $(<$($generic),*>)* $crate::TypeId<$ut> for $ty $(where $($where)*)*
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: $WORKSPACE/uniffi_core/src/ffi_converter_impls.rs
+    |
+    | derive_ffi_traits!(impl<T, UT> TypeId<UT> for Arc<T> where Arc<T>: FfiConverter<UT>, T: ?Sized);
+    | ----------------------------------------------------------------------------------------------- in this macro invocation
+    = note: required for `Arc<Foo>` to implement `FfiConverter<UniFfiTag>`
+    = note: required for `Arc<Foo>` to implement `uniffi::TypeId<UniFfiTag>`
+    = note: this error originates in the macro `derive_ffi_traits` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `child::Foo: FfiConverterArc<UniFfiTag>` is not satisfied
-  --> tests/ui/proc_macro_arc.rs:20:5
-   |
-20 |     #[uniffi::export]
-   |     ^^^^^^^^^^^^^^^^^ the trait `FfiConverterArc<UniFfiTag>` is not implemented for `child::Foo`
-   |
-   = help: the trait `Lift<UT>` is implemented for `Arc<T>`
-   = note: required for `Arc<child::Foo>` to implement `FfiConverter<UniFfiTag>`
-   = note: required for `Arc<child::Foo>` to implement `Lift<UniFfiTag>`
-   = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
+ --> tests/ui/proc_macro_arc.rs:20:5
+  |
+ 20 |     #[uniffi::export]
+    |     ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |
+help: the trait `FfiConverterArc<UniFfiTag>` is not implemented for `child::Foo`
+   --> tests/ui/proc_macro_arc.rs:18:5
+    |
+ 18 |     enum Foo {}
+    |     ^^^^^^^^
+help: the trait `Lift<UT>` is implemented for `Arc<T>`
+   --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
+    |
+    |         unsafe impl $(<$($generic),*>)* $crate::Lift<$ut> for $ty $(where $($where)*)*
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: $WORKSPACE/uniffi_core/src/ffi_converter_impls.rs
+    |
+    | derive_ffi_traits!(impl<T, UT> Lift<UT> for Arc<T> where Arc<T>: FfiConverter<UT>, T: ?Sized);
+    | --------------------------------------------------------------------------------------------- in this macro invocation
+    = note: required for `Arc<child::Foo>` to implement `FfiConverter<UniFfiTag>`
+    = note: required for `Arc<child::Foo>` to implement `Lift<UniFfiTag>`
+    = note: this error originates in the attribute macro `uniffi::export` which comes from the expansion of the macro `derive_ffi_traits` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `child::Foo: FfiConverterArc<UniFfiTag>` is not satisfied
-  --> tests/ui/proc_macro_arc.rs:21:22
-   |
-21 |     fn take_foo(foo: Arc<Foo>) {
-   |                      ^^^^^^^^ the trait `FfiConverterArc<UniFfiTag>` is not implemented for `child::Foo`
-   |
-   = help: the trait `uniffi::TypeId<UT>` is implemented for `Arc<T>`
-   = note: required for `Arc<child::Foo>` to implement `FfiConverter<UniFfiTag>`
-   = note: required for `Arc<child::Foo>` to implement `uniffi::TypeId<UniFfiTag>`
+ --> tests/ui/proc_macro_arc.rs:21:22
+  |
+ 21 |     fn take_foo(foo: Arc<Foo>) {
+    |                      ^^^^^^^^ unsatisfied trait bound
+    |
+help: the trait `FfiConverterArc<UniFfiTag>` is not implemented for `child::Foo`
+   --> tests/ui/proc_macro_arc.rs:18:5
+    |
+ 18 |     enum Foo {}
+    |     ^^^^^^^^
+help: the trait `uniffi::TypeId<UT>` is implemented for `Arc<T>`
+   --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
+    |
+    |         impl $(<$($generic),*>)* $crate::TypeId<$ut> for $ty $(where $($where)*)*
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: $WORKSPACE/uniffi_core/src/ffi_converter_impls.rs
+    |
+    | derive_ffi_traits!(impl<T, UT> TypeId<UT> for Arc<T> where Arc<T>: FfiConverter<UT>, T: ?Sized);
+    | ----------------------------------------------------------------------------------------------- in this macro invocation
+    = note: required for `Arc<child::Foo>` to implement `FfiConverter<UniFfiTag>`
+    = note: required for `Arc<child::Foo>` to implement `uniffi::TypeId<UniFfiTag>`
+    = note: this error originates in the macro `derive_ffi_traits` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `Foo: FfiConverterArc<UniFfiTag>` is not satisfied
-  --> tests/ui/proc_macro_arc.rs:10:1
-   |
-10 | #[uniffi::export]
-   | ^^^^^^^^^^^^^^^^^ the trait `FfiConverterArc<UniFfiTag>` is not implemented for `Foo`
-   |
-   = help: the trait `FfiConverter<UT>` is implemented for `Arc<T>`
-   = note: required for `Arc<Foo>` to implement `FfiConverter<UniFfiTag>`
-   = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
+ --> tests/ui/proc_macro_arc.rs:10:1
+  |
+ 10 | #[uniffi::export]
+    | ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |
+help: the trait `FfiConverterArc<UniFfiTag>` is not implemented for `Foo`
+   --> tests/ui/proc_macro_arc.rs:8:1
+    |
+  8 | pub struct Foo;
+    | ^^^^^^^^^^^^^^
+help: the trait `FfiConverter<UT>` is implemented for `Arc<T>`
+   --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
+    |
+    | / unsafe impl<T, UT> FfiConverter<UT> for Arc<T>
+    | | where
+    | |     T: FfiConverterArc<UT> + ?Sized,
+    | |____________________________________^
+    = note: required for `Arc<Foo>` to implement `FfiConverter<UniFfiTag>`
+    = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `child::Foo: FfiConverterArc<UniFfiTag>` is not satisfied
-  --> tests/ui/proc_macro_arc.rs:20:5
-   |
-20 |     #[uniffi::export]
-   |     ^^^^^^^^^^^^^^^^^ the trait `FfiConverterArc<UniFfiTag>` is not implemented for `child::Foo`
-   |
-   = help: the trait `FfiConverter<UT>` is implemented for `Arc<T>`
-   = note: required for `Arc<child::Foo>` to implement `FfiConverter<UniFfiTag>`
-   = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
+ --> tests/ui/proc_macro_arc.rs:20:5
+  |
+ 20 |     #[uniffi::export]
+    |     ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |
+help: the trait `FfiConverterArc<UniFfiTag>` is not implemented for `child::Foo`
+   --> tests/ui/proc_macro_arc.rs:18:5
+    |
+ 18 |     enum Foo {}
+    |     ^^^^^^^^
+help: the trait `FfiConverter<UT>` is implemented for `Arc<T>`
+   --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
+    |
+    | / unsafe impl<T, UT> FfiConverter<UT> for Arc<T>
+    | | where
+    | |     T: FfiConverterArc<UT> + ?Sized,
+    | |____________________________________^
+    = note: required for `Arc<child::Foo>` to implement `FfiConverter<UniFfiTag>`
+    = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0004]: non-exhaustive patterns: type `&child::Foo` is non-empty
   --> tests/ui/proc_macro_arc.rs:22:15

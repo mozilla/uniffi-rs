@@ -1,26 +1,35 @@
 error[E0277]: `UdlEnum` doesn't implement `std::fmt::Display`
- --> $OUT_DIR[uniffi_uitests]/trait_methods.uniffi.rs
-  |
-  | #[::uniffi::export_for_udl_derive(Display)]
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `UdlEnum` cannot be formatted with the default formatter
-  |
-  = help: the trait `std::fmt::Display` is not implemented for `UdlEnum`
-  = note: in format strings you may be able to use `{:?}` (or {:#?} for pretty-print) instead
-  = note: required for `&UdlEnum` to implement `std::fmt::Display`
-  = note: this error originates in the macro `$crate::__export::format_args` which comes from the expansion of the attribute macro `::uniffi::export_for_udl_derive` (in Nightly builds, run with -Z macro-backtrace for more info)
+  --> $OUT_DIR[uniffi_uitests]/trait_methods.uniffi.rs
+   |
+   | #[::uniffi::export_for_udl_derive(Display)]
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `UdlEnum` cannot be formatted with the default formatter
+   |
+help: the trait `std::fmt::Display` is not implemented for `UdlEnum`
+  --> tests/ui/trait_methods_no_trait.rs:17:1
+   |
+17 | pub enum UdlEnum {
+   | ^^^^^^^^^^^^^^^^
+   = note: in format strings you may be able to use `{:?}` (or {:#?} for pretty-print) instead
+   = note: required for `&UdlEnum` to implement `std::fmt::Display`
+   = note: this error originates in the macro `$crate::__export::format_args` which comes from the expansion of the attribute macro `::uniffi::export_for_udl_derive` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `UdlEnum` doesn't implement `std::fmt::Display`
- --> $OUT_DIR[uniffi_uitests]/trait_methods.uniffi.rs
-  |
-  | enum r#UdlEnum {
-  |      ^^^^^^^^^ the trait `std::fmt::Display` is not implemented for `UdlEnum`
-  |
+  --> $OUT_DIR[uniffi_uitests]/trait_methods.uniffi.rs
+   |
+   | enum r#UdlEnum {
+   |      ^^^^^^^^^ unsatisfied trait bound
+   |
+help: the trait `std::fmt::Display` is not implemented for `UdlEnum`
+  --> tests/ui/trait_methods_no_trait.rs:17:1
+   |
+17 | pub enum UdlEnum {
+   | ^^^^^^^^^^^^^^^^
 note: required by a bound in `UdlEnum::uniffi_trait_display::_::{closure#0}::assert_impl_all`
- --> $OUT_DIR[uniffi_uitests]/trait_methods.uniffi.rs
-  |
-  | #[::uniffi::export_for_udl_derive(Display)]
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `assert_impl_all`
-  = note: this error originates in the macro `::uniffi::deps::static_assertions::assert_impl_all` which comes from the expansion of the attribute macro `::uniffi::export_for_udl_derive` (in Nightly builds, run with -Z macro-backtrace for more info)
+  --> $OUT_DIR[uniffi_uitests]/trait_methods.uniffi.rs
+   |
+   | #[::uniffi::export_for_udl_derive(Display)]
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `assert_impl_all`
+   = note: this error originates in the macro `::uniffi::deps::static_assertions::assert_impl_all` which comes from the expansion of the attribute macro `::uniffi::export_for_udl_derive` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `TraitMethods` doesn't implement `std::fmt::Display`
  --> $OUT_DIR[uniffi_uitests]/trait_methods.uniffi.rs
@@ -28,20 +37,29 @@ error[E0277]: `TraitMethods` doesn't implement `std::fmt::Display`
   | #[::uniffi::export_for_udl_derive(Display)]
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `TraitMethods` cannot be formatted with the default formatter
   |
-  = help: the trait `std::fmt::Display` is not implemented for `TraitMethods`
-  = note: in format strings you may be able to use `{:?}` (or {:#?} for pretty-print) instead
-  = note: required for `&TraitMethods` to implement `std::fmt::Display`
-  = note: this error originates in the macro `$crate::__export::format_args` which comes from the expansion of the attribute macro `::uniffi::export_for_udl_derive` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: the trait `std::fmt::Display` is not implemented for `TraitMethods`
+ --> tests/ui/trait_methods_no_trait.rs:8:1
+  |
+ 8 | pub struct TraitMethods {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^
+   = note: in format strings you may be able to use `{:?}` (or {:#?} for pretty-print) instead
+   = note: required for `&TraitMethods` to implement `std::fmt::Display`
+   = note: this error originates in the macro `$crate::__export::format_args` which comes from the expansion of the attribute macro `::uniffi::export_for_udl_derive` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `TraitMethods` doesn't implement `std::fmt::Display`
  --> $OUT_DIR[uniffi_uitests]/trait_methods.uniffi.rs
   |
   | struct r#TraitMethods { }
-  |        ^^^^^^^^^^^^^^ the trait `std::fmt::Display` is not implemented for `TraitMethods`
+  |        ^^^^^^^^^^^^^^ unsatisfied trait bound
   |
+help: the trait `std::fmt::Display` is not implemented for `TraitMethods`
+ --> tests/ui/trait_methods_no_trait.rs:8:1
+  |
+ 8 | pub struct TraitMethods {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^
 note: required by a bound in `TraitMethods::uniffi_trait_display::_::{closure#0}::assert_impl_all`
- --> $OUT_DIR[uniffi_uitests]/trait_methods.uniffi.rs
-  |
-  | #[::uniffi::export_for_udl_derive(Display)]
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `assert_impl_all`
-  = note: this error originates in the macro `::uniffi::deps::static_assertions::assert_impl_all` which comes from the expansion of the attribute macro `::uniffi::export_for_udl_derive` (in Nightly builds, run with -Z macro-backtrace for more info)
+  --> $OUT_DIR[uniffi_uitests]/trait_methods.uniffi.rs
+   |
+   | #[::uniffi::export_for_udl_derive(Display)]
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `assert_impl_all`
+   = note: this error originates in the macro `::uniffi::deps::static_assertions::assert_impl_all` which comes from the expansion of the attribute macro `::uniffi::export_for_udl_derive` (in Nightly builds, run with -Z macro-backtrace for more info)
