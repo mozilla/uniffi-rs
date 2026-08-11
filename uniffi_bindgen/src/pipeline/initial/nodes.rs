@@ -8,6 +8,7 @@ use super::*;
 
 use_prev_node!(uniffi_meta::EnumShape);
 use_prev_node!(uniffi_meta::ObjectImpl);
+use_prev_node!(uniffi_meta::PassBy);
 use_prev_node!(uniffi_meta::Radix);
 use_prev_node!(uniffi_meta::TraitKind);
 
@@ -134,23 +135,23 @@ pub struct TraitMethod {
 pub struct Argument {
     pub name: String,
     pub ty: Type,
-    pub by_ref: bool,
-    pub by_mut_ref: bool,
+    pub pass_by: PassBy,
     pub optional: bool,
     pub default: Option<DefaultValue>,
 }
 
 impl Argument {
-    /// True for zero-copy `&[u8]` / `[ByRef] bytes` arguments, which take the
-    /// `ForeignBytes` FFI path instead of the owned `RustBuffer` path.
+    /// True for zero-copy borrowed bytes arguments — `&[u8]` / `[ByRef] bytes`
+    /// and their mutable counterparts — which take the `ForeignBytes` FFI path
+    /// instead of the owned `RustBuffer` path.
     pub fn is_borrowed_bytes(&self) -> bool {
-        self.by_ref && matches!(self.ty, Type::Bytes)
+        self.pass_by.is_borrowed() && matches!(self.ty, Type::Bytes)
     }
 
     /// True for zero-copy `&mut [u8]` / `[ByMutRef] bytes` arguments. Implies
     /// `is_borrowed_bytes()`; drives foreign codegen only.
     pub fn is_borrowed_bytes_mut(&self) -> bool {
-        self.by_mut_ref && matches!(self.ty, Type::Bytes)
+        self.pass_by.is_mut_ref() && matches!(self.ty, Type::Bytes)
     }
 }
 

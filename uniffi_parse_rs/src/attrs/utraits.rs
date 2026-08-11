@@ -107,8 +107,7 @@ impl UniffiTraitAttrs {
                     inputs: vec![uniffi_meta::FnParamMetadata {
                         name: "other".into(),
                         ty: self_ty.clone(),
-                        by_ref: true,
-                        by_mut_ref: false,
+                        pass_by: uniffi_meta::PassBy::Ref,
                         optional: false,
                         default: None,
                     }],
@@ -127,8 +126,7 @@ impl UniffiTraitAttrs {
                     inputs: vec![uniffi_meta::FnParamMetadata {
                         name: "other".into(),
                         ty: self_ty.clone(),
-                        by_ref: true,
-                        by_mut_ref: false,
+                        pass_by: uniffi_meta::PassBy::Ref,
                         optional: false,
                         default: None,
                     }],
@@ -168,8 +166,7 @@ impl UniffiTraitAttrs {
                     inputs: vec![uniffi_meta::FnParamMetadata {
                         name: "other".into(),
                         ty: self_ty.clone(),
-                        by_ref: true,
-                        by_mut_ref: false,
+                        pass_by: uniffi_meta::PassBy::Ref,
                         optional: false,
                         default: None,
                     }],

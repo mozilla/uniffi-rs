@@ -14,6 +14,7 @@ use crate::{
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use syn::{spanned::Spanned, FnArg, Ident, Pat, Receiver, ReturnType, Type};
+use uniffi_meta::PassBy;
 
 /// Syntactic check for `&[u8]`. Matches the bare identifier `u8` only —
 /// fully-qualified paths like `&[::std::primitive::u8]` or user-defined
@@ -158,7 +159,7 @@ impl FnSignature {
             ));
         }
 
-        if is_async && args.iter().any(|arg| arg.is_mut_ref) {
+        if is_async && args.iter().any(|arg| arg.pass_by.is_mut_ref()) {
             return Err(syn::Error::new(
                 span,
                 "`&mut [u8]` arguments are not supported in async functions: \
@@ -232,7 +233,7 @@ impl FnSignature {
             let ty = &arg.ty;
             match &arg.ref_type {
                 None => quote! { uniffi_args.#idx },
-                Some(ref_type) if arg.is_mut_ref => quote! {
+                Some(ref_type) if arg.pass_by.is_mut_ref() => quote! {
                     <#ty as ::std::borrow::BorrowMut<#ref_type>>::borrow_mut(&mut uniffi_args.#idx)
                 },
                 Some(ref_type) => quote! {
@@ -456,7 +457,7 @@ impl FnSignature {
     /// True if any argument is a `&mut [u8]`. Used to decide whether the
     /// lifted argument tuple must be bound as `mut` (so `BorrowMut` works).
     pub fn has_mut_ref_bytes(&self) -> bool {
-        self.args.iter().any(|arg| arg.is_mut_ref)
+        self.args.iter().any(|arg| arg.pass_by.is_mut_ref())
     }
 }
 
@@ -517,8 +518,9 @@ pub(crate) struct NamedArg {
     pub(crate) name: String,
     pub(crate) ty: TokenStream,
     pub(crate) ref_type: Option<Type>,
-    /// `true` when this argument is `&mut [u8]`. Implies `ref_type` is `Some([u8])`.
-    pub(crate) is_mut_ref: bool,
+    /// How the argument is passed. `MutRef` is only used for `&mut [u8]`, and
+    /// any borrow implies `ref_type` is `Some(_)`.
+    pub(crate) pass_by: PassBy,
     pub(crate) default: Option<DefaultValue>,
 }
 
@@ -539,7 +541,11 @@ impl NamedArg {
                     name: ident_to_string(&ident),
                     ty,
                     ref_type: Some(*inner.clone()),
-                    is_mut_ref: is_mut_u8_slice,
+                    pass_by: if is_mut_u8_slice {
+                        PassBy::MutRef
+                    } else {
+                        PassBy::Ref
+                    },
                     default: defaults.remove(&ident),
                     ident,
                 }
@@ -548,7 +554,7 @@ impl NamedArg {
                 name: ident_to_string(&ident),
                 ty: quote! { #ty },
                 ref_type: None,
-                is_mut_ref: false,
+                pass_by: PassBy::Value,
                 default: defaults.remove(&ident),
                 ident,
             },
@@ -566,8 +572,10 @@ impl NamedArg {
         let name = &self.name;
         let type_id_meta = ffiops::type_id_meta(&self.ty);
         let default_calls = default_value_metadata_calls(&self.default)?;
-        let by_ref = self.ref_type.is_some();
-        let by_mut_ref = self.is_mut_ref;
+        // Encoded as two bools for wire-format compatibility: any borrow sets
+        // `by_ref`, and `&mut [u8]` additionally sets `by_mut_ref`.
+        let by_ref = self.pass_by.is_borrowed();
+        let by_mut_ref = self.pass_by.is_mut_ref();
         Ok(quote! {
             .concat_str(#name)
             .concat(#type_id_meta)

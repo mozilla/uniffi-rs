@@ -15,7 +15,7 @@
 //! if we grow significantly more complicated attribute handling.
 
 use anyhow::{bail, Result};
-use uniffi_meta::{Checksum, ObjectImpl, TraitKind};
+use uniffi_meta::{Checksum, ObjectImpl, PassBy, TraitKind};
 
 /// Represents an attribute parsed from UDL, like `[ByRef]` or `[Throws]`.
 ///
@@ -328,6 +328,16 @@ impl ArgumentAttributes {
         self.0
             .iter()
             .any(|attr| matches!(attr, Attribute::ByMutRef))
+    }
+
+    pub fn pass_by(&self) -> PassBy {
+        if self.by_mut_ref() {
+            PassBy::MutRef
+        } else if self.by_ref() {
+            PassBy::Ref
+        } else {
+            PassBy::Value
+        }
     }
 }
 

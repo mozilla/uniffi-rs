@@ -164,8 +164,7 @@ pub fn map_func_args(
                 orig_name: arg.name.clone(),
                 name: rename::func_arg(arg.name, fn_name, context)?,
                 ty: arg.ty.map_node(context)?,
-                by_ref: arg.by_ref,
-                by_mut_ref: arg.by_mut_ref,
+                pass_by: arg.pass_by,
                 optional: arg.optional,
                 default: arg.default.map_node(context)?,
             })
@@ -190,8 +189,7 @@ pub fn map_method_args(
                 orig_name: arg.name.clone(),
                 name: rename::method_arg(arg.name, fn_name, context)?,
                 ty: arg.ty.map_node(context)?,
-                by_ref: arg.by_ref,
-                by_mut_ref: arg.by_mut_ref,
+                pass_by: arg.pass_by,
                 optional: arg.optional,
                 default: arg.default.map_node(context)?,
             })
@@ -202,8 +200,9 @@ pub fn map_method_args(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use uniffi_meta::PassBy;
 
-    fn bytes_arg(by_mut_ref: bool) -> Argument {
+    fn bytes_arg(pass_by: PassBy) -> Argument {
         Argument {
             name: "buf".to_string(),
             orig_name: "buf".to_string(),
@@ -215,8 +214,7 @@ mod tests {
                 ffi_type: FfiType::RustBuffer(None),
                 ty: Type::Bytes,
             },
-            by_ref: true,
-            by_mut_ref,
+            pass_by,
             optional: false,
             default: None,
         }
@@ -225,18 +223,18 @@ mod tests {
     #[test]
     fn async_mut_ref_bytes_is_rejected() {
         // `&mut [u8]` in an async fn must be rejected.
-        assert!(reject_async_by_mut_ref(true, "fill", &[bytes_arg(true)]).is_err());
+        assert!(reject_async_by_mut_ref(true, "fill", &[bytes_arg(PassBy::MutRef)]).is_err());
     }
 
     #[test]
     fn sync_mut_ref_bytes_is_allowed() {
         // `&mut [u8]` in a sync fn is fine.
-        assert!(reject_async_by_mut_ref(false, "fill", &[bytes_arg(true)]).is_ok());
+        assert!(reject_async_by_mut_ref(false, "fill", &[bytes_arg(PassBy::MutRef)]).is_ok());
     }
 
     #[test]
     fn async_ref_bytes_is_allowed() {
         // Read-only `&[u8]` in an async fn is fine — only `&mut` is unsound.
-        assert!(reject_async_by_mut_ref(true, "sum", &[bytes_arg(false)]).is_ok());
+        assert!(reject_async_by_mut_ref(true, "sum", &[bytes_arg(PassBy::Ref)]).is_ok());
     }
 }

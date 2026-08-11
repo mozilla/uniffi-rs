@@ -22,9 +22,7 @@ use crate::{
 #[derive(Debug, PartialEq, Eq)]
 pub struct ArgType {
     pub ty: uniffi_meta::Type,
-    pub by_ref: bool,
-    /// `true` for `&mut [u8]` args (zero-copy mutable bytes). Always implies `by_ref`.
-    pub by_mut_ref: bool,
+    pub pass_by: uniffi_meta::PassBy,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -260,8 +258,7 @@ impl<'ir> RPath<'ir> {
             Type::Ref { mutable, ty } => match *ty {
                 Type::Str => ArgType {
                     ty: uniffi_meta::Type::String,
-                    by_ref: true,
-                    by_mut_ref: false,
+                    pass_by: uniffi_meta::PassBy::Ref,
                 },
                 Type::Trait {
                     module_path,
@@ -269,8 +266,7 @@ impl<'ir> RPath<'ir> {
                     export_ty,
                 } => ArgType {
                     ty: trait_to_uniffi_meta(module_path, name, export_ty),
-                    by_ref: true,
-                    by_mut_ref: false,
+                    pass_by: uniffi_meta::PassBy::Ref,
                 },
                 Type::Slice(inner) => {
                     let ty = Type::Vec(inner).try_into_uniffi_meta(
@@ -282,22 +278,21 @@ impl<'ir> RPath<'ir> {
                     // resolves to `Bytes`). Other `&mut [T]` slices are passed by
                     // value (copied), so flagging them would be misleading.
                     let by_mut_ref = mutable && matches!(ty, uniffi_meta::Type::Bytes);
-                    ArgType {
-                        ty,
-                        by_ref: true,
-                        by_mut_ref,
-                    }
+                    let pass_by = if by_mut_ref {
+                        uniffi_meta::PassBy::MutRef
+                    } else {
+                        uniffi_meta::PassBy::Ref
+                    };
+                    ArgType { ty, pass_by }
                 }
                 ty => ArgType {
                     ty: ty.try_into_uniffi_meta(self.file_id(), syn_ty.span(), self_ty)?,
-                    by_ref: true,
-                    by_mut_ref: false,
+                    pass_by: uniffi_meta::PassBy::Ref,
                 },
             },
             ty => ArgType {
                 ty: ty.try_into_uniffi_meta(self.file_id(), syn_ty.span(), self_ty)?,
-                by_ref: false,
-                by_mut_ref: false,
+                pass_by: uniffi_meta::PassBy::Value,
             },
         })
     }
@@ -1638,8 +1633,7 @@ pub mod tests {
                     module_path: "types".into(),
                     name: "TestRecord".into(),
                 },
-                by_ref: false,
-                by_mut_ref: false,
+                pass_by: uniffi_meta::PassBy::Value,
             }),
         );
         assert_eq!(
@@ -1649,8 +1643,7 @@ pub mod tests {
                     module_path: "types".into(),
                     name: "TestRecord".into(),
                 },
-                by_ref: true,
-                by_mut_ref: false,
+                pass_by: uniffi_meta::PassBy::Ref,
             }),
         );
         assert_eq!(
@@ -1661,8 +1654,7 @@ pub mod tests {
                     name: "TraitInterface".into(),
                     imp: ObjectImpl::Trait(TraitKind::RustOnly),
                 },
-                by_ref: true,
-                by_mut_ref: false,
+                pass_by: uniffi_meta::PassBy::Ref,
             }),
         );
         assert_eq!(
@@ -1674,12 +1666,11 @@ pub mod tests {
                         name: "TestRecord".into(),
                     }),
                 },
-                by_ref: true,
-                by_mut_ref: false,
+                pass_by: uniffi_meta::PassBy::Ref,
             }),
         );
         // A `&mut [T]` slice of non-u8 elements is copied by value, so `&mut`
-        // carries no mutation intent — `by_mut_ref` must stay false.
+        // carries no mutation intent. pass_by remains as Ref.
         assert_eq!(
             run_resolve_arg(&ir, &mut cache, "types", "&mut [TestRecord]", None),
             Ok(ArgType {
@@ -1689,8 +1680,7 @@ pub mod tests {
                         name: "TestRecord".into(),
                     }),
                 },
-                by_ref: true,
-                by_mut_ref: false,
+                pass_by: uniffi_meta::PassBy::Ref,
             }),
         );
         // `&[u8]` is zero-copy bytes, by-ref but not mutable.
@@ -1698,8 +1688,7 @@ pub mod tests {
             run_resolve_arg(&ir, &mut cache, "types", "&[u8]", None),
             Ok(ArgType {
                 ty: uniffi_meta::Type::Bytes,
-                by_ref: true,
-                by_mut_ref: false,
+                pass_by: uniffi_meta::PassBy::Ref,
             }),
         );
         // `&mut [u8]` is zero-copy mutable bytes.
@@ -1707,8 +1696,7 @@ pub mod tests {
             run_resolve_arg(&ir, &mut cache, "types", "&mut [u8]", None),
             Ok(ArgType {
                 ty: uniffi_meta::Type::Bytes,
-                by_ref: true,
-                by_mut_ref: true,
+                pass_by: uniffi_meta::PassBy::MutRef,
             }),
         );
     }

@@ -112,7 +112,16 @@ pub fn map_callable(
         } => Some(Argument {
             ty: self_type.clone(),
             by_ref: !takes_self_by_arc,
-            ffi: argument_ffi(self_type, !takes_self_by_arc, false, true, &mut allocator),
+            ffi: argument_ffi(
+                self_type,
+                if *takes_self_by_arc {
+                    PassBy::Value
+                } else {
+                    PassBy::Ref
+                },
+                true,
+                &mut allocator,
+            ),
             index: allocator.next_arg_index(),
             name: "".into(),
             orig_name: "".into(),
@@ -126,7 +135,7 @@ pub fn map_callable(
         } => Some(Argument {
             ty: self_type.clone(),
             by_ref: !takes_self_by_arc,
-            ffi: argument_ffi(self_type, true, false, true, &mut allocator),
+            ffi: argument_ffi(self_type, PassBy::Ref, true, &mut allocator),
             index: allocator.next_arg_index(),
             name: "".into(),
             orig_name: "".into(),
@@ -169,9 +178,9 @@ fn map_arguments(
                 orig_name: arg.orig_name,
                 index: allocator.next_arg_index(),
                 optional: arg.optional,
-                ffi: argument_ffi(&ty, arg.by_ref, arg.by_mut_ref, false, allocator),
+                ffi: argument_ffi(&ty, arg.pass_by, false, allocator),
                 ty,
-                by_ref: arg.by_ref,
+                by_ref: arg.pass_by.is_borrowed(),
                 default: arg.default.map_node(context)?,
             })
         })
@@ -180,13 +189,12 @@ fn map_arguments(
 
 fn argument_ffi(
     ty: &TypeNode,
-    by_ref: bool,
-    by_mut_ref: bool,
+    pass_by: PassBy,
     receiver: bool,
     allocator: &mut ArgAllocator,
 ) -> ArgumentFfi {
     let id = ty.id;
-    match (&ty.ty, by_ref) {
+    match (&ty.ty, pass_by.is_borrowed()) {
         (Type::Interface { imp, .. }, true) if !imp.has_callback_interface() => {
             ArgumentFfi::Custom {
                 ffi_args: allocator.create_ffi_args(&[FfiType::Int64]),
@@ -226,7 +234,7 @@ fn argument_ffi(
             // This is only supported for Kotlin -> Rust calls.  For other calls use the normal
             // lift/lower functions, which will fail to compile if the user tries to use `&[u8]`
             // with them.
-            let lift_fn_rs = if by_mut_ref {
+            let lift_fn_rs = if pass_by.is_mut_ref() {
                 "uniffi_jni::lift_bytes_mut_ref"
             } else {
                 "uniffi_jni::lift_bytes_ref"

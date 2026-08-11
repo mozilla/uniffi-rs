@@ -7,6 +7,7 @@ use super::*;
 uniffi_pipeline::use_prev_node!(general::EnumShape);
 uniffi_pipeline::use_prev_node!(general::FieldsKind);
 uniffi_pipeline::use_prev_node!(general::ObjectImpl);
+uniffi_pipeline::use_prev_node!(general::PassBy);
 uniffi_pipeline::use_prev_node!(general::Radix);
 uniffi_pipeline::use_prev_node!(general::TraitKind);
 uniffi_pipeline::use_prev_node!(general::Type);

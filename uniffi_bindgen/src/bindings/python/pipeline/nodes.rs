@@ -25,6 +25,7 @@ use_prev_node!(general::FfiStructName, names::map_ffi_struct_name);
 use_prev_node!(general::FfiType);
 use_prev_node!(general::HandleKind);
 use_prev_node!(general::ObjectImpl);
+use_prev_node!(general::PassBy);
 use_prev_node!(general::Radix);
 use_prev_node!(general::RustFfiFunctionName);
 use_prev_node!(general::TraitKind);
@@ -194,8 +195,7 @@ pub struct Argument {
     #[map_node(names::var_name(&self.name))]
     pub name: String,
     pub ty: TypeNode,
-    pub by_ref: bool,
-    pub by_mut_ref: bool,
+    pub pass_by: PassBy,
     pub optional: bool,
     pub default: Option<DefaultValueNode>,
 }
@@ -208,12 +208,14 @@ impl Argument {
     /// `&[u8]` (`by_ref`) through `_UniffiFfiConverterByRefBytes`; everything
     /// else uses the converter attached to the argument's type.
     pub fn ffi_converter_name(&self) -> String {
-        if self.by_mut_ref && matches!(self.ty.ty, Type::Bytes) {
-            "_UniffiFfiConverterByMutRefBytes".to_string()
-        } else if self.by_ref && matches!(self.ty.ty, Type::Bytes) {
-            "_UniffiFfiConverterByRefBytes".to_string()
-        } else {
-            self.ty.ffi_converter_name.clone()
+        match self.pass_by {
+            PassBy::MutRef if matches!(self.ty.ty, Type::Bytes) => {
+                "_UniffiFfiConverterByMutRefBytes".to_string()
+            }
+            PassBy::Ref if matches!(self.ty.ty, Type::Bytes) => {
+                "_UniffiFfiConverterByRefBytes".to_string()
+            }
+            _ => self.ty.ffi_converter_name.clone(),
         }
     }
 
@@ -222,12 +224,12 @@ impl Argument {
     /// either `bytes` or `bytearray`; everything else uses the type's own
     /// annotation.
     pub fn param_type_name(&self) -> String {
-        if self.by_mut_ref && matches!(self.ty.ty, Type::Bytes) {
-            "bytearray".to_string()
-        } else if self.by_ref && matches!(self.ty.ty, Type::Bytes) {
-            "typing.Union[bytes, bytearray]".to_string()
-        } else {
-            self.ty.type_name.clone()
+        match self.pass_by {
+            PassBy::MutRef if matches!(self.ty.ty, Type::Bytes) => "bytearray".to_string(),
+            PassBy::Ref if matches!(self.ty.ty, Type::Bytes) => {
+                "typing.Union[bytes, bytearray]".to_string()
+            }
+            _ => self.ty.type_name.clone(),
         }
     }
 }

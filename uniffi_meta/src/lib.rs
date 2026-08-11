@@ -16,7 +16,7 @@ mod reader;
 pub use reader::{read_metadata, read_metadata_type};
 
 mod types;
-pub use types::{AsType, ObjectImpl, TraitKind, Type, TypeIterator};
+pub use types::{AsType, ObjectImpl, PassBy, TraitKind, Type, TypeIterator};
 
 mod metadata;
 pub use metadata::codes;
@@ -265,10 +265,7 @@ impl From<TraitMethodMetadata> for MethodMetadata {
 pub struct FnParamMetadata {
     pub name: String,
     pub ty: Type,
-    pub by_ref: bool,
-    /// `true` for `&mut [u8]` / `[ByMutRef] bytes`. Always implies `by_ref`.
-    /// Drives foreign codegen only; the FFI type is unchanged from `by_ref`.
-    pub by_mut_ref: bool,
+    pub pass_by: PassBy,
     pub optional: bool,
     pub default: Option<DefaultValueMetadata>,
 }
@@ -278,8 +275,7 @@ impl FnParamMetadata {
         Self {
             name: name.to_string(),
             ty,
-            by_ref: false,
-            by_mut_ref: false,
+            pass_by: PassBy::Value,
             optional: false,
             default: None,
         }

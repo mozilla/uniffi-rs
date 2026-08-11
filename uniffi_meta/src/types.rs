@@ -261,3 +261,47 @@ where
 /// Ideally we would not need to name this type explicitly, and could just
 /// use an `impl Iterator<Item = &Type>` on any method that yields types.
 pub type TypeIterator<'a> = Box<dyn Iterator<Item = &'a Type> + 'a>;
+
+/// How a value is passed to a function or method.
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, PartialOrd, Ord, Checksum, MapNode, Node)]
+pub enum PassBy {
+    Value,
+    Ref,
+    MutRef,
+}
+
+impl PassBy {
+    /// True for any borrow, mutable or not. This is the predicate that replaces
+    /// the old `by_ref` flag, which was always set alongside `by_mut_ref`.
+    pub fn is_borrowed(&self) -> bool {
+        matches!(self, Self::Ref | Self::MutRef)
+    }
+
+    /// True only for `&mut [u8]` / `[ByMutRef] bytes`. Implies
+    /// [`Self::is_borrowed`]. For a shared-borrow-only check, compare against
+    /// `PassBy::Ref` directly.
+    pub fn is_mut_ref(&self) -> bool {
+        matches!(self, Self::MutRef)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn pass_by_predicates() {
+        // `is_borrowed` covers both borrow kinds; `is_mut_ref` narrows to the
+        // mutable one. Callers that mean "any borrow" want the former.
+        for (pass_by, borrowed, is_mut_ref) in [
+            (PassBy::Value, false, false),
+            (PassBy::Ref, true, false),
+            (PassBy::MutRef, true, true),
+        ] {
+            assert_eq!(pass_by.is_borrowed(), borrowed, "is_borrowed {pass_by:?}");
+            assert_eq!(pass_by.is_mut_ref(), is_mut_ref, "is_mut_ref {pass_by:?}");
+            // A mutable borrow is always a borrow.
+            assert!(!pass_by.is_mut_ref() || pass_by.is_borrowed());
+        }
+    }
+}

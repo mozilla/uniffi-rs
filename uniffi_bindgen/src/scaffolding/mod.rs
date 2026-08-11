@@ -41,7 +41,7 @@ mod filters {
             return Ok("&[u8]".to_string());
         }
         let rendered = type_rs_inner(&arg.as_type())?;
-        Ok(if arg.by_ref() {
+        Ok(if arg.is_borrowed() {
             format!("&{rendered}")
         } else {
             rendered
