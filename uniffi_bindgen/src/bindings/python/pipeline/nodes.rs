@@ -229,7 +229,7 @@ impl Argument {
             PassBy::Ref if matches!(self.ty.ty, Type::Bytes) => {
                 "typing.Union[bytes, bytearray]".to_string()
             }
-            _ => self.ty.ffi_converter_name.clone(),
+            _ => self.ty.type_name.clone(),
         }
     }
 }
