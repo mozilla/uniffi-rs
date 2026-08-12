@@ -1468,9 +1468,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#python-uniffi_set_event_loop" class="md-nav__link">
+  <a href="#python-uniffi_set_default_event_loop" class="md-nav__link">
     <span class="md-ellipsis">
-      Python: uniffi_set_event_loop()
+      Python: uniffi_set_default_event_loop()
     </span>
   </a>
   
@@ -2433,9 +2433,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#python-uniffi_set_event_loop" class="md-nav__link">
+  <a href="#python-uniffi_set_default_event_loop" class="md-nav__link">
     <span class="md-ellipsis">
-      Python: uniffi_set_event_loop()
+      Python: uniffi_set_default_event_loop()
     </span>
   </a>
   
@@ -2540,9 +2540,9 @@ interface<span class="w"> </span>SayAfterTrait<span class="w"> </span>{
 <h2 id="combining-rust-and-foreign-async-code">Combining Rust and foreign async code</h2>
 <p>Traits with callback interface support that export async methods can be combined with async Rust code.
 See the <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/async-api-client">async-api-client example</a> for an example of this.</p>
-<h3 id="python-uniffi_set_event_loop">Python: <code>uniffi_set_event_loop()</code></h3>
-<p>Python bindings export a function named <code>uniffi_set_event_loop()</code> which handles a corner case when
-integrating async Rust and Python code. <code>uniffi_set_event_loop()</code> is needed when Python async
+<h3 id="python-uniffi_set_default_event_loop">Python: <code>uniffi_set_default_event_loop()</code></h3>
+<p>Python bindings export a function named <code>uniffi_set_default_event_loop()</code> which handles a corner case when
+integrating async Rust and Python code. <code>uniffi_set_default_event_loop()</code> is needed when Python async
 functions run outside of the eventloop, for example:</p>
 <ul>
 <li>Rust code is executing outside of the eventloop.  Some examples:<ul>
@@ -2554,9 +2554,9 @@ functions run outside of the eventloop, for example:</p>
   on the async call.</li>
 </ul>
 <p>In this case, we need an event loop to run the Python async function, but there's no eventloop set for the thread.
-Use <code>uniffi_set_event_loop()</code> to handle this case.
+Use <code>uniffi_set_default_event_loop()</code> to handle this case.
 It should be called before the Rust code makes the async call and passed an eventloop to use.</p>
-<p>Note that <code>uniffi_set_event_loop</code> cannot be glob-imported because it's not part of the library's <code>__all__</code>.</p>
+<p>Note that <code>uniffi_set_default_event_loop</code> cannot be glob-imported because it's not part of the library's <code>__all__</code>.</p>
 <h3 id="ruby-thread-based-async">Ruby: thread-based async</h3>
 <p>Unlike Python and Swift, Ruby has no native async/await. When Rust calls an async Ruby callback
 method, UniFFI spawns a new OS thread for each invocation. There is no event loop requirement,
