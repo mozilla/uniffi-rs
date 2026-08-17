@@ -95,7 +95,7 @@
         {%- when Some(return_type) %}
         { {{ return_type|lift_fn }}(it) },
         {%- when None %}
-        { Unit },
+        { },
         {% endmatch %}
         // Error FFI converter
         {%- match callable.throws_type() %}
