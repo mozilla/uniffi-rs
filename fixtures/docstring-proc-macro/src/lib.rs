@@ -127,4 +127,12 @@ uniffi::custom_type!(
 #[uniffi::export]
 pub fn test_long_docstring() {}
 
+/// <docstring-comment-open> contains a /* in the text
+#[uniffi::export]
+pub fn test_comment_open() {}
+
+/// <docstring-comment-close> contains a */ in the text
+#[uniffi::export]
+pub fn test_comment_close() {}
+
 uniffi::include_scaffolding!("docstring-proc-macro");

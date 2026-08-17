@@ -8,6 +8,12 @@ namespace uniffi_docstring {
     void test_multiline();
 
     [Throws=AssociatedErrorTest] void test_without_docstring();
+
+    /// <docstring-comment-open> contains a /* in the text
+    void test_comment_open();
+
+    /// <docstring-comment-close> contains a */ in the text
+    void test_comment_close();
 };
 
 /// <docstring-enum>

@@ -24,6 +24,8 @@
 - Python: event-loop lookup now prefers the calling thread's running loop, falling back to the one
   passed to `uniffi_set_event_loop`.
 - Python: rename `uniffi_set_event_loop` to `uniffi_set_default_event_loop`
+- Kotlin and Swift: escape `/*` and `*/` in docstrings, which previously generated code that would not compile
+  (via [#2411](https://github.com/mozilla/uniffi-rs/issues/2411)).
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.0...HEAD).
 

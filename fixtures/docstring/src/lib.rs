@@ -58,6 +58,10 @@ pub fn test_without_docstring() -> Result<(), AssociatedErrorTest> {
     Ok(())
 }
 
+pub fn test_comment_open() {}
+
+pub fn test_comment_close() {}
+
 pub trait CallbackTest {
     fn test(&self);
 }
