@@ -1188,7 +1188,8 @@ pub mod filters {
         _: &dyn askama::Values,
         spaces: &i32,
     ) -> Result<String, askama::Error> {
-        let middle = textwrap::indent(&textwrap::dedent(docstring), " * ");
+        let escaped = docstring.replace("*/", "*\\/").replace("/*", "/\\*");
+        let middle = textwrap::indent(&textwrap::dedent(&escaped), " * ");
         let wrapped = format!("/**\n{middle}\n */");
 
         let spaces = usize::try_from(*spaces).unwrap_or_default();
