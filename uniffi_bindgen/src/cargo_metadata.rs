@@ -5,17 +5,12 @@
 //! Helpers for data returned by cargo_metadata. Note that this doesn't
 //! execute cargo_metadata, just parses its output.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use cargo_metadata::Package;
-use std::{
-    collections::{HashMap, HashSet},
-    fs,
-};
+use std::collections::{HashMap, HashSet};
 
-use crate::{
-    bindgen_paths::SourceCrate, BindgenCrateConfigSupplier, BindgenPathsLayer, CargoMetadataOptions,
-};
+use crate::{bindgen_paths::SourceCrate, BindgenPathsLayer, CargoMetadataOptions};
 
 #[derive(Debug, Clone, Default)]
 pub struct CrateConfigSupplier {
@@ -215,34 +210,4 @@ fn find_src_lib(package: &Package) -> Option<Utf8PathBuf> {
         .iter()
         .find(|t| t.is_lib() || t.is_rlib() || t.is_cdylib() || t.is_staticlib())
         .map(|t| t.src_path.clone())
-}
-
-// Older trait for finding config paths
-impl BindgenCrateConfigSupplier for CrateConfigSupplier {
-    fn get_toml(&self, crate_name: &str) -> Result<Option<toml::value::Table>> {
-        let Some(crate_root) = self.get_crate_root(crate_name) else {
-            return Ok(None);
-        };
-        // Config files are optional so we return None if the file doesn't exist.
-        let config_path = crate_root.join("uniffi.toml");
-        if !config_path.exists() {
-            return Ok(None);
-        }
-        let contents = fs::read_to_string(&config_path)
-            .with_context(|| format!("read file: {:?}", config_path))?;
-        let toml = toml::de::from_str(&contents)
-            .with_context(|| format!("parse toml: {:?}", config_path))?;
-        Ok(Some(toml))
-    }
-
-    fn get_udl(&self, crate_name: &str, udl_name: &str) -> Result<String> {
-        let path = self
-            .get_udl_path(crate_name, udl_name)
-            .context(format!("No path known to UDL files for '{crate_name}'"))?;
-        if path.exists() {
-            Ok(fs::read_to_string(path)?)
-        } else {
-            bail!(format!("No UDL file found at '{path}'"));
-        }
-    }
 }

@@ -247,8 +247,8 @@ From there you can evolve the code to match your needs.  For example:
 Use the `pipeline` subcommand from any UniFFI CLI to inspect IR data at various stages of the pipeline.
 
 * Build a UniFFI crate that you'd like to inspect, for example `cargo build -p uniffi-example-arithmetic`
-* Run the [uniffi-bindgen CLI](../tutorial/foreign_language_bindings.md), with these arguments `pipeline --library path/to/library.so_a_or_dll [language]`
-  * For example, in the UniFFI repo, `cargo run -p uniffi-bindgen-cli -- pipeline --library target/debug/libarithmetical.so python`
+* Run the [uniffi-bindgen CLI](../tutorial/foreign_language_bindings.md), with these arguments `pipeline path/to/library.so_a_or_dll [language]`
+  * For example, in the UniFFI repo, `cargo run -p uniffi-bindgen-cli -- pipeline target/debug/libarithmetical.so python`
 
 This will print out:
 
@@ -268,4 +268,4 @@ Piping to a pager like `less` is highly recommended in this case.
 
 You can test this out yourself by running the following command to follow the `add` function as it moves through the IR pipeline:
 
-`cargo run -p uniffi-bindgen-cli -- pipeline --library target/debug/libarithmetical.so python -t Function -n add | less`
+`cargo run -p uniffi-bindgen-cli -- pipeline target/debug/libarithmetical.so python -t Function -n add | less`
