@@ -2366,8 +2366,7 @@ enum<span class="w"> </span>LogLevel<span class="w"> </span>{
 <h1 id="external-types">External Types</h1>
 <p>"External types" refer to types defined in other crates that use UniFFI.
 This normally means types from other crates in your workspace.</p>
-<h2 id="proc-macros_1">Proc-macros</h2>
-<p>Proc-macro-based code can use external types automatically, without any extra code.</p>
+<p>Proc-macros typically use external types automatically, but UDL needs them described.</p>
 <h2 id="udl_1">UDL</h2>
 <p>Suppose you depend on the <code>DemoDict</code> type from another UniFFIed crate in your workspace.
 You can reference this type by using the <code>[External]</code> attribute to wrap a typedef describing the concrete type.</p>
@@ -2412,10 +2411,7 @@ typedef<span class="w"> </span>enum<span class="w"> </span>IpAddr;
 <p>The foreign bindings will also need to know how to access the external type,
 which varies slightly for each language:</p>
 <h3 id="kotlin">Kotlin</h3>
-<p>For Kotlin, "library mode" generation with <code>generate --library [path-to-cdylib]</code> is recommended when using external types.
-If you use <code>generate [udl-path]</code> then the generated code needs to know how to import
-the external types from the Kotlin module that corresponds to the Rust crate.
-By default, UniFFI assumes that the Kotlin module name matches the Rust crate name, but this can be configured in <code>uniffi.toml</code> with an entry like this:</p>
+<p>By default, UniFFI assumes that the Kotlin module name matches the Rust crate name, but this can be configured in <code>uniffi.toml</code> with an entry like this:</p>
 <div class="highlight"><pre><span></span><code>[bindings.kotlin.external_packages]
 # Map the crate names from [External={name}] into Kotlin package names
 rust-crate-name = &quot;kotlin.package.name&quot;

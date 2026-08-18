@@ -2708,8 +2708,8 @@ pass.</p>
 <p>Use the <code>pipeline</code> subcommand from any UniFFI CLI to inspect IR data at various stages of the pipeline.</p>
 <ul>
 <li>Build a UniFFI crate that you'd like to inspect, for example <code>cargo build -p uniffi-example-arithmetic</code></li>
-<li>Run the <a href="../tutorial/foreign_language_bindings.html">uniffi-bindgen CLI</a>, with these arguments <code>pipeline --library path/to/library.so_a_or_dll [language]</code></li>
-<li>For example, in the UniFFI repo, <code>cargo run -p uniffi-bindgen-cli -- pipeline --library target/debug/libarithmetical.so python</code></li>
+<li>Run the <a href="../tutorial/foreign_language_bindings.html">uniffi-bindgen CLI</a>, with these arguments <code>pipeline path/to/library.so_a_or_dll [language]</code></li>
+<li>For example, in the UniFFI repo, <code>cargo run -p uniffi-bindgen-cli -- pipeline target/debug/libarithmetical.so python</code></li>
 </ul>
 <p>This will print out:</p>
 <ul>
@@ -2727,7 +2727,7 @@ pass.</p>
 <p>Alternatively, if you want to see the full IR for each pass, you can use <code>--no-diff</code> to print it out.
 Piping to a pager like <code>less</code> is highly recommended in this case.</p>
 <p>You can test this out yourself by running the following command to follow the <code>add</code> function as it moves through the IR pipeline:</p>
-<p><code>cargo run -p uniffi-bindgen-cli -- pipeline --library target/debug/libarithmetical.so python -t Function -n add | less</code></p>
+<p><code>cargo run -p uniffi-bindgen-cli -- pipeline target/debug/libarithmetical.so python -t Function -n add | less</code></p>
 
 
 
