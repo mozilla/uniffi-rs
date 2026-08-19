@@ -2,10 +2,10 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::bindings::python::pipeline::initial;
 use crate::bindings::python::run_pipeline;
 use crate::bindings::RunScriptOptions;
 use crate::cargo_metadata::CrateConfigSupplier;
+use crate::BindgenLoader;
 use crate::GlobalConfig;
 use anyhow::{Context, Result};
 use camino::Utf8Path;
@@ -46,7 +46,10 @@ pub fn run_script(
         test_helper.cargo_metadata(),
         crate::CargoMetadataOptions::default(),
     ));
-    let root = initial::Root::from_library(&paths, &GlobalConfig::default(), &cdylib_path, None)?;
+    let config = GlobalConfig::default();
+    let loader = BindgenLoader::new(paths, config);
+    let metadata = loader.load_metadata(&cdylib_path)?;
+    let root = loader.load_pipeline_initial_root(&cdylib_path, metadata)?;
     run_pipeline(root, &out_dir, None)?;
 
     // Run the python script
