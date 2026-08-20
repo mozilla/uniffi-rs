@@ -123,7 +123,10 @@ typedef i64 Handle;
 typedef dictionary LogRecord;
 ```
 
-**note**: you must still call the `custom_type!` or `custom_newtype!` macros in your Rust code, as described above.
+**Notes**:
+
+* You must still call the `custom_type!` or `custom_newtype!` macros in your Rust code, as described above.
+* The macro invocation must live in the root module of your crate.
 
 ## User-defined types
 

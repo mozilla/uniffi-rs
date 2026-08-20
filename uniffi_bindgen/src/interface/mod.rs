@@ -963,8 +963,10 @@ impl ComponentInterface {
             // new pipeline path; keep them consistent.
             anyhow::ensure!(
                 existing.builtin == defn.builtin && existing.module_path == defn.module_path,
-                "conflicting custom type definitions for {:?}",
+                "conflicting custom type definitions for {:?} ({} vs {})",
                 defn.name,
+                existing.module_path,
+                defn.module_path
             );
             // UDL provides docstring: None; proc-macro may provide Some.  Prefer Some.
             if defn.docstring.is_some() && existing.docstring.is_none() {
