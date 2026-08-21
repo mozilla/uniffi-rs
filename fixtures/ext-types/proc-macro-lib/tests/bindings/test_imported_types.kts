@@ -18,6 +18,11 @@ assert(getObjectsType(null).maybeInterface == null)
 assert(getObjectsType(null).maybeTrait == null)
 assert(getUniffiOneTrait(null) == null)
 
+// a `remote` trait we can use and pass around.
+val ect = getExternalCrateTrait()
+assert(ect.hello() == "external crate trait says hello")
+assert(invokeExternalCrateTrait(ect) == "external crate trait says hello")
+
 val url = java.net.URL("http://example.com/")
 assert(getUrl(url) ==  url)
 assert(getMaybeUrl(url)!! ==  url)

@@ -26,6 +26,8 @@ pub(super) fn gen_trait_scaffolding(
     trait_kind: TraitKind,
     docstring: String,
 ) -> syn::Result<TokenStream> {
+    // Note: `remote` traits can't have foreign impls; `ExportItem::from_trait` rejects that.
+    let remote = args.remote.is_some();
     let trait_name = ident_to_string(&self_ident);
     let trait_impl = trait_kind.has_foreign().then(|| {
         callback_interface::trait_impl(mod_path, &self_ident, &items, true)
@@ -109,7 +111,7 @@ pub(super) fn gen_trait_scaffolding(
         )
         .unwrap_or_else(syn::Error::into_compile_error)
     });
-    let ffi_converter_tokens = ffi_converter(&self_ident, trait_kind);
+    let ffi_converter_tokens = ffi_converter(&self_ident, trait_kind, remote);
 
     Ok(quote_spanned! { self_ident.span() =>
         #meta_static_var
@@ -120,9 +122,11 @@ pub(super) fn gen_trait_scaffolding(
     })
 }
 
-pub(crate) fn ffi_converter(trait_ident: &Ident, trait_kind: TraitKind) -> TokenStream {
-    // TODO: support defining remote trait interfaces
-    let remote = false;
+pub(crate) fn ffi_converter(
+    trait_ident: &Ident,
+    trait_kind: TraitKind,
+    remote: bool,
+) -> TokenStream {
     let impl_spec = tagged_impl_header("FfiConverterArc", &quote! { dyn #trait_ident }, remote);
     let lift_ref_impl_spec = tagged_impl_header("LiftRef", &quote! { dyn #trait_ident }, remote);
     // Implement `TypeId` for `dyn Trait` directly.  This is what we use to lookup the type ID for
@@ -181,6 +185,36 @@ pub(crate) fn ffi_converter(trait_ident: &Ident, trait_kind: TraitKind) -> Token
             }
         }
     };
+    // Wrap `obj` in a second arc and create the handle from that.
+    // https://mozilla.github.io/uniffi-rs/latest/internals/object_references.html
+    let lower_rust_obj = quote! {
+        {
+            use ::std::sync::Arc;
+            let obj: Arc<Arc<dyn #trait_ident>> = Arc::new(obj);
+            ::uniffi::ffi::Handle::from_arc(obj)
+        }
+    };
+    let lower = if trait_kind.has_foreign() {
+        // `obj` may store a foreign-generated handle, which we can return directly.
+        // `uniffi_foreign_handle` is the hidden trait method added by `alter_trait`.
+        quote! {
+            fn lower(obj: ::std::sync::Arc<Self>) -> Self::FfiType {
+                match obj.uniffi_foreign_handle() {
+                    // `uniffi_foreign_handle` cloned the handle for us.
+                    ::std::option::Option::Some(handle) => handle,
+                    // Obj is a Rust-implemented trait.
+                    ::std::option::Option::None => #lower_rust_obj
+                }
+            }
+        }
+    } else {
+        // Only Rust implements the trait, so there's never a foreign handle to return. This
+        // also means we don't need the `uniffi_foreign_handle` method in this case,
+        // which is what makes remote traits possible.
+        quote! {
+            fn lower(obj: ::std::sync::Arc<Self>) -> Self::FfiType #lower_rust_obj
+        }
+    };
     let trait_kind_code = match trait_kind {
         TraitKind::RustOnly => quote! { ::uniffi::metadata::codes::TRAIT_KIND_RUST_ONLY },
         TraitKind::Both => quote! { ::uniffi::metadata::codes::TRAIT_KIND_BOTH },
@@ -207,21 +241,7 @@ pub(crate) fn ffi_converter(trait_ident: &Ident, trait_kind: TraitKind) -> Token
         unsafe #impl_spec {
             type FfiType = ::uniffi::ffi::Handle;
 
-            fn lower(obj: ::std::sync::Arc<Self>) -> Self::FfiType {
-                match obj.uniffi_foreign_handle() {
-                    // Obj stores a foreign-generated handle that `uniffi_foreign_handle` just
-                    // cloned.  We can return that directly.
-                    ::std::option::Option::Some(handle) => handle,
-                    // Obj is a Rust-implemented trait.
-                    // Wrap `obj` in a second arc and create the handle from that.
-                    // https://mozilla.github.io/uniffi-rs/latest/internals/object_references.html
-                    ::std::option::Option::None => {
-                        use ::std::sync::Arc;
-                        let obj: Arc<Arc<dyn #trait_ident>> = Arc::new(obj);
-                        ::uniffi::ffi::Handle::from_arc(obj)
-                    }
-                }
-            }
+            #lower
 
             #try_lift
 

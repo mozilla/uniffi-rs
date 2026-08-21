@@ -28,3 +28,7 @@ impl ExternalCrateInterface {
 pub enum ExternalCrateEnumInterface {
     Whatever,
 }
+
+pub trait ExternalCrateTrait: Send + Sync {
+    fn hello(&self) -> String;
+}

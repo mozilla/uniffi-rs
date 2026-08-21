@@ -99,6 +99,11 @@ do {
 assert(ct.ecd.sval == "ecd")
 assert(getExternalCrateInterface(val: "foo").value() == "foo")
 
+// A remote trait (ie, UDL `[Trait, Remote] interface`) we can use and pass around.
+let ect = getExternalCrateTrait()
+assert(ect.hello() == "external crate trait says hello")
+assert(invokeExternalCrateTrait(t: ect) == "external crate trait says hello")
+
 // Test that BindingRenamedType from uniffi-one is renamed to SwiftRenamedType via direct function call
 let renamedType = getBindingRenamedType(value: "external_rename_test")
 assert(renamedType == SwiftRenamedType(swiftValue: "external_rename_test"))

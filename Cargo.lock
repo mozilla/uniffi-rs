@@ -2192,6 +2192,7 @@ dependencies = [
  "uniffi",
  "uniffi-example-custom-types",
  "uniffi-fixture-ext-types-custom-types",
+ "uniffi-fixture-ext-types-external-crate",
  "uniffi-fixture-ext-types-lib-one",
  "url",
 ]

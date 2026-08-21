@@ -16,6 +16,8 @@
   Benchmarks show large improvements in performance and we believe this will be more stable than the
   current Kotlin bindings.  However, the code is very fresh so use at your own risk.
   See [#2911](https://github.com/mozilla/uniffi-rs/pull/2911).
+- Added support for remote trait interfaces - ie, traits defined in a crate which doesn't use
+  UniFFI. Use `#[uniffi::export(remote)]` or `[Trait, Remote]` in UDL. Foreign implementations are not supported, see the docs for more.
 
 ### What's Fixed
 - Kotlin: Fixed messages for error classes that inherit `Throwable`, but not `Exception`.

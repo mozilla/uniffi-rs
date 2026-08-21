@@ -84,6 +84,11 @@ class TestIt(unittest.TestCase):
         self.assertEqual(ct.ecd.sval, "ecd");
         self.assertEqual(get_external_crate_interface("foo").value(), "foo")
 
+        # A remote trait (ie, UDL `[Trait, Remote] interface`) we can use and pass around.
+        t = get_external_crate_trait()
+        self.assertEqual(t.hello(), "external crate trait says hello")
+        self.assertEqual(invoke_external_crate_trait(t), "external crate trait says hello")
+
     def test_procmacro_types(self):
         t1 = UniffiOneProcMacroType(sval="hello")
         self.assertEqual(t1, get_uniffi_one_proc_macro_type(t1))
