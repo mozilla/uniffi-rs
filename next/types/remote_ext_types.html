@@ -2352,6 +2352,15 @@ See https://github.com/mozilla/uniffi-rs/tree/main/examples/remote-types for exa
 <span class="w">    </span><span class="n">Trace</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre></div>
+<p>Traits go through <code>#[uniffi::export]</code> rather than <code>#[uniffi::remote]</code>, so they use a <code>remote</code>
+argument instead:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// As above, this mirrors the definition from the remote crate; UniFFI generates the scaffolding</span>
+<span class="c1">// but doesn&#39;t output the trait itself.</span>
+<span class="cp">#[uniffi::export(remote)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">Logger</span><span class="p">:</span><span class="w"> </span><span class="nb">Send</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">Sync</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">message</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
 <h2 id="udl">UDL</h2>
 <p>Wrap the definition with <code>[Remote]</code> attribute:</p>
 <div class="highlight"><pre><span></span><code>[Remote]
@@ -2362,7 +2371,20 @@ enum<span class="w"> </span>LogLevel<span class="w"> </span>{
 <span class="w">    </span><span class="s2">&quot;Debug&quot;</span>,
 <span class="w">    </span><span class="s2">&quot;Trace&quot;</span>,
 };
+
+[Trait,<span class="w"> </span>Remote]
+interface<span class="w"> </span>Logger<span class="w"> </span>{
+<span class="w">    </span>void<span class="w"> </span>log(<span class="nb">string</span><span class="w"> </span><span class="nb">message</span>);
+};
 </code></pre></div>
+<h2 id="remote-traits-cant-be-foreign">Remote traits can't be foreign</h2>
+<p>Supporting foreign implementations of a trait requires UniFFI to change the trait,
+which is impossible for a trait defined externally. <code>#[uniffi::export(remote, foreign)]</code> and
+<code>[Trait, Remote, WithForeign]</code> are therefore errors — only Rust can implement a remote trait.</p>
+<p>At time of writing, the change made to a non-remote trait is a new method:
+<div class="highlight"><pre><span></span><code>#[doc(hidden)]
+fn uniffi_foreign_handle(&amp;self) { ... }
+</code></pre></div></p>
 <h1 id="external-types">External Types</h1>
 <p>"External types" refer to types defined in other crates that use UniFFI.
 This normally means types from other crates in your workspace.</p>
