@@ -2688,7 +2688,11 @@ typedef<span class="w"> </span>i64<span class="w"> </span>Handle;
 [Custom<span class="o">=</span><span class="s2">&quot;crate_defining_log_record_name&quot;</span>]
 typedef<span class="w"> </span>dictionary<span class="w"> </span>LogRecord;
 </code></pre></div>
-<p><strong>note</strong>: you must still call the <code>custom_type!</code> or <code>custom_newtype!</code> macros in your Rust code, as described above.</p>
+<p><strong>Notes</strong>:</p>
+<ul>
+<li>You must still call the <code>custom_type!</code> or <code>custom_newtype!</code> macros in your Rust code, as described above.</li>
+<li>The macro invocation must live in the root module of your crate.</li>
+</ul>
 <h2 id="user-defined-types">User-defined types</h2>
 <p>All examples so far in this section convert the custom type to a builtin type.
 It's also possible to convert them to a user-defined type (Record, Enum, Interface, etc.).
