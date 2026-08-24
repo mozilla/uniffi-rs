@@ -1058,7 +1058,10 @@ mod filters {
         _: &dyn askama::Values,
         spaces: &i32,
     ) -> Result<String, askama::Error> {
-        let escaped = docstring.as_ref().replace("*/", "*\\/").replace("/*", "/\\*");
+        let escaped = docstring
+            .as_ref()
+            .replace("*/", "*\\/")
+            .replace("/*", "/\\*");
         let middle = textwrap::indent(&textwrap::dedent(&escaped), " * ");
         let wrapped = format!("/**\n{middle}\n */");
 
