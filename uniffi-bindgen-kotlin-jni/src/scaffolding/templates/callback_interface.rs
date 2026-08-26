@@ -1,6 +1,7 @@
 {%- let type_name = cbi.self_type.type_rs %}
 {%- let trait_name = "{}::{}"|format(cbi.module_path, cbi.name_rs()) %}
 
+#[derive(Clone, Debug)]
 struct {{ cbi.impl_struct_rs() }} {
     handle: i64,
 }
