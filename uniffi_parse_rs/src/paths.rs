@@ -275,8 +275,15 @@ impl<'ir> RPath<'ir> {
         ident: &Ident,
         namespace: Namespace,
     ) -> Result<ChildItem<'ir>> {
-        // Special case `super` and `crate`, no need to check the cache for this one.
-        if ident == "super" {
+        // Special case `self`, `super` and `crate`, no need to check the cache for these.
+        if ident == "self" {
+            // `self` refers to the current module (e.g. `use self::submodule::Item`,
+            // where `self::` disambiguates a module from an external crate with the same name).
+            return Ok(ChildItem {
+                path: self.clone(),
+                vis: Visibility::Public,
+            });
+        } else if ident == "super" {
             return match self.parent() {
                 Ok(path) => Ok(ChildItem {
                     path,
@@ -872,6 +879,41 @@ pub mod tests {
         assert_eq!(
             run_resolve_item(&ir, &mut cache, "paths", "mod3::Mod3Record"),
             Ok("paths::mod1::mod2::mod3::Mod3Record".to_string()),
+        );
+
+        // Leading `self::` refers to the current module
+        assert_eq!(
+            run_resolve_item(&ir, &mut cache, "paths::mod1", "self::Mod1Record"),
+            Ok("paths::mod1::Mod1Record".to_string()),
+        );
+        assert_eq!(
+            run_resolve_item(
+                &ir,
+                &mut cache,
+                "paths::mod1",
+                "self::mod2::mod3::Mod3Record"
+            ),
+            Ok("paths::mod1::mod2::mod3::Mod3Record".to_string()),
+        );
+        assert_eq!(
+            run_resolve_item(&ir, &mut cache, "paths::mod1", "self::missing::MyRecord"),
+            Err(ErrorKind::NotFound),
+        );
+
+        // Named import through `self::` (`use self::inner::SelfUseRecord as ...` in mod6)
+        assert_eq!(
+            run_resolve_item(&ir, &mut cache, "paths::mod6", "SelfUseRecordRenamed"),
+            Ok("paths::mod6::inner::SelfUseRecord".to_string()),
+        );
+        // Glob re-export through `self::` (`pub use self::inner::*;` in mod6)
+        assert_eq!(
+            run_resolve_item(&ir, &mut cache, "paths::mod6", "SelfGlobRecord"),
+            Ok("paths::mod6::inner::SelfGlobRecord".to_string()),
+        );
+        // ... and the re-exported item is visible from outside the module
+        assert_eq!(
+            run_resolve_item(&ir, &mut cache, "paths", "mod6::SelfGlobRecord"),
+            Ok("paths::mod6::inner::SelfGlobRecord".to_string()),
         );
     }
 
