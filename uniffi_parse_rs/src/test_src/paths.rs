@@ -83,3 +83,21 @@ mod mod5 {
     use super::*;
     use crate::mod1::mod2::*;
 }
+
+// `self::` paths: `self` refers to the current module.
+// The `self::` prefix is how real-world code disambiguates a module from an
+// external crate with the same name (e.g. a `http` module vs the `http` crate).
+mod mod6 {
+    mod inner {
+        #[derive(uniffi::Record)]
+        pub struct SelfGlobRecord { }
+
+        #[derive(uniffi::Record)]
+        pub struct SelfUseRecord { }
+    }
+
+    // Glob re-export through `self::`
+    pub use self::inner::*;
+    // Named import through `self::`
+    use self::inner::SelfUseRecord as SelfUseRecordRenamed;
+}
