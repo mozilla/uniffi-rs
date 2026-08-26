@@ -101,3 +101,13 @@ mod mod6 {
     // Named import through `self::`
     use self::inner::SelfUseRecord as SelfUseRecordRenamed;
 }
+
+// `use_remote_type!` whose path doesn't resolve: the macro's semantics are "the type
+// named by the LAST segment, in the invoking module's scope" — the first segment only
+// names the crate implementing the FFI traits.  Resolution must fall through to the
+// module's regular items instead of failing.
+mod remote_fallthrough {
+    pub type ExternalRemote = unparsed_crate::ExternalRemote;
+
+    uniffi::use_remote_type!(paths3::ExternalRemote);
+}

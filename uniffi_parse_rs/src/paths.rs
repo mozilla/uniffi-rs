@@ -409,10 +409,22 @@ impl<'ir> RPath<'ir> {
             }
         }
         match found {
-            Some((_, Item::UseRemoteType(path))) => Ok(Some(ChildItem {
-                path: self.resolve(ir, cache, path, namespace)?,
-                vis: Visibility::Public,
-            })),
+            Some((_, Item::UseRemoteType(path))) => {
+                match self.resolve(ir, cache, path, namespace) {
+                    Ok(path) => Ok(Some(ChildItem {
+                        path,
+                        vis: Visibility::Public,
+                    })),
+                    // `use_remote_type!(implementing_crate::Type)` doesn't require `Type`
+                    // to live at that path: the macro resolves `Type` in the invoking
+                    // module's scope and only uses `implementing_crate` for its
+                    // `UniFfiTag`.  Fall through to the module's regular items (e.g. a
+                    // `type Decimal = rust_decimal::Decimal;` alias next to the macro
+                    // invocation).
+                    Err(e) if e.is_not_found() => Ok(None),
+                    Err(e) => Err(e),
+                }
+            }
             Some((_, item)) => Ok(Some(ChildItem {
                 path: self.append_child(item),
                 vis: Visibility::Public,
@@ -453,6 +465,12 @@ impl<'ir> RPath<'ir> {
         }
         let mut found: Option<FoundItem<'ir>> = None;
         for item in module.items.iter() {
+            // Special items are handled by `child_special_item` before this runs.  Seeing
+            // them again here would report spurious name conflicts, e.g. between a
+            // `use_remote_type!` invocation and the type alias it covers.
+            if item.is_special() {
+                continue;
+            }
             if let Some(item_ident) = item.ident() {
                 if &item_ident == ident && namespace.matches(item) {
                     if let Some(found) = found {
@@ -1172,6 +1190,26 @@ pub mod tests {
         assert_eq!(
             run_resolve_item(&ir, &mut cache, "paths", "mod6::SelfGlobRecord"),
             Ok("paths::mod6::inner::SelfGlobRecord".to_string()),
+        );
+    }
+
+    #[test]
+    fn test_use_remote_type_falls_through_to_local_items() {
+        let ir = Ir::new_for_test(&["paths", "paths2", "paths3"]);
+        let mut cache = LookupCache::new(&ir);
+
+        // `use_remote_type!(paths3::ExternalRemote)` names a path that doesn't resolve
+        // (`paths3` has no `ExternalRemote`).  Per the macro's semantics the type is
+        // resolved in the invoking module's scope, so resolution must fall through to
+        // the local alias instead of failing.
+        assert_eq!(
+            run_resolve_item(
+                &ir,
+                &mut cache,
+                "paths::remote_fallthrough",
+                "ExternalRemote"
+            ),
+            Ok("paths::remote_fallthrough::ExternalRemote".to_string()),
         );
     }
 

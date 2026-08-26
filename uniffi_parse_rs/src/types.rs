@@ -1099,6 +1099,34 @@ pub mod tests {
     }
 
     #[test]
+    fn test_resolve_custom_types_from_another_crate() {
+        // `custom_type_paths2` mirrors a binding crate: it names types whose custom
+        // types are implemented by `custom_type_paths` (declared via `use_remote_type!`
+        // plus a local alias).
+        let ir = Ir::new_for_test(&["custom_type_paths", "custom_type_paths2"]);
+        let mut cache = LookupCache::new(&ir);
+
+        let custom = Ok(Type::Custom {
+            module_path: "custom_type_paths::registrations".into(),
+            name: "Direct".into(),
+            builtin: Box::new(Type::String),
+        });
+
+        // Through the local alias next to `use_remote_type!` — the macro's path
+        // (`custom_type_paths::Direct`) doesn't resolve, so resolution falls through
+        // to the alias, whose external target is covered by the custom type.
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "custom_type_paths2", "Direct"),
+            custom,
+        );
+        // Through a direct import from the unparsed crate
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "custom_type_paths2::usage2", "Direct"),
+            custom,
+        );
+    }
+
+    #[test]
     fn test_resolve_compound_types() {
         let ir = Ir::new_for_test(&["types"]);
         let mut cache = LookupCache::new(&ir);
