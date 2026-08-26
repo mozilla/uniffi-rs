@@ -31,16 +31,20 @@ pub fn sort_ffi_definitions(
 // first.
 struct DependencySorter<L: DependencyLogic> {
     logic: L,
-    unsorted: IndexMap<String, L::Item>,
+    // Multiple items can share a name: when sorting definitions across namespaces, a type
+    // used outside its defining namespace has both its real definition and an
+    // `External` marker under the same canonical name.  Keep all of them — a map keyed by
+    // name alone would silently drop definitions.
+    unsorted: IndexMap<String, Vec<L::Item>>,
     sorted: Vec<L::Item>,
 }
 
 impl<L: DependencyLogic> DependencySorter<L> {
     fn new(items: impl IntoIterator<Item = L::Item>, logic: L) -> Self {
-        let unsorted: IndexMap<_, _> = items
-            .into_iter()
-            .map(|i| (logic.item_name(&i), i))
-            .collect();
+        let mut unsorted: IndexMap<String, Vec<L::Item>> = IndexMap::new();
+        for i in items {
+            unsorted.entry(logic.item_name(&i)).or_default().push(i);
+        }
         Self {
             unsorted,
             sorted: vec![],
@@ -56,16 +60,20 @@ impl<L: DependencyLogic> DependencySorter<L> {
     }
 
     fn recurse(&mut self, current_name: String) {
-        let Some(current_item) = self.unsorted.shift_remove(&current_name) else {
+        let Some(current_items) = self.unsorted.shift_remove(&current_name) else {
             // If `current_name` is not in unsorted, then we've already processed the item
             return;
         };
         // Add all dependents first
-        for name in self.logic.dependency_names(&current_item) {
+        let dependency_names: Vec<String> = current_items
+            .iter()
+            .flat_map(|item| self.logic.dependency_names(item))
+            .collect();
+        for name in dependency_names {
             self.recurse(name);
         }
-        // Then add the current item
-        self.sorted.push(current_item);
+        // Then add the current items
+        self.sorted.extend(current_items);
     }
 }
 
@@ -216,5 +224,120 @@ impl DependencyLogic for TypeDefinitionDependencyLogic {
             }
             TypeDefinition::External(_) => vec![],
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Test item: a name, a marker to tell same-named items apart, and dependency names
+    struct TestItem {
+        name: &'static str,
+        marker: &'static str,
+        deps: Vec<&'static str>,
+    }
+
+    struct TestLogic;
+
+    impl DependencyLogic for TestLogic {
+        type Item = TestItem;
+
+        fn item_name(&self, item: &TestItem) -> String {
+            item.name.to_string()
+        }
+
+        fn dependency_names(&self, item: &TestItem) -> Vec<String> {
+            item.deps.iter().map(|s| s.to_string()).collect()
+        }
+    }
+
+    fn sort(items: Vec<TestItem>) -> Vec<&'static str> {
+        DependencySorter::new(items, TestLogic)
+            .sort()
+            .into_iter()
+            .map(|i| i.marker)
+            .collect()
+    }
+
+    #[test]
+    fn test_dependencies_sort_before_dependents() {
+        let order = sort(vec![
+            TestItem {
+                name: "TypeRecord",
+                marker: "record",
+                deps: vec!["TypeInner", "String"],
+            },
+            TestItem {
+                name: "String",
+                marker: "string",
+                deps: vec![],
+            },
+            TestItem {
+                name: "TypeInner",
+                marker: "inner",
+                deps: vec!["String"],
+            },
+        ]);
+        assert_eq!(order, vec!["string", "inner", "record"]);
+    }
+
+    #[test]
+    fn test_same_named_items_are_all_kept() {
+        // Multiple definitions can share a name: a type used outside its defining
+        // namespace has both its real definition and an `External` marker under the
+        // same canonical name (e.g. `TypeDefinition::Custom` in the defining namespace
+        // and `TypeDefinition::External` in the using one).  The sorter must keep all
+        // of them — dropping the real definition breaks consumers that need it, like
+        // the FFI type oracles.
+        let order = sort(vec![
+            TestItem {
+                name: "TypeRecord",
+                marker: "record",
+                deps: vec!["TypeCounter"],
+            },
+            TestItem {
+                name: "TypeCounter",
+                marker: "external",
+                deps: vec![],
+            },
+            TestItem {
+                name: "TypeCounter",
+                marker: "custom",
+                deps: vec!["String"],
+            },
+            TestItem {
+                name: "String",
+                marker: "string",
+                deps: vec![],
+            },
+        ]);
+
+        // All four definitions survive
+        assert_eq!(order.len(), 4);
+        let pos = |marker| order.iter().position(|m| *m == marker).unwrap();
+        // Both same-named definitions are present ...
+        assert!(order.contains(&"external"));
+        assert!(order.contains(&"custom"));
+        // ... and dependencies still come before dependents
+        assert!(pos("string") < pos("custom"));
+        assert!(pos("custom") < pos("record"));
+    }
+
+    #[test]
+    fn test_dependency_cycles_terminate() {
+        let order = sort(vec![
+            TestItem {
+                name: "TypeA",
+                marker: "a",
+                deps: vec!["TypeB"],
+            },
+            TestItem {
+                name: "TypeB",
+                marker: "b",
+                deps: vec!["TypeA"],
+            },
+        ]);
+        assert_eq!(order.len(), 2);
     }
 }
