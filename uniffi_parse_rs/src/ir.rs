@@ -151,7 +151,7 @@ impl Ir {
     }
 
     pub fn into_metadata_group_map(self) -> Result<MetadataGroupMap> {
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&self);
         self.crate_roots_and_paths()
             .map(|(mut module_path, module)| {
                 let mut group = MetadataGroup {
@@ -182,7 +182,9 @@ impl Ir {
 
         // Resolve the items
         let mut resolved_map = HashMap::new();
-        let mut cache = LookupCache::default();
+        // `LookupCache::empty()`, not `new()`: the custom type registry can only be
+        // built once the items it maps are resolved, which is what's happening here.
+        let mut cache = LookupCache::empty();
         for crate_root in self.crate_roots.values() {
             crate_root.try_visit_modules_and_paths(|module, rpath| {
                 let Some(unresolved) = unresolved_map.remove(&module.id) else {
