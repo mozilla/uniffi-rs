@@ -45,6 +45,14 @@ fun writeString(buf: java.nio.ByteBuffer, offset: kotlin.Int, value: kotlin.Stri
     Scaffolding.ffiBufferWriteString(buf, offset, value)
 }
 
+fun readBytes(buf: java.nio.ByteBuffer, offset: kotlin.Int): kotlin.ByteArray {
+    return Scaffolding.ffiBufferReadBytes(buf, offset)
+}
+
+fun writeBytes(buf: java.nio.ByteBuffer, offset: kotlin.Int, value: kotlin.ByteArray) {
+    Scaffolding.ffiBufferWriteBytes(buf, offset, value)
+}
+
 fun readBuffer(buf: java.nio.ByteBuffer, offset: kotlin.Int): java.nio.ByteBuffer {
     return Scaffolding.ffiBufferReadBuffer(buf, offset).order(java.nio.ByteOrder.nativeOrder())
 }

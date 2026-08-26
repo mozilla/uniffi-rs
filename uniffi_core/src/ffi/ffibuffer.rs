@@ -190,6 +190,65 @@ pub unsafe fn write_string(ptr: *mut u8, mut value: String) -> Result<()> {
     }
 }
 
+/// Read a byte vector value
+///
+/// Like strings, byte vectors are deconstructed into their raw parts (data, length, and
+/// capacity), the raw parts are casted to `u64` values, then written to the buffer,
+/// so the total size is 24 bytes and the alignment is 8.
+///
+/// # Safety
+///
+/// * There must be at least 24 bytes of capacity remaining in the pointer.
+/// * The position must be aligned to 8 bytes
+/// * The other side of the FFI must have written a byte vector to the current address
+pub unsafe fn read_vec_u8(ptr: *mut u8) -> Result<Vec<u8>> {
+    // Safety:
+    //
+    // * ptr is properly aligned and has enough space left
+    // * We assume the foreign side wrote the correct value to the buffer
+    Ok(unsafe {
+        let ptr = ptr.cast::<u64>();
+        let data: u64 = ptr.read();
+        let length: u64 = ptr.add(1).read();
+        let capacity: u64 = ptr.add(2).read();
+        trace!("ffibuffer::read_vec_u8 ({ptr:?} -> {data:x}, {length}, {capacity})");
+        Vec::from_raw_parts(
+            ptr::with_exposed_provenance_mut(data as usize),
+            length as usize,
+            capacity as usize,
+        )
+    })
+}
+
+/// Write a byte vector value
+///
+/// Like strings, byte vectors are deconstructed into their raw parts (data, length, and
+/// capacity), the raw parts are casted to `u64` values, then written to the buffer,
+/// so the total size is 24 bytes and the alignment is 8.
+///
+/// # Safety
+///
+/// * There must be at least 24 bytes of capacity remaining in the pointer.
+/// * The position must be aligned to 8 bytes
+pub unsafe fn write_vec_u8(ptr: *mut u8, mut value: Vec<u8>) -> Result<()> {
+    // Safety:
+    //
+    // * ptr is properly aligned and has enough space left
+    unsafe {
+        let data = value.as_mut_ptr().expose_provenance() as u64;
+        let length = value.len() as u64;
+        let capacity = value.capacity() as u64;
+        trace!("ffibuffer::write_vec_u8  ({ptr:?} -> {data:x}, {length}, {capacity})");
+        // Leak the vec, then write the components to the buffer.
+        mem::forget(value);
+        let ptr = ptr.cast::<u64>();
+        ptr.write(data);
+        ptr.add(1).write(length);
+        ptr.add(2).write(capacity);
+        Ok(())
+    }
+}
+
 /// Read a nested FFI buffer
 ///
 /// Like strings, these are deconstructed into their raw parts, casted to `u64` values,

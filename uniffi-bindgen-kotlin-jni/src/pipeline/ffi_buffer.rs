@@ -64,7 +64,7 @@ impl FfiBufferLayoutOracle {
             // One 8-byte handle
             Type::Interface { .. } => Layout::from_size_align(8, 8)?,
             // (data, length, capacity) fields
-            Type::String => Layout::from_size_align(24, 8)?,
+            Type::String | Type::Bytes => Layout::from_size_align(24, 8)?,
             // (data, size) fields
             Type::Sequence { .. } | Type::Map { .. } | Type::Set { .. } => {
                 Layout::from_size_align(16, 8)?
