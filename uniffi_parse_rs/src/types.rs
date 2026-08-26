@@ -385,11 +385,12 @@ impl<'ir> RPath<'ir> {
                     Ok(path) => path,
                     Err(e) if e.is_not_found() => {
                         // The path doesn't name a UniFFI item, but it may name a non-UniFFI
-                        // type that a `uniffi::custom_type!` elsewhere covers.
+                        // type that a `uniffi::custom_type!` or a hand-written `TypeId` impl
+                        // elsewhere covers.
                         match self
                             .resolve(ir, cache, &ty_path.path, Namespace::NonUniffiType)
                             .ok()
-                            .and_then(|path| cache.registered_custom_type(&path))
+                            .and_then(|path| cache.registered_type_mapping(&path))
                         {
                             Some(custom_type_path) => custom_type_path,
                             None => return Err(e),
@@ -402,7 +403,7 @@ impl<'ir> RPath<'ir> {
                 // registered for the item this path resolves to (e.g. a type alias in another
                 // module), resolve to the custom type instead.
                 if matches!(path_to_type.item()?, Item::Type(_) | Item::NonUniffi(..)) {
-                    if let Some(custom_type_path) = cache.registered_custom_type(&path_to_type) {
+                    if let Some(custom_type_path) = cache.registered_type_mapping(&path_to_type) {
                         path_to_type = custom_type_path;
                     }
                 }
@@ -1093,6 +1094,51 @@ pub mod tests {
                 &mut cache,
                 "custom_type_paths",
                 "external_crate2::Other"
+            ),
+            Err(ErrorKind::NotFound),
+        );
+    }
+
+    #[test]
+    fn test_resolve_types_with_hand_written_type_id_impls() {
+        let ir = Ir::new_for_test(&["type_id_impls"]);
+        let mut cache = LookupCache::new(&ir);
+
+        // `IndexSet<T>` declares `TYPE_HASH_SET` in its hand-written `TypeId` impl
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "type_id_impls::usage", "IndexSet<u32>"),
+            Ok(Type::HashSet(Box::new(Type::UInt32))),
+        );
+        // `IndexMap<K, V>` declares `TYPE_HASH_MAP`
+        assert_eq!(
+            run_resolve_type(
+                &ir,
+                &mut cache,
+                "type_id_impls::usage",
+                "IndexMap<String, u32>"
+            ),
+            Ok(Type::HashMap(
+                Box::new(Type::String),
+                Box::new(Type::UInt32)
+            )),
+        );
+        // The same types, named by full path
+        assert_eq!(
+            run_resolve_type(
+                &ir,
+                &mut cache,
+                "type_id_impls",
+                "fake_indexmap::IndexSet<u32>"
+            ),
+            Ok(Type::HashSet(Box::new(Type::UInt32))),
+        );
+        // `Reversed<K, V>` concatenates its params in the wrong order: not registered
+        assert_eq!(
+            run_resolve_type(
+                &ir,
+                &mut cache,
+                "type_id_impls",
+                "fake_indexmap::Reversed<String, u32>"
             ),
             Err(ErrorKind::NotFound),
         );

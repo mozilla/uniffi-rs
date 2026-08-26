@@ -256,12 +256,12 @@ impl<'ir> RPath<'ir> {
                     Ok(RPath::new(item))
                 }
                 None => {
-                    // The path points into an unparsed crate.  A `custom_type!` may still
-                    // cover it, if its underlying type aliases the same path.
+                    // The path points into an unparsed crate.  A `custom_type!` may still cover it,
+                    // if its underlying type aliases the same path.
                     if namespace == Namespace::Type {
-                        if let Some(custom_type_path) = cache.external_custom_type(path) {
-                            trace!("  resolved to custom type: {custom_type_path}");
-                            return Ok(custom_type_path);
+                        if let Some(mapped) = cache.external_type_mapping(path) {
+                            trace!("  resolved to type mapping: {mapped}");
+                            return Ok(mapped);
                         }
                     }
                     trace!("  not found");
@@ -695,25 +695,20 @@ pub struct LookupCache<'ir> {
     // Cached results for `RPath::public_path_to_item()`
     // This maps path strings to lookup results
     pub public_paths: HashMap<String, Result<ItemNames>>,
-    // Custom types indexed by the type they cover.  Empty by default; built from the
-    // IR by [LookupCache::new].
-    custom_types: CustomTypeRegistry<'ir>,
+    // Type mappings indexed by the type they cover
+    type_mappings: TypeMappingRegistry<'ir>,
 }
 
 impl<'ir> LookupCache<'ir> {
     /// Create a lookup cache for a fully-resolved IR
-    ///
-    /// [LookupCache::default] leaves the custom type registry empty.  That's the right
-    /// choice while the IR is still being resolved (the `custom_type!` items don't exist
-    /// yet); anything resolving types afterwards should use this constructor.
     pub fn new(ir: &'ir Ir) -> Self {
         Self {
-            custom_types: CustomTypeRegistry::new(ir),
+            type_mappings: TypeMappingRegistry::new(ir),
             ..Self::empty()
         }
     }
 
-    /// A cache with an empty custom type registry: lookups resolve as if no custom types
+    /// A cache with an empty type mapping registry: lookups resolve as if no mappings
     /// were registered
     ///
     /// This is correct in exactly two places — while the IR is still being resolved (the
@@ -724,50 +719,55 @@ impl<'ir> LookupCache<'ir> {
             children: HashMap::new(),
             children_resolving: HashSet::new(),
             public_paths: HashMap::new(),
-            custom_types: CustomTypeRegistry::default(),
+            type_mappings: TypeMappingRegistry::default(),
         }
     }
 
-    /// Look up the custom type registered for the item at `item_path`
+    /// Look up the type mapping registered for the item at `item_path`
     ///
     /// `uniffi::custom_type!` is type-keyed in the macro flow: the generated FFI impls apply
     /// wherever the type is named, no matter where the macro was invoked.  When parsing sources
     /// we resolve names lexically, so a path can reach the underlying type (a type alias or a
     /// non-UniFFI type) without ever passing through the module that invoked `custom_type!`.
-    /// This maps such items back to their custom type.
-    pub fn registered_custom_type(&self, item_path: &RPath<'ir>) -> Option<RPath<'ir>> {
+    /// This maps such items back to their custom type — or, for hand-written `TypeId` impls,
+    /// to the builtin container the impl's `TYPE_ID_META` declares.
+    pub fn registered_type_mapping(&self, item_path: &RPath<'ir>) -> Option<RPath<'ir>> {
         // Don't map custom types to themselves
         if matches!(item_path.item(), Ok(Item::CustomType(_))) {
             return None;
         }
-        self.custom_types
+        self.type_mappings
             .by_item
             .get(&item_path.path_string())
             .cloned()
     }
 
-    /// Look up the custom type registered for a path into an unparsed crate
+    /// Look up the type mapping registered for a path into an unparsed crate
     ///
-    /// This handles custom types whose underlying type comes from a non-UniFFI crate,
+    /// This handles custom types (and hand-written `TypeId` impls) whose underlying type
+    /// comes from a non-UniFFI crate,
     /// e.g. `type Decimal = rust_decimal::Decimal;` + `uniffi::custom_type!(Decimal, String)`.
     /// Other modules can name the type as `use rust_decimal::Decimal`, which never resolves
     /// to an item since `rust_decimal` isn't parsed.
-    pub fn external_custom_type(&self, path: &Path) -> Option<RPath<'ir>> {
+    pub fn external_type_mapping(&self, path: &Path) -> Option<RPath<'ir>> {
         let key = external_path_key(path)?;
-        self.custom_types.by_external_path.get(&key).cloned()
+        self.type_mappings.by_external_path.get(&key).cloned()
     }
 }
 
-/// Custom types indexed by the Rust type they cover
+/// Type mappings indexed by the Rust type they cover
+///
+/// A mapping's value is the item to resolve the covered type to: the `custom_type!`
+/// item, or the builtin container declared by a hand-written `TypeId` impl.
 #[derive(Default)]
-struct CustomTypeRegistry<'ir> {
-    /// Canonical item path (`RPath::path_string`) of the underlying item -> custom type item
+struct TypeMappingRegistry<'ir> {
+    /// Canonical item path (`RPath::path_string`) of the underlying item -> mapped item
     by_item: HashMap<String, RPath<'ir>>,
-    /// Normalized textual path into an unparsed crate -> custom type item
+    /// Normalized textual path into an unparsed crate -> mapped item
     by_external_path: HashMap<String, RPath<'ir>>,
 }
 
-impl<'ir> CustomTypeRegistry<'ir> {
+impl<'ir> TypeMappingRegistry<'ir> {
     fn new(ir: &'ir Ir) -> Self {
         // Building the registry resolves paths itself.  Use a scratch cache — its
         // registry is empty, so those resolutions see "nothing registered" — and discard
@@ -789,6 +789,9 @@ impl<'ir> CustomTypeRegistry<'ir> {
                             item,
                             custom_type,
                         ),
+                        Item::UnresolvedImpl(imp) => {
+                            registry.register_type_id_impl(ir, cache, &module_path, module, imp)
+                        }
                         _ => (),
                     }
                 }
@@ -869,6 +872,112 @@ impl<'ir> CustomTypeRegistry<'ir> {
             }
         }
     }
+
+    /// Register a hand-written `TypeId` impl for a generic container type
+    ///
+    /// Generic types can't be covered by `custom_type!`.  Instead, crates expose generic
+    /// containers from non-UniFFI crates by hand-writing the FFI trait impls, and the
+    /// `TYPE_ID_META` const in the `TypeId` impl declares the wire shape:
+    ///
+    /// ```ignore
+    /// impl<T> TypeId<UniFfiTag> for IndexSet<T> {
+    ///     const TYPE_ID_META: MetadataBuffer =
+    ///         MetadataBuffer::from_code(metadata::codes::TYPE_HASH_SET).concat(T::TYPE_ID_META);
+    /// }
+    /// ```
+    ///
+    /// Parse that declaration and register the target type to resolve like the equivalent
+    /// builtin container (`HashSet<T>` here).
+    fn register_type_id_impl(
+        &mut self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+        module: &'ir Module,
+        imp: &syn::ItemImpl,
+    ) {
+        // `impl<..> TypeId<..> for ..`
+        let Some((None, trait_path, _)) = &imp.trait_ else {
+            return;
+        };
+        let Some(trait_seg) = trait_path.segments.last() else {
+            return;
+        };
+        if trait_seg.ident != "TypeId" {
+            return;
+        }
+        // `const TYPE_ID_META: MetadataBuffer = ..;`
+        let Some(expr) = imp.items.iter().find_map(|item| match item {
+            syn::ImplItem::Const(c) if c.ident == "TYPE_ID_META" => Some(&c.expr),
+            _ => None,
+        }) else {
+            return;
+        };
+        let Some((code, params)) = parse_type_id_meta_expr(expr) else {
+            return;
+        };
+        let builtin: &'static Item = match (code.as_str(), params.len()) {
+            ("TYPE_VEC", 1) => &Item::Builtin(BuiltinItem::Vec),
+            ("TYPE_OPTION", 1) => &Item::Builtin(BuiltinItem::Option),
+            ("TYPE_HASH_SET", 1) => &Item::Builtin(BuiltinItem::HashSet),
+            ("TYPE_HASH_MAP", 2) => &Item::Builtin(BuiltinItem::HashMap),
+            _ => return,
+        };
+        // The target type's generic arguments must be exactly the params concatenated into
+        // `TYPE_ID_META`, in the same order — the builtin resolves its generics positionally.
+        let syn::Type::Path(self_ty) = imp.self_ty.as_ref() else {
+            return;
+        };
+        let Some(self_seg) = self_ty.path.segments.last() else {
+            return;
+        };
+        let syn::PathArguments::AngleBracketed(args) = &self_seg.arguments else {
+            return;
+        };
+        let arg_idents: Vec<&Ident> = args
+            .args
+            .iter()
+            .filter_map(|arg| match arg {
+                syn::GenericArgument::Type(syn::Type::Path(p)) => p.path.get_ident(),
+                _ => None,
+            })
+            .collect();
+        if arg_idents.len() != args.args.len()
+            || arg_idents.len() != params.len()
+            || arg_idents.iter().zip(&params).any(|(a, b)| **a != *b)
+        {
+            return;
+        }
+        // Register the target's base path, without the generic arguments
+        let mut base_path = self_ty.path.clone();
+        if let Some(seg) = base_path.segments.last_mut() {
+            seg.arguments = syn::PathArguments::None;
+        }
+        let underlying = if let Some(ident) = base_path.get_ident() {
+            module_path.underlying_item(ir, cache, module, &ident.unraw())
+        } else {
+            match module_path.resolve_type_or_non_uniffi(ir, cache, &base_path) {
+                Ok(path) => Some(Underlying::Item(path)),
+                Err(e) if e.is_not_found() => Some(Underlying::External(base_path)),
+                Err(_) => None,
+            }
+        };
+        match underlying {
+            Some(Underlying::Item(path)) => {
+                self.by_item
+                    .entry(path.path_string())
+                    .or_insert_with(|| RPath::new(builtin));
+            }
+            Some(Underlying::External(path)) => {
+                if let Some(key) = external_path_key(&path) {
+                    self.by_external_path
+                        .entry(key)
+                        .or_insert_with(|| RPath::new(builtin));
+                }
+            }
+            None => (),
+        }
+    }
 }
 
 enum Underlying<'ir> {
@@ -878,7 +987,7 @@ enum Underlying<'ir> {
     External(Path),
 }
 
-/// Resolution helpers for building the custom type registry
+/// Resolution helpers for building the type mapping registry
 impl<'ir> RPath<'ir> {
     /// Find the non-special item a custom type's ident names in this module
     fn underlying_item(
@@ -934,9 +1043,65 @@ impl<'ir> RPath<'ir> {
     }
 }
 
+/// Parse a `TYPE_ID_META` expression of the form
+/// `MetadataBuffer::from_code(metadata::codes::TYPE_X).concat(T::TYPE_ID_META)..`
+///
+/// Returns the metadata code name and the generic params concatenated after it,
+/// in concatenation order.
+fn parse_type_id_meta_expr(mut expr: &syn::Expr) -> Option<(String, Vec<Ident>)> {
+    let mut params = vec![];
+    loop {
+        match expr {
+            // `<receiver>.concat(P::TYPE_ID_META)`
+            syn::Expr::MethodCall(call) if call.method == "concat" && call.args.len() == 1 => {
+                let syn::Expr::Path(arg) = &call.args[0] else {
+                    return None;
+                };
+                let mut segments = arg.path.segments.iter();
+                let (Some(param), Some(meta), None) =
+                    (segments.next(), segments.next(), segments.next())
+                else {
+                    return None;
+                };
+                if meta.ident != "TYPE_ID_META" {
+                    return None;
+                }
+                params.push(param.ident.clone());
+                expr = &call.receiver;
+            }
+            // `MetadataBuffer::from_code(metadata::codes::TYPE_X)`
+            syn::Expr::Call(call) if call.args.len() == 1 => {
+                let syn::Expr::Path(func) = call.func.as_ref() else {
+                    return None;
+                };
+                if func.path.segments.last()?.ident != "from_code" {
+                    return None;
+                }
+                let syn::Expr::Path(code) = &call.args[0] else {
+                    return None;
+                };
+                let code = code.path.segments.last()?.ident.to_string();
+                // Params were collected outermost-in; concatenation order is base-out
+                params.reverse();
+                return Some((code, params));
+            }
+            _ => return None,
+        }
+    }
+}
+
 /// Normalized key for a path that should point into an unparsed crate
+///
+/// The key is built from the segment idents only.  Generic arguments are allowed on the
+/// last segment (e.g. a field spelled `indexmap::IndexSet<Counter>`) — they're resolved
+/// separately, according to the item the path maps to.
 fn external_path_key(path: &Path) -> Option<String> {
-    if path.segments.len() < 2 || path.segments.iter().any(|seg| !seg.arguments.is_none()) {
+    if path.segments.len() < 2 {
+        return None;
+    }
+    let segments = path.segments.iter().collect::<Vec<_>>();
+    let (_, non_last_segments) = segments.split_last()?;
+    if non_last_segments.iter().any(|seg| !seg.arguments.is_none()) {
         return None;
     }
     Some(

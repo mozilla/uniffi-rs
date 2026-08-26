@@ -182,7 +182,7 @@ impl Ir {
 
         // Resolve the items
         let mut resolved_map = HashMap::new();
-        // `LookupCache::empty()`, not `new()`: the custom type registry can only be
+        // `LookupCache::empty()`, not `new()`: the type mapping registry can only be
         // built once the items it maps are resolved, which is what's happening here.
         let mut cache = LookupCache::empty();
         for crate_root in self.crate_roots.values() {
