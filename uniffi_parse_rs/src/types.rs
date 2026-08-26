@@ -516,11 +516,17 @@ impl<'ir> RPath<'ir> {
                 }
                 let trait_path = self.resolve(ir, cache, trait_bounds[0], Namespace::Type)?;
                 match trait_path.item()? {
-                    Item::Trait(tr) => Ok(Type::Trait {
-                        module_path: self.path_string(),
-                        name: tr.ident.unraw().to_string(),
-                        export_ty: tr.attrs.export_ty,
-                    }),
+                    Item::Trait(tr) => {
+                        // Use the trait's own public path, not the referencing module's —
+                        // the reference must match the metadata generated for the trait's
+                        // definition, which may live in another module or crate.
+                        let names = trait_path.public_path_to_item(ir, cache)?;
+                        Ok(Type::Trait {
+                            module_path: names.module_path,
+                            name: names.name,
+                            export_ty: tr.attrs.export_ty,
+                        })
+                    }
                     Item::Udl(uniffi_meta::Type::Object {
                         module_path,
                         name,
@@ -1127,6 +1133,16 @@ pub mod tests {
                 export_ty: TraitExportType::TraitInterface(TraitKind::RustOnly),
             })
         );
+        // Referenced from another module, the type must carry the trait's own module path,
+        // matching the metadata generated for the trait's definition
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types", "dyn mod1::TraitInterface"),
+            Ok(Type::Trait {
+                module_path: "types::mod1".into(),
+                name: "TraitInterface".into(),
+                export_ty: TraitExportType::TraitInterface(TraitKind::RustOnly),
+            })
+        );
         assert_eq!(
             run_resolve_type(
                 &ir,
@@ -1594,7 +1610,8 @@ pub mod tests {
                 None
             ),
             Ok(uniffi_meta::Type::Object {
-                module_path: "types".into(),
+                // The trait's own module path, not the referencing module's
+                module_path: "types::mod1".into(),
                 name: "TraitInterface".into(),
                 imp: ObjectImpl::Trait(TraitKind::RustOnly),
             }),
@@ -1650,7 +1667,8 @@ pub mod tests {
             run_resolve_arg(&ir, &mut cache, "types", "&dyn mod1::TraitInterface", None),
             Ok(ArgType {
                 ty: uniffi_meta::Type::Object {
-                    module_path: "types".into(),
+                    // The trait's own module path, not the referencing module's
+                    module_path: "types::mod1".into(),
                     name: "TraitInterface".into(),
                     imp: ObjectImpl::Trait(TraitKind::RustOnly),
                 },
