@@ -4,6 +4,8 @@ object Scaffolding {
     @JvmStatic external fun ffiBufferFree(buf: java.nio.ByteBuffer)
     @JvmStatic external fun ffiBufferReadString(buf: java.nio.ByteBuffer, offset: kotlin.Int): kotlin.String
     @JvmStatic external fun ffiBufferWriteString(buf: java.nio.ByteBuffer, offset: kotlin.Int, value: kotlin.String)
+    @JvmStatic external fun ffiBufferReadBytes(buf: java.nio.ByteBuffer, offset: kotlin.Int): kotlin.ByteArray
+    @JvmStatic external fun ffiBufferWriteBytes(buf: java.nio.ByteBuffer, offset: kotlin.Int, value: kotlin.ByteArray)
     @JvmStatic external fun ffiBufferReadBuffer(buf: java.nio.ByteBuffer, offset: kotlin.Int): java.nio.ByteBuffer
     @JvmStatic external fun ffiBufferWriteBuffer(buf: java.nio.ByteBuffer, offset: kotlin.Int, value: java.nio.ByteBuffer)
 
