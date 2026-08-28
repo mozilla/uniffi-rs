@@ -58,6 +58,7 @@ Other tools we know of which try and solve a similarly shaped problem are:
 * [Java bindings](https://github.com/IronCoreLabs/uniffi-bindgen-java)
 * [Node bindings](https://github.com/livekit/uniffi-bindgen-node) (early development)
 * [Node bindings](https://github.com/criccomini/uniffi-bindgen-node-js)
+* [Haskell bindings](https://github.com/mercury/uniffi-bindgen-haskell)
 
 ### External resources
 
