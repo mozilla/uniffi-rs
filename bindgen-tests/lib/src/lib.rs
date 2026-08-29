@@ -16,6 +16,9 @@ pub mod collections;
 #[cfg(feature = "custom_types")]
 pub mod custom_types;
 
+#[cfg(feature = "custom_types")]
+mod custom_type_arc;
+
 #[cfg(feature = "defaults")]
 pub mod defaults;
 
