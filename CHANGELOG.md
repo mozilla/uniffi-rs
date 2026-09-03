@@ -21,6 +21,7 @@
 
 ### What's Fixed
 - Kotlin: Fixed messages for error classes that inherit `Throwable`, but not `Exception`.
+- Kotlin: Fixed checksum failure on aarch64 ([#2935](https://github.com/mozilla/uniffi-rs/pull/2935/))
 - Fix UDL remote enums, now allowing `[Enum, Remote] interface { ... }`
   (via [#2823](https://github.com/mozilla/uniffi-rs/issues/2823)).
 - Python: event-loop lookup now prefers the calling thread's running loop, falling back to the one
