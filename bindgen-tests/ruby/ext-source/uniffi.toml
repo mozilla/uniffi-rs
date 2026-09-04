@@ -1,0 +1,5 @@
+[bindings.ruby.custom_types.ExternalUrl]
+type_name = "URI"
+imports = ["uri"]
+lift = "URI.parse({})"
+lower = "{}.to_s"

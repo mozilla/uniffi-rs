@@ -9,6 +9,8 @@ crate-type = ["cdylib", "lib"]
 [dependencies]
 uniffi-bindgen-tests = { path = "../../bindgen-tests/lib", default-features = true }
 uniffi-bindgen-tests-external-types-source = { path = "../../bindgen-tests/external-types" }
+uniffi-bindgen-tests-mid-types = { path = "../../bindgen-tests/mid-types" }
+uniffi-bindgen-tests-ruby-ext-source = { path = "../../bindgen-tests/ruby/ext-source" }
 uniffi-bindgen-kotlin-jni-runtime = { path = "../runtime" }
 
 [build-dependencies]

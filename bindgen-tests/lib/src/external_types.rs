@@ -6,6 +6,7 @@ use std::sync::Arc;
 use uniffi_bindgen_tests_external_types_source::{
     ExternalCustomType, ExternalEnum, ExternalInterface, ExternalRec,
 };
+use uniffi_bindgen_tests_mid_types::MidRec;
 
 #[uniffi::export]
 pub fn roundtrip_ext_record(rec: ExternalRec) -> ExternalRec {
@@ -25,4 +26,9 @@ pub fn roundtrip_ext_interface(interface: Arc<ExternalInterface>) -> Arc<Externa
 #[uniffi::export]
 pub fn roundtrip_ext_custom_type(custom: ExternalCustomType) -> ExternalCustomType {
     custom
+}
+
+#[uniffi::export]
+pub fn roundtrip_mid_rec(rec: MidRec) -> MidRec {
+    rec
 }
