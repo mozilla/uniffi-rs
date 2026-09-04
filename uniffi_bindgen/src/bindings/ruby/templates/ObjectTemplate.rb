@@ -14,7 +14,7 @@ class {{ obj.name()|class_name_rb }}{% if ci.is_name_used_as_error(obj.name()) %
   # to the actual instance, only its underlying handle.
   def self.uniffi_define_finalizer_by_handle(handle, object_id)
     Proc.new do |_id|
-      ::{{ ci.namespace()|class_name_rb }}.rust_call(
+      ::{{ self.module_name() }}.rust_call(
         :{{ obj.ffi_object_free().name() }},
         handle
       )
@@ -40,7 +40,7 @@ class {{ obj.name()|class_name_rb }}{% if ci.is_name_used_as_error(obj.name()) %
   end
 
   def uniffi_clone_handle
-    return ::{{ci.namespace()|class_name_rb }}.rust_call(
+    return ::{{ self.module_name() }}.rust_call(
       :{{ obj.ffi_object_clone().name() }},
       @handle
     )
@@ -75,7 +75,7 @@ class {{ obj.name()|class_name_rb }}{% if ci.is_name_used_as_error(obj.name()) %
   end
 
   def uniffi_clone_handle()
-    return ::{{ ci.namespace()|class_name_rb }}.rust_call(
+    return ::{{ self.module_name() }}.rust_call(
       :{{ obj.ffi_object_clone().name() }},
       @handle
     )
@@ -141,7 +141,7 @@ class {{ obj.name()|class_name_rb }}{% if ci.is_name_used_as_error(obj.name()) %
   def {{ meth.name()|fn_name_rb }}({% call rb::arg_list_decl(meth) %}{% endcall %})
     {%- call rb::setup_args_extra_indent(meth) %}{% endcall %}
     result = {% call rb::to_ffi_call_with_prefix("uniffi_clone_handle()", meth) %}{% endcall %}
-    return {{ "result"|lift_rb(return_type, config) }}
+    return {{ self.lift_rb("result", return_type)? }}
   end
 
   {%- when None -%}

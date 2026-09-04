@@ -149,6 +149,8 @@ mod test {
         let source_filenames = [
             "uniffi_bindgen_testsFFI.modulemap",
             "uniffi_bindgen_tests_external_types_sourceFFI.modulemap",
+            "uniffi_bindgen_tests_mid_typesFFI.modulemap",
+            "uniffi_bindgen_tests_ruby_ext_sourceFFI.modulemap",
         ];
         for filename in source_filenames {
             let path = tempdir.join(filename);
@@ -178,7 +180,9 @@ mod test {
             .arg("-L")
             .arg(tempdir)
             .arg("uniffi_bindgen_tests.swift")
-            .arg("uniffi_bindgen_tests_external_types_source.swift");
+            .arg("uniffi_bindgen_tests_external_types_source.swift")
+            .arg("uniffi_bindgen_tests_mid_types.swift")
+            .arg("uniffi_bindgen_tests_ruby_ext_source.swift");
         let status = command
             .spawn()
             .expect("Failed to spawn `swiftc` when compiling bindings")
