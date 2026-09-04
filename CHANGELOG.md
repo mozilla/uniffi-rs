@@ -18,6 +18,10 @@
   See [#2911](https://github.com/mozilla/uniffi-rs/pull/2911).
 - Added support for remote trait interfaces - ie, traits defined in a crate which doesn't use
   UniFFI. Use `#[uniffi::export(remote)]` or `[Trait, Remote]` in UDL. Foreign implementations are not supported, see the docs for more.
+- Ruby: Add `bindings.ruby.module_name` to set the generated module name. In library mode,
+  `[bindings.ruby.external_packages]` is auto-filled from each peer's `module_name`; a consumer
+  override that does not match is a bindgen error (via [#2980](https://github.com/mozilla/uniffi-rs/pull/2980)).
+- Ruby: Add external types support (via [#2980](https://github.com/mozilla/uniffi-rs/pull/2980)).
 
 ### What's Fixed
 - Kotlin: Fixed messages for error classes that inherit `Throwable`, but not `Exception`.
