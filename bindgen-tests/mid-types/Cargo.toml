@@ -1,0 +1,11 @@
+[package]
+name = "uniffi-bindgen-tests-mid-types"
+version = "0.31.0"
+edition = "2021"
+
+[lib]
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[dependencies]
+uniffi = { path = "../../uniffi", default-features = false }
+uniffi-bindgen-tests-external-types-source = { path = "../external-types" }
