@@ -79,6 +79,42 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_ffiBufferWriteString(
 }
 
 #[unsafe(no_mangle)]
+unsafe extern "system" fn Java_uniffi_Scaffolding_ffiBufferReadBytes(
+    env: *mut uniffi_jni::JNIEnv,
+    _: *mut uniffi_jni::jclass,
+    buf: uniffi_jni::jobject,
+    offset: ::std::primitive::i32,
+) -> uniffi_jni::jbyteArray {
+    unsafe {
+        uniffi_jni::rust_call_with_env(env, |env| {
+            let (ptr, capacity) = uniffi_jni::lift_buffer(env, buf)?;
+            let ptr = ptr.add(offset as ::std::primitive::usize);
+            let v = uniffi::ffibuffer::read_vec_u8(ptr)?;
+            uniffi_jni::lower_vec_u8(env, v)
+        })
+    }
+}
+
+#[unsafe(no_mangle)]
+unsafe extern "system" fn Java_uniffi_Scaffolding_ffiBufferWriteBytes(
+    env: *mut uniffi_jni::JNIEnv,
+    _: *mut uniffi_jni::jclass,
+    buf: uniffi_jni::jobject,
+    offset: ::std::primitive::i32,
+    value: uniffi_jni::jbyteArray,
+) {
+    unsafe {
+        uniffi_jni::rust_call_with_env(env, |env| {
+            let v = uniffi_jni::lift_vec_u8(env, value)?;
+            let (ptr, _) = uniffi_jni::lift_buffer(env, buf)?;
+            let ptr = ptr.add(offset as ::std::primitive::usize);
+            uniffi::ffibuffer::write_vec_u8(ptr, v)?;
+            uniffi::Result::Ok(())
+        })
+    }
+}
+
+#[unsafe(no_mangle)]
 unsafe extern "system" fn Java_uniffi_Scaffolding_ffiBufferReadBuffer(
     env: *mut uniffi_jni::JNIEnv,
     _: *mut uniffi_jni::jclass,

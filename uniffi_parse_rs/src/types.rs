@@ -380,7 +380,33 @@ impl<'ir> RPath<'ir> {
                 if ty_path.path.is_ident("Self") {
                     return Ok(Type::SelfTy);
                 }
-                let path_to_type = self.resolve(ir, cache, &ty_path.path, Namespace::Type)?;
+                let mut path_to_type = match self.resolve(ir, cache, &ty_path.path, Namespace::Type)
+                {
+                    Ok(path) => path,
+                    Err(e) if e.is_not_found() => {
+                        // The path doesn't name a UniFFI item, but it may name a non-UniFFI
+                        // type that a `uniffi::custom_type!` or a hand-written `TypeId` impl
+                        // elsewhere covers.
+                        match self
+                            .resolve(ir, cache, &ty_path.path, Namespace::NonUniffiType)
+                            .ok()
+                            .and_then(|path| cache.registered_type_mapping(&path))
+                        {
+                            Some(custom_type_path) => custom_type_path,
+                            None => return Err(e),
+                        }
+                    }
+                    Err(e) => return Err(e),
+                };
+                // `custom_type!` is type-keyed in the macro flow: it applies wherever the type
+                // is named, not only where the macro was invoked.  If a custom type is
+                // registered for the item this path resolves to (e.g. a type alias in another
+                // module), resolve to the custom type instead.
+                if matches!(path_to_type.item()?, Item::Type(_) | Item::NonUniffi(..)) {
+                    if let Some(custom_type_path) = cache.registered_type_mapping(&path_to_type) {
+                        path_to_type = custom_type_path;
+                    }
+                }
                 // We can use `mem::take` to remove the generic_params and use them for this lookup.
                 // If we need to recurse another level, we want a new set of generic params anyways.
                 let generics = GenericArgs::new_with_context_params(
@@ -516,11 +542,17 @@ impl<'ir> RPath<'ir> {
                 }
                 let trait_path = self.resolve(ir, cache, trait_bounds[0], Namespace::Type)?;
                 match trait_path.item()? {
-                    Item::Trait(tr) => Ok(Type::Trait {
-                        module_path: self.path_string(),
-                        name: tr.ident.unraw().to_string(),
-                        export_ty: tr.attrs.export_ty,
-                    }),
+                    Item::Trait(tr) => {
+                        // Use the trait's own public path, not the referencing module's —
+                        // the reference must match the metadata generated for the trait's
+                        // definition, which may live in another module or crate.
+                        let names = trait_path.public_path_to_item(ir, cache)?;
+                        Ok(Type::Trait {
+                            module_path: names.module_path,
+                            name: names.name,
+                            export_ty: tr.attrs.export_ty,
+                        })
+                    }
                     Item::Udl(uniffi_meta::Type::Object {
                         module_path,
                         name,
@@ -816,7 +848,7 @@ pub mod tests {
     #[test]
     fn test_resolve_builtin_types() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_type(&ir, &mut cache, "types", "()"),
@@ -905,7 +937,7 @@ pub mod tests {
     #[test]
     fn test_resolve_user_types() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_type(&ir, &mut cache, "types::mod1", "String"),
@@ -960,7 +992,7 @@ pub mod tests {
     #[test]
     fn test_resolve_custom_types() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_type(&ir, &mut cache, "types", "JsonObject"),
@@ -1007,9 +1039,143 @@ pub mod tests {
     }
 
     #[test]
+    fn test_resolve_custom_types_by_target_path() {
+        let ir = Ir::new_for_test(&["custom_type_paths"]);
+        let mut cache = LookupCache::new(&ir);
+
+        let custom = |name: &str| {
+            Ok(Type::Custom {
+                module_path: "custom_type_paths::registrations".into(),
+                name: name.into(),
+                builtin: Box::new(Type::String),
+            })
+        };
+
+        // A non-UniFFI type covered by a custom type registered in another module
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "custom_type_paths::usage", "Concrete"),
+            custom("Concrete"),
+        );
+        // A type alias covered by a custom type registered in another module
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "custom_type_paths::usage", "ExternalAlias"),
+            custom("ExternalAlias"),
+        );
+        // A type imported directly from an unparsed crate, covered by a custom type
+        // over a local alias to the same path
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "custom_type_paths::usage", "Direct"),
+            custom("Direct"),
+        );
+
+        // The same types, named by path instead of through use statements
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "custom_type_paths", "types::Concrete"),
+            custom("Concrete"),
+        );
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "custom_type_paths", "types::ExternalAlias"),
+            custom("ExternalAlias"),
+        );
+        assert_eq!(
+            run_resolve_type(
+                &ir,
+                &mut cache,
+                "custom_type_paths",
+                "external_crate2::Direct"
+            ),
+            custom("Direct"),
+        );
+
+        // Paths into unparsed crates without a covering custom type still fail
+        assert_eq!(
+            run_resolve_type(
+                &ir,
+                &mut cache,
+                "custom_type_paths",
+                "external_crate2::Other"
+            ),
+            Err(ErrorKind::NotFound),
+        );
+    }
+
+    #[test]
+    fn test_resolve_types_with_hand_written_type_id_impls() {
+        let ir = Ir::new_for_test(&["type_id_impls"]);
+        let mut cache = LookupCache::new(&ir);
+
+        // `IndexSet<T>` declares `TYPE_HASH_SET` in its hand-written `TypeId` impl
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "type_id_impls::usage", "IndexSet<u32>"),
+            Ok(Type::HashSet(Box::new(Type::UInt32))),
+        );
+        // `IndexMap<K, V>` declares `TYPE_HASH_MAP`
+        assert_eq!(
+            run_resolve_type(
+                &ir,
+                &mut cache,
+                "type_id_impls::usage",
+                "IndexMap<String, u32>"
+            ),
+            Ok(Type::HashMap(
+                Box::new(Type::String),
+                Box::new(Type::UInt32)
+            )),
+        );
+        // The same types, named by full path
+        assert_eq!(
+            run_resolve_type(
+                &ir,
+                &mut cache,
+                "type_id_impls",
+                "fake_indexmap::IndexSet<u32>"
+            ),
+            Ok(Type::HashSet(Box::new(Type::UInt32))),
+        );
+        // `Reversed<K, V>` concatenates its params in the wrong order: not registered
+        assert_eq!(
+            run_resolve_type(
+                &ir,
+                &mut cache,
+                "type_id_impls",
+                "fake_indexmap::Reversed<String, u32>"
+            ),
+            Err(ErrorKind::NotFound),
+        );
+    }
+
+    #[test]
+    fn test_resolve_custom_types_from_another_crate() {
+        // `custom_type_paths2` mirrors a binding crate: it names types whose custom
+        // types are implemented by `custom_type_paths` (declared via `use_remote_type!`
+        // plus a local alias).
+        let ir = Ir::new_for_test(&["custom_type_paths", "custom_type_paths2"]);
+        let mut cache = LookupCache::new(&ir);
+
+        let custom = Ok(Type::Custom {
+            module_path: "custom_type_paths::registrations".into(),
+            name: "Direct".into(),
+            builtin: Box::new(Type::String),
+        });
+
+        // Through the local alias next to `use_remote_type!` — the macro's path
+        // (`custom_type_paths::Direct`) doesn't resolve, so resolution falls through
+        // to the alias, whose external target is covered by the custom type.
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "custom_type_paths2", "Direct"),
+            custom,
+        );
+        // Through a direct import from the unparsed crate
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "custom_type_paths2::usage2", "Direct"),
+            custom,
+        );
+    }
+
+    #[test]
     fn test_resolve_compound_types() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_type(&ir, &mut cache, "types", "Vec<String>"),
@@ -1117,10 +1283,20 @@ pub mod tests {
     #[test]
     fn test_resolve_type_trait_objects() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_type(&ir, &mut cache, "types::mod1", "dyn TraitInterface"),
+            Ok(Type::Trait {
+                module_path: "types::mod1".into(),
+                name: "TraitInterface".into(),
+                export_ty: TraitExportType::TraitInterface(TraitKind::RustOnly),
+            })
+        );
+        // Referenced from another module, the type must carry the trait's own module path,
+        // matching the metadata generated for the trait's definition
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types", "dyn mod1::TraitInterface"),
             Ok(Type::Trait {
                 module_path: "types::mod1".into(),
                 name: "TraitInterface".into(),
@@ -1181,7 +1357,7 @@ pub mod tests {
     #[test]
     fn test_resolve_type_with_type_aliases() {
         let ir = Ir::new_for_test(&["type_aliases"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_type(&ir, &mut cache, "type_aliases", "RecordAlias"),
@@ -1325,7 +1501,7 @@ pub mod tests {
     #[test]
     fn test_resolve_box_types() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         // Right now we just ignore the box since it doesn't make a difference in the generated
         // bindings.  If we want to use this to generate scaffolding, then we'll need something
@@ -1352,7 +1528,7 @@ pub mod tests {
     #[test]
     fn test_resolve_type_references() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_type(&ir, &mut cache, "types::mod1", "&std::primitive::u32"),
@@ -1383,7 +1559,7 @@ pub mod tests {
     #[test]
     fn test_remote_types() {
         let ir = Ir::new_for_test(&["remote_types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_uniffi_meta_type(&ir, &mut cache, "remote_types", "AnyhowError", None),
@@ -1405,7 +1581,6 @@ pub mod tests {
     #[test]
     fn test_udl_types() {
         let mut ir = Ir::new_for_test(&["udl_types", "udl_types_crate2"]);
-        let mut cache = LookupCache::default();
         ir.add_udl_metadata(
             "udl_types",
             vec![
@@ -1445,6 +1620,7 @@ pub mod tests {
             ],
         )
         .unwrap();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_uniffi_meta_type(&ir, &mut cache, "udl_types::mod1", "UdlRecord", None),
@@ -1560,7 +1736,7 @@ pub mod tests {
     #[test]
     fn test_result_uniffi_meta() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_uniffi_meta_type(&ir, &mut cache, "types", "TestRecord", None),
@@ -1594,7 +1770,8 @@ pub mod tests {
                 None
             ),
             Ok(uniffi_meta::Type::Object {
-                module_path: "types".into(),
+                // The trait's own module path, not the referencing module's
+                module_path: "types::mod1".into(),
                 name: "TraitInterface".into(),
                 imp: ObjectImpl::Trait(TraitKind::RustOnly),
             }),
@@ -1624,7 +1801,7 @@ pub mod tests {
     #[test]
     fn test_result_arg() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_arg(&ir, &mut cache, "types", "TestRecord", None),
@@ -1650,7 +1827,8 @@ pub mod tests {
             run_resolve_arg(&ir, &mut cache, "types", "&dyn mod1::TraitInterface", None),
             Ok(ArgType {
                 ty: uniffi_meta::Type::Object {
-                    module_path: "types".into(),
+                    // The trait's own module path, not the referencing module's
+                    module_path: "types::mod1".into(),
                     name: "TraitInterface".into(),
                     imp: ObjectImpl::Trait(TraitKind::RustOnly),
                 },
@@ -1704,7 +1882,6 @@ pub mod tests {
     #[test]
     fn test_raw_ident() {
         let mut ir = Ir::new_for_test(&["raw_idents"]);
-        let mut cache = LookupCache::default();
         ir.add_udl_metadata(
             "raw_idents",
             vec![uniffi_meta::RecordMetadata {
@@ -1718,6 +1895,7 @@ pub mod tests {
             .into()],
         )
         .unwrap();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_uniffi_meta_type(&ir, &mut cache, "raw_idents", "RecordWrapper", None),

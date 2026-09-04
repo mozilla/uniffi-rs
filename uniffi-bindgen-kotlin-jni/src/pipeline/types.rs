@@ -267,6 +267,7 @@ impl TypeNode {
             Type::Float64 => "uniffi::ffibuffer::write_f64".into(),
             Type::Boolean => "uniffi::ffibuffer::write_bool".into(),
             Type::String => "uniffi::ffibuffer::write_string".into(),
+            Type::Bytes => "uniffi::ffibuffer::write_vec_u8".into(),
             _ => format!("write_type_{id}"),
         }
     }
@@ -287,6 +288,7 @@ impl TypeNode {
             Type::Float64 => "uniffi::ffibuffer::read_f64".into(),
             Type::Boolean => "uniffi::ffibuffer::read_bool".into(),
             Type::String => "uniffi::ffibuffer::read_string".into(),
+            Type::Bytes => "uniffi::ffibuffer::read_vec_u8".into(),
             _ => format!("read_type_{id}"),
         }
     }
@@ -407,6 +409,7 @@ impl TypeNode {
             Type::Float64 => "writeDouble".into(),
             Type::Boolean => "writeBoolean".into(),
             Type::String => "writeString".into(),
+            Type::Bytes => "writeBytes".into(),
             _ => format!("writeType{id}"),
         }
     }
@@ -427,6 +430,7 @@ impl TypeNode {
             Type::Float64 => "readDouble".into(),
             Type::Boolean => "readBoolean".into(),
             Type::String => "readString".into(),
+            Type::Bytes => "readBytes".into(),
             _ => format!("readType{id}"),
         }
     }

@@ -13,8 +13,8 @@ use proc_macro2::Span;
 use syn::{ext::IdentExt, spanned::Spanned, Ident, Path};
 
 use crate::{
-    files::FileId, BuiltinItem, Error, ErrorKind::*, Ir, Item, ItemNames, Module, Result, UseGlob,
-    UseItem,
+    files::FileId, BuiltinItem, CustomType, Error, ErrorKind::*, Ir, Item, ItemNames, Module,
+    Result, UseGlob, UseItem,
 };
 
 // For tests only, print tracing info.
@@ -256,6 +256,14 @@ impl<'ir> RPath<'ir> {
                     Ok(RPath::new(item))
                 }
                 None => {
+                    // The path points into an unparsed crate.  A `custom_type!` may still cover it,
+                    // if its underlying type aliases the same path.
+                    if namespace == Namespace::Type {
+                        if let Some(mapped) = cache.external_type_mapping(path) {
+                            trace!("  resolved to type mapping: {mapped}");
+                            return Ok(mapped);
+                        }
+                    }
                     trace!("  not found");
                     Err(Error::new(self.file_id(), path.span(), NotFound))
                 }
@@ -275,8 +283,15 @@ impl<'ir> RPath<'ir> {
         ident: &Ident,
         namespace: Namespace,
     ) -> Result<ChildItem<'ir>> {
-        // Special case `super` and `crate`, no need to check the cache for this one.
-        if ident == "super" {
+        // Special case `self`, `super` and `crate`, no need to check the cache for these.
+        if ident == "self" {
+            // `self` refers to the current module (e.g. `use self::submodule::Item`,
+            // where `self::` disambiguates a module from an external crate with the same name).
+            return Ok(ChildItem {
+                path: self.clone(),
+                vis: Visibility::Public,
+            });
+        } else if ident == "super" {
             return match self.parent() {
                 Ok(path) => Ok(ChildItem {
                     path,
@@ -394,10 +409,22 @@ impl<'ir> RPath<'ir> {
             }
         }
         match found {
-            Some((_, Item::UseRemoteType(path))) => Ok(Some(ChildItem {
-                path: self.resolve(ir, cache, path, namespace)?,
-                vis: Visibility::Public,
-            })),
+            Some((_, Item::UseRemoteType(path))) => {
+                match self.resolve(ir, cache, path, namespace) {
+                    Ok(path) => Ok(Some(ChildItem {
+                        path,
+                        vis: Visibility::Public,
+                    })),
+                    // `use_remote_type!(implementing_crate::Type)` doesn't require `Type`
+                    // to live at that path: the macro resolves `Type` in the invoking
+                    // module's scope and only uses `implementing_crate` for its
+                    // `UniFfiTag`.  Fall through to the module's regular items (e.g. a
+                    // `type Decimal = rust_decimal::Decimal;` alias next to the macro
+                    // invocation).
+                    Err(e) if e.is_not_found() => Ok(None),
+                    Err(e) => Err(e),
+                }
+            }
             Some((_, item)) => Ok(Some(ChildItem {
                 path: self.append_child(item),
                 vis: Visibility::Public,
@@ -438,6 +465,12 @@ impl<'ir> RPath<'ir> {
         }
         let mut found: Option<FoundItem<'ir>> = None;
         for item in module.items.iter() {
+            // Special items are handled by `child_special_item` before this runs.  Seeing
+            // them again here would report spurious name conflicts, e.g. between a
+            // `use_remote_type!` invocation and the type alias it covers.
+            if item.is_special() {
+                continue;
+            }
             if let Some(item_ident) = item.ident() {
                 if &item_ident == ident && namespace.matches(item) {
                     if let Some(found) = found {
@@ -653,7 +686,6 @@ impl fmt::Display for RPath<'_> {
 }
 
 /// Cache for path lookups
-#[derive(Default)]
 pub struct LookupCache<'ir> {
     // Cached results for `RPath::child`
     // This maps module id / ident / namespaces to lookup results
@@ -663,6 +695,422 @@ pub struct LookupCache<'ir> {
     // Cached results for `RPath::public_path_to_item()`
     // This maps path strings to lookup results
     pub public_paths: HashMap<String, Result<ItemNames>>,
+    // Type mappings indexed by the type they cover
+    type_mappings: TypeMappingRegistry<'ir>,
+}
+
+impl<'ir> LookupCache<'ir> {
+    /// Create a lookup cache for a fully-resolved IR
+    pub fn new(ir: &'ir Ir) -> Self {
+        Self {
+            type_mappings: TypeMappingRegistry::new(ir),
+            ..Self::empty()
+        }
+    }
+
+    /// A cache with an empty type mapping registry: lookups resolve as if no mappings
+    /// were registered
+    ///
+    /// This is correct in exactly two places — while the IR is still being resolved (the
+    /// items the registry maps don't exist yet), and for the registry build itself.
+    /// Everything else should use [LookupCache::new].
+    pub(crate) fn empty() -> Self {
+        Self {
+            children: HashMap::new(),
+            children_resolving: HashSet::new(),
+            public_paths: HashMap::new(),
+            type_mappings: TypeMappingRegistry::default(),
+        }
+    }
+
+    /// Look up the type mapping registered for the item at `item_path`
+    ///
+    /// `uniffi::custom_type!` is type-keyed in the macro flow: the generated FFI impls apply
+    /// wherever the type is named, no matter where the macro was invoked.  When parsing sources
+    /// we resolve names lexically, so a path can reach the underlying type (a type alias or a
+    /// non-UniFFI type) without ever passing through the module that invoked `custom_type!`.
+    /// This maps such items back to their custom type — or, for hand-written `TypeId` impls,
+    /// to the builtin container the impl's `TYPE_ID_META` declares.
+    pub fn registered_type_mapping(&self, item_path: &RPath<'ir>) -> Option<RPath<'ir>> {
+        // Don't map custom types to themselves
+        if matches!(item_path.item(), Ok(Item::CustomType(_))) {
+            return None;
+        }
+        self.type_mappings
+            .by_item
+            .get(&item_path.path_string())
+            .cloned()
+    }
+
+    /// Look up the type mapping registered for a path into an unparsed crate
+    ///
+    /// This handles custom types (and hand-written `TypeId` impls) whose underlying type
+    /// comes from a non-UniFFI crate,
+    /// e.g. `type Decimal = rust_decimal::Decimal;` + `uniffi::custom_type!(Decimal, String)`.
+    /// Other modules can name the type as `use rust_decimal::Decimal`, which never resolves
+    /// to an item since `rust_decimal` isn't parsed.
+    pub fn external_type_mapping(&self, path: &Path) -> Option<RPath<'ir>> {
+        let key = external_path_key(path)?;
+        self.type_mappings.by_external_path.get(&key).cloned()
+    }
+}
+
+/// Type mappings indexed by the Rust type they cover
+///
+/// A mapping's value is the item to resolve the covered type to: the `custom_type!`
+/// item, or the builtin container declared by a hand-written `TypeId` impl.
+#[derive(Default)]
+struct TypeMappingRegistry<'ir> {
+    /// Canonical item path (`RPath::path_string`) of the underlying item -> mapped item
+    by_item: HashMap<String, RPath<'ir>>,
+    /// Normalized textual path into an unparsed crate -> mapped item
+    by_external_path: HashMap<String, RPath<'ir>>,
+}
+
+impl<'ir> TypeMappingRegistry<'ir> {
+    fn new(ir: &'ir Ir) -> Self {
+        // Building the registry resolves paths itself.  Use a scratch cache — its
+        // registry is empty, so those resolutions see "nothing registered" — and discard
+        // it afterwards, so nothing memoized under that assumption survives into the
+        // caller's cache.
+        let cache = &mut LookupCache::empty();
+        let mut registry = Self::default();
+        for (root_path, root_module) in ir.crate_roots_and_paths() {
+            let mut stack = vec![(root_path, root_module)];
+            while let Some((module_path, module)) = stack.pop() {
+                for item in module.items.iter() {
+                    match item {
+                        Item::Module(m) => stack.push((module_path.append_child(item), m)),
+                        Item::CustomType(custom_type) => registry.register_custom_type(
+                            ir,
+                            cache,
+                            &module_path,
+                            module,
+                            item,
+                            custom_type,
+                        ),
+                        Item::UnresolvedImpl(imp) => {
+                            registry.register_type_id_impl(ir, cache, &module_path, module, imp)
+                        }
+                        _ => (),
+                    }
+                }
+            }
+        }
+        registry
+    }
+
+    fn register_custom_type(
+        &mut self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+        module: &'ir Module,
+        custom_type_item: &'ir Item,
+        custom_type: &CustomType,
+    ) {
+        let custom_type_path = module_path.append_child(custom_type_item);
+        // Find the Rust item the custom type ident names, ignoring special items
+        // (the custom type itself shadows the name in its own module).
+        let mut underlying =
+            match module_path.underlying_item(ir, cache, module, &custom_type.ident.unraw()) {
+                Some(Underlying::Item(path)) => path,
+                Some(Underlying::External(path)) => {
+                    if let Some(key) = external_path_key(&path) {
+                        self.by_external_path.entry(key).or_insert(custom_type_path);
+                    }
+                    return;
+                }
+                // The custom type ident doesn't name anything else, so there's nothing to map
+                // (name resolution finds the custom type directly in this case).
+                None => return,
+            };
+
+        // Register the underlying item, following type alias chains so that references to
+        // any point of the chain resolve to the custom type.
+        let mut seen = HashSet::new();
+        loop {
+            let alias_target = match underlying.item() {
+                // A generic alias can't correspond to a (non-generic) custom type
+                Ok(Item::Type(alias)) if alias.generics.params.is_empty() => Some(&alias.ty),
+                Ok(Item::NonUniffi(..)) => None,
+                _ => return,
+            };
+            let key = underlying.path_string();
+            if !seen.insert(key.clone()) {
+                return; // alias cycle
+            }
+            self.by_item
+                .entry(key)
+                .or_insert_with(|| custom_type_path.clone());
+
+            // Follow the alias target if it's a plain, non-generic path
+            let Some(syn::Type::Path(target)) = alias_target.map(Box::as_ref) else {
+                return;
+            };
+            if target.qself.is_some()
+                || target
+                    .path
+                    .segments
+                    .iter()
+                    .any(|seg| !seg.arguments.is_none())
+            {
+                return;
+            }
+            let Ok(parent) = underlying.parent() else {
+                return;
+            };
+            match parent.resolve_type_or_non_uniffi(ir, cache, &target.path) {
+                Ok(next) => underlying = next,
+                Err(e) if e.is_not_found() => {
+                    if let Some(key) = external_path_key(&target.path) {
+                        self.by_external_path.entry(key).or_insert(custom_type_path);
+                    }
+                    return;
+                }
+                Err(_) => return,
+            }
+        }
+    }
+
+    /// Register a hand-written `TypeId` impl for a generic container type
+    ///
+    /// Generic types can't be covered by `custom_type!`.  Instead, crates expose generic
+    /// containers from non-UniFFI crates by hand-writing the FFI trait impls, and the
+    /// `TYPE_ID_META` const in the `TypeId` impl declares the wire shape:
+    ///
+    /// ```ignore
+    /// impl<T> TypeId<UniFfiTag> for IndexSet<T> {
+    ///     const TYPE_ID_META: MetadataBuffer =
+    ///         MetadataBuffer::from_code(metadata::codes::TYPE_HASH_SET).concat(T::TYPE_ID_META);
+    /// }
+    /// ```
+    ///
+    /// Parse that declaration and register the target type to resolve like the equivalent
+    /// builtin container (`HashSet<T>` here).
+    fn register_type_id_impl(
+        &mut self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module_path: &RPath<'ir>,
+        module: &'ir Module,
+        imp: &syn::ItemImpl,
+    ) {
+        // `impl<..> TypeId<..> for ..`
+        let Some((None, trait_path, _)) = &imp.trait_ else {
+            return;
+        };
+        let Some(trait_seg) = trait_path.segments.last() else {
+            return;
+        };
+        if trait_seg.ident != "TypeId" {
+            return;
+        }
+        // `const TYPE_ID_META: MetadataBuffer = ..;`
+        let Some(expr) = imp.items.iter().find_map(|item| match item {
+            syn::ImplItem::Const(c) if c.ident == "TYPE_ID_META" => Some(&c.expr),
+            _ => None,
+        }) else {
+            return;
+        };
+        let Some((code, params)) = parse_type_id_meta_expr(expr) else {
+            return;
+        };
+        let builtin: &'static Item = match (code.as_str(), params.len()) {
+            ("TYPE_VEC", 1) => &Item::Builtin(BuiltinItem::Vec),
+            ("TYPE_OPTION", 1) => &Item::Builtin(BuiltinItem::Option),
+            ("TYPE_HASH_SET", 1) => &Item::Builtin(BuiltinItem::HashSet),
+            ("TYPE_HASH_MAP", 2) => &Item::Builtin(BuiltinItem::HashMap),
+            _ => return,
+        };
+        // The target type's generic arguments must be exactly the params concatenated into
+        // `TYPE_ID_META`, in the same order — the builtin resolves its generics positionally.
+        let syn::Type::Path(self_ty) = imp.self_ty.as_ref() else {
+            return;
+        };
+        let Some(self_seg) = self_ty.path.segments.last() else {
+            return;
+        };
+        let syn::PathArguments::AngleBracketed(args) = &self_seg.arguments else {
+            return;
+        };
+        let arg_idents: Vec<&Ident> = args
+            .args
+            .iter()
+            .filter_map(|arg| match arg {
+                syn::GenericArgument::Type(syn::Type::Path(p)) => p.path.get_ident(),
+                _ => None,
+            })
+            .collect();
+        if arg_idents.len() != args.args.len()
+            || arg_idents.len() != params.len()
+            || arg_idents.iter().zip(&params).any(|(a, b)| **a != *b)
+        {
+            return;
+        }
+        // Register the target's base path, without the generic arguments
+        let mut base_path = self_ty.path.clone();
+        if let Some(seg) = base_path.segments.last_mut() {
+            seg.arguments = syn::PathArguments::None;
+        }
+        let underlying = if let Some(ident) = base_path.get_ident() {
+            module_path.underlying_item(ir, cache, module, &ident.unraw())
+        } else {
+            match module_path.resolve_type_or_non_uniffi(ir, cache, &base_path) {
+                Ok(path) => Some(Underlying::Item(path)),
+                Err(e) if e.is_not_found() => Some(Underlying::External(base_path)),
+                Err(_) => None,
+            }
+        };
+        match underlying {
+            Some(Underlying::Item(path)) => {
+                self.by_item
+                    .entry(path.path_string())
+                    .or_insert_with(|| RPath::new(builtin));
+            }
+            Some(Underlying::External(path)) => {
+                if let Some(key) = external_path_key(&path) {
+                    self.by_external_path
+                        .entry(key)
+                        .or_insert_with(|| RPath::new(builtin));
+                }
+            }
+            None => (),
+        }
+    }
+}
+
+enum Underlying<'ir> {
+    /// The custom type covers an item we parsed
+    Item(RPath<'ir>),
+    /// The custom type covers a path into an unparsed crate
+    External(Path),
+}
+
+/// Resolution helpers for building the type mapping registry
+impl<'ir> RPath<'ir> {
+    /// Find the non-special item a custom type's ident names in this module
+    fn underlying_item(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        module: &'ir Module,
+        ident: &Ident,
+    ) -> Option<Underlying<'ir>> {
+        let mut use_globs = vec![];
+        for item in module.items.iter() {
+            if item.is_special() {
+                continue;
+            }
+            match item {
+                Item::Type(_) | Item::NonUniffi(..) if item.ident().as_ref() == Some(ident) => {
+                    return Some(Underlying::Item(self.append_child(item)));
+                }
+                Item::UseItem(use_item) if use_item.ident == *ident => {
+                    return match self.resolve_type_or_non_uniffi(ir, cache, &use_item.path) {
+                        Ok(path) => Some(Underlying::Item(path)),
+                        Err(e) if e.is_not_found() => {
+                            Some(Underlying::External(use_item.path.clone()))
+                        }
+                        Err(_) => None,
+                    };
+                }
+                Item::UseGlob(use_glob) => use_globs.push(use_glob),
+                _ => (),
+            }
+        }
+        for namespace in [Namespace::Type, Namespace::NonUniffiType] {
+            if let Ok(Some(child)) =
+                self.child_glob_use(ir, cache, ident, use_globs.clone(), namespace)
+            {
+                return Some(Underlying::Item(child.path));
+            }
+        }
+        None
+    }
+
+    /// Resolve a path in the type namespace, falling back to non-UniFFI types
+    fn resolve_type_or_non_uniffi(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        path: &Path,
+    ) -> Result<RPath<'ir>> {
+        match self.resolve(ir, cache, path, Namespace::Type) {
+            Err(e) if e.is_not_found() => self.resolve(ir, cache, path, Namespace::NonUniffiType),
+            result => result,
+        }
+    }
+}
+
+/// Parse a `TYPE_ID_META` expression of the form
+/// `MetadataBuffer::from_code(metadata::codes::TYPE_X).concat(T::TYPE_ID_META)..`
+///
+/// Returns the metadata code name and the generic params concatenated after it,
+/// in concatenation order.
+fn parse_type_id_meta_expr(mut expr: &syn::Expr) -> Option<(String, Vec<Ident>)> {
+    let mut params = vec![];
+    loop {
+        match expr {
+            // `<receiver>.concat(P::TYPE_ID_META)`
+            syn::Expr::MethodCall(call) if call.method == "concat" && call.args.len() == 1 => {
+                let syn::Expr::Path(arg) = &call.args[0] else {
+                    return None;
+                };
+                let mut segments = arg.path.segments.iter();
+                let (Some(param), Some(meta), None) =
+                    (segments.next(), segments.next(), segments.next())
+                else {
+                    return None;
+                };
+                if meta.ident != "TYPE_ID_META" {
+                    return None;
+                }
+                params.push(param.ident.clone());
+                expr = &call.receiver;
+            }
+            // `MetadataBuffer::from_code(metadata::codes::TYPE_X)`
+            syn::Expr::Call(call) if call.args.len() == 1 => {
+                let syn::Expr::Path(func) = call.func.as_ref() else {
+                    return None;
+                };
+                if func.path.segments.last()?.ident != "from_code" {
+                    return None;
+                }
+                let syn::Expr::Path(code) = &call.args[0] else {
+                    return None;
+                };
+                let code = code.path.segments.last()?.ident.to_string();
+                // Params were collected outermost-in; concatenation order is base-out
+                params.reverse();
+                return Some((code, params));
+            }
+            _ => return None,
+        }
+    }
+}
+
+/// Normalized key for a path that should point into an unparsed crate
+///
+/// The key is built from the segment idents only.  Generic arguments are allowed on the
+/// last segment (e.g. a field spelled `indexmap::IndexSet<Counter>`) — they're resolved
+/// separately, according to the item the path maps to.
+fn external_path_key(path: &Path) -> Option<String> {
+    if path.segments.len() < 2 {
+        return None;
+    }
+    let segments = path.segments.iter().collect::<Vec<_>>();
+    let (_, non_last_segments) = segments.split_last()?;
+    if non_last_segments.iter().any(|seg| !seg.arguments.is_none()) {
+        return None;
+    }
+    Some(
+        path.segments
+            .iter()
+            .map(|seg| seg.ident.unraw().to_string())
+            .collect::<Vec<_>>()
+            .join("::"),
+    )
 }
 
 fn get_builtin_item(path: &Path) -> Option<&'static Item> {
@@ -809,7 +1257,7 @@ pub mod tests {
     #[test]
     fn test_resolve_item() {
         let ir = Ir::new_for_test(&["paths"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_item(&ir, &mut cache, "paths::mod1", "Mod1Record"),
@@ -828,7 +1276,7 @@ pub mod tests {
     #[test]
     fn test_resolve_item_with_super_keyword() {
         let ir = Ir::new_for_test(&["paths"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_item(
@@ -867,18 +1315,73 @@ pub mod tests {
     #[test]
     fn test_resolve_item_with_self_keyword() {
         let ir = Ir::new_for_test(&["paths"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_item(&ir, &mut cache, "paths", "mod3::Mod3Record"),
             Ok("paths::mod1::mod2::mod3::Mod3Record".to_string()),
+        );
+
+        // Leading `self::` refers to the current module
+        assert_eq!(
+            run_resolve_item(&ir, &mut cache, "paths::mod1", "self::Mod1Record"),
+            Ok("paths::mod1::Mod1Record".to_string()),
+        );
+        assert_eq!(
+            run_resolve_item(
+                &ir,
+                &mut cache,
+                "paths::mod1",
+                "self::mod2::mod3::Mod3Record"
+            ),
+            Ok("paths::mod1::mod2::mod3::Mod3Record".to_string()),
+        );
+        assert_eq!(
+            run_resolve_item(&ir, &mut cache, "paths::mod1", "self::missing::MyRecord"),
+            Err(ErrorKind::NotFound),
+        );
+
+        // Named import through `self::` (`use self::inner::SelfUseRecord as ...` in mod6)
+        assert_eq!(
+            run_resolve_item(&ir, &mut cache, "paths::mod6", "SelfUseRecordRenamed"),
+            Ok("paths::mod6::inner::SelfUseRecord".to_string()),
+        );
+        // Glob re-export through `self::` (`pub use self::inner::*;` in mod6)
+        assert_eq!(
+            run_resolve_item(&ir, &mut cache, "paths::mod6", "SelfGlobRecord"),
+            Ok("paths::mod6::inner::SelfGlobRecord".to_string()),
+        );
+        // ... and the re-exported item is visible from outside the module
+        assert_eq!(
+            run_resolve_item(&ir, &mut cache, "paths", "mod6::SelfGlobRecord"),
+            Ok("paths::mod6::inner::SelfGlobRecord".to_string()),
+        );
+    }
+
+    #[test]
+    fn test_use_remote_type_falls_through_to_local_items() {
+        let ir = Ir::new_for_test(&["paths", "paths2", "paths3"]);
+        let mut cache = LookupCache::new(&ir);
+
+        // `use_remote_type!(paths3::ExternalRemote)` names a path that doesn't resolve
+        // (`paths3` has no `ExternalRemote`).  Per the macro's semantics the type is
+        // resolved in the invoking module's scope, so resolution must fall through to
+        // the local alias instead of failing.
+        assert_eq!(
+            run_resolve_item(
+                &ir,
+                &mut cache,
+                "paths::remote_fallthrough",
+                "ExternalRemote"
+            ),
+            Ok("paths::remote_fallthrough::ExternalRemote".to_string()),
         );
     }
 
     #[test]
     fn test_resolve_item_with_crate_keyword() {
         let ir = Ir::new_for_test(&["paths"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_item(
@@ -903,7 +1406,7 @@ pub mod tests {
     #[test]
     fn test_resolve_item_with_rust_keyword() {
         let ir = Ir::new_for_test(&["paths"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_item(&ir, &mut cache, "paths", "r#break"),
@@ -919,7 +1422,7 @@ pub mod tests {
     #[test]
     fn test_use_remote_type() {
         let ir = Ir::new_for_test(&["paths", "paths2", "paths3"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_item(&ir, &mut cache, "paths", "RemoteRecord"),
@@ -935,7 +1438,7 @@ pub mod tests {
     #[test]
     fn test_resolve_item_with_implicate_crate_lookup() {
         let ir = Ir::new_for_test(&["paths", "paths2"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             // `paths2` doesn't exist in `mod3`, so this should lookup a top-level crate
@@ -962,7 +1465,7 @@ pub mod tests {
     #[test]
     fn test_resolve_item_with_use() {
         let ir = Ir::new_for_test(&["paths", "paths2"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_item(&ir, &mut cache, "paths2", "TestRecord"),
@@ -994,7 +1497,7 @@ pub mod tests {
     #[test]
     fn test_name_conflicts() {
         let ir = Ir::new_for_test(&["name_conflicts"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_item(&ir, &mut cache, "name_conflicts", "Record"),
@@ -1044,7 +1547,6 @@ pub mod tests {
     fn test_raw_ident() {
         // Test that we "unraw" idents before matching them by removing the `r#` prefix
         let mut ir = Ir::new_for_test(&["raw_idents"]);
-        let mut cache = LookupCache::default();
 
         ir.add_udl_metadata(
             "raw_idents",
@@ -1059,6 +1561,7 @@ pub mod tests {
             .into()],
         )
         .unwrap();
+        let mut cache = LookupCache::new(&ir);
         assert_eq!(
             run_resolve_item(&ir, &mut cache, "raw_idents", "r#Record"),
             Ok("raw_idents::Record".to_string()),
@@ -1072,7 +1575,7 @@ pub mod tests {
     #[test]
     fn test_same_item_imported_different_ways() {
         let ir = Ir::new_for_test(&["paths"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_item(&ir, &mut cache, "paths", "Mod2Record"),

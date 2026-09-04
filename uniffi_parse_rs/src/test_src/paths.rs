@@ -83,3 +83,31 @@ mod mod5 {
     use super::*;
     use crate::mod1::mod2::*;
 }
+
+// `self::` paths: `self` refers to the current module.
+// The `self::` prefix is how real-world code disambiguates a module from an
+// external crate with the same name (e.g. a `http` module vs the `http` crate).
+mod mod6 {
+    mod inner {
+        #[derive(uniffi::Record)]
+        pub struct SelfGlobRecord { }
+
+        #[derive(uniffi::Record)]
+        pub struct SelfUseRecord { }
+    }
+
+    // Glob re-export through `self::`
+    pub use self::inner::*;
+    // Named import through `self::`
+    use self::inner::SelfUseRecord as SelfUseRecordRenamed;
+}
+
+// `use_remote_type!` whose path doesn't resolve: the macro's semantics are "the type
+// named by the LAST segment, in the invoking module's scope" — the first segment only
+// names the crate implementing the FFI traits.  Resolution must fall through to the
+// module's regular items instead of failing.
+mod remote_fallthrough {
+    pub type ExternalRemote = unparsed_crate::ExternalRemote;
+
+    uniffi::use_remote_type!(paths3::ExternalRemote);
+}
