@@ -101,3 +101,11 @@ mod mod6 {
     // Named import through `self::`
     use self::inner::SelfUseRecord as SelfUseRecordRenamed;
 }
+
+// A `use_remote_type!` whose path doesn't resolve, next to the alias that should be
+// found instead.
+mod remote_fallthrough {
+    pub type ExternalRemote = unparsed_crate::ExternalRemote;
+
+    uniffi::use_remote_type!(paths3::ExternalRemote);
+}
