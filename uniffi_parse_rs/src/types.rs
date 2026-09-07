@@ -380,7 +380,22 @@ impl<'ir> RPath<'ir> {
                 if ty_path.path.is_ident("Self") {
                     return Ok(Type::SelfTy);
                 }
-                let path_to_type = self.resolve(ir, cache, &ty_path.path, Namespace::Type)?;
+                let path_to_type = match self.resolve(ir, cache, &ty_path.path, Namespace::Type) {
+                    Ok(path) => path,
+                    Err(e) if e.is_not_found() => {
+                        // The path doesn't name a UniFFI item, but it may name a non-UniFFI
+                        // type that a `uniffi::custom_type!` elsewhere covers.
+                        match self
+                            .resolve(ir, cache, &ty_path.path, Namespace::NonUniffiType)
+                            .ok()
+                            .and_then(|path| cache.registered_type_mapping(&path))
+                        {
+                            Some(custom_type_path) => custom_type_path,
+                            None => return Err(e),
+                        }
+                    }
+                    Err(e) => return Err(e),
+                };
                 // We can use `mem::take` to remove the generic_params and use them for this lookup.
                 // If we need to recurse another level, we want a new set of generic params anyways.
                 let generics = GenericArgs::new_with_context_params(
@@ -822,7 +837,7 @@ pub mod tests {
     #[test]
     fn test_resolve_builtin_types() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_type(&ir, &mut cache, "types", "()"),
@@ -911,7 +926,7 @@ pub mod tests {
     #[test]
     fn test_resolve_user_types() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_type(&ir, &mut cache, "types::mod1", "String"),
@@ -966,7 +981,7 @@ pub mod tests {
     #[test]
     fn test_resolve_custom_types() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_type(&ir, &mut cache, "types", "JsonObject"),
@@ -1015,7 +1030,7 @@ pub mod tests {
     #[test]
     fn test_resolve_custom_types_by_target_path() {
         let ir = Ir::new_for_test(&["custom_type_paths"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         let custom = |name: &str| {
             Ok(Type::Custom {
@@ -1078,7 +1093,7 @@ pub mod tests {
         // `custom_type_paths2` mirrors a binding crate: it names a type whose custom
         // type is implemented by `custom_type_paths`.
         let ir = Ir::new_for_test(&["custom_type_paths", "custom_type_paths2"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         let custom = Ok(Type::Custom {
             module_path: "custom_type_paths::registrations".into(),
@@ -1096,7 +1111,7 @@ pub mod tests {
     #[test]
     fn test_resolve_compound_types() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_type(&ir, &mut cache, "types", "Vec<String>"),
@@ -1204,7 +1219,7 @@ pub mod tests {
     #[test]
     fn test_resolve_type_trait_objects() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_type(&ir, &mut cache, "types::mod1", "dyn TraitInterface"),
@@ -1276,7 +1291,7 @@ pub mod tests {
     #[test]
     fn test_resolve_type_with_type_aliases() {
         let ir = Ir::new_for_test(&["type_aliases"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_type(&ir, &mut cache, "type_aliases", "RecordAlias"),
@@ -1420,7 +1435,7 @@ pub mod tests {
     #[test]
     fn test_resolve_box_types() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         // Right now we just ignore the box since it doesn't make a difference in the generated
         // bindings.  If we want to use this to generate scaffolding, then we'll need something
@@ -1447,7 +1462,7 @@ pub mod tests {
     #[test]
     fn test_resolve_type_references() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_type(&ir, &mut cache, "types::mod1", "&std::primitive::u32"),
@@ -1478,7 +1493,7 @@ pub mod tests {
     #[test]
     fn test_remote_types() {
         let ir = Ir::new_for_test(&["remote_types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_uniffi_meta_type(&ir, &mut cache, "remote_types", "AnyhowError", None),
@@ -1500,7 +1515,6 @@ pub mod tests {
     #[test]
     fn test_udl_types() {
         let mut ir = Ir::new_for_test(&["udl_types", "udl_types_crate2"]);
-        let mut cache = LookupCache::default();
         ir.add_udl_metadata(
             "udl_types",
             vec![
@@ -1540,6 +1554,7 @@ pub mod tests {
             ],
         )
         .unwrap();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_uniffi_meta_type(&ir, &mut cache, "udl_types::mod1", "UdlRecord", None),
@@ -1655,7 +1670,7 @@ pub mod tests {
     #[test]
     fn test_result_uniffi_meta() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_uniffi_meta_type(&ir, &mut cache, "types", "TestRecord", None),
@@ -1719,7 +1734,7 @@ pub mod tests {
     #[test]
     fn test_result_arg() {
         let ir = Ir::new_for_test(&["types"]);
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_arg(&ir, &mut cache, "types", "TestRecord", None),
@@ -1799,7 +1814,6 @@ pub mod tests {
     #[test]
     fn test_raw_ident() {
         let mut ir = Ir::new_for_test(&["raw_idents"]);
-        let mut cache = LookupCache::default();
         ir.add_udl_metadata(
             "raw_idents",
             vec![uniffi_meta::RecordMetadata {
@@ -1813,6 +1827,7 @@ pub mod tests {
             .into()],
         )
         .unwrap();
+        let mut cache = LookupCache::new(&ir);
 
         assert_eq!(
             run_resolve_uniffi_meta_type(&ir, &mut cache, "raw_idents", "RecordWrapper", None),
