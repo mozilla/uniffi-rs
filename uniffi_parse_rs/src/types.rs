@@ -1013,6 +1013,87 @@ pub mod tests {
     }
 
     #[test]
+    fn test_resolve_custom_types_by_target_path() {
+        let ir = Ir::new_for_test(&["custom_type_paths"]);
+        let mut cache = LookupCache::default();
+
+        let custom = |name: &str| {
+            Ok(Type::Custom {
+                module_path: "custom_type_paths::registrations".into(),
+                name: name.into(),
+                builtin: Box::new(Type::String),
+            })
+        };
+
+        // A non-UniFFI type covered by a custom type registered in another module
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "custom_type_paths::usage", "Concrete"),
+            custom("Concrete"),
+        );
+        // A type alias covered by a custom type registered in another module
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "custom_type_paths::usage", "ExternalAlias"),
+            custom("ExternalAlias"),
+        );
+        // A type imported directly from an unparsed crate, covered by a custom type
+        // over a local alias to the same path
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "custom_type_paths::usage", "Direct"),
+            custom("Direct"),
+        );
+
+        // The same types, named by path instead of through use statements
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "custom_type_paths", "types::Concrete"),
+            custom("Concrete"),
+        );
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "custom_type_paths", "types::ExternalAlias"),
+            custom("ExternalAlias"),
+        );
+        assert_eq!(
+            run_resolve_type(
+                &ir,
+                &mut cache,
+                "custom_type_paths",
+                "external_crate2::Direct"
+            ),
+            custom("Direct"),
+        );
+
+        // Paths into unparsed crates without a covering custom type still fail
+        assert_eq!(
+            run_resolve_type(
+                &ir,
+                &mut cache,
+                "custom_type_paths",
+                "external_crate2::Other"
+            ),
+            Err(ErrorKind::NotFound),
+        );
+    }
+
+    #[test]
+    fn test_resolve_custom_types_from_another_crate() {
+        // `custom_type_paths2` mirrors a binding crate: it names a type whose custom
+        // type is implemented by `custom_type_paths`.
+        let ir = Ir::new_for_test(&["custom_type_paths", "custom_type_paths2"]);
+        let mut cache = LookupCache::default();
+
+        let custom = Ok(Type::Custom {
+            module_path: "custom_type_paths::registrations".into(),
+            name: "Direct".into(),
+            builtin: Box::new(Type::String),
+        });
+
+        // Through a direct import from the unparsed crate
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "custom_type_paths2::usage2", "Direct"),
+            custom,
+        );
+    }
+
+    #[test]
     fn test_resolve_compound_types() {
         let ir = Ir::new_for_test(&["types"]);
         let mut cache = LookupCache::default();
