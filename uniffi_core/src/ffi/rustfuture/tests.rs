@@ -222,6 +222,23 @@ fn test_release_future() {
     assert!(channel_weak.upgrade().is_none());
 }
 
+// `rust_future_new` moves ownership of the `Arc` into the handle, so `rust_future_free` has to take
+// that reference back to drop it. Nothing else in this file goes through the handle functions the
+// foreign bindings actually call, so a `rust_future_free` that borrowed the handle leaked every
+// future while every test here still passed.
+#[test]
+fn test_free_drops_the_handles_reference() {
+    let (_sender, rust_future) = channel();
+    let weak = Arc::downgrade(&rust_future);
+    let handle = Handle::from_arc(rust_future);
+    assert_eq!(weak.strong_count(), 1);
+
+    unsafe { rust_future_free::<RustBuffer>(handle) };
+
+    assert_eq!(weak.strong_count(), 0);
+    assert!(weak.upgrade().is_none());
+}
+
 // If `free` is called with a continuation still stored, we should call it them then.
 //
 // This shouldn't happen in practice, but it seems like good defensive programming
