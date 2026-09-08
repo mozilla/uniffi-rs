@@ -14,8 +14,9 @@ This has a few advantages:
   If the `records` test fails, you can be pretty sure you have an issue with your record-related code.
   When the `examples/todolist` test fails, it's not so clear.
 * There's less crates involved.
-  If we wanted, we could publish the 2 test crates involved without too much overhead.
-  Publishing all of the examples/fixtures is a lot.
+  The shared suite is `bindgen-tests/lib` plus `external-types` (and `mid-types` for
+  nested fields that live in a further crate). Publishing those is still cheap
+  compared to the fixture graph.
 * Simplified test harness code.
   This kind-of follows from the last points.
   Since we only need to build a single library, we don't need so much abstraction.

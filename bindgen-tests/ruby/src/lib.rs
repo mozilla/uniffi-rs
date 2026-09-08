@@ -114,6 +114,11 @@ mod test {
         run_tests(test_dir(), "tests/futures.rb");
     }
 
+    #[test]
+    fn test_external_types() {
+        run_tests(test_dir(), "tests/external_types.rb");
+    }
+
     fn test_dir() -> &'static Utf8Path {
         static TEST_TEMPDIR: OnceLock<Utf8PathBuf> = OnceLock::new();
         TEST_TEMPDIR.get_or_init(|| {

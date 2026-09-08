@@ -1900,6 +1900,7 @@ dependencies = [
  "thiserror",
  "uniffi",
  "uniffi-bindgen-tests-external-types-source",
+ "uniffi-bindgen-tests-mid-types",
  "url",
 ]
 
@@ -1920,6 +1921,14 @@ dependencies = [
  "uniffi",
  "uniffi-bindgen-tests",
  "uniffi_bindgen",
+]
+
+[[package]]
+name = "uniffi-bindgen-tests-mid-types"
+version = "0.31.0"
+dependencies = [
+ "uniffi",
+ "uniffi-bindgen-tests-external-types-source",
 ]
 
 [[package]]

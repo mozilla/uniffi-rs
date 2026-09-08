@@ -15,6 +15,7 @@ uniffi = { path = "../../uniffi", features = ["bindgen", "ffi-trace", "cargo-met
 url = "2.5"
 
 uniffi-bindgen-tests-external-types-source = { path = "../external-types" }
+uniffi-bindgen-tests-mid-types = { path = "../mid-types" }
 
 [features]
 default = ["simple_fns", "primitive_types", "records", "enums", "collections", "options", "interfaces",
