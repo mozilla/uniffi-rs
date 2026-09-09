@@ -130,6 +130,15 @@ impl FfiDefinitionDependencyLogic {
 
 struct TypeDefinitionDependencyLogic;
 
+impl TypeDefinitionDependencyLogic {
+    fn type_name(ty: &TypeNode) -> String {
+        match ty.ty.namespace() {
+            Some(namespace) => format!("{namespace}.{}", ty.canonical_name),
+            None => ty.canonical_name.clone(),
+        }
+    }
+}
+
 impl DependencyLogic for TypeDefinitionDependencyLogic {
     type Item = TypeDefinition;
 
@@ -145,9 +154,9 @@ impl DependencyLogic for TypeDefinitionDependencyLogic {
             | TypeDefinition::Enum(Enum { self_type, .. })
             | TypeDefinition::Interface(Interface { self_type, .. })
             | TypeDefinition::CallbackInterface(CallbackInterface { self_type, .. })
-            | TypeDefinition::Custom(CustomType { self_type, .. })
-            | TypeDefinition::External(ExternalType { self_type, .. }) => {
-                self_type.canonical_name.clone()
+            | TypeDefinition::Custom(CustomType { self_type, .. }) => Self::type_name(self_type),
+            TypeDefinition::External(ExternalType { self_type, .. }) => {
+                format!("External:{}", Self::type_name(self_type))
             }
         }
     }
@@ -159,25 +168,21 @@ impl DependencyLogic for TypeDefinitionDependencyLogic {
             | TypeDefinition::Optional(OptionalType { inner, .. })
             | TypeDefinition::Sequence(SequenceType { inner, .. })
             | TypeDefinition::Set(SetType { inner, .. }) => {
-                vec![inner.canonical_name.clone()]
+                vec![Self::type_name(inner)]
             }
             TypeDefinition::Map(MapType { key, value, .. }) => {
-                vec![key.canonical_name.clone(), value.canonical_name.clone()]
+                vec![Self::type_name(key), Self::type_name(value)]
             }
-            TypeDefinition::Record(r) => r
-                .fields
-                .iter()
-                .map(|f| f.ty.canonical_name.clone())
-                .collect(),
+            TypeDefinition::Record(r) => r.fields.iter().map(|f| Self::type_name(&f.ty)).collect(),
             TypeDefinition::Enum(e) => e
                 .variants
                 .iter()
-                .flat_map(|v| v.fields.iter().map(|f| f.ty.canonical_name.clone()))
+                .flat_map(|v| v.fields.iter().map(|f| Self::type_name(&f.ty)))
                 .collect(),
             TypeDefinition::Interface(i) => {
                 i.trait_impls
                     .iter()
-                    .map(|i| i.trait_ty.canonical_name.clone())
+                    .map(|i| Self::type_name(&i.trait_ty))
                     .chain(
                         i.methods
                             .iter()
@@ -192,7 +197,7 @@ impl DependencyLogic for TypeDefinitionDependencyLogic {
                                     .map(|a| &a.ty)
                                     .chain(&callable.return_type.ty)
                                     .chain(&callable.throws_type.ty)
-                                    .map(|ty| ty.canonical_name.clone())
+                                    .map(Self::type_name)
                             }),
                     )
                     .collect()
@@ -209,12 +214,88 @@ impl DependencyLogic for TypeDefinitionDependencyLogic {
                         .chain(&m.callable.return_type.ty)
                         .chain(&m.callable.throws_type.ty)
                 })
-                .map(|ty| ty.canonical_name.clone())
+                .map(Self::type_name)
                 .collect(),
             TypeDefinition::Custom(custom) => {
-                vec![custom.builtin.canonical_name.clone()]
+                vec![Self::type_name(&custom.builtin)]
             }
             TypeDefinition::External(_) => vec![],
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn custom_definition(namespace: &str, name: &str) -> TypeDefinition {
+        TypeDefinition::Custom(CustomType {
+            self_type: TypeNode {
+                // How `types::canonical_name` names a user type
+                canonical_name: format!("Type{name}"),
+                id: 0,
+                is_used_as_error: false,
+                has_from_unexpected_callback_error_impl: false,
+                ffi_type: FfiType::UInt64,
+                ty: Type::Custom {
+                    namespace: namespace.to_string(),
+                    name: name.to_string(),
+                    orig_name: name.to_string(),
+                    builtin: Box::new(Type::UInt64),
+                },
+            },
+            module_path: namespace.to_string(),
+            orig_name: name.to_string(),
+            name: name.to_string(),
+            builtin: TypeNode {
+                canonical_name: "UInt64".to_string(),
+                id: 1,
+                is_used_as_error: false,
+                has_from_unexpected_callback_error_impl: false,
+                ffi_type: FfiType::UInt64,
+                ty: Type::UInt64,
+            },
+            docstring: None,
+        })
+    }
+
+    /// The `External` entry a namespace gets for a type defined in another one
+    ///
+    /// Built the way `type_definitions_from_api` builds it: from the type's own self
+    /// type, recording the namespace that *defines* the type rather than the one using
+    /// it.
+    fn external_for(type_def: &TypeDefinition) -> TypeDefinition {
+        let TypeDefinition::Custom(custom) = type_def else {
+            panic!("expected a custom type definition, got {type_def:?}");
+        };
+        let self_type = custom.self_type.clone();
+        TypeDefinition::External(ExternalType {
+            namespace: self_type
+                .ty
+                .namespace()
+                .expect("a user type has a namespace")
+                .to_string(),
+            name: custom.name.clone(),
+            self_type,
+        })
+    }
+
+    #[test]
+    fn test_same_named_types_in_different_namespaces_are_both_kept() {
+        let sorted = sort_type_definitions(vec![
+            custom_definition("crate_a", "Thing"),
+            custom_definition("crate_b", "Thing"),
+        ]);
+        assert_eq!(sorted.len(), 2);
+    }
+
+    #[test]
+    fn test_external_types_do_not_replace_real_definitions() {
+        let custom = &custom_definition("crate_a", "Thing");
+        let external = &external_for(custom);
+        for type_definitions in [[custom, external], [external, custom]] {
+            let sorted = sort_type_definitions(type_definitions.into_iter().cloned());
+            assert_eq!(sorted.len(), 2, "a definition was dropped: {sorted:?}");
         }
     }
 }
