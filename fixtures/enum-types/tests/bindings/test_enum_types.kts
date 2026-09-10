@@ -35,3 +35,5 @@ assert(NamedEnumWithDefaults.I().d == 0U.toUByte())
 assert(NamedEnumWithDefaults.I().e == 1U.toUByte())
 assert(NamedEnumWithDefaults.I(e=2U).d == 0U.toUByte())
 assert(NamedEnumWithDefaults.I(e=2U).e == 2U.toUByte())
+
+assert(getVisibleEnumValue() == EnumWithSkippedVariant.VISIBLE)
