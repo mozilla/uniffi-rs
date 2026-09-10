@@ -135,6 +135,7 @@ impl VariantAttributes {
         let Some(metas) = env.parse_attrs(attrs)? else {
             return Ok(None);
         };
+        let mut skip = false;
         for meta in metas {
             if meta.path().is_ident("uniffi") {
                 if let Meta::List(list) = meta {
@@ -144,6 +145,9 @@ impl VariantAttributes {
                             let name: LitStr = meta.input.parse()?;
                             parsed.name = Some(name.value());
                             Ok(())
+                        } else if meta.path.is_ident("skip") {
+                            skip = true;
+                            Ok(())
                         } else {
                             Err(meta.error("Invalid attribute"))
                         }
@@ -152,6 +156,12 @@ impl VariantAttributes {
             } else if meta.path().is_ident("doc") {
                 extract_docstring(&mut parsed.docstring, &meta);
             }
+        }
+        // A skipped variant is dropped the same way a `#[cfg(...)]`-excluded
+        // one is above, so its fields are never parsed and can hold types
+        // that don't cross the FFI boundary.
+        if skip {
+            return Ok(None);
         }
         Ok(Some(parsed))
     }

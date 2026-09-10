@@ -93,6 +93,23 @@ impl EnumItem {
         Ok(())
     }
 
+    /// Bindgen needs at least one variant to generate a foreign type for. Without this check,
+    /// skipping every variant would only fail downstream, in a per-language template.
+    pub fn check_not_all_variants_skipped(&self) -> syn::Result<()> {
+        for v in self.enum_.variants.iter() {
+            if variant_attrs(v)?.skip.is_none() {
+                return Ok(());
+            }
+        }
+        if self.enum_.variants.is_empty() {
+            return Ok(());
+        }
+        Err(syn::Error::new(
+            Span::call_site(),
+            "#[uniffi(skip)] on every variant leaves no variant for bindgen to generate",
+        ))
+    }
+
     pub fn ident(&self) -> &Ident {
         &self.ident
     }
@@ -136,7 +153,8 @@ impl EnumItem {
 pub fn expand_enum(input: DeriveInput, options: DeriveOptions) -> syn::Result<TokenStream> {
     let item = EnumItem::new(input)?;
     item.check_attributes_valid_for_enum()?;
-    let ffi_converter_impl = enum_ffi_converter_impl(&item, &options);
+    item.check_not_all_variants_skipped()?;
+    let ffi_converter_impl = enum_ffi_converter_impl(&item, &options)?;
 
     let meta_static_var = options
         .generate_metadata
@@ -148,7 +166,10 @@ pub fn expand_enum(input: DeriveInput, options: DeriveOptions) -> syn::Result<To
     })
 }
 
-pub(crate) fn enum_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> TokenStream {
+pub(crate) fn enum_ffi_converter_impl(
+    item: &EnumItem,
+    options: &DeriveOptions,
+) -> syn::Result<TokenStream> {
     enum_or_error_ffi_converter_impl(
         item,
         options,
@@ -159,7 +180,7 @@ pub(crate) fn enum_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) 
 pub(crate) fn rich_error_ffi_converter_impl(
     item: &EnumItem,
     options: &DeriveOptions,
-) -> TokenStream {
+) -> syn::Result<TokenStream> {
     enum_or_error_ffi_converter_impl(
         item,
         options,
@@ -171,14 +192,23 @@ fn enum_or_error_ffi_converter_impl(
     item: &EnumItem,
     options: &DeriveOptions,
     metadata_type_code: TokenStream,
-) -> TokenStream {
+) -> syn::Result<TokenStream> {
     let name = &item.foreign_name();
     let ident = item.ident();
     let impl_spec = options.ffi_impl_header("FfiConverter", ident);
     let derive_ffi_traits = options.derive_all_ffi_traits(ident);
-    let mut write_match_arms: Vec<_> = item
-        .enum_()
-        .variants
+
+    let mut kept = Vec::new();
+    let mut skipped = Vec::new();
+    for v in item.enum_().variants.iter() {
+        if variant_attrs(v)?.skip.is_some() {
+            skipped.push(v);
+        } else {
+            kept.push(v);
+        }
+    }
+
+    let mut write_match_arms: Vec<_> = kept
         .iter()
         .enumerate()
         .map(|(i, v)| {
@@ -214,6 +244,14 @@ fn enum_or_error_ffi_converter_impl(
             }
         })
         .collect();
+    write_match_arms.extend(skipped.iter().map(|v| {
+        let v_ident = &v.ident;
+        quote! {
+            Self::#v_ident { .. } => ::std::panic!(
+                "Attempted to lower a #[uniffi(skip)] enum variant across the FFI"
+            ),
+        }
+    }));
     if item.is_non_exhaustive() {
         write_match_arms.push(quote! {
             _ => ::std::panic!("Unexpected variant in non-exhaustive enum"),
@@ -223,7 +261,7 @@ fn enum_or_error_ffi_converter_impl(
         match obj { #(#write_match_arms)* }
     };
 
-    let try_read_match_arms = item.enum_().variants.iter().enumerate().map(|(i, v)| {
+    let try_read_match_arms = kept.iter().enumerate().map(|(i, v)| {
         let idx = Index::from(i + 1);
         let v_ident = &v.ident;
         let is_tuple = v.fields.iter().any(|f| f.ident.is_none());
@@ -249,7 +287,7 @@ fn enum_or_error_ffi_converter_impl(
         })
     };
 
-    quote! {
+    Ok(quote! {
         #[automatically_derived]
         unsafe #impl_spec {
             ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(crate::UniFfiTag);
@@ -268,7 +306,7 @@ fn enum_or_error_ffi_converter_impl(
         }
 
         #derive_ffi_traits
-    }
+    })
 }
 
 pub(crate) fn enum_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream> {
@@ -351,11 +389,17 @@ fn variant_value(v: &Variant) -> syn::Result<TokenStream> {
 }
 
 pub fn variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
-    let enum_ = item.enum_();
+    let mut kept_variants = Vec::new();
+    for v in item.enum_().variants.iter() {
+        let attrs = variant_attrs(v)?;
+        if attrs.skip.is_none() {
+            kept_variants.push((v, attrs));
+        }
+    }
     let variants_len =
-        try_metadata_value_from_usize(enum_.variants.len(), "UniFFI limits enums to 256 variants")?;
+        try_metadata_value_from_usize(kept_variants.len(), "UniFFI limits enums to 256 variants")?;
     std::iter::once(Ok(quote! { .concat_value(#variants_len) }))
-        .chain(enum_.variants.iter().map(|v| {
+        .chain(kept_variants.into_iter().map(|(v, attrs)| {
             let fields_len = try_metadata_value_from_usize(
                 v.fields.len(),
                 "UniFFI limits enum variants to 256 fields",
@@ -390,8 +434,6 @@ pub fn variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
                     })
                 })
                 .collect::<syn::Result<Vec<_>>>()?;
-
-            let attrs = v.attrs.parse_uniffi_attr_args::<VariantAttr>()?;
 
             let variant_orig_name = orig_name_metadata(attrs.name.is_some(), &v.ident);
             let name = attrs.name.unwrap_or(ident_to_string(&v.ident));
@@ -463,6 +505,7 @@ impl UniffiAttributeArgs for EnumAttr {
 #[derive(Clone, Default)]
 pub struct VariantAttr {
     pub name: Option<String>,
+    pub skip: Option<kw::skip>,
 }
 
 impl UniffiAttributeArgs for VariantAttr {
@@ -472,7 +515,15 @@ impl UniffiAttributeArgs for VariantAttr {
             let _: kw::name = input.parse()?;
             let _: Token![=] = input.parse()?;
             let name = Some(input.parse::<LitStr>()?.value());
-            Ok(Self { name })
+            Ok(Self {
+                name,
+                ..Self::default()
+            })
+        } else if lookahead.peek(kw::skip) {
+            Ok(Self {
+                skip: input.parse()?,
+                ..Self::default()
+            })
         } else {
             Err(lookahead.error())
         }
@@ -481,6 +532,11 @@ impl UniffiAttributeArgs for VariantAttr {
     fn merge(self, other: Self) -> syn::Result<Self> {
         Ok(Self {
             name: either_attribute_arg(self.name, other.name)?,
+            skip: either_attribute_arg(self.skip, other.skip)?,
         })
     }
+}
+
+pub(crate) fn variant_attrs(v: &Variant) -> syn::Result<VariantAttr> {
+    v.attrs.parse_uniffi_attr_args::<VariantAttr>()
 }
