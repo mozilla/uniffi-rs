@@ -228,7 +228,7 @@ mod test {
     use super::*;
 
     pub fn run_public_path_to_item(ir: &Ir, item_path: &str) -> ItemNames {
-        let mut cache = LookupCache::default();
+        let mut cache = LookupCache::new(ir);
         let crate_path = path_for_module(ir, item_path.split("::").next().unwrap());
         let item = crate_path
             .resolve(
