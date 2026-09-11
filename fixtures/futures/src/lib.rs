@@ -101,6 +101,21 @@ pub async fn say_after(ms: u16, who: String) -> String {
     format!("Hello, {who}!")
 }
 
+/// Same as `say_after`, but written by hand as a boxed future without the `async`
+/// keyword — the shape `#[async_trait]` desugars `async fn` into. uniffi should detect
+/// this as async and treat its return type as the future's `Output` (`String`).
+#[uniffi::export]
+pub fn say_after_manual_future(
+    ms: u16,
+    who: String,
+) -> Pin<Box<dyn Future<Output = String> + Send>> {
+    Box::pin(async move {
+        TimerFuture::new(Duration::from_millis(ms.into())).await;
+
+        format!("Hello, {who}!")
+    })
+}
+
 /// Async function that sleeps!
 #[uniffi::export]
 pub async fn sleep(ms: u16) -> bool {
@@ -389,6 +404,18 @@ pub trait SayAfterTrait: Send + Sync {
     async fn say_after(&self, ms: u16, who: String) -> String;
 }
 
+// Example of a trait whose async method is written by hand as a boxed future, without
+// `#[async_trait]` or the `async` keyword. uniffi should detect this as async, exactly
+// like `SayAfterTrait`.
+#[uniffi::export]
+pub trait SayAfterBoxTrait: Send + Sync {
+    fn say_after<'a>(
+        &'a self,
+        ms: u16,
+        who: String,
+    ) -> Pin<Box<dyn Future<Output = String> + Send + 'a>>;
+}
+
 // Example of async trait defined in the UDL file
 #[uniffi::trait_interface]
 #[async_trait::async_trait]
@@ -416,6 +443,34 @@ impl SayAfterTrait for SayAfterImpl2 {
 
 #[uniffi::export]
 fn get_say_after_traits() -> Vec<Arc<dyn SayAfterTrait>> {
+    vec![Arc::new(SayAfterImpl1), Arc::new(SayAfterImpl2)]
+}
+
+// `SayAfterBoxTrait` implementations: the method returns a boxed future by hand rather
+// than using `#[async_trait]`. `say_after`'s future is `Send + 'static`, so it satisfies
+// the `+ Send + 'a` bound.
+impl SayAfterBoxTrait for SayAfterImpl1 {
+    fn say_after<'a>(
+        &'a self,
+        ms: u16,
+        who: String,
+    ) -> Pin<Box<dyn Future<Output = String> + Send + 'a>> {
+        Box::pin(say_after(ms, who))
+    }
+}
+
+impl SayAfterBoxTrait for SayAfterImpl2 {
+    fn say_after<'a>(
+        &'a self,
+        ms: u16,
+        who: String,
+    ) -> Pin<Box<dyn Future<Output = String> + Send + 'a>> {
+        Box::pin(say_after(ms, who))
+    }
+}
+
+#[uniffi::export]
+fn get_say_after_box_traits() -> Vec<Arc<dyn SayAfterBoxTrait>> {
     vec![Arc::new(SayAfterImpl1), Arc::new(SayAfterImpl2)]
 }
 

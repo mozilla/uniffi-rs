@@ -45,6 +45,15 @@ class TestFutures(unittest.TestCase):
 
         asyncio.run(test())
 
+    def test_manual_future_is_async(self):
+        # A function that returns a boxed future by hand (no `async` keyword) is
+        # detected as async and behaves just like `say_after`.
+        async def test():
+            result = await say_after_manual_future(100, 'Alice')
+            self.assertEqual(result, 'Hello, Alice!')
+
+        asyncio.run(test())
+
     def test_concurrent_tasks(self):
         async def test():
             alice = asyncio.create_task(say_after(100, 'Alice'))
@@ -99,6 +108,19 @@ class TestFutures(unittest.TestCase):
             self.assertEqual(result2, 'Hello, Bob!')
             t_delta = (t1 - t0).total_seconds()
             self.assertGreater(t_delta, 0.2)
+
+        asyncio.run(test())
+
+    def test_boxed_future_trait_interface_methods(self):
+        # The trait's method returns a boxed future by hand (no `async` keyword);
+        # it should be exposed as an async method just like `get_say_after_traits`.
+        async def test():
+            traits = get_say_after_box_traits()
+            result1 = await traits[0].say_after(100, 'Alice')
+            result2 = await traits[1].say_after(100, 'Bob')
+
+            self.assertEqual(result1, 'Hello, Alice!')
+            self.assertEqual(result2, 'Hello, Bob!')
 
         asyncio.run(test())
 
