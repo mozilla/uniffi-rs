@@ -229,13 +229,19 @@ mod tests {
     fn declared_async_is_left_untouched() {
         // A real `async fn`: `syn` already gives us the unsugared `Output`, so the return
         // type must pass through verbatim.
-        assert_eq!(parse_async(true, "-> String"), (true, Some("String".into())));
+        assert_eq!(
+            parse_async(true, "-> String"),
+            (true, Some("String".into()))
+        );
         assert_eq!(parse_async(true, ""), (true, None));
     }
 
     #[test]
     fn plain_return_types_are_not_async() {
-        assert_eq!(parse_async(false, "-> String"), (false, Some("String".into())));
+        assert_eq!(
+            parse_async(false, "-> String"),
+            (false, Some("String".into()))
+        );
         assert_eq!(parse_async(false, ""), (false, None));
         // A future nested as an argument, not the future itself, must not be unwrapped.
         assert_eq!(
@@ -248,7 +254,10 @@ mod tests {
     fn boxed_future_is_detected_and_unwrapped() {
         // The shape `#[async_trait]` expands `async fn ... -> String` into.
         assert_eq!(
-            parse_async(false, "-> Pin<Box<dyn Future<Output = String> + Send + 'a>>"),
+            parse_async(
+                false,
+                "-> Pin<Box<dyn Future<Output = String> + Send + 'a>>"
+            ),
             (true, Some("String".into()))
         );
         // Fully-qualified paths for `Pin` and `Future`.
@@ -267,7 +276,10 @@ mod tests {
         // Without the `Pin` wrapper we don't consider it's compatible.
         assert_eq!(
             parse_async(false, "-> Box<dyn Future<Output = Arc<Self>>>"),
-            (false, Some("Box < dyn Future < Output = Arc < Self > > >".into()))
+            (
+                false,
+                Some("Box < dyn Future < Output = Arc < Self > > >".into())
+            )
         );
         // `impl Future` won't work either.
         assert_eq!(
