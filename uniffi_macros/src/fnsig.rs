@@ -120,11 +120,28 @@ impl FnSignature {
         let span = sig.span();
         let ident = sig.ident;
         let looks_like_result = looks_like_result(&sig.output);
-        let output = match sig.output {
-            ReturnType::Default => quote! { () },
-            ReturnType::Type(_, ty) => quote! { #ty },
+        // A function is async if it is declared `async fn`, or if it manually returns a
+        // boxed future such as `Pin<Box<dyn Future<Output = T> + Send>>` — the shape
+        // `#[async_trait]` expands `async fn` into. Dropping the `#[async_trait]` macro and
+        // the `async` modifier while returning that future by hand must still be treated as
+        // an async function: the scaffolding awaits the returned value either way.
+        //
+        // For a real `async fn`, `syn` gives us the unsugared `Output` type. To treat the
+        // manual future the same way, we unwrap it here and use its `Output` as the return
+        // type, so `rust_future_new::<_, #return_ty, _>` and the metadata both see `T`.
+        let manual_future_output = if sig.asyncness.is_some() {
+            None
+        } else if let ReturnType::Type(_, ty) = &sig.output {
+            uniffi_syn_utils::future_output_type(ty)
+        } else {
+            None
         };
-        let is_async = sig.asyncness.is_some();
+        let is_async = sig.asyncness.is_some() || manual_future_output.is_some();
+        let output = match (manual_future_output, sig.output) {
+            (Some(inner), _) => quote! { #inner },
+            (None, ReturnType::Default) => quote! { () },
+            (None, ReturnType::Type(_, ty)) => quote! { #ty },
+        };
 
         let mut input_iter = sig
             .inputs

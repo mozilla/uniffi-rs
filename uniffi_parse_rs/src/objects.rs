@@ -74,9 +74,11 @@ impl Object {
 
 impl Constructor {
     pub fn parse(attrs: ConstructorAttributes, f: ImplItemFn) -> syn::Result<Self> {
+        let (is_async, return_type) =
+            ReturnType::parse_async(f.sig.asyncness.is_some(), f.sig.output)?;
         Ok(Self {
             attrs,
-            is_async: f.sig.asyncness.is_some(),
+            is_async,
             ident: f.sig.ident,
             args: f
                 .sig
@@ -84,7 +86,7 @@ impl Constructor {
                 .into_iter()
                 .map(Argument::parse)
                 .collect::<syn::Result<Vec<_>>>()?,
-            return_type: ReturnType::parse(f.sig.output)?,
+            return_type,
         })
     }
 
@@ -136,16 +138,18 @@ impl Method {
     pub fn parse(attrs: MethodAttributes, f: ImplItemFn) -> syn::Result<Self> {
         let mut inputs = f.sig.inputs.into_iter();
         let self_arg = SelfArg::parse(inputs.next(), f.sig.ident.span())?;
+        let (is_async, return_type) =
+            ReturnType::parse_async(f.sig.asyncness.is_some(), f.sig.output)?;
 
         Ok(Self {
             attrs,
             ident: f.sig.ident,
-            is_async: f.sig.asyncness.is_some(),
+            is_async,
             self_arg,
             args: inputs
                 .map(Argument::parse)
                 .collect::<syn::Result<Vec<_>>>()?,
-            return_type: ReturnType::parse(f.sig.output)?,
+            return_type,
         })
     }
 

@@ -95,6 +95,17 @@ Task {
 	counter.leave()
 }
 
+// Test a function that returns a boxed future by hand (no `async` keyword).
+// It should be exposed as an async function, just like `sayAfter`.
+counter.enter()
+
+Task {
+	let result = await sayAfterManualFuture(ms: 1000, who: "Alice")
+	assert(result == "Hello, Alice!")
+
+	counter.leave()
+}
+
 // Test async methods
 counter.enter()
 
@@ -117,6 +128,26 @@ counter.enter()
 
 Task {
 	let traits = getSayAfterTraits()
+
+	let t0 = Date()
+	let result1 = await traits[0].sayAfter(ms: 1000, who: "Alice")
+	let result2 = await traits[1].sayAfter(ms: 1000, who: "Bob")
+	let t1 = Date()
+
+	assert(result1 == "Hello, Alice!")
+	assert(result2 == "Hello, Bob!")
+	let tDelta = DateInterval(start: t0, end: t1)
+	assert(tDelta.duration > 2 && tDelta.duration < 2.1)
+
+	counter.leave()
+}
+
+// Test trait interface methods whose Rust impl returns a boxed future by hand
+// (no `async` keyword). They should be exposed as async methods, like getSayAfterTraits.
+counter.enter()
+
+Task {
+	let traits = getSayAfterBoxTraits()
 
 	let t0 = Date()
 	let result1 = await traits[0].sayAfter(ms: 1000, who: "Alice")

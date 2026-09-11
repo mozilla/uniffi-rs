@@ -34,18 +34,20 @@ pub struct ReturnType {
 
 impl Function {
     pub fn parse(attrs: FunctionAttributes, f: ItemFn) -> syn::Result<Self> {
+        let (is_async, return_ty) =
+            ReturnType::parse_async(f.sig.asyncness.is_some(), f.sig.output)?;
         Ok(Self {
             attrs,
             ident: f.sig.ident,
             vis: f.vis.into(),
-            is_async: f.sig.asyncness.is_some(),
+            is_async,
             args: f
                 .sig
                 .inputs
                 .into_iter()
                 .map(Argument::parse)
                 .collect::<syn::Result<Vec<_>>>()?,
-            return_ty: ReturnType::parse(f.sig.output)?,
+            return_ty,
         })
     }
 
@@ -143,6 +145,33 @@ impl ReturnType {
         Ok(Self { return_ty })
     }
 
+    /// Determine whether a function is async and compute its effective return type.
+    ///
+    /// A function is async when it is declared `async fn` (`declared_async`), or when it
+    /// manually returns a boxed future such as `Pin<Box<dyn Future<Output = T> + Send>>` —
+    /// the shape `#[async_trait]` expands `async fn` into. Removing the `#[async_trait]`
+    /// macro and the `async` modifier while returning that future by hand is still an async
+    /// function as far as the FFI is concerned.
+    ///
+    /// For a real `async fn`, `syn` hands us the unsugared `Output` type directly. To treat
+    /// the manual future the same way, we unwrap the future here and use its `Output` as the
+    /// effective return type.
+    pub fn parse_async(declared_async: bool, output: syn::ReturnType) -> syn::Result<(bool, Self)> {
+        if !declared_async {
+            if let syn::ReturnType::Type(arrow, ty) = &output {
+                if let Some(inner) = uniffi_syn_utils::future_output_type(ty) {
+                    return Ok((
+                        true,
+                        Self {
+                            return_ty: syn::ReturnType::Type(*arrow, Box::new(inner)),
+                        },
+                    ));
+                }
+            }
+        }
+        Ok((declared_async, Self::parse(output)?))
+    }
+
     pub fn return_type_and_throws<'ir>(
         &self,
         ir: &'ir Ir,
@@ -176,5 +205,86 @@ impl ReturnType {
                 (rt.ok, rt.err)
             }
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use quote::ToTokens;
+
+    /// Run `parse_async` on `-> #output` and return `(is_async, effective_return_type)`,
+    /// with the return type rendered back to a normalized token string for comparison.
+    fn parse_async(declared_async: bool, output: &str) -> (bool, Option<String>) {
+        let output: syn::ReturnType = syn::parse_str(output).unwrap();
+        let (is_async, rt) = ReturnType::parse_async(declared_async, output).unwrap();
+        let rendered = match rt.return_ty {
+            syn::ReturnType::Default => None,
+            syn::ReturnType::Type(_, ty) => Some(ty.to_token_stream().to_string()),
+        };
+        (is_async, rendered)
+    }
+
+    #[test]
+    fn declared_async_is_left_untouched() {
+        // A real `async fn`: `syn` already gives us the unsugared `Output`, so the return
+        // type must pass through verbatim.
+        assert_eq!(
+            parse_async(true, "-> String"),
+            (true, Some("String".into()))
+        );
+        assert_eq!(parse_async(true, ""), (true, None));
+    }
+
+    #[test]
+    fn plain_return_types_are_not_async() {
+        assert_eq!(
+            parse_async(false, "-> String"),
+            (false, Some("String".into()))
+        );
+        assert_eq!(parse_async(false, ""), (false, None));
+        // A future nested as an argument, not the future itself, must not be unwrapped.
+        assert_eq!(
+            parse_async(false, "-> Vec<u8>"),
+            (false, Some("Vec < u8 >".into()))
+        );
+    }
+
+    #[test]
+    fn boxed_future_is_detected_and_unwrapped() {
+        // The shape `#[async_trait]` expands `async fn ... -> String` into.
+        assert_eq!(
+            parse_async(
+                false,
+                "-> Pin<Box<dyn Future<Output = String> + Send + 'a>>"
+            ),
+            (true, Some("String".into()))
+        );
+        // Fully-qualified paths for `Pin` and `Future`.
+        assert_eq!(
+            parse_async(
+                false,
+                "-> ::core::pin::Pin<Box<dyn ::core::future::Future<Output = u8> + Send>>"
+            ),
+            (true, Some("u8".into()))
+        );
+        // `Output = ()` unwraps to the unit type (still `Some`, resolved as void downstream).
+        assert_eq!(
+            parse_async(false, "-> Pin<Box<dyn Future<Output = ()> + Send>>"),
+            (true, Some("()".into()))
+        );
+        // Without the `Pin` wrapper we don't consider it's compatible.
+        assert_eq!(
+            parse_async(false, "-> Box<dyn Future<Output = Arc<Self>>>"),
+            (
+                false,
+                Some("Box < dyn Future < Output = Arc < Self > > >".into())
+            )
+        );
+        // `impl Future` won't work either.
+        assert_eq!(
+            parse_async(false, "-> impl Future<Output = i64>"),
+            (false, Some("impl Future < Output = i64 >".into()))
+        );
     }
 }
