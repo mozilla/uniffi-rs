@@ -10,6 +10,7 @@ members = [
   "uniffi_meta",
   "uniffi_parse_rs",
   "uniffi_pipeline",
+  "uniffi_syn_utils",
   "uniffi_testing",
   "uniffi_udl",
   "uniffi",

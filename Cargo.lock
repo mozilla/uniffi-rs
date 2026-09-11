@@ -2539,6 +2539,7 @@ dependencies = [
  "toml",
  "uniffi_build",
  "uniffi_meta",
+ "uniffi_syn_utils",
 ]
 
 [[package]]
@@ -2567,6 +2568,7 @@ dependencies = [
  "thiserror",
  "toml",
  "uniffi_meta",
+ "uniffi_syn_utils",
 ]
 
 [[package]]
@@ -2578,6 +2580,14 @@ dependencies = [
  "indexmap",
  "tempfile",
  "uniffi_internal_macros",
+]
+
+[[package]]
+name = "uniffi_syn_utils"
+version = "0.32.0"
+dependencies = [
+ "quote",
+ "syn",
 ]
 
 [[package]]
