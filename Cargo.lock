@@ -1829,7 +1829,7 @@ checksum = "b4ac048d71ede7ee76d585517add45da530660ef4390e49b098733c6e897f254"
 
 [[package]]
 name = "uniffi"
-version = "0.32.0"
+version = "0.32.1"
 dependencies = [
  "anyhow",
  "camino",
@@ -1852,7 +1852,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi-bindgen-kotlin-jni"
-version = "0.31.1"
+version = "0.32.1"
 dependencies = [
  "anyhow",
  "askama 0.14.0",
@@ -2469,7 +2469,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_bindgen"
-version = "0.32.0"
+version = "0.32.1"
 dependencies = [
  "anyhow",
  "askama 0.16.0",
@@ -2495,7 +2495,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_build"
-version = "0.32.0"
+version = "0.32.1"
 dependencies = [
  "anyhow",
  "camino",
@@ -2504,7 +2504,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_core"
-version = "0.32.0"
+version = "0.32.1"
 dependencies = [
  "anyhow",
  "async-compat",
@@ -2516,7 +2516,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_internal_macros"
-version = "0.32.0"
+version = "0.32.1"
 dependencies = [
  "anyhow",
  "indexmap",
@@ -2527,7 +2527,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_macros"
-version = "0.32.0"
+version = "0.32.1"
 dependencies = [
  "camino",
  "fs-err",
@@ -2543,7 +2543,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_meta"
-version = "0.32.0"
+version = "0.32.1"
 dependencies = [
  "anyhow",
  "siphasher",
@@ -2553,7 +2553,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_parse_rs"
-version = "0.32.0"
+version = "0.32.1"
 dependencies = [
  "anyhow",
  "camino",
@@ -2571,7 +2571,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_pipeline"
-version = "0.32.0"
+version = "0.32.1"
 dependencies = [
  "anyhow",
  "heck",
@@ -2582,7 +2582,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_testing"
-version = "0.32.0"
+version = "0.32.1"
 dependencies = [
  "anyhow",
  "camino",
@@ -2593,7 +2593,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_udl"
-version = "0.32.0"
+version = "0.32.1"
 dependencies = [
  "anyhow",
  "textwrap",
