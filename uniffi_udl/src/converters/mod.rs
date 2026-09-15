@@ -199,6 +199,7 @@ fn make_uniffi_traits(
             name: name.to_string(),
             orig_name: None,
             is_async: false,
+            desugared_async: false,
             inputs,
             return_type,
             throws: None,

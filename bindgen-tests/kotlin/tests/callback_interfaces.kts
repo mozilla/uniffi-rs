@@ -1,3 +1,4 @@
+import kotlinx.coroutines.*
 import uniffi.uniffi_bindgen_tests.*
 
 class CallbackImpl(var value: UInt) : TestCallbackInterface {
@@ -60,12 +61,16 @@ try {
     assert(e.data.contains("unexpected failure"))
 }
 
+// The async method is a hand-written boxed future (no `@async_trait`); it is exposed as a
+// `suspend fun` and invoked from Rust via `invokeBoxedFutureTrait`.
 class BoxedFutureTraitImpl : BoxedFutureTrait {
-    override suspend fun reply(ms: Short, who: String): String {
+    override suspend fun reply(ms: UShort, who: String): String {
         return "$who replied at $ms"
     }
 }
 
-val boxedFutureCallback = BoxedFutureTraitImpl()
-val response = boxedFutureCallback(1234, "Alice")
-assert(response == "Alice replied at 1234")
+runBlocking {
+    val boxedFutureCallback = BoxedFutureTraitImpl()
+    val response = invokeBoxedFutureTrait(boxedFutureCallback, 1234.toUShort(), "Alice")
+    assert(response == "Alice replied at 1234")
+}

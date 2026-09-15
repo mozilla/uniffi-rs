@@ -40,6 +40,11 @@ pub(crate) struct FnSignature {
     // Did `self.name` come from an attribute
     pub name_from_attrs: bool,
     pub is_async: bool,
+    /// `true` when async-ness came from a hand-written boxed-future return type
+    /// (`Pin<Box<dyn Future<Output = T>>>`) rather than the `async` keyword / `#[async_trait]`.
+    /// A generated trait impl (callback interfaces) must emit a matching late-bound
+    /// `fn … -> Pin<Box<dyn Future<…>>>` rather than an `#[async_trait] async fn`.
+    pub desugared_async: bool,
     pub async_runtime: Option<AsyncRuntime>,
     pub receiver: Option<ReceiverArg>,
     pub args: Vec<NamedArg>,
@@ -136,7 +141,8 @@ impl FnSignature {
         } else {
             None
         };
-        let is_async = sig.asyncness.is_some() || manual_future_output.is_some();
+        let desugared_async = manual_future_output.is_some();
+        let is_async = sig.asyncness.is_some() || desugared_async;
         let output = match (manual_future_output, sig.output) {
             (Some(inner), _) => quote! { #inner },
             (None, ReturnType::Default) => quote! { () },
@@ -203,6 +209,7 @@ impl FnSignature {
                 .unwrap_or_else(|| ident_to_string(&ident)),
             ident,
             is_async,
+            desugared_async,
             async_runtime: export_fn_args.async_runtime,
             receiver,
             args,

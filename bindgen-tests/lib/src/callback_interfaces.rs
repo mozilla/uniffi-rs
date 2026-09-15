@@ -78,3 +78,10 @@ pub trait BoxedFutureTrait: Send + Sync {
         who: String,
     ) -> Pin<Box<dyn Future<Output = String> + Send + 'a>>;
 }
+
+/// Invoke `BoxedFutureTrait::reply` from Rust, so the boxed-future callback is exercised
+/// end-to-end (the foreign side implements it, Rust awaits it).
+#[uniffi::export]
+pub async fn invoke_boxed_future_trait(cbi: Box<dyn BoxedFutureTrait>, ms: u16, who: String) -> String {
+    cbi.reply(ms, who).await
+}

@@ -34,6 +34,8 @@ pub fn function_callable(func: &initial::Function, context: &Context) -> Result<
         name,
         orig_name: func.orig_name.clone(),
         async_data: function_async_data(func, context)?,
+        // Functions never generate a Rust trait impl, so the distinction is irrelevant.
+        desugared_async: false,
         kind,
         arguments,
         return_type: ReturnType {
@@ -94,6 +96,7 @@ pub fn method_callable_with_kind(
         },
         checksum: meth.checksum,
         async_data: method_async_data(meth, context)?,
+        desugared_async: meth.desugared_async,
         ffi_func,
         kind,
     };
@@ -128,6 +131,8 @@ pub fn constructor_callable(cons: &initial::Constructor, context: &Context) -> R
         name,
         orig_name: cons.orig_name.clone(),
         async_data: constructor_async_data(cons, interface_name, imp, context)?,
+        // Constructors never generate a Rust trait impl, so the distinction is irrelevant.
+        desugared_async: false,
         arguments,
         return_type: ReturnType {
             ty: Some(self_type),
