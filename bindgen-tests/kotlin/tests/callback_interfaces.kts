@@ -59,3 +59,13 @@ try {
 } catch(e: TestException.Failure2) {
     assert(e.data.contains("unexpected failure"))
 }
+
+class BoxedFutureTraitImpl : BoxedFutureTrait {
+    override suspend fun reply(ms: Short, who: String): String {
+        return "$who replied at $ms"
+    }
+}
+
+val boxedFutureCallback = BoxedFutureTraitImpl()
+val response = boxedFutureCallback(1234, "Alice")
+assert(response == "Alice replied at 1234")
