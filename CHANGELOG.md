@@ -35,8 +35,6 @@
  `generate_bindings`, `find_components`, the `library_mode` module, and the
  `uniffi::generate_bindings_library_mode` re-export. Use `BindgenLoader` instead.
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.0...HEAD).
-
 ### What's New?
 
 - Zero-copy `&mut [u8]` / `[ByMutRef] bytes` arguments. A **synchronous** exported function can now borrow a foreign-owned byte buffer and write to it in place — no copy in or out. Swift (`inout Data`), Python (`bytearray`), and Kotlin (direct `java.nio.ByteBuffer`) support it; `&mut [u8]` in an `async` function is an error. See [the manual](https://mozilla.github.io/uniffi-rs/next/types/bytes.html). ([#2940](https://github.com/mozilla/uniffi-rs/pull/2940))
@@ -44,6 +42,15 @@
 ### What's New for external bindings authors
 
 - `[ByMutRef] bytes` / `&mut [u8]` arguments cross the FFI as the same `ForeignBytes` value as `[ByRef]` / `&[u8]` — the two are ABI-identical. Metadata carries the mutable flag as `FnParamMetadata.by_mut_ref` (read it via `is_borrowed_bytes_mut()`); a generator that wants a writable foreign buffer reads that flag, otherwise the argument acts like a read-only borrow. This bumps the metadata contract version to 31. ([#2940](https://github.com/mozilla/uniffi-rs/pull/2940))
+
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.1...HEAD).
+
+## v0.32.1 (backend crates: v0.32.1) - (_2026-09-08_)
+
+### What's Fixed
+- Kotlin: Fixed checksum failure on aarch64 ([#2935](https://github.com/mozilla/uniffi-rs/pull/2935/))
+
+[All changes in v0.32.1](https://github.com/mozilla/uniffi-rs/compare/v0.32.0...v0.32.1).
 
 ## v0.32.0 (backend crates: v0.32.0) - (_2026-06-30_)
 
