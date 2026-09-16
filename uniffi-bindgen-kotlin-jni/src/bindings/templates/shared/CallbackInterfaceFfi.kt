@@ -144,13 +144,31 @@ fun {{ cbi.free_fn_kt() }}(handle: kotlin.Long) {
 }
 
 {%- if !cbi.for_trait_interface %}
+@JvmName("{{ cbi.self_type.lower_fn_kt() }}")
 fun {{ cbi.self_type.lower_fn_kt() }}(value: {{ type_name }}): kotlin.Long {
     return {{ cbi.handle_map_kt() }}.insert(value)
 }
 
+@JvmName("{{ cbi.self_type.write_fn_kt() }}")
 fun {{ cbi.self_type.write_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int, value: {{ type_name }}) {
     writeLong(buf, offset, {{ cbi.handle_map_kt() }}.insert(value))
 }
 
-// Note: no read/lift function, since callback interfaces can't be passed back from Rust to Kotlin
+{#
+ # Note:
+ # Generate the lift/read functions, even though they will never be used in practice.
+ # These might be called by the lift/read function of a type that contains the callback interface.
+ # It's simpler to generate the function than to add an `{% if %}` statements everywhere in the templates.
+ #}
+
+@JvmName("{{ cbi.self_type.lift_fn_kt() }}")
+fun {{ cbi.self_type.lift_fn_kt() }}(value: kotlin.Long): {{ type_name }} {
+    throw uniffi.InternalException("UniFFI bug: attempt to lift callback interface ({{ type_name }})")
+}
+
+@JvmName("{{ cbi.self_type.read_fn_kt() }}")
+fun {{ cbi.self_type.read_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int): {{ type_name }} {
+    throw uniffi.InternalException("UniFFI bug: attempt to read callback interface ({{ type_name }})")
+}
+
 {%- endif %}

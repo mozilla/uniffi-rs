@@ -62,7 +62,9 @@ impl FfiBufferLayoutOracle {
             Type::UInt32 | Type::Int32 | Type::Float32 => Layout::from_size_align(4, 4)?,
             Type::UInt64 | Type::Int64 | Type::Float64 => Layout::from_size_align(8, 8)?,
             // One 8-byte handle
-            Type::Interface { .. } => Layout::from_size_align(8, 8)?,
+            Type::Interface { .. } | Type::CallbackInterface { .. } => {
+                Layout::from_size_align(8, 8)?
+            }
             // 8-byte seconds at offset 0, 4-byte nanoseconds at offset 8
             // (see the timestamp/duration scaffolding templates)
             Type::Timestamp | Type::Duration => Layout::from_size_align(12, 8)?,

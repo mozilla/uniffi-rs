@@ -46,7 +46,7 @@ unsafe fn {{ opt.self_type.lift_fn_rs() }}(
         ::std::option::Option::None
     })
 }
-{%- else if opt.inner.is_interface() %}
+{%- else if opt.inner.is_interface() || opt.inner.is_callback_interface() %}
 
 unsafe fn {{ opt.self_type.lower_fn_rs() }}(
     env: *mut uniffi_jni::JNIEnv,

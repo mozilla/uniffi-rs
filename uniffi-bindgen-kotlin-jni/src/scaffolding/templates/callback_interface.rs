@@ -221,6 +221,25 @@ unsafe fn {{ cbi.self_type.read_fn_rs() }}(
     }))
 }
 
-// Note: no write or lower function, since passing callback interfaces from Rust to Kotlin is not allowed
+{#
+ # Note:
+ # Generate the lower/write functions, even though they will never be used in practice.
+ # These might be called by the lower/write function of a type that contains the callback interface.
+ # It's simpler to generate the function than to add an `{% if %}` statements everywhere in the templates.
+ #}
+
+unsafe fn {{ cbi.self_type.lower_fn_rs() }}(
+    uniffi_env: *mut uniffi_jni::JNIEnv,
+    _value: {{ type_name }},
+) -> uniffi::Result<::std::primitive::i64> {
+    ::std::panic!("UniFFI bug: attempt to lower callback interface ({{ type_name }})")
+}
+
+unsafe fn {{ cbi.self_type.write_fn_rs() }}(
+    _ptr: *mut ::std::primitive::u8,
+    _value: {{ type_name }},
+) -> uniffi::Result<()> {
+    ::std::panic!("UniFFI bug: attempt to write callback interface ({{ type_name }})")
+}
 
 {%- endif %}
