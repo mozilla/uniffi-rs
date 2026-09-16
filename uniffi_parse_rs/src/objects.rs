@@ -96,9 +96,9 @@ impl Constructor {
         self_name: &str,
         self_ty: &uniffi_meta::Type,
     ) -> Result<uniffi_meta::ConstructorMetadata> {
-        let (returns_future, return_type, throws) =
-            self.return_type
-                .return_type_and_throws_for_method(ir, cache, module_path, self_ty)?;
+        let (returns_future, return_type, throws) = self
+            .return_type
+            .return_type_and_throws_for_method(ir, cache, module_path, self_ty)?;
         if return_type.as_ref() != Some(self_ty) {
             return Err(Error::new(
                 module_path.file_id(),
@@ -157,9 +157,9 @@ impl Method {
         self_name: &str,
         self_ty: &uniffi_meta::Type,
     ) -> Result<uniffi_meta::MethodMetadata> {
-        let (returns_future, return_type, throws) =
-            self.return_type
-                .return_type_and_throws_for_method(ir, cache, module_path, self_ty)?;
+        let (returns_future, return_type, throws) = self
+            .return_type
+            .return_type_and_throws_for_method(ir, cache, module_path, self_ty)?;
         let item_name = self.ident.unraw().to_string();
         let (name, orig_name) = match &self.attrs.name {
             None => (item_name, None),

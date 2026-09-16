@@ -1,9 +1,9 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+use crate::errors::TestError;
 use std::future::Future;
 use std::pin::Pin;
-use crate::errors::TestError;
 
 #[uniffi::export(callback_interface)]
 pub trait TestCallbackInterface {
@@ -82,6 +82,10 @@ pub trait BoxedFutureTrait: Send + Sync {
 /// Invoke `BoxedFutureTrait::reply` from Rust, so the boxed-future callback is exercised
 /// end-to-end (the foreign side implements it, Rust awaits it).
 #[uniffi::export]
-pub async fn invoke_boxed_future_trait(cbi: Box<dyn BoxedFutureTrait>, ms: u16, who: String) -> String {
+pub async fn invoke_boxed_future_trait(
+    cbi: Box<dyn BoxedFutureTrait>,
+    ms: u16,
+    who: String,
+) -> String {
     cbi.reply(ms, who).await
 }

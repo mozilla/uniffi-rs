@@ -722,9 +722,7 @@ fn get_builtin_item(path: &Path) -> Option<&'static Item> {
         "Option" | "std::option::Option" => Some(&Item::Builtin(BuiltinItem::Option)),
         "Box" | "std::boxed::Box" => Some(&Item::Builtin(BuiltinItem::Box)),
         "std::pin::Pin" | "core::pin::Pin" => Some(&Item::Builtin(BuiltinItem::Pin)),
-        "std::future::Future" | "core::future::Future" => {
-            Some(&Item::Builtin(BuiltinItem::Future))
-        }
+        "std::future::Future" | "core::future::Future" => Some(&Item::Builtin(BuiltinItem::Future)),
         "Vec" | "std::vec::Vec" => Some(&Item::Builtin(BuiltinItem::Vec)),
         "Result" | "std::result::Result" => Some(&Item::Builtin(BuiltinItem::Result)),
         "String" | "std::string::String" => Some(&Item::Builtin(BuiltinItem::String)),
