@@ -34,6 +34,9 @@
  `EmptyCrateConfigSupplier`, `BindingGenerator`, `GenerationSettings`, `generate_external_bindings`,
  `generate_bindings`, `find_components`, the `library_mode` module, and the
  `uniffi::generate_bindings_library_mode` re-export. Use `BindgenLoader` instead.
+- Added several new fields to `bindings::GenerateOptions`
+  (currently only used by `uniffi_parse_rs`).
+  Use `..GenerateOptions::default()` if you're not using `uniffi_parse_rs`.
 
 ### What's New?
 
