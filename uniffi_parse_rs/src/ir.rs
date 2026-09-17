@@ -6,7 +6,7 @@ use std::collections::{BTreeSet, HashMap};
 
 use camino::Utf8Path;
 use quote::format_ident;
-use syn::{ext::IdentExt, Ident};
+use syn::{ext::IdentExt, Ident, TypePath};
 use uniffi_meta::MetadataGroup;
 
 use crate::{
@@ -14,9 +14,11 @@ use crate::{
         EnumAttributes, FunctionAttributes, ImplAttributes, ObjectAttributes, RecordAttributes,
         TraitAttributes,
     },
-    macros::maybe_resolve_macro,
+    macros::{maybe_resolve_macro, CustomTypeMacroCall},
     paths::LookupCache,
-    CompileEnv, Enum, Error,
+    trace,
+    types::Type,
+    CompileEnv, CustomType, Enum, Error,
     ErrorKind::*,
     Function, Impl, Item, MetadataGroupMap, Module, Object, RPath, Record, Result, Trait,
 };
@@ -171,7 +173,7 @@ impl Ir {
     /// Resolve Item::Unresolved to more specific items like Item::UseRemoteType
     ///
     /// This needs to run after adding all crates parsing, since it requires looking up module paths.
-    pub fn resolve_items(&mut self) -> syn::Result<()> {
+    pub fn resolve_items(&mut self) -> Result<()> {
         // Find and remove unresolved items from all modules
         let mut unresolved_map = HashMap::new();
         for crate_root in self.crate_roots.values_mut() {
@@ -186,14 +188,15 @@ impl Ir {
         for crate_root in self.crate_roots.values() {
             crate_root.try_visit_modules_and_paths(|module, rpath| {
                 let Some(unresolved) = unresolved_map.remove(&module.id) else {
-                    return Ok(());
+                    return Result::Ok(());
                 };
 
                 let mut resolved_items = vec![];
                 for item in unresolved {
-                    if let Some(item) =
-                        self.resolve_item(&mut cache, rpath, &crate_root.compile_env, item)?
-                    {
+                    let resolved = self
+                        .resolve_item(&mut cache, rpath, &crate_root.compile_env, item)
+                        .map_err(|e| Error::new_syn(module.source, e))?;
+                    if let Some(item) = resolved {
                         resolved_items.push(item);
                     }
                 }
@@ -202,14 +205,138 @@ impl Ir {
             })?;
         }
 
-        // Add resolved items to the modules
+        let custom_type_macro_calls = self.add_resolved_items_phase1(resolved_map)?;
+        self.add_resolved_items_phase2(custom_type_macro_calls)?;
+        Ok(())
+    }
+
+    /// Add resolved items back to modules (phase 1)
+    ///
+    /// This adds all items except custom types and
+    /// returns a map of module_id -> custom_types for phase2
+    fn add_resolved_items_phase1(
+        &mut self,
+        mut resolved_map: HashMap<usize, Vec<Item>>,
+    ) -> Result<HashMap<usize, Vec<CustomTypeMacroCall>>> {
+        let mut custom_type_macro_calls: HashMap<usize, Vec<CustomTypeMacroCall>> = HashMap::new();
+        for crate_root in self.crate_roots.values_mut() {
+            crate_root.try_visit_modules_mut(|module| {
+                let Some(resolved) = resolved_map.remove(&module.id) else {
+                    return Ok(());
+                };
+                for item in resolved {
+                    match item {
+                        Item::CustomTypeMacroCall(macro_call) => {
+                            // Processing custom types requires resolving paths,
+                            // but we can't do that now since we're still adding back the resolved items.
+                            // Remember the macro calls and process them in phase 2
+                            custom_type_macro_calls
+                                .entry(module.id)
+                                .or_default()
+                                .push(macro_call);
+                        }
+                        Item::CustomType(c) => {
+                            return Err(Error::new(
+                                module.source,
+                                c.macro_call.ident.span(),
+                                InternalError(
+                                    "Saw Item::CustomType in add_resolved_items_phase1".into(),
+                                ),
+                            ));
+                        }
+                        i => module.items.push(i),
+                    }
+                }
+                Ok(())
+            })?;
+        }
+        Ok(custom_type_macro_calls)
+    }
+
+    /// Add resolved items back to modules (phase 2)
+    fn add_resolved_items_phase2(
+        &mut self,
+        mut custom_type_macro_calls: HashMap<usize, Vec<CustomTypeMacroCall>>,
+    ) -> Result<()> {
+        // Convert custom_type_macro_calls into a map where:
+        // * The keys are the module id for the Rust type, instead of the module
+        //   with the `custom_type!` macro call.
+        // * The `CustomTypeMacroCall` items are converted to `CustomType` items.
+        //   This requires resolving some types, which we couldn't do before.
+        let mut custom_type_source_modules: HashMap<usize, Vec<CustomType>> = HashMap::new();
+        let mut cache = LookupCache::default();
+        for crate_root in self.crate_roots.values() {
+            crate_root.try_visit_modules_and_paths(|module, path| {
+                let Some(macro_calls) = custom_type_macro_calls.remove(&module.id) else {
+                    return Ok(());
+                };
+                for macro_call in macro_calls {
+                    let mut custom_type = CustomType {
+                        macro_call,
+                        macro_call_module_path: path.syn_path(),
+                        // set below
+                        rust_type_ident: None,
+                    };
+
+                    let dest_module_id = if custom_type.macro_call.remote {
+                        // Remote types stay where the custom_type! macro was called,
+                        // for now at least.
+                        // See https://github.com/mozilla/uniffi-rs/issues/2994
+                        module.id
+                    } else {
+                        // Non-remote custom types move to the Rust type's module.
+                        trace!("Finding custom type {}", custom_type.macro_call.ident);
+                        let rust_type = path.resolve_type(
+                            self,
+                            &mut cache,
+                            &syn::Type::Path(TypePath {
+                                qself: None,
+                                path: custom_type.macro_call.ident.clone().into(),
+                            }),
+                        )?;
+                        match rust_type {
+                            Type::NonUniffi { module_id, ident } => {
+                                if ident != custom_type.macro_call.ident {
+                                    // The Rust type has a different name than
+                                    // the one used in the `custom_type!` call.
+                                    //
+                                    // Remember this so type resolution works.
+                                    custom_type.rust_type_ident = Some(ident);
+                                }
+                                module_id
+                            }
+                            _ => {
+                                return Err(Error::new(
+                                    module.source,
+                                    custom_type.macro_call.ident.span(),
+                                    InvalidCustomType,
+                                ))
+                            }
+                        }
+                    };
+                    custom_type_source_modules
+                        .entry(dest_module_id)
+                        .or_default()
+                        .push(custom_type);
+                }
+                Ok(())
+            })?;
+        }
+
+        // Now that we know the correct module for the custom types, we can add them.
         for crate_root in self.crate_roots.values_mut() {
             crate_root.visit_modules_mut(|module| {
-                if let Some(resolved) = resolved_map.remove(&module.id) {
-                    module.items.extend(resolved);
+                let Some(custom_types) = custom_type_source_modules.remove(&module.id) else {
+                    return;
+                };
+                for c in custom_types {
+                    module.items.push(Item::CustomType(c));
                 }
+                // Note: the Item::NonUniffi is still present in the module, maybe we should remove them.
+                // However, things are working now so let's err towards more information.
             });
         }
+
         Ok(())
     }
 
@@ -329,8 +456,8 @@ impl CrateRoot {
 
     fn try_visit_modules_and_paths<'ir>(
         &'ir self,
-        mut visitor: impl FnMut(&'ir Module, &RPath<'ir>) -> syn::Result<()>,
-    ) -> syn::Result<()> {
+        mut visitor: impl FnMut(&'ir Module, &RPath<'ir>) -> Result<()>,
+    ) -> Result<()> {
         let mut stack = vec![(self.module(), RPath::new(&self.module))];
         while let Some((module, path)) = stack.pop() {
             visitor(module, &path)?;
@@ -353,6 +480,22 @@ impl CrateRoot {
                 }
             }
         }
+    }
+
+    fn try_visit_modules_mut(
+        &mut self,
+        mut visitor: impl FnMut(&mut Module) -> Result<()>,
+    ) -> Result<()> {
+        let mut stack = vec![self.module_mut()];
+        while let Some(module) = stack.pop() {
+            visitor(module)?;
+            for item in module.items.iter_mut() {
+                if let Item::Module(m) = item {
+                    stack.push(m);
+                }
+            }
+        }
+        Ok(())
     }
 }
 

@@ -7,7 +7,8 @@ use std::fmt;
 use syn::{ext::IdentExt, Ident, ItemType, LitStr, Path};
 
 use crate::{
-    CustomType, Enum, Function, Impl, Module, Object, Record, Trait, UseGlob, UseItem, Visibility,
+    macros::CustomTypeMacroCall, CustomType, Enum, Function, Impl, Module, Object, Record, Trait,
+    UseGlob, UseItem, Visibility,
 };
 
 /// Item enum
@@ -35,6 +36,7 @@ pub enum Item {
     // These still can be used as custom types though.
     NonUniffi(Visibility, Ident),
     /// Custom type macro expression
+    CustomTypeMacroCall(CustomTypeMacroCall),
     CustomType(CustomType),
     Udl(uniffi_meta::Type),
     /// Builtin items that we know about.
@@ -101,7 +103,7 @@ impl Item {
             Item::Fn(func) => Some(func.ident.unraw()),
             Item::Trait(tr) => Some(tr.ident.unraw()),
             Item::Type(ty) => Some(ty.ident.unraw()),
-            Item::CustomType(c) => Some(c.ident.unraw()),
+            Item::CustomType(c) => Some(c.rust_type_ident().unraw()),
             Item::NonUniffi(_, ident) => Some(ident.unraw()),
             Item::UseRemoteType(p) => p.segments.last().map(|s| s.ident.unraw()),
             _ => None,
@@ -146,6 +148,7 @@ impl Item {
             }
             // "visibility" doesn't mean anything for these items, let's return `Private`
             Self::Unresolved(_)
+            | Self::CustomTypeMacroCall(_)
             | Self::UnresolvedImpl(_)
             | Self::Impl(_)
             | Self::IncludeScaffolding(_) => Visibility::Private,
@@ -212,9 +215,13 @@ impl fmt::Debug for Item {
             Self::UseRemoteType(_) => f.debug_tuple("UseRemoteType").finish(),
             Self::IncludeScaffolding(_) => f.debug_tuple("IncludeScaffolding").finish(),
             Self::Builtin(builtin) => f.debug_tuple("Builtin").field(&builtin).finish(),
+            Self::CustomTypeMacroCall(c) => f
+                .debug_struct("CustomTypeMacroCall")
+                .field("ident", &c.ident.to_string())
+                .finish(),
             Self::CustomType(c) => f
                 .debug_struct("CustomType")
-                .field("ident", &c.ident.to_string())
+                .field("ident", &c.macro_call.ident.to_string())
                 .finish(),
             Self::Udl(ty) => f.debug_tuple("Udl").field(ty).finish(),
             Self::Unresolved(_) => f.debug_tuple("Unresolved").finish(),
