@@ -5,3 +5,6 @@
 syn::custom_keyword!(None);
 syn::custom_keyword!(Some);
 syn::custom_keyword!(default);
+syn::custom_keyword!(remote);
+syn::custom_keyword!(try_lift);
+syn::custom_keyword!(lower);

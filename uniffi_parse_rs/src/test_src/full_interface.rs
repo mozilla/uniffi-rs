@@ -148,8 +148,8 @@ uniffi::custom_type!(
     /// Custom type docstring
     CustomType, String,
     {
-        into: |custom| custom.into(),
-        try_from: |s| s.try_from(),
+        lower: |custom| custom.into(),
+        try_lift: |s| s.try_from(),
     }
 );
 
