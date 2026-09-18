@@ -70,7 +70,7 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_ffiBufferWriteString(
     unsafe {
         uniffi_jni::rust_call_with_env(env, |env| {
             let s = uniffi_jni::lift_string(env, value)?;
-            let (ptr, _) = uniffi_jni::lift_buffer(env, buf)?;
+            let ptr = uniffi_jni::lift_pointer(env, buf)?;
             let ptr = ptr.add(offset as ::std::primitive::usize);
             uniffi::ffibuffer::write_string(ptr, s)?;
             uniffi::Result::Ok(())
@@ -106,7 +106,7 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_ffiBufferWriteBytes(
     unsafe {
         uniffi_jni::rust_call_with_env(env, |env| {
             let v = uniffi_jni::lift_vec_u8(env, value)?;
-            let (ptr, _) = uniffi_jni::lift_buffer(env, buf)?;
+            let ptr = uniffi_jni::lift_pointer(env, buf)?;
             let ptr = ptr.add(offset as ::std::primitive::usize);
             uniffi::ffibuffer::write_vec_u8(ptr, v)?;
             uniffi::Result::Ok(())
@@ -123,7 +123,7 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_ffiBufferReadBuffer(
 ) -> uniffi_jni::jobject {
     unsafe {
         uniffi_jni::rust_call_with_env(env, |env| {
-            let (ptr, _) = uniffi_jni::lift_buffer(env, buf)?;
+            let ptr = uniffi_jni::lift_pointer(env, buf)?;
             let ptr = ptr.add(offset as ::std::primitive::usize);
             let (child_ptr, child_capacity) = uniffi::ffibuffer::read_buffer(ptr)?;
             uniffi_jni::lower_buffer(env, child_ptr, child_capacity)
@@ -141,7 +141,7 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_ffiBufferWriteBuffer(
 ) {
     unsafe {
         uniffi_jni::rust_call_with_env(env, |env| {
-            let (ptr, _) = uniffi_jni::lift_buffer(env, buf)?;
+            let ptr = uniffi_jni::lift_pointer(env, buf)?;
             let ptr = ptr.add(offset as ::std::primitive::usize);
             let (child_ptr, child_capacity) = uniffi_jni::lift_buffer(env, child_buf)?;
             uniffi::ffibuffer::write_buffer(ptr, child_ptr, child_capacity)?;
