@@ -212,9 +212,9 @@ dependencies = [
 
 [[package]]
 name = "async-compat"
-version = "0.2.1"
+version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b48b4ff0c2026db683dea961cd8ea874737f56cffca86fa84415eaddc51c00d"
+checksum = "4c97d7ff3c25d6c10d64170c12acaf5d4245e76dece3779c1d92b153a64f11df"
 dependencies = [
  "futures-core",
  "futures-io",
@@ -1734,6 +1734,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68722da18b0fc4a05fdc1120b302b82051265792a1e1b399086e9b204b10ad3d"
 dependencies = [
  "backtrace",
+ "num_cpus",
  "pin-project-lite",
 ]
 

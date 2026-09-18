@@ -20,6 +20,10 @@
   UniFFI. Use `#[uniffi::export(remote)]` or `[Trait, Remote]` in UDL. Foreign implementations are not supported, see the docs for more.
 
 ### What's Fixed
+- The runtime `#[uniffi::export(async_runtime = "tokio")]` falls back to when no Tokio runtime is
+  ambient is now multi-threaded. It was current-thread, which made `tokio::task::block_in_place`
+  abort the process in any task spawned from an exported async fn - reachable through any dependency
+  that offloads blocking work that way. Requires `async-compat` 0.2.6.
 - Kotlin: Fixed messages for error classes that inherit `Throwable`, but not `Exception`.
 - Fix UDL remote enums, now allowing `[Enum, Remote] interface { ... }`
   (via [#2823](https://github.com/mozilla/uniffi-rs/issues/2823)).

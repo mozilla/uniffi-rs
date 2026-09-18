@@ -48,6 +48,27 @@ In Rust `Future` terminology this means the foreign bindings supply the "executo
 
 There are [some great API docs](https://docs.rs/uniffi_core/latest/uniffi_core/ffi/rustfuture/index.html) on the implementation that are well worth a read.
 
+## Using Tokio
+
+The foreign bindings supply the executor, so an exported `async fn` is not polled by a Tokio runtime
+and code needing a Tokio context will panic. Enable the `tokio` feature and annotate the export:
+
+```Rust
+#[uniffi::export(async_runtime = "tokio")]
+pub async fn fetch(url: String) -> String { ... }
+```
+
+Each poll then happens inside a Tokio context: the ambient runtime if the polling thread has one,
+otherwise a process-wide fallback.
+
+Note that this gives the future a Tokio *context*, not Tokio worker threads - it is still polled by
+the foreign executor. The difference shows up in anything you `spawn`, which does run on the
+runtime. The fallback is multi-threaded so that [`tokio::task::block_in_place`] works there; the
+cost is a worker pool sized to the available parallelism, and it is only built when no runtime is
+ambient.
+
+[`tokio::task::block_in_place`]: https://docs.rs/tokio/latest/tokio/task/fn.block_in_place.html
+
 ## Exporting async trait methods
 
 UniFFI is compatible with the [async-trait](https://crates.io/crates/async-trait) crate and this can
