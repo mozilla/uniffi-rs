@@ -31,6 +31,10 @@ mod submod {
         /// Variant2 docstring
         #[uniffi(name="TwoRenamed")]
         Two(i8, u8),
+        // Skipped variants are dropped before their fields are parsed, so
+        // they may hold types that can't cross the FFI boundary.
+        #[uniffi(skip)]
+        Hidden(std::sync::mpsc::Receiver<()>),
     }
 }
 

@@ -4,7 +4,7 @@ use syn::{DeriveInput, Index};
 use uniffi_meta::EnumShape;
 
 use crate::{
-    enum_::{rich_error_ffi_converter_impl, variant_metadata, EnumItem, VariantAttr},
+    enum_::{rich_error_ffi_converter_impl, variant_attrs, variant_metadata, EnumItem},
     ffiops,
     util::{
         create_metadata_items, extract_docstring, ident_to_string, orig_name_metadata,
@@ -15,6 +15,7 @@ use crate::{
 
 pub fn expand_error(input: DeriveInput, options: DeriveOptions) -> syn::Result<TokenStream> {
     let enum_item = EnumItem::new(input)?;
+    enum_item.check_not_all_variants_skipped()?;
     let ffi_converter_impl = error_ffi_converter_impl(&enum_item, &options)?;
     let meta_static_var = options
         .generate_metadata
@@ -41,18 +42,21 @@ pub fn expand_error(input: DeriveInput, options: DeriveOptions) -> syn::Result<T
 }
 
 fn error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> syn::Result<TokenStream> {
-    Ok(if item.is_flat_error() {
+    if item.is_flat_error() {
         flat_error_ffi_converter_impl(item, options)
     } else {
         rich_error_ffi_converter_impl(item, options)
-    })
+    }
 }
 
 // FfiConverters for "flat errors"
 //
 // These are errors where we only lower the to_string() value, rather than any associated data.
 // We lower the to_string() value unconditionally, whether the enum has associated data or not.
-fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> TokenStream {
+fn flat_error_ffi_converter_impl(
+    item: &EnumItem,
+    options: &DeriveOptions,
+) -> syn::Result<TokenStream> {
     let name = &item.foreign_name();
     let ident = item.ident();
     let lower_impl_spec = options.ffi_impl_header("Lower", ident);
@@ -60,10 +64,18 @@ fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> To
     let type_id_impl_spec = options.ffi_impl_header("TypeId", ident);
     let derive_ffi_traits = options.derive_ffi_traits(ident, &["LowerError", "ConvertError"]);
 
+    let mut kept = Vec::new();
+    let mut skipped = Vec::new();
+    for v in item.enum_().variants.iter() {
+        if variant_attrs(v)?.skip.is_some() {
+            skipped.push(v);
+        } else {
+            kept.push(v);
+        }
+    }
+
     let lower_impl = {
-        let mut match_arms: Vec<_> = item
-            .enum_()
-            .variants
+        let mut match_arms: Vec<_> = kept
             .iter()
             .enumerate()
             .map(|(i, v)| {
@@ -79,6 +91,14 @@ fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> To
                 }
             })
             .collect();
+        match_arms.extend(skipped.iter().map(|v| {
+            let v_ident = &v.ident;
+            quote! {
+                Self::#v_ident { .. } => ::std::panic!(
+                    "Attempted to lower a #[uniffi(skip)] enum variant across the FFI"
+                ),
+            }
+        }));
         if item.is_non_exhaustive() {
             match_arms.push(quote! {
                 _ => ::std::panic!("Unexpected variant in non-exhaustive enum"),
@@ -105,7 +125,7 @@ fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> To
     };
 
     let lift_impl = if item.generate_error_try_read() {
-        let match_arms = item.enum_().variants.iter().enumerate().map(|(i, v)| {
+        let match_arms = kept.iter().enumerate().map(|(i, v)| {
             let v_ident = &v.ident;
             let idx = Index::from(i + 1);
 
@@ -155,7 +175,7 @@ fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> To
         }
     };
 
-    quote! {
+    Ok(quote! {
         #lower_impl
         #lift_impl
 
@@ -167,7 +187,7 @@ fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> To
         }
 
         #derive_ffi_traits
-    }
+    })
 }
 
 pub(crate) fn error_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream> {
@@ -198,12 +218,17 @@ pub(crate) fn error_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream>
 }
 
 pub fn flat_error_variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
-    let enum_ = item.enum_();
+    let mut kept_variants = Vec::new();
+    for v in item.enum_().variants.iter() {
+        let attrs = variant_attrs(v)?;
+        if attrs.skip.is_none() {
+            kept_variants.push((v, attrs));
+        }
+    }
     let variants_len =
-        try_metadata_value_from_usize(enum_.variants.len(), "UniFFI limits enums to 256 variants")?;
+        try_metadata_value_from_usize(kept_variants.len(), "UniFFI limits enums to 256 variants")?;
     std::iter::once(Ok(quote! { .concat_value(#variants_len) }))
-        .chain(enum_.variants.iter().map(|v| {
-            let attrs = v.attrs.parse_uniffi_attr_args::<VariantAttr>()?;
+        .chain(kept_variants.into_iter().map(|(v, attrs)| {
             let orig_name = orig_name_metadata(attrs.name.is_some(), &v.ident);
             let name = attrs.name.unwrap_or(ident_to_string(&v.ident));
 

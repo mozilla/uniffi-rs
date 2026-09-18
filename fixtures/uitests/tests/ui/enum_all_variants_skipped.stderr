@@ -1,0 +1,7 @@
+error: #[uniffi(skip)] on every variant leaves no variant for bindgen to generate
+ --> tests/ui/enum_all_variants_skipped.rs:3:10
+  |
+3 | #[derive(uniffi::Enum)]
+  |          ^^^^^^^^^^^^
+  |
+  = note: this error originates in the derive macro `uniffi::Enum` (in Nightly builds, run with -Z macro-backtrace for more info)
