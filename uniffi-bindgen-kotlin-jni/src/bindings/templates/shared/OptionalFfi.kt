@@ -48,7 +48,7 @@ fun {{ opt.self_type.lift_fn_kt() }}(
     }
 }
 
-{%- else if opt.inner.is_interface() %}
+{%- else if opt.inner.is_interface() || opt.inner.is_callback_interface() %}
 
 @JvmName("{{ opt.self_type.lower_fn_kt() }}")
 fun {{ opt.self_type.lower_fn_kt() }}(value: {{ type_name }}): kotlin.Long {

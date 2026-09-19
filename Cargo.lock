@@ -2075,14 +2075,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "uniffi-fixture-callbacks"
-version = "0.22.0"
-dependencies = [
- "thiserror",
- "uniffi",
-]
-
-[[package]]
 name = "uniffi-fixture-coverall"
 version = "0.22.0"
 dependencies = [
@@ -2114,14 +2106,6 @@ dependencies = [
  "uniffi",
  "uniffi_bindgen",
  "uniffi_testing",
-]
-
-[[package]]
-name = "uniffi-fixture-enum-types"
-version = "0.22.0"
-dependencies = [
- "thiserror",
- "uniffi",
 ]
 
 [[package]]

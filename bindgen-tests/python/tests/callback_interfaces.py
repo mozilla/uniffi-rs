@@ -35,14 +35,16 @@ class TestCallbackInterfaces(unittest.TestCase):
         # Test calling callback interface methods, which we can only do indirectly.
         # Each of these Rust functions inputs a callback interface, calls a method on it, then returns the result.
         invoke_test_callback_interface_noop(cbi)
-        assert(invoke_test_callback_interface_get_value(cbi) == 42)
+        self.assertEqual(invoke_test_callback_interface_get_value(cbi), 42)
         invoke_test_callback_interface_set_value(cbi, 43)
-        assert(invoke_test_callback_interface_get_value(cbi) == 43)
-        assert(invoke_test_callback_interface_echo(cbi, "test-string") == "test-string")
+        self.assertEqual(invoke_test_callback_interface_get_value(cbi), 43)
+        self.assertEqual(invoke_test_callback_interface_echo(cbi, "test-string"), "test-string")
+        self.assertEqual(test_optional_callback_interface(cbi), 43)
+        self.assertIs(test_optional_callback_interface(None), None)
 
         # The previous calls created a bunch of callback interface references.  Make sure they've been cleaned
         # up and the only remaining reference is for our `cbi` variable.
-        assert(CallbackImpl.callback_ref_count == 1)
+        self.assertEqual(CallbackImpl.callback_ref_count, 1)
 
 if __name__ == '__main__':
     unittest.main()

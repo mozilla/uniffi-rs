@@ -116,6 +116,16 @@ class TestEnums < Test::Unit::TestCase
     assert_not_equal ExplicitValuedEnum::THIRTEENTH, ExplicitValuedEnum::TENTH
   end
 
+
+  def test_large_discriminants
+    assert_equal 4294967295 + 3, EnumWithLargeDiscriminants::ONE
+    assert_equal 4294967295 + 4, EnumWithLargeDiscriminants::TWO
+    assert_equal(
+      EnumWithLargeDiscriminants::ONE,
+      UniffiBindgenTests.roundtrip_enum_with_large_discriminants(EnumWithLargeDiscriminants::ONE)
+    )
+  end
+
   # --- GappedEnum (flat) ---
 
   # GappedEnum is a separate type - just verify constants exists

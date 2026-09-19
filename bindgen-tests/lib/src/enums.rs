@@ -53,6 +53,13 @@ pub enum GappedEnum {
     Three = 14,
 }
 
+#[repr(u64)]
+#[derive(uniffi::Enum)]
+pub enum EnumWithLargeDiscriminants {
+    One = 4294967298, // u32::MAX as u64 + 3
+    Two = 4294967299, // u32::MAX as u64 + 4
+}
+
 #[uniffi::export]
 pub fn roundtrip_enum_no_data(en: EnumNoData) -> EnumNoData {
     en
@@ -65,5 +72,12 @@ pub fn roundtrip_enum_with_data(en: EnumWithData) -> EnumWithData {
 
 #[uniffi::export]
 pub fn roundtrip_complex_enum(en: ComplexEnum) -> ComplexEnum {
+    en
+}
+
+#[uniffi::export]
+pub fn roundtrip_enum_with_large_discriminants(
+    en: EnumWithLargeDiscriminants,
+) -> EnumWithLargeDiscriminants {
     en
 }
