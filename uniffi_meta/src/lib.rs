@@ -196,6 +196,9 @@ pub struct MethodMetadata {
     // Original name, if this was renamed
     pub orig_name: Option<String>,
     pub is_async: bool,
+    /// Async came from a hand-written boxed future (`Pin<Box<dyn Future<…>>>`) rather than
+    /// `async`/`#[async_trait]`. A generated trait impl must match its late-bound signature.
+    pub desugared_async: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
     pub throws: Option<Type>,
@@ -225,6 +228,9 @@ pub struct TraitMethodMetadata {
     // Original name, if this was renamed
     pub orig_name: Option<String>,
     pub is_async: bool,
+    /// Async came from a hand-written boxed future (`Pin<Box<dyn Future<…>>>`) rather than
+    /// `async`/`#[async_trait]`. A generated trait impl must match its late-bound signature.
+    pub desugared_async: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
     pub throws: Option<Type>,
@@ -251,6 +257,7 @@ impl From<TraitMethodMetadata> for MethodMetadata {
             name: meta.name,
             orig_name: meta.orig_name,
             is_async: meta.is_async,
+            desugared_async: meta.desugared_async,
             inputs: meta.inputs,
             return_type: meta.return_type,
             throws: meta.throws,

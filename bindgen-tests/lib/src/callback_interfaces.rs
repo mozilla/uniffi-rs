@@ -1,8 +1,9 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
 use crate::errors::TestError;
+use std::future::Future;
+use std::pin::Pin;
 
 #[uniffi::export(callback_interface)]
 pub trait TestCallbackInterface {
@@ -65,4 +66,26 @@ impl From<uniffi::UnexpectedUniFFICallbackError> for TestError {
     fn from(e: uniffi::UnexpectedUniFFICallbackError) -> Self {
         Self::Failure2 { data: e.reason }
     }
+}
+
+// Example of a trait whose async method is written by hand as a boxed future, without
+// `#[async_trait]` or the `async` keyword. uniffi should detect this as async.
+#[uniffi::export(callback_interface)]
+pub trait BoxedFutureTrait: Send + Sync {
+    fn reply<'a>(
+        &'a self,
+        ms: u16,
+        who: String,
+    ) -> Pin<Box<dyn Future<Output = String> + Send + 'a>>;
+}
+
+/// Invoke `BoxedFutureTrait::reply` from Rust, so the boxed-future callback is exercised
+/// end-to-end (the foreign side implements it, Rust awaits it).
+#[uniffi::export]
+pub async fn invoke_boxed_future_trait(
+    cbi: Box<dyn BoxedFutureTrait>,
+    ms: u16,
+    who: String,
+) -> String {
+    cbi.reply(ms, who).await
 }

@@ -57,7 +57,7 @@ impl Function {
     ) -> Result<uniffi_meta::FnMetadata> {
         let module_path = item_path.parent()?;
         let names = item_path.public_path_to_item(ir, cache)?;
-        let (return_type, throws) =
+        let (returns_future, return_type, throws) =
             self.return_ty
                 .return_type_and_throws(ir, cache, &module_path)?;
 
@@ -65,7 +65,7 @@ impl Function {
             module_path: names.module_path,
             name: names.name,
             orig_name: names.orig_name,
-            is_async: self.is_async,
+            is_async: self.is_async || returns_future,
             docstring: self.attrs.docstring.clone(),
             checksum: None,
             inputs: self
@@ -143,12 +143,16 @@ impl ReturnType {
         Ok(Self { return_ty })
     }
 
+    /// Resolve the return type, returning `(is_async, ok_type, throws_type)`.
+    ///
+    /// `is_async` is `true` when the return type is a boxed future (e.g.
+    /// `Pin<Box<dyn Future<Output = T>>>`), in which case `ok_type` is the future's `Output`.
     pub fn return_type_and_throws<'ir>(
         &self,
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
         module_path: &RPath<'ir>,
-    ) -> Result<(Option<uniffi_meta::Type>, Option<uniffi_meta::Type>)> {
+    ) -> Result<(bool, Option<uniffi_meta::Type>, Option<uniffi_meta::Type>)> {
         self._return_type_and_throws(ir, cache, module_path, None)
     }
 
@@ -158,7 +162,7 @@ impl ReturnType {
         cache: &mut LookupCache<'ir>,
         module_path: &RPath<'ir>,
         self_type: &uniffi_meta::Type,
-    ) -> Result<(Option<uniffi_meta::Type>, Option<uniffi_meta::Type>)> {
+    ) -> Result<(bool, Option<uniffi_meta::Type>, Option<uniffi_meta::Type>)> {
         self._return_type_and_throws(ir, cache, module_path, Some(self_type))
     }
 
@@ -168,12 +172,12 @@ impl ReturnType {
         cache: &mut LookupCache<'ir>,
         module_path: &RPath<'ir>,
         self_ty: Option<&uniffi_meta::Type>,
-    ) -> Result<(Option<uniffi_meta::Type>, Option<uniffi_meta::Type>)> {
+    ) -> Result<(bool, Option<uniffi_meta::Type>, Option<uniffi_meta::Type>)> {
         Ok(match &self.return_ty {
-            syn::ReturnType::Default => (None, None),
+            syn::ReturnType::Default => (false, None, None),
             syn::ReturnType::Type(_, return_ty) => {
                 let rt = module_path.resolve_return_type(ir, cache, return_ty, self_ty)?;
-                (rt.ok, rt.err)
+                (rt.is_async, rt.ok, rt.err)
             }
         })
     }
