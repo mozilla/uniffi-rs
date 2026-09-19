@@ -2,17 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use proc_macro2::TokenStream;
 use syn::{
     braced,
     parse::{Parse, ParseStream},
     token::Brace,
-    Attribute, Ident, ItemMacro, LitStr, Macro, Token,
+    Attribute, ExprClosure, Ident, ItemMacro, LitStr, Macro, Token,
 };
 
 use crate::{
-    attrs::extract_docstring, paths::LookupCache, BuiltinItem, CustomType, Ir, Item, Namespace,
-    RPath,
+    attrs::extract_docstring, kw, paths::LookupCache, BuiltinItem, Ir, Item, Namespace, RPath,
 };
 
 /// Try resolving Item::Macro into a more specific item like Item::UseRemoteType
@@ -34,12 +32,7 @@ pub fn maybe_resolve_macro<'ir>(
         // Note: custom_newtype and custom_type share enough of the same syntax that we can use the
         // same parser for both
         BuiltinItem::UniffiMacro("custom_type") | BuiltinItem::UniffiMacro("custom_newtype") => {
-            let args: CustomTypeArgs = mac.mac.parse_body()?;
-            Ok(Some(Item::CustomType(CustomType {
-                docstring: args.docstring,
-                ident: args.ident,
-                builtin: args.builtin,
-            })))
+            Ok(Some(Item::CustomTypeMacroCall(mac.mac.parse_body()?)))
         }
         BuiltinItem::UniffiMacro("use_remote_type") => {
             Ok(Some(Item::UseRemoteType(mac.mac.parse_body()?)))
@@ -48,15 +41,18 @@ pub fn maybe_resolve_macro<'ir>(
     }
 }
 
-struct CustomTypeArgs {
-    docstring: Option<String>,
-    ident: Ident,
-    builtin: syn::Type,
+/// Parsed custom_type! macro call
+pub struct CustomTypeMacroCall {
+    pub remote: bool,
+    pub docstring: Option<String>,
+    pub ident: Ident,
+    pub bridge_type: syn::Type,
 }
 
-impl Parse for CustomTypeArgs {
+impl Parse for CustomTypeMacroCall {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
         let mut docstring = None;
+        let mut remote = false;
         let attrs = input.call(Attribute::parse_outer)?;
         for attr in attrs.iter() {
             extract_docstring(&mut docstring, &attr.meta);
@@ -64,7 +60,7 @@ impl Parse for CustomTypeArgs {
         // Parse the custom / UniFFI type which are both required
         let ident = input.parse()?;
         input.parse::<Token![,]>()?;
-        let builtin = input.parse()?;
+        let bridge_type = input.parse()?;
         // If there's an extra arg with a brace, just skip over it.  It's only used by the
         // Rust proc-macros.
         if input.peek(Token![,]) {
@@ -73,14 +69,48 @@ impl Parse for CustomTypeArgs {
             if input.peek(Brace) {
                 let content;
                 braced!(content in input);
-                let _tokens: TokenStream = content.parse()?;
+                let items = content.parse_terminated(CustomTypeBodyItem::parse, Token![,])?;
+                remote = items
+                    .iter()
+                    .any(|i| matches!(i, CustomTypeBodyItem::Remote));
             }
         };
         Ok(Self {
+            remote,
             docstring,
             ident,
-            builtin,
+            bridge_type,
         })
+    }
+}
+
+/// Item inside the braces of a custom_type! macro
+///
+/// This represents a single item inside the braces
+#[allow(dead_code)]
+enum CustomTypeBodyItem {
+    Remote,
+    TryLift(ExprClosure),
+    Lower(ExprClosure),
+}
+
+impl Parse for CustomTypeBodyItem {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        let lookahead = input.lookahead1();
+        if lookahead.peek(kw::remote) {
+            input.parse::<kw::remote>()?;
+            Ok(Self::Remote)
+        } else if lookahead.peek(kw::try_lift) {
+            let _: kw::try_lift = input.parse()?;
+            let _: Token![:] = input.parse()?;
+            Ok(Self::TryLift(input.parse()?))
+        } else if lookahead.peek(kw::lower) {
+            let _: kw::lower = input.parse()?;
+            let _: Token![:] = input.parse()?;
+            Ok(Self::Lower(input.parse()?))
+        } else {
+            Err(lookahead.error())
+        }
     }
 }
 

@@ -22,7 +22,7 @@ mod nonpub {
     #[derive(uniffi::Record)]
     pub struct Rec4 { }
 
-    uniffi::custom_type!(CustomType, u64);
+    uniffi::custom_type!(CustomType, u64, { remote });
 }
 
 // Non-pub use, this should be ignored
@@ -53,8 +53,9 @@ pub mod mod5 {
 // The code should figure out that it can use the path from this module though
 use url::Url;
 uniffi::custom_type!(Url, String, {
-    into: |url| url.to_string(),
-    try_from: |s| Url::parse(s),
+    remote,
+    lower: |url| url.to_string(),
+    try_lift: |s| Url::parse(s),
 });
 
 // Non-pub use glob, this should be ignored
