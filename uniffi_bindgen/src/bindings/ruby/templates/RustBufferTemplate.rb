@@ -4,15 +4,15 @@ class RustBuffer < FFI::Struct
          :data,     :pointer
 
   def self.alloc(size)
-    return ::{{ ci.namespace()|class_name_rb }}.rust_call(:{{ ci.ffi_rustbuffer_alloc().name() }}, size)
+    return ::{{ self.module_name() }}.rust_call(:{{ ci.ffi_rustbuffer_alloc().name() }}, size)
   end
 
   def self.reserve(rbuf, additional)
-    return ::{{ ci.namespace()|class_name_rb }}.rust_call(:{{ ci.ffi_rustbuffer_reserve().name() }}, rbuf, additional)
+    return ::{{ self.module_name() }}.rust_call(:{{ ci.ffi_rustbuffer_reserve().name() }}, rbuf, additional)
   end
 
   def free
-    ::{{ ci.namespace()|class_name_rb }}.rust_call(:{{ ci.ffi_rustbuffer_free().name() }}, self)
+    ::{{ self.module_name() }}.rust_call(:{{ ci.ffi_rustbuffer_free().name() }}, self)
   end
 
   def capacity
@@ -85,42 +85,42 @@ class RustBuffer < FFI::Struct
 
   def self.alloc_from_{{ canonical_type_name }}(value)
     RustBuffer.allocWithBuilder do |builder|
-      builder.write_{{ canonical_type_name }}(value)
+      {{ self.rust_buffer_write(typ)? }}(builder, value)
       return builder.finalize
     end
   end
 
   def consume_into_{{ canonical_type_name }}
     consumeWithStream do |stream|
-      return stream.read_{{ canonical_type_name }}
+      return {{ self.rust_buffer_read(typ)? }}(stream)
     end
   end
 
   {% when Type::Timestamp -%}
   def self.alloc_from_{{ canonical_type_name }}(v)
     RustBuffer.allocWithBuilder do |builder|
-      builder.write_{{ canonical_type_name }}(v)
+      {{ self.rust_buffer_write(typ)? }}(builder, v)
       return builder.finalize
     end
   end
 
   def consume_into_{{ canonical_type_name }}
     consumeWithStream do |stream|
-      return stream.read_{{ canonical_type_name }}
+      return {{ self.rust_buffer_read(typ)? }}(stream)
     end
   end
 
   {% when Type::Duration -%}
   def self.alloc_from_{{ canonical_type_name }}(v)
     RustBuffer.allocWithBuilder do |builder|
-      builder.write_{{ canonical_type_name }}(v)
+      {{ self.rust_buffer_write(typ)? }}(builder, v)
       return builder.finalize
     end
   end
 
   def consume_into_{{ canonical_type_name }}
     consumeWithStream do |stream|
-      return stream.read_{{ canonical_type_name }}
+      return {{ self.rust_buffer_read(typ)? }}(stream)
     end
   end
 
@@ -130,25 +130,24 @@ class RustBuffer < FFI::Struct
 
   def self.check_lower_{{ canonical_type_name }}(v)
     {%- for field in rec.fields() %}
-    {{ "v.{}"|format(field.name()|var_name_rb)|check_lower_rb(field.as_type().borrow(), config) }}
+    {{ self.check_lower_rb("v.{}"|format(field.name()|var_name_rb), field.as_type().borrow())? }}
     {%- endfor %}
   end
 
   def self.alloc_from_{{ canonical_type_name }}(v)
     RustBuffer.allocWithBuilder do |builder|
-      builder.write_{{ canonical_type_name }}(v)
+      {{ self.rust_buffer_write(typ)? }}(builder, v)
       return builder.finalize
     end
   end
 
   def consume_into_{{ canonical_type_name }}
     consumeWithStream do |stream|
-      return stream.read_{{ canonical_type_name }}
+      return {{ self.rust_buffer_read(typ)? }}(stream)
     end
   end
 
   {% when Type::Enum { name: enum_name, .. }  -%}
-  {% if !ci.is_name_used_as_error(enum_name) %}
   {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
   # The Enum type {{ enum_name }}.
 
@@ -158,9 +157,9 @@ class RustBuffer < FFI::Struct
     if v.{{ variant.name()|var_name_rb }}?
       {%- for field in variant.fields() %}
       {%- if field.name().is_empty() %}
-        {{ "v.values[{}]"|format(loop.index0)|check_lower_rb(field.as_type().borrow(), config) }}
+        {{ self.check_lower_rb("v.values[{}]"|format(loop.index0), field.as_type().borrow())? }}
       {%- else %}
-        {{ "v.{}"|format(field.name())|check_lower_rb(field.as_type().borrow(), config) }}
+        {{ self.check_lower_rb("v.{}"|format(field.name()|var_name_rb), field.as_type().borrow())? }}
       {%- endif %}
       {%- endfor %}
       return
@@ -171,53 +170,36 @@ class RustBuffer < FFI::Struct
 
   def self.alloc_from_{{ canonical_type_name }}(v)
     RustBuffer.allocWithBuilder do |builder|
-      builder.write_{{ canonical_type_name }}(v)
+      {{ self.rust_buffer_write(typ)? }}(builder, v)
       return builder.finalize
     end
   end
 
   def consume_into_{{ canonical_type_name }}
     consumeWithStream do |stream|
-      return stream.read_{{ canonical_type_name }}
+      return {{ self.rust_buffer_read(typ)? }}(stream)
     end
   end
-  {% else %}
-  {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
-  # Error enum - generate alloc_from for callback error serialization
-  def self.alloc_from_{{ canonical_type_name }}(v)
-    RustBuffer.allocWithBuilder do |builder|
-      builder.write_{{ canonical_type_name }}(v)
-      return builder.finalize
-    end
-  end
-
-  # Enum used as error - generate consume_into_ for use as a return value
-  def consume_into_{{ canonical_type_name }}
-    consumeWithStream do |stream|
-      return stream.read_{{ canonical_type_name }}
-    end
-  end
-  {% endif %}
 
   {% when Type::Optional { inner_type } -%}
   # The Optional<T> type for {{ self::canonical_name(inner_type) }}.
 
   def self.check_lower_{{ canonical_type_name }}(v)
     if !v.nil?
-      {{ "v"|check_lower_rb(inner_type.borrow(), config) }}
+      {{ self.check_lower_rb("v", inner_type.borrow())? }}
     end
   end
 
   def self.alloc_from_{{ canonical_type_name }}(v)
     RustBuffer.allocWithBuilder do |builder|
-      builder.write_{{ canonical_type_name }}(v)
+      {{ self.rust_buffer_write(typ)? }}(builder, v)
       return builder.finalize()
     end
   end
 
   def consume_into_{{ canonical_type_name }}
     consumeWithStream do |stream|
-      return stream.read_{{ canonical_type_name }}
+      return {{ self.rust_buffer_read(typ)? }}(stream)
     end
   end
 
@@ -226,20 +208,20 @@ class RustBuffer < FFI::Struct
 
   def self.check_lower_{{ canonical_type_name }}(v)
     v.each do |item|
-      {{ "item"|check_lower_rb(inner_type.borrow(), config) }}
+      {{ self.check_lower_rb("item", inner_type.borrow())? }}
     end
   end
 
   def self.alloc_from_{{ canonical_type_name }}(v)
     RustBuffer.allocWithBuilder do |builder|
-      builder.write_{{ canonical_type_name }}(v)
+      {{ self.rust_buffer_write(typ)? }}(builder, v)
       return builder.finalize()
     end
   end
 
   def consume_into_{{ canonical_type_name }}
     consumeWithStream do |stream|
-      return stream.read_{{ canonical_type_name }}
+      return {{ self.rust_buffer_read(typ)? }}(stream)
     end
   end
 
@@ -248,20 +230,20 @@ class RustBuffer < FFI::Struct
 
   def self.check_lower_{{ canonical_type_name }}(v)
     v.each do |item|
-      {{ "item"|check_lower_rb(inner_type.borrow(), config) }}
+      {{ self.check_lower_rb("item", inner_type.borrow())? }}
     end
   end
 
   def self.alloc_from_{{ canonical_type_name }}(v)
     RustBuffer.allocWithBuilder do |builder|
-      builder.write_{{ canonical_type_name }}(v)
+      {{ self.rust_buffer_write(typ)? }}(builder, v)
       return builder.finalize()
     end
   end
 
   def consume_into_{{ canonical_type_name }}
     consumeWithStream do |stream|
-      return stream.read_{{ canonical_type_name }}
+      return {{ self.rust_buffer_read(typ)? }}(stream)
     end
   end
 
@@ -270,27 +252,58 @@ class RustBuffer < FFI::Struct
 
   def self.check_lower_{{ canonical_type_name }}(v)
     v.each do |k, v|
-      {{ "k"|check_lower_rb(k.borrow(), config) }}
-      {{ "v"|check_lower_rb(v.borrow(), config) }}
+      {{ self.check_lower_rb("k", k.borrow())? }}
+      {{ self.check_lower_rb("v", v.borrow())? }}
     end
   end
 
   def self.alloc_from_{{ canonical_type_name }}(v)
     RustBuffer.allocWithBuilder do |builder|
-      builder.write_{{ canonical_type_name }}(v)
+      {{ self.rust_buffer_write(typ)? }}(builder, v)
       return builder.finalize
     end
   end
 
   def consume_into_{{ canonical_type_name }}
     consumeWithStream do |stream|
-      return stream.read_{{ canonical_type_name }}
+      return {{ self.rust_buffer_read(typ)? }}(stream)
     end
   end
 
   {%- else -%}
   {#- No code emitted for types that don't lower into a RustBuffer -#}
   {%- endmatch -%}
+  {%- endfor %}
+
+  {%- for typ in ci.iter_external_types() -%}
+  {%- let canonical_type_name = self::canonical_name(typ) -%}
+  {%- match typ %}
+  {%- when Type::Record { .. } | Type::Enum { .. } %}
+  # External type bridge: allocates locally, delegates write through the
+  # bridge that routes reserve through this shared library's allocator.
+  def self.alloc_from_{{ canonical_type_name }}(v)
+    RustBuffer.allocWithBuilder do |builder|
+      {{ self.rust_buffer_write(typ)? }}(builder, v)
+      return builder.finalize()
+    end
+  end
+
+  # External type bridge: frees locally, delegates read to external stream.
+  def consume_into_{{ canonical_type_name }}
+    consumeWithStream do |stream|
+      return {{ self.rust_buffer_read(typ)? }}(stream)
+    end
+  end
+
+  # External type bridge: check_lower only validates the Ruby value; it never
+  # allocs, reserves, or frees a RustBuffer. Delegating to the defining crate
+  # is safe and does not break the local-allocator invariant of the bridges
+  # above.
+  def self.check_lower_{{ canonical_type_name }}(v)
+    ::{{ self.external_type_module(typ.module_path().unwrap()) }}::RustBuffer.check_lower_{{ canonical_type_name }}(v)
+  end
+  {%- else %}
+  {%- endmatch %}
   {%- endfor %}
 end
 

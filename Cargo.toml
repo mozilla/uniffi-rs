@@ -30,6 +30,7 @@ members = [
   "examples/traits",
 
   "bindgen-tests/external-types",
+  "bindgen-tests/mid-types",
   "bindgen-tests/lib",
   "bindgen-tests/kotlin",
   "bindgen-tests/kotlin/experimental-unsigned-types",
