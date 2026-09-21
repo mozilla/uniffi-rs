@@ -36,6 +36,13 @@ pub(super) fn trait_impl(
         &uniffi_meta::init_callback_vtable_fn_symbol_name(mod_path, &trait_name),
         Span::call_site(),
     );
+    let init_realm_ident = Ident::new(
+        &format!(
+            "{}_for_realm",
+            uniffi_meta::init_callback_vtable_fn_symbol_name(mod_path, &trait_name)
+        ),
+        Span::call_site(),
+    );
     let methods = items
         .iter()
         .map(|item| match item {
@@ -50,7 +57,7 @@ pub(super) fn trait_impl(
     let uniffi_foreign_handle_method = for_trait_interface.then(|| {
         quote! {
             fn uniffi_foreign_handle(&self) -> ::std::option::Option<::uniffi::Handle> {
-                let vtable = #vtable_cell.get();
+                let vtable = #vtable_cell.get_for_handle(self.handle);
                 ::std::option::Option::Some(::uniffi::Handle::from_raw_unchecked((vtable.uniffi_clone)(self.handle)))
             }
         }
@@ -110,6 +117,12 @@ pub(super) fn trait_impl(
             #vtable_cell.set(vtable);
         }
 
+        #[allow(missing_docs)]
+        #[unsafe(no_mangle)]
+        pub extern "C" fn #init_realm_ident(realm: u64, vtable: ::std::ptr::NonNull<#vtable_type>) {
+            #vtable_cell.set_for_realm(realm, vtable);
+        }
+
         #[derive(Debug)]
         struct #trait_impl_ident {
             handle: u64,
@@ -132,7 +145,7 @@ pub(super) fn trait_impl(
 
         impl ::std::ops::Drop for #trait_impl_ident {
             fn drop(&mut self) {
-                let vtable = #vtable_cell.get();
+                let vtable = #vtable_cell.get_for_handle(self.handle);
                 (vtable.uniffi_free)(self.handle);
             }
         }
@@ -244,7 +257,7 @@ fn gen_method_impl(sig: &FnSignature, vtable_cell: &Ident) -> syn::Result<TokenS
     if !is_async {
         Ok(quote! {
             fn #ident(#self_param, #(#params),*) -> #return_ty {
-                let vtable = #vtable_cell.get();
+                let vtable = #vtable_cell.get_for_handle(self.handle);
                 let mut uniffi_call_status: ::uniffi::RustCallStatus = ::std::default::Default::default();
                 let mut uniffi_return_value: #lift_return_type = ::uniffi::FfiDefault::ffi_default();
                 (vtable.#ident)(self.handle, #(#lower_exprs,)* &mut uniffi_return_value, &mut uniffi_call_status);
@@ -254,7 +267,7 @@ fn gen_method_impl(sig: &FnSignature, vtable_cell: &Ident) -> syn::Result<TokenS
     } else {
         Ok(quote! {
             async fn #ident(#self_param, #(#params),*) -> #return_ty {
-                let vtable = #vtable_cell.get();
+                let vtable = #vtable_cell.get_for_handle(self.handle);
                 ::uniffi::foreign_async_call::<_, #return_ty, crate::UniFfiTag>(
                     move |uniffi_future_callback, uniffi_future_callback_data, uniffi_foreign_future_dropped_callback| {
                         (vtable.#ident)(
