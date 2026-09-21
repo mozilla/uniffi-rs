@@ -160,6 +160,7 @@ impl ToTokens for ConvertClosure {
 pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStream> {
     let mut tokens = TokenStream::default();
 
+    #[cfg(feature = "scaffolding")]
     tokens.extend(expand_custom_type_main(&args));
     tokens.extend(expand_custom_type_parse_rs(&args));
 
