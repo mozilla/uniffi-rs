@@ -10,3 +10,5 @@ assert(roundtripCustomType1(custom1: 100) == 100)
 // CustomType2 is a dict in swift.  See `uniffi.toml` for the configuration that does this.
 assert(roundtripCustomType2(custom2: ["value": 200]) == ["value": 200])
 
+let i = CustomTypeInterface(value: 67)
+assert(roundtripCustomType3(custom3: i).getValue() == 67)

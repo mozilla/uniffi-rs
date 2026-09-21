@@ -8,10 +8,13 @@ class TestCustomTypes(unittest.TestCase):
     def test_custom_type_with_config(self):
         self.assertEqual(roundtrip_custom_type2({ "value": 200 }), { "value": 200 })
 
-
     def test_types(self):
         self.assertEqual(CustomType1, int)
         self.assertEqual(CustomType2, dict[str, str])
+
+    def test_user_type_as_bridge_type(self):
+        i = CustomTypeInterface(67)
+        self.assertEqual(roundtrip_custom_type3(i).get_value(), 67)
 
 if __name__ == '__main__':
     unittest.main()

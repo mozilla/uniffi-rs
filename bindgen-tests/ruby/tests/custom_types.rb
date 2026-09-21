@@ -19,4 +19,10 @@ class TestEnums < Test::Unit::TestCase
   def test_custom_type2
     assert_equal({ 'value' => 200 }, UniffiBindgenTests.roundtrip_custom_type2({ 'value' => 200 }))
   end
+
+  # CustomType3 is lifted/lowered to a different UniFFI type
+  def test_custom_type3
+    iface = CustomTypeInterface.new 67
+    assert_equal(67, UniffiBindgenTests.roundtrip_custom_type3(iface).get_value())
+  end
 end
