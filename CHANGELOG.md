@@ -4,16 +4,16 @@
 
 <!-- next-header -->
 
-## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.2...NEXT_HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.2...HEAD).
 
-## [[UnreleasedUniFFIVersion]] (backend crates: v0.32.2) - (_2026-09-22_)
+## v0.32.2 (backend crates: v0.32.2) - (_2026-09-22_)
 
 ### What's Fixed
 - Kotlin: prevent compiler warnings in generated code ([#2949](https://github.com/mozilla/uniffi-rs/pull/2949))
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.1...HEAD).
+[All changes in v0.32.2](https://github.com/mozilla/uniffi-rs/compare/v0.32.1...v0.32.2).
 
 ## v0.32.1 (backend crates: v0.32.1) - (_2026-09-08_)
 
