@@ -4,7 +4,11 @@
 
 <!-- next-header -->
 
-## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+
+[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.2...NEXT_HEAD).
+
+## [[UnreleasedUniFFIVersion]] (backend crates: v0.32.2) - (_2026-09-22_)
 
 ### What's Fixed
 - Kotlin: prevent compiler warnings in generated code ([#2949](https://github.com/mozilla/uniffi-rs/pull/2949))
