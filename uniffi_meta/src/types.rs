@@ -306,30 +306,25 @@ mod tests {
         }
     }
 
-    fn record(name: &str) -> Type {
-        Type::Record {
-            module_path: "test_crate".to_string(),
-            name: name.to_string(),
-        }
-    }
-
-    fn upper(name: &str) -> String {
-        name.to_uppercase()
-    }
-
     #[test]
     fn rename_recursive_renames_through_box() {
         // A `Box<T>` should be transparent to renaming, just like `Optional`,
         // `Sequence` and `Set` already are: the inner named type still needs
         // its name transformed.
         let mut ty = Type::Box {
-            inner_type: Box::new(record("Leaf")),
+            inner_type: Box::new(Type::Record {
+                module_path: "test_crate".to_string(),
+                name: "Leaf".to_string(),
+            }),
         };
-        ty.rename_recursive(&|name| upper(name));
+        ty.rename_recursive(&|name| name.to_uppercase());
         assert_eq!(
             ty,
             Type::Box {
-                inner_type: Box::new(record("LEAF"))
+                inner_type: Box::new(Type::Record {
+                    module_path: "test_crate".to_string(),
+                    name: "LEAF".to_string(),
+                })
             }
         );
     }
@@ -340,15 +335,21 @@ mod tests {
         // transparent for the inner rename to take effect.
         let mut ty = Type::Optional {
             inner_type: Box::new(Type::Box {
-                inner_type: Box::new(record("Leaf")),
+                inner_type: Box::new(Type::Record {
+                    module_path: "test_crate".to_string(),
+                    name: "Leaf".to_string(),
+                }),
             }),
         };
-        ty.rename_recursive(&|name| upper(name));
+        ty.rename_recursive(&|name| name.to_uppercase());
         assert_eq!(
             ty,
             Type::Optional {
                 inner_type: Box::new(Type::Box {
-                    inner_type: Box::new(record("LEAF"))
+                    inner_type: Box::new(Type::Record {
+                        module_path: "test_crate".to_string(),
+                        name: "LEAF".to_string(),
+                    })
                 })
             }
         );
