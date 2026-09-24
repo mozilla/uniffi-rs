@@ -215,7 +215,8 @@ impl Type {
         match self {
             Type::Optional { inner_type }
             | Type::Sequence { inner_type }
-            | Type::Set { inner_type } => {
+            | Type::Set { inner_type }
+            | Type::Box { inner_type } => {
                 inner_type.rename_recursive(name_transformer);
             }
             Type::Map {
@@ -303,5 +304,53 @@ mod tests {
             // A mutable borrow is always a borrow.
             assert!(!pass_by.is_mut_ref() || pass_by.is_borrowed());
         }
+    }
+
+    fn record(name: &str) -> Type {
+        Type::Record {
+            module_path: "test_crate".to_string(),
+            name: name.to_string(),
+        }
+    }
+
+    fn upper(name: &str) -> String {
+        name.to_uppercase()
+    }
+
+    #[test]
+    fn rename_recursive_renames_through_box() {
+        // A `Box<T>` should be transparent to renaming, just like `Optional`,
+        // `Sequence` and `Set` already are: the inner named type still needs
+        // its name transformed.
+        let mut ty = Type::Box {
+            inner_type: Box::new(record("Leaf")),
+        };
+        ty.rename_recursive(&|name| upper(name));
+        assert_eq!(
+            ty,
+            Type::Box {
+                inner_type: Box::new(record("LEAF"))
+            }
+        );
+    }
+
+    #[test]
+    fn rename_recursive_renames_through_optional_box() {
+        // `Option<Box<T>>` combines both wrappers; both need to be
+        // transparent for the inner rename to take effect.
+        let mut ty = Type::Optional {
+            inner_type: Box::new(Type::Box {
+                inner_type: Box::new(record("Leaf")),
+            }),
+        };
+        ty.rename_recursive(&|name| upper(name));
+        assert_eq!(
+            ty,
+            Type::Optional {
+                inner_type: Box::new(Type::Box {
+                    inner_type: Box::new(record("LEAF"))
+                })
+            }
+        );
     }
 }
