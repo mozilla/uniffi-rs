@@ -3,6 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 extern crate uniffi_bindgen_tests;
+// Pull the Ruby-only fixtures into this cdylib. Their scaffolding is what the
+// generated Ruby calls, and a transitive dependency is not enough for that.
+extern crate uniffi_bindgen_tests_mid_types;
+extern crate uniffi_bindgen_tests_ruby_ext;
+extern crate uniffi_bindgen_tests_ruby_ext_source;
 
 #[cfg(test)]
 mod test {
@@ -112,6 +117,11 @@ mod test {
     #[test]
     fn test_futures() {
         run_tests(test_dir(), "tests/futures.rb");
+    }
+
+    #[test]
+    fn test_external_types() {
+        run_tests(test_dir(), "tests/external_types.rb");
     }
 
     fn test_dir() -> &'static Utf8Path {
