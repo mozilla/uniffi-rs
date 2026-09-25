@@ -20,6 +20,10 @@
   UniFFI. Use `#[uniffi::export(remote)]` or `[Trait, Remote]` in UDL. Foreign implementations are not supported, see the docs for more.
 
 ### What's Fixed
+- `[bindings.<language>.rename]` is now applied through `Box<T>` and `Option<Box<T>>` fields, not
+  just the type definition itself. Previously the field kept referring to the pre-rename name,
+  producing Swift and Kotlin bindings that failed to compile and Python bindings that referenced a
+  nonexistent class (via [#3006](https://github.com/mozilla/uniffi-rs/issues/3006)).
 - Kotlin: Fixed messages for error classes that inherit `Throwable`, but not `Exception`.
 - Fix UDL remote enums, now allowing `[Enum, Remote] interface { ... }`
   (via [#2823](https://github.com/mozilla/uniffi-rs/issues/2823)).

@@ -300,6 +300,101 @@ mod tests {
     }
 
     #[test]
+    fn test_rename_through_box_field() {
+        // Regression test: `[bindings.<lang>.rename]` used to leave the old
+        // name in place for a type reached through `Box<T>` or
+        // `Option<Box<T>>`, because `Type::rename_recursive` didn't recurse
+        // into `Type::Box`. That left the type definition renamed but the
+        // field referring to it still pointing at the old (now
+        // nonexistent) name, breaking Swift/Kotlin compilation.
+        let mut ci = ComponentInterface::new("test_crate");
+
+        let leaf_meta = RecordMetadata {
+            module_path: "test_crate".to_string(),
+            name: "Leaf".to_string(),
+            orig_name: None,
+            remote: false,
+            fields: vec![],
+            docstring: None,
+        };
+        ci.add_record_definition(Record::try_from(leaf_meta).unwrap())
+            .unwrap();
+
+        let holder_meta = RecordMetadata {
+            module_path: "test_crate".to_string(),
+            name: "Holder".to_string(),
+            orig_name: None,
+            remote: false,
+            fields: vec![
+                FieldMetadata {
+                    name: "boxed".to_string(),
+                    orig_name: None,
+                    ty: Type::Box {
+                        inner_type: Box::new(Type::Record {
+                            module_path: "test_crate".to_string(),
+                            name: "Leaf".to_string(),
+                        }),
+                    },
+                    default: None,
+                    docstring: None,
+                },
+                FieldMetadata {
+                    name: "opt_boxed".to_string(),
+                    orig_name: None,
+                    ty: Type::Optional {
+                        inner_type: Box::new(Type::Box {
+                            inner_type: Box::new(Type::Record {
+                                module_path: "test_crate".to_string(),
+                                name: "Leaf".to_string(),
+                            }),
+                        }),
+                    },
+                    default: None,
+                    docstring: None,
+                },
+            ],
+            docstring: None,
+        };
+        ci.add_record_definition(Record::try_from(holder_meta).unwrap())
+            .unwrap();
+
+        let toml_str = r#"
+        Leaf = "NewLeaf"
+        "#;
+        let renames: toml::Table = toml::from_str(toml_str).unwrap();
+        let mut renames_map = HashMap::new();
+        renames_map.insert("test_crate".to_string(), renames);
+        rename(&mut ci, &renames_map);
+
+        // The record definition itself is renamed, as before.
+        assert_eq!(ci.record_definitions()[0].name(), "NewLeaf");
+
+        // The `Box<Leaf>` and `Option<Box<Leaf>>` fields must see the same
+        // renamed type, not the stale "Leaf" name.
+        let holder = &ci.record_definitions()[1];
+        assert_eq!(
+            holder.fields()[0].type_,
+            Type::Box {
+                inner_type: Box::new(Type::Record {
+                    module_path: "test_crate".to_string(),
+                    name: "NewLeaf".to_string(),
+                })
+            }
+        );
+        assert_eq!(
+            holder.fields()[1].type_,
+            Type::Optional {
+                inner_type: Box::new(Type::Box {
+                    inner_type: Box::new(Type::Record {
+                        module_path: "test_crate".to_string(),
+                        name: "NewLeaf".to_string(),
+                    })
+                })
+            }
+        );
+    }
+
+    #[test]
     fn test_callback_interface_renaming() {
         use crate::interface::callbacks::CallbackInterface;
         use crate::interface::ffi::FfiFunction;
