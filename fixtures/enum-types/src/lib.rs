@@ -142,16 +142,46 @@ fn roundtrip_boxed_record(boxed: Box<BoxedContent>) -> Box<BoxedContent> {
     boxed
 }
 
+// A variant marked #[uniffi(skip)] is invisible to bindgen, so its
+// payload can hold a type that can't cross the FFI boundary.
+#[derive(uniffi::Enum)]
+pub enum EnumWithSkippedVariant {
+    Visible,
+    #[uniffi(skip)]
+    Hidden(std::sync::mpsc::Receiver<()>),
+}
+
+#[uniffi::export]
+fn get_visible_enum_value() -> EnumWithSkippedVariant {
+    EnumWithSkippedVariant::Visible
+}
+
 uniffi::include_scaffolding!("enum_types");
 
 #[cfg(test)]
 mod test {
-    use crate::AnimalSignedInt;
+    use crate::{AnimalSignedInt, EnumWithSkippedVariant};
 
     #[test]
     fn check_signed() {
         assert_eq!(AnimalSignedInt::Koala as i8, -1);
         assert_eq!(AnimalSignedInt::Wallaby as i8, 0);
         assert_eq!(AnimalSignedInt::Wombat as i8, 1);
+    }
+
+    #[test]
+    fn skipped_variant_is_constructible_in_rust() {
+        let (_tx, rx) = std::sync::mpsc::channel::<()>();
+        let value = EnumWithSkippedVariant::Hidden(rx);
+        assert!(matches!(value, EnumWithSkippedVariant::Hidden(_)));
+    }
+
+    #[test]
+    #[should_panic(expected = "#[uniffi(skip)]")]
+    fn skipped_variant_cannot_cross_the_ffi() {
+        let (_tx, rx) = std::sync::mpsc::channel::<()>();
+        let _ = <EnumWithSkippedVariant as uniffi::Lower<crate::UniFfiTag>>::lower(
+            EnumWithSkippedVariant::Hidden(rx),
+        );
     }
 }
