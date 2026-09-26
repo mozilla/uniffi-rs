@@ -203,7 +203,7 @@ mod test {
             .arg("-L")
             .arg(tempdir)
             .arg("-ltest_library")
-            .arg("-luniffi_bindgen_tests")
+            .arg("-luniffi_bindgen_tests_swift")
             .arg("-swift-version")
             .arg(swift_version())
             .arg("-Xcc")
