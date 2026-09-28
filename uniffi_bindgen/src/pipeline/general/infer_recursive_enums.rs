@@ -63,57 +63,97 @@ fn mark_recursive_types(type_defs: &mut [TypeDefinition], recursive: &HashSet<St
 /// Given a directed containment graph, return every node that participates in a cycle.
 ///
 /// **Nodes** are type names (enums or records). **Edges** point from a type to
-/// every other type it structurally contains — i.e. reachable through variant
-/// or record fields, unwrapping `Optional`/`Sequence`/`Map` wrappers.
+/// every other type it structurally contains, i.e. reachable through variant
+/// or record fields, unwrapping `Optional`/`Sequence`/`Map` wrappers and custom types.
 /// `Interface` references (`Arc<T>`) are treated as leaves.
 ///
 /// `deps` maps each node to the nodes it directly contains (outgoing edges).
 /// A node is in a cycle if any path of edges leads back to itself.
+///
+/// The cycles are found with Tarjan's strongly connected components algorithm.
+/// A node is recursive if its component has more than one member, or if it has
+/// an edge to itself. The result does not depend on the iteration order of `deps`.
 ///
 /// This is the algorithmic core shared with `ComponentInterface::infer_recursive_types`.
 pub(crate) fn find_recursive_enum_names<T>(deps: &HashMap<T, HashSet<T>>) -> HashSet<T>
 where
     T: Eq + Hash + Clone,
 {
-    let mut recursive = HashSet::new();
-    let mut visited = HashSet::new();
+    let mut state = TarjanState {
+        deps,
+        next_index: 0,
+        index: HashMap::new(),
+        lowlink: HashMap::new(),
+        stack: Vec::new(),
+        on_stack: HashSet::new(),
+        recursive: HashSet::new(),
+    };
     for name in deps.keys() {
-        let mut stack = Vec::new();
-        dfs(name, deps, &mut stack, &mut visited, &mut recursive);
+        if !state.index.contains_key(name) {
+            state.strong_connect(name);
+        }
     }
-    recursive
+    state.recursive
 }
 
-fn dfs<T>(
-    name: &T,
-    deps: &HashMap<T, HashSet<T>>,
-    stack: &mut Vec<T>,
-    visited: &mut HashSet<T>,
-    recursive: &mut HashSet<T>,
-) where
+/// Bookkeeping for Tarjan's strongly connected components algorithm.
+struct TarjanState<'a, T> {
+    deps: &'a HashMap<T, HashSet<T>>,
+    next_index: usize,
+    /// Order in which each node was first visited.
+    index: HashMap<&'a T, usize>,
+    /// Smallest `index` reachable from each node while it is on `stack`.
+    lowlink: HashMap<&'a T, usize>,
+    stack: Vec<&'a T>,
+    on_stack: HashSet<&'a T>,
+    recursive: HashSet<T>,
+}
+
+impl<'a, T> TarjanState<'a, T>
+where
     T: Eq + Hash + Clone,
 {
-    // A visited node was fully explored in a prior DFS tree. Any cycle passing
-    // through it would have been detected during that traversal and its members
-    // added to `recursive`. Safe to skip.
-    if visited.contains(name) {
-        return;
-    }
-    if let Some(pos) = stack.iter().position(|s| s == name) {
-        // Back edge: every node from pos..end is in a cycle
-        for cycle_member in &stack[pos..] {
-            recursive.insert(cycle_member.clone());
+    fn strong_connect(&mut self, node: &'a T) {
+        let deps = self.deps;
+        self.index.insert(node, self.next_index);
+        self.lowlink.insert(node, self.next_index);
+        self.next_index += 1;
+        self.stack.push(node);
+        self.on_stack.insert(node);
+
+        let neighbors = deps.get(node);
+        for dep in neighbors.into_iter().flatten() {
+            if !self.index.contains_key(dep) {
+                self.strong_connect(dep);
+                let low = self.lowlink[node].min(self.lowlink[dep]);
+                self.lowlink.insert(node, low);
+            } else if self.on_stack.contains(dep) {
+                let low = self.lowlink[node].min(self.index[dep]);
+                self.lowlink.insert(node, low);
+            }
         }
-        return;
-    }
-    stack.push(name.clone());
-    if let Some(neighbors) = deps.get(name) {
-        for dep in neighbors {
-            dfs(dep, deps, stack, visited, recursive);
+
+        // `node` is the root of a strongly connected component: pop the whole
+        // component off the stack.
+        if self.lowlink[node] == self.index[node] {
+            let mut component = Vec::new();
+            loop {
+                let member = self
+                    .stack
+                    .pop()
+                    .expect("the component root is still on the stack");
+                self.on_stack.remove(member);
+                component.push(member);
+                if member == node {
+                    break;
+                }
+            }
+            let has_self_edge = neighbors.is_some_and(|n| n.contains(node));
+            if component.len() > 1 || has_self_edge {
+                self.recursive.extend(component.into_iter().cloned());
+            }
         }
     }
-    stack.pop();
-    visited.insert(name.clone());
 }
 
 /// Return all enum and record names directly reachable from `ty`.
@@ -121,9 +161,12 @@ fn dfs<T>(
 /// Unwraps `Optional`/`Sequence`/`Map` wrappers but does not cross type
 /// definition boundaries — both `Enum` and `Record` references are returned
 /// as-is rather than recursed into, because they are nodes in their own right.
+///
+/// Custom types are followed through to their builtin type.
 fn type_names_in_type(ty: &Type) -> Vec<String> {
     match ty {
         Type::Enum { name, .. } | Type::Record { name, .. } => vec![name.clone()],
+        Type::Custom { builtin, .. } => type_names_in_type(builtin),
         Type::Box { inner_type }
         | Type::Optional { inner_type }
         | Type::Sequence { inner_type }
@@ -198,6 +241,20 @@ mod tests {
             find_recursive_enum_names(&deps),
             HashSet::from(["Suspect", "Accomplice"])
         );
+    }
+
+    #[test]
+    fn find_recursive_overlapping_cycles_is_order_independent() {
+        // T -> U -> T and T -> V -> U -> T overlap, so all three nodes are in a cycle.
+        // Every new `HashMap` gets its own hash seed, so building the graph many times
+        // covers the different iteration orders.
+        for _ in 0..64 {
+            let deps = make_graph(&[("T", &["U", "V"]), ("U", &["T"]), ("V", &["U"])]);
+            assert_eq!(
+                find_recursive_enum_names(&deps),
+                HashSet::from(["T", "U", "V"])
+            );
+        }
     }
 
     fn make_type_node(ty: Type) -> TypeNode {
@@ -294,6 +351,15 @@ mod tests {
             namespace: "test".to_string(),
             name: name.to_string(),
             orig_name: name.to_string(),
+        }
+    }
+
+    fn custom_type(name: &str, builtin: Type) -> Type {
+        Type::Custom {
+            namespace: "test".to_string(),
+            name: name.to_string(),
+            orig_name: name.to_string(),
+            builtin: Box::new(builtin),
         }
     }
 
@@ -481,5 +547,62 @@ mod tests {
             recursive,
             HashSet::from(["RoseTree".to_string(), "RoseData".to_string()])
         );
+    }
+
+    #[test]
+    fn dep_graph_custom_type_propagates_dep() {
+        // Wrapped is a custom type whose builtin is the Inner record.
+        let defs = vec![
+            make_enum_with_field_type("Outer", custom_type("Wrapped", record_type("Inner"))),
+            make_record_with_field_type("Inner", Type::String),
+        ];
+        let graph = type_dep_graph(&defs);
+        assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
+    }
+
+    #[test]
+    fn infer_recursive_through_custom_type() {
+        // Node { W(Wrapped), Leaf }, where Wrapped is a custom type over
+        // Inner { next: Option<Box<Node>> }.
+        let mut node =
+            make_enum_with_field_type("Node", custom_type("Wrapped", record_type("Inner")));
+        if let TypeDefinition::Enum(e) = &mut node {
+            e.variants.push(Variant {
+                name: "Leaf".to_string(),
+                orig_name: "Leaf".to_string(),
+                discr: Literal::Int(1, Radix::Decimal, make_type_node(Type::Int8)),
+                fields_kind: FieldsKind::Unit,
+                fields: vec![],
+                docstring: None,
+            });
+        }
+        let wrapped = TypeDefinition::Custom(CustomType {
+            self_type: make_type_node(custom_type("Wrapped", record_type("Inner"))),
+            module_path: "my_crate".into(),
+            orig_name: "Wrapped".to_string(),
+            name: "Wrapped".to_string(),
+            builtin: make_type_node(record_type("Inner")),
+            docstring: None,
+        });
+        let inner = make_record_with_field_type(
+            "Inner",
+            Type::Optional {
+                inner_type: Box::new(Type::Box {
+                    inner_type: Box::new(enum_type("Node")),
+                }),
+            },
+        );
+        let mut defs = vec![node, wrapped, inner];
+        infer_recursive_types(&mut defs);
+
+        let recursive: HashSet<&str> = defs
+            .iter()
+            .filter_map(|td| match td {
+                TypeDefinition::Enum(e) if e.recursive => Some(e.name.as_str()),
+                TypeDefinition::Record(r) if r.recursive => Some(r.name.as_str()),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(recursive, HashSet::from(["Node", "Inner"]));
     }
 }
