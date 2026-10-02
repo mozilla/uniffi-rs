@@ -1923,6 +1923,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-bindgen-tests-mid-types"
+version = "0.31.0"
+dependencies = [
+ "uniffi",
+ "uniffi-bindgen-tests-ruby-ext-source",
+]
+
+[[package]]
 name = "uniffi-bindgen-tests-python"
 version = "0.31.0"
 dependencies = [
@@ -1941,7 +1949,27 @@ dependencies = [
  "glob",
  "uniffi",
  "uniffi-bindgen-tests",
+ "uniffi-bindgen-tests-mid-types",
+ "uniffi-bindgen-tests-ruby-ext",
+ "uniffi-bindgen-tests-ruby-ext-source",
  "uniffi_bindgen",
+]
+
+[[package]]
+name = "uniffi-bindgen-tests-ruby-ext"
+version = "0.31.0"
+dependencies = [
+ "uniffi",
+ "uniffi-bindgen-tests-mid-types",
+ "uniffi-bindgen-tests-ruby-ext-source",
+]
+
+[[package]]
+name = "uniffi-bindgen-tests-ruby-ext-source"
+version = "0.31.0"
+dependencies = [
+ "thiserror",
+ "uniffi",
 ]
 
 [[package]]

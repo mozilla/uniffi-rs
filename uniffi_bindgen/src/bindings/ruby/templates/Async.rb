@@ -37,7 +37,7 @@ end
 # cancel_fn is called in the ensure block when exception interrupts an in-flight poll.
 # This guarantees Rust fires the continuation callback so the handle-map entry is released
 # and the pipe is drained before we free the future.
-def self.uniffi_rust_call_async(rust_future, poll_fn, cancel_fn, complete_fn, free_fn, lift_func, error_ffi_converter)
+def self.uniffi_rust_call_async(rust_future, poll_fn, cancel_fn, complete_fn, free_fn, lift_func, error_reader)
   rd = wr = nil
   handle = nil
   poll_in_flight = false
@@ -61,10 +61,10 @@ def self.uniffi_rust_call_async(rust_future, poll_fn, cancel_fn, complete_fn, fr
       break if poll_code == UNIFFI_RUST_FUTURE_POLL_READY
     end
 
-    result = if error_ffi_converter.nil?
-      ::{{ ci.namespace()|class_name_rb }}.rust_call(complete_fn, rust_future)
+    result = if error_reader.nil?
+      ::{{ self.module_name() }}.rust_call(complete_fn, rust_future)
     else
-      ::{{ ci.namespace()|class_name_rb }}.rust_call_with_error(error_ffi_converter, complete_fn, rust_future)
+      ::{{ self.module_name() }}.rust_call_with_error(error_reader, complete_fn, rust_future)
     end
 
     lift_func.call(result)
@@ -133,7 +133,7 @@ end
 # Execute a foreign async callback method in a background thread.
 # Enforces the at-most-once guarantee on handle_success / handle_error: whichever
 # fires first (normal completion or Rust-side drop) suppresses the other.
-def self.uniffi_trait_interface_call_async(make_call, uniffi_out_dropped_callback, handle_success, handle_error, error_type = nil, lower_error = nil)
+def self.uniffi_trait_interface_call_async(make_call, uniffi_out_dropped_callback, handle_success, handle_error, error_class = nil, lower_error = nil)
   once = UniffiOnceFlag.new
 
   thread = Thread.new do
@@ -149,10 +149,10 @@ def self.uniffi_trait_interface_call_async(make_call, uniffi_out_dropped_callbac
       rescue Exception => e # We have to catch all errors to prevent Rust future from hanging forever.
         next unless once.claim!
 
-        if !error_type.nil? && ::{{ ci.namespace()|class_name_rb }}.uniffi_is_error_type?(e, error_type)
+        if !error_class.nil? && ::{{ self.module_name() }}.uniffi_is_error_type?(e, error_class)
           handle_error.call(UNIFFI_CALLBACK_ERROR, lower_error.call(e))
         else
-          handle_error.call(UNIFFI_CALLBACK_UNEXPECTED_ERROR, {{ "e.inspect"|lower_rb(&Type::String, config) }})
+          handle_error.call(UNIFFI_CALLBACK_UNEXPECTED_ERROR, {{ self.lower_rb("e.inspect", &Type::String)? }})
         end
         next
       end
@@ -167,7 +167,7 @@ def self.uniffi_trait_interface_call_async(make_call, uniffi_out_dropped_callbac
       # once was already claimed, so only attempt this if we can still claim (e.g. lowering failed
       # before handle_error was called due to short-circuit evaluation).
       begin
-        handle_error.call(UNIFFI_CALLBACK_UNEXPECTED_ERROR, {{ "e.inspect"|lower_rb(&Type::String, config) }})
+        handle_error.call(UNIFFI_CALLBACK_UNEXPECTED_ERROR, {{ self.lower_rb("e.inspect", &Type::String)? }})
       rescue Exception
         # If even this fails, Rust will hang. Nothing more we can do.
       end

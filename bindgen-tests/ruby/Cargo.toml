@@ -12,3 +12,8 @@ glob = "0.3"
 uniffi = { path = "../../uniffi", features = ["bindgen"] }
 uniffi_bindgen = { path = "../../uniffi_bindgen", features = ["test-util"] }
 uniffi-bindgen-tests = { path = "../lib" }
+# Not part of the shared suite. Swift, Kotlin, Python, and JNI generate
+# bindings for `bindgen-tests/lib` and do not build this graph.
+uniffi-bindgen-tests-ruby-ext = { path = "ext" }
+uniffi-bindgen-tests-ruby-ext-source = { path = "ext-source" }
+uniffi-bindgen-tests-mid-types = { path = "mid-types" }

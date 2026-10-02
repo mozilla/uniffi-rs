@@ -1,0 +1,9 @@
+[package]
+name = "uniffi-bindgen-tests-ruby-ext"
+version = "0.31.0"
+edition = "2021"
+
+[dependencies]
+uniffi = { path = "../../../uniffi" }
+uniffi-bindgen-tests-mid-types = { path = "../mid-types" }
+uniffi-bindgen-tests-ruby-ext-source = { path = "../ext-source" }

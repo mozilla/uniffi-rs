@@ -12,7 +12,7 @@ end
 def self.{{ func.name()|fn_name_rb }}({%- call rb::arg_list_decl(func) %}{% endcall -%})
   {%- call rb::setup_args(func) %}{% endcall %}
   result = {% call rb::to_ffi_call(func) %}{% endcall %}
-  return {{ "result"|lift_rb(return_type, config) }}
+  return {{ self.lift_rb("result", return_type)? }}
 end
 
 {% when None %}
