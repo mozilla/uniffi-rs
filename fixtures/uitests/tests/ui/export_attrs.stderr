@@ -36,7 +36,7 @@ error: expected `default` or `name`
 27 |     #[uniffi(flat_error)]
    |              ^^^^^^^^^^
 
-error: expected `name`
+error: expected `name` or `skip`
   --> tests/ui/export_attrs.rs:34:14
    |
 34 |     #[uniffi(flat_error)]

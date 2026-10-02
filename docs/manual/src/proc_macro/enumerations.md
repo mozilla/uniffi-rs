@@ -109,3 +109,28 @@ pub enum MyEnum {
 ```
 
 See [Renaming](./renaming.md) for more details on renaming functionality.
+
+## Skipping variants
+
+Mark a variant with `#[uniffi(skip)]` to keep it out of the foreign bindings
+entirely. The variant still works from Rust, but it disappears from the
+generated enum and no foreign code can construct, receive, or match on it.
+Because the variant never has to be represented on the other side of the FFI,
+its fields can hold any Rust type, including ones that don't implement the FFI
+traits:
+
+```rust
+#[derive(uniffi::Enum)]
+pub enum MyEnum {
+    Foo,
+    Bar(u8),
+    #[uniffi(skip)]
+    RustOnly(std::sync::mpsc::Receiver<()>),
+}
+```
+
+If Rust code ever tries to send a `RustOnly` value across the FFI, for example
+by returning it from a `#[uniffi::export]`ed function, it panics at runtime.
+
+At least one variant must stay visible. Skipping every variant leaves nothing
+for the foreign bindings to generate, which is a compile error.

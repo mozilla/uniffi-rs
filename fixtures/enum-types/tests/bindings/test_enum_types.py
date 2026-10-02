@@ -60,5 +60,9 @@ class TestErrorTypes(unittest.TestCase):
         result = roundtrip_boxed_record(content)
         self.assertEqual(result.value, "world")
 
+    def test_skipped_variant(self):
+        self.assertEqual(get_visible_enum_value(), EnumWithSkippedVariant.VISIBLE)
+        self.assertFalse(hasattr(EnumWithSkippedVariant, "HIDDEN"))
+
 if __name__=='__main__':
     unittest.main()

@@ -81,4 +81,9 @@ class TestEnumTypes < Test::Unit::TestCase
     result = EnumTypes.roundtrip_boxed_record(content)
     assert_equal 'world', result.value
   end
+
+  def test_skipped_variant
+    # The skipped variant is invisible, so `Visible` is the only value left.
+    assert_equal EnumTypes::EnumWithSkippedVariant::VISIBLE, EnumTypes.get_visible_enum_value
+  end
 end

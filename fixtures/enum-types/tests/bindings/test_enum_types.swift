@@ -44,3 +44,9 @@ switch NamedEnumWithDefaults.i(d: 2) {
         assert(d == 2)
         assert(e == 1)
 }
+
+// The skipped variant is invisible, so `.visible` is the only case left.
+switch getVisibleEnumValue() {
+    case .visible:
+        break
+}
