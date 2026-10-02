@@ -90,7 +90,7 @@ pub enum Type {
     Custom {
         module_path: String,
         name: String,
-        builtin: Box<Type>,
+        bridge_type: Box<Type>,
     },
     Ref {
         mutable: bool,
@@ -98,6 +98,12 @@ pub enum Type {
     },
     SelfTy,
     UnexpectedUniFFICallbackError,
+    NonUniffi {
+        // NonUniffi is currently only used for resolving custom types and there, module_id is
+        // more useful than module_path
+        module_id: usize,
+        ident: Ident,
+    },
     Udl(uniffi_meta::Type),
 }
 
@@ -188,11 +194,12 @@ impl Type {
             Type::Custom {
                 module_path,
                 name,
-                builtin,
+                bridge_type,
+                ..
             } => Ok(uniffi_meta::Type::Custom {
                 module_path,
                 name,
-                builtin: Box::new((*builtin).try_into_uniffi_meta(source, span, self_ty)?),
+                builtin: Box::new((*bridge_type).try_into_uniffi_meta(source, span, self_ty)?),
             }),
             Type::SelfTy => {
                 if let Some(self_ty) = self_ty {
@@ -237,7 +244,7 @@ impl<'ir> RPath<'ir> {
             .try_into_uniffi_meta(self.file_id(), ty.span(), self_ty)
     }
 
-    fn resolve_type(
+    pub fn resolve_type(
         &self,
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
@@ -490,15 +497,29 @@ impl<'ir> RPath<'ir> {
                     }
                     Item::CustomType(custom_type) => {
                         let module_path = path_to_type.parent()?;
-                        let builtin =
-                            module_path._resolve_type(ir, cache, &custom_type.builtin, context)?;
+                        let bridge_type_module_path = path_to_type.crate_root()?.resolve(
+                            ir,
+                            cache,
+                            &custom_type.macro_call_module_path,
+                            Namespace::Type,
+                        )?;
+                        let bridge_type = Box::new(bridge_type_module_path.resolve_type(
+                            ir,
+                            cache,
+                            &custom_type.macro_call.bridge_type,
+                        )?);
+
                         Ok(Type::Custom {
                             module_path: module_path.path_string(),
-                            name: custom_type.ident.unraw().to_string(),
-                            builtin: Box::new(builtin),
+                            name: custom_type.macro_call.ident.unraw().to_string(),
+                            bridge_type,
                         })
                     }
                     Item::Udl(ty) => Ok(Type::Udl(ty.clone())),
+                    Item::NonUniffi(_vis, ident) => Ok(Type::NonUniffi {
+                        module_id: path_to_type.module()?.id,
+                        ident: ident.clone(),
+                    }),
                     _ => Err(Error::new(self.file_id(), ty.span(), InvalidType)),
                 }
             }
@@ -973,7 +994,7 @@ pub mod tests {
             Ok(Type::Custom {
                 module_path: "types".into(),
                 name: "JsonObject".into(),
-                builtin: Box::new(Type::String),
+                bridge_type: Box::new(Type::String),
             })
         );
         // Builtin is a user type and also that type is not reachable from the
@@ -983,7 +1004,7 @@ pub mod tests {
             Ok(Type::Custom {
                 module_path: "types".into(),
                 name: "CustomRecord".into(),
-                builtin: Box::new(Type::Record {
+                bridge_type: Box::new(Type::Record {
                     module_path: "types".into(),
                     name: "TestRecord".into(),
                 }),
@@ -996,7 +1017,7 @@ pub mod tests {
             Ok(Type::Custom {
                 module_path: "types".into(),
                 name: "Guid".into(),
-                builtin: Box::new(Type::UInt64),
+                bridge_type: Box::new(Type::UInt64),
             })
         );
 
@@ -1007,7 +1028,103 @@ pub mod tests {
             Ok(Type::Custom {
                 module_path: "types::mod1".into(),
                 name: "Handle".into(),
-                builtin: Box::new(Type::UInt64),
+                bridge_type: Box::new(Type::UInt64),
+            })
+        );
+    }
+
+    #[test]
+    fn test_custom_types_in_different_modules() {
+        let ir = Ir::new_for_test(&["types"]);
+        let mut cache = LookupCache::default();
+
+        // Test referencing CustomRecord from the module with the `custom_type!` macro
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types::mod1", "CustomRecord2"),
+            Ok(Type::Custom {
+                // When the `custom_type!` macro is called from a different module than the Rust
+                // type, what should the module path be?
+                //
+                // For now, we use the module path of the Rust type, maybe we should use the other
+                // one.
+                module_path: "types".into(),
+                name: "CustomRecord2".into(),
+                bridge_type: Box::new(Type::UInt64),
+            })
+        );
+        // Test referencing CustomRecord from it's source module
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types", "CustomRecord2"),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                name: "CustomRecord2".into(),
+                bridge_type: Box::new(Type::UInt64),
+            })
+        );
+        // Test an import from a third module
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types::mod2", "CustomRecord2"),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                name: "CustomRecord2".into(),
+                bridge_type: Box::new(Type::UInt64),
+            })
+        );
+
+        // Test a bridge type defined in one module and the custom type in a different module
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types", "CustomRecord3"),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                name: "CustomRecord3".into(),
+                bridge_type: Box::new(Type::Record {
+                    module_path: "types::mod1".into(),
+                    name: "CustomRecord3BridgeType".into(),
+                }),
+            })
+        );
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types::mod1", "CustomRecord3"),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                name: "CustomRecord3".into(),
+                bridge_type: Box::new(Type::Record {
+                    module_path: "types::mod1".into(),
+                    name: "CustomRecord3BridgeType".into(),
+                }),
+            })
+        );
+    }
+
+    #[test]
+    fn test_custom_types_with_type_aliases() {
+        let ir = Ir::new_for_test(&["types"]);
+        let mut cache = LookupCache::default();
+
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types::mod1", "CustomRecord4Alias"),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                name: "CustomRecord4Alias".into(),
+                bridge_type: Box::new(Type::UInt64),
+            })
+        );
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types", "CustomRecord4"),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                // The custom type name is always the alias name
+                name: "CustomRecord4Alias".into(),
+                bridge_type: Box::new(Type::UInt64),
+            })
+        );
+        // Test an import from a third module
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types::mod2", "CustomRecord4AliasAlias"),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                name: "CustomRecord4Alias".into(),
+                bridge_type: Box::new(Type::UInt64),
             })
         );
     }

@@ -19,6 +19,7 @@ use crate::{
 
 // For tests only, print tracing info.
 // This makes it easier to debug errors in path resolution
+#[macro_export]
 macro_rules! trace {
     ($($tt:tt)*) => {
         #[cfg(test)]
@@ -105,6 +106,18 @@ impl<'ir> RPath<'ir> {
 
     pub fn file_id(&self) -> FileId {
         self.module().expect("file_id failed").source
+    }
+
+    pub fn syn_path(&self) -> syn::Path {
+        syn::Path {
+            leading_colon: None,
+            segments: self
+                .items
+                .iter()
+                .filter_map(|i| i.ident())
+                .map(syn::PathSegment::from)
+                .collect(),
+        }
     }
 
     pub fn path_string(&self) -> String {
@@ -617,7 +630,8 @@ impl Namespace {
                 | Item::CustomType(_)
                 | Item::Udl(_)
                 | Item::Type(_)
-                | Item::UseRemoteType(_) => true,
+                | Item::UseRemoteType(_)
+                | Item::NonUniffi(_, _) => true,
                 Item::Builtin(builtin) => !matches!(
                     builtin,
                     BuiltinItem::UniffiMacro(_) | BuiltinItem::UniffiDerive(_)
@@ -634,7 +648,9 @@ impl Namespace {
                 }
                 _ => true,
             },
-            Self::NonUniffiType => matches!(item, Item::NonUniffi(_, _)),
+            Self::NonUniffiType => {
+                matches!(item, Item::NonUniffi(_, _) | Item::Type(_))
+            }
         }
     }
 }
