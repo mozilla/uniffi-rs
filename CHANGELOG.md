@@ -32,6 +32,9 @@
 - Python: rename `uniffi_set_event_loop` to `uniffi_set_default_event_loop`
 - Kotlin and Swift: escape `/*` and `*/` in docstrings, which previously generated code that would not compile
   (via [#2411](https://github.com/mozilla/uniffi-rs/issues/2411)).
+- Swift: synchronous callback interface and foreign trait methods now run inside an autorelease pool.
+  Previously, objects autoreleased by a method called from a Rust-spawned thread were only released
+  when that thread exited, so long-lived threads leaked them.
 
 ### Breaking changes for users of `uniffi-bindgen` as a crate:
 - Removed the previously deprecated library-mode API: `BindgenCrateConfigSupplier`,
