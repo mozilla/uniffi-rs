@@ -1430,9 +1430,12 @@ fn throws_name(throws: &Option<Type>) -> Option<&str> {
 /// Unwraps `Optional`/`Sequence`/`Map` wrappers but does not cross type
 /// definition boundaries — both `Enum` and `Record` references are returned
 /// as-is rather than recursed into, because they are nodes in their own right.
+///
+/// Custom types are followed through to their builtin type.
 fn type_names_in_type(ty: &Type) -> Vec<String> {
     match ty {
         Type::Enum { name, .. } | Type::Record { name, .. } => vec![name.clone()],
+        Type::Custom { builtin, .. } => type_names_in_type(builtin),
         Type::Box { inner_type }
         | Type::Optional { inner_type }
         | Type::Sequence { inner_type }
@@ -1875,6 +1878,32 @@ new definition: Enum {
         .unwrap();
         let graph = ci.type_dep_graph();
         assert!(graph["Verdict"].is_empty());
+    }
+
+    #[test]
+    fn dep_graph_custom_type_propagates_dep() {
+        // Node -> Wrapped (a custom type over Inner) -> Inner -> Node is a cycle.
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            dictionary Inner {
+                Node? next;
+            };
+            [Custom]
+            typedef Inner Wrapped;
+            [Enum]
+            interface Node {
+                W(Wrapped wrapped);
+                Leaf();
+            };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert_eq!(graph["Node"], HashSet::from(["Inner".to_string()]));
+        assert!(ci.is_recursive("Node"));
+        assert!(ci.is_recursive("Inner"));
     }
 
     #[test]

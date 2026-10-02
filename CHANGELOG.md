@@ -20,6 +20,10 @@
   UniFFI. Use `#[uniffi::export(remote)]` or `[Trait, Remote]` in UDL. Foreign implementations are not supported, see the docs for more.
 
 ### What's Fixed
+- Detection of recursive enums and records is now deterministic. Previously a type in two
+  overlapping cycles was sometimes not marked `recursive`, depending on hash map iteration order,
+  and cycles that pass through a custom type were not detected at all, so the Swift bindings were
+  missing `indirect` and failed to compile (via [#3005](https://github.com/mozilla/uniffi-rs/issues/3005)).
 - `[bindings.<language>.rename]` is now applied through `Box<T>` and `Option<Box<T>>` fields, not
   just the type definition itself. Previously the field kept referring to the pre-rename name,
   producing Swift and Kotlin bindings that failed to compile and Python bindings that referenced a
