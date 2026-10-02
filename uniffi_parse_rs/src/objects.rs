@@ -96,9 +96,9 @@ impl Constructor {
         self_name: &str,
         self_ty: &uniffi_meta::Type,
     ) -> Result<uniffi_meta::ConstructorMetadata> {
-        let (return_type, throws) =
-            self.return_type
-                .return_type_and_throws_for_method(ir, cache, module_path, self_ty)?;
+        let (returns_future, return_type, throws) = self
+            .return_type
+            .return_type_and_throws_for_method(ir, cache, module_path, self_ty)?;
         if return_type.as_ref() != Some(self_ty) {
             return Err(Error::new(
                 module_path.file_id(),
@@ -118,7 +118,7 @@ impl Constructor {
             name,
             orig_name,
             docstring: self.attrs.docstring.clone(),
-            is_async: self.is_async,
+            is_async: self.is_async || returns_future,
             inputs: self
                 .args
                 .iter()
@@ -157,9 +157,9 @@ impl Method {
         self_name: &str,
         self_ty: &uniffi_meta::Type,
     ) -> Result<uniffi_meta::MethodMetadata> {
-        let (return_type, throws) =
-            self.return_type
-                .return_type_and_throws_for_method(ir, cache, module_path, self_ty)?;
+        let (returns_future, return_type, throws) = self
+            .return_type
+            .return_type_and_throws_for_method(ir, cache, module_path, self_ty)?;
         let item_name = self.ident.unraw().to_string();
         let (name, orig_name) = match &self.attrs.name {
             None => (item_name, None),
@@ -172,7 +172,8 @@ impl Method {
             name,
             orig_name,
             docstring: self.attrs.docstring.clone(),
-            is_async: self.is_async,
+            is_async: self.is_async || returns_future,
+            desugared_async: returns_future,
             takes_self_by_arc: self.self_arg.takes_self_by_arc(ir, cache, module_path)?,
             inputs: self
                 .args

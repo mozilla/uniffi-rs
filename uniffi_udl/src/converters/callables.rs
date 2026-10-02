@@ -193,6 +193,8 @@ impl APIConverter<MethodMetadata> for weedle::interface::OperationInterfaceMembe
             name,
             orig_name: None,
             is_async,
+            // UDL always declares async explicitly; there is no boxed-future desugaring.
+            desugared_async: false,
             inputs,
             return_type,
             throws,
@@ -243,6 +245,8 @@ impl APIConverter<TraitMethodMetadata> for weedle::interface::OperationInterface
             name,
             orig_name: None,
             is_async,
+            // UDL always declares async explicitly; there is no boxed-future desugaring.
+            desugared_async: false,
             inputs,
             return_type,
             throws,

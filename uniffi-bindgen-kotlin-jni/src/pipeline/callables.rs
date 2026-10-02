@@ -151,6 +151,7 @@ pub fn map_callable(
         fully_qualified_name_rs,
         kind,
         is_async: input.async_data.is_some(),
+        desugared_async: input.desugared_async,
         name: input.name,
         orig_name: input.orig_name,
         receiver,

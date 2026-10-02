@@ -5,10 +5,27 @@ struct {{ cbi.impl_struct_rs() }} {
     handle: i64,
 }
 
-{%- if cbi.has_async_method() %}#[uniffi::deps::async_trait::async_trait]{% endif %}
+{%- if cbi.has_declared_async_method() %}#[uniffi::deps::async_trait::async_trait]{% endif %}
 impl {{ trait_name }} for {{ cbi.impl_struct_rs() }} {
     {%- for meth in cbi.methods %}
     {%- let receiver = meth.callable.receiver.as_ref().expect("Callback interface receiver not set") %}
+    {#- A method that is async because it returns a hand-written boxed future (rather than
+        `async` / `#[async_trait]`) must be implemented as a plain `fn` returning
+        `Pin<Box<dyn Future<…>>>` so its (late-bound) signature matches the trait. Methods
+        declared with `async` are implemented via `#[async_trait]` as `async fn`. #}
+    {%- if meth.callable.desugared_async %}
+    fn {{ meth.callable.name_rs() }}(
+        {%- if receiver.by_ref %}
+        &self,
+        {%- else %}
+        self: ::std::sync::Arc<Self>,
+        {%- endif %}
+        {%- for a in meth.callable.arguments %}
+        {{ a.name_rs() }}: {{ a.ty.type_rs }},
+        {%- endfor %}
+    ) -> ::std::pin::Pin<::std::boxed::Box<dyn ::std::future::Future<Output = {{ meth.callable.result.return_type_rs() }}> + ::std::marker::Send + {% if receiver.by_ref %}'_{% else %}'static{% endif %}>> {
+        ::std::boxed::Box::pin(async move {
+    {%- else %}
     {% if meth.callable.is_async %}async {% endif %}fn {{ meth.callable.name_rs() }}(
         {%- if receiver.by_ref %}
         &self,
@@ -19,6 +36,7 @@ impl {{ trait_name }} for {{ cbi.impl_struct_rs() }} {
         {{ a.name_rs() }}: {{ a.ty.type_rs }},
         {%- endfor %}
     ) -> {{ meth.callable.result.return_type_rs() }} {
+    {%- endif %}
         unsafe {
             let uniffi_result = {{ meth.dispatch_fn_rs }}(
                 self.handle,
@@ -45,6 +63,9 @@ impl {{ trait_name }} for {{ cbi.impl_struct_rs() }} {
                 }
             }
         }
+    {%- if meth.callable.desugared_async %}
+        })
+    {%- endif %}
     }
     {%- endfor %}
 }

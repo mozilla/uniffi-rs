@@ -222,6 +222,11 @@ pub struct Callable {
     pub name: String,
     pub orig_name: String,
     pub is_async: bool,
+    /// `true` when async-ness came from a hand-written boxed-future return type rather than
+    /// the `async` keyword / `#[async_trait]`. Used by the callback-interface scaffolding to
+    /// emit a matching (late-bound) `fn … -> Pin<Box<dyn Future<…>>>` impl instead of an
+    /// `#[async_trait] async fn`.
+    pub desugared_async: bool,
     pub fully_qualified_name_rs: String,
     pub receiver: Option<Argument>,
     pub arguments: Vec<Argument>,
