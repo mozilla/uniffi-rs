@@ -46,6 +46,13 @@ pub fn invoke_test_callback_interface_set_value(cbi: Box<dyn TestCallbackInterfa
 }
 
 #[uniffi::export]
+pub fn test_optional_callback_interface(
+    cbi: Option<Box<dyn TestCallbackInterface>>,
+) -> Option<u32> {
+    cbi.map(|cbi| cbi.get_value())
+}
+
+#[uniffi::export]
 pub fn invoke_test_callback_interface_throw_if_equal(
     cbi: Box<dyn TestCallbackInterface>,
     numbers: CallbackInterfaceNumbers,

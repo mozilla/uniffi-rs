@@ -4,6 +4,10 @@
 
 import uniffi_bindgen_tests
 
+assert(roundtripEnumNoData(en: EnumNoData.a) == EnumNoData.a)
+assert(roundtripEnumNoData(en: EnumNoData.b) == EnumNoData.b)
+assert(roundtripEnumNoData(en: EnumNoData.c) == EnumNoData.c)
+
 assert(
     roundtripEnumWithData(en: EnumWithData.a(value: 10, value2: 20)) ==
     EnumWithData.a(value: 10, value2: 20));
@@ -38,5 +42,9 @@ assert(ExplicitValuedEnum.thirteenth.rawValue == 13);
 assert(GappedEnum.one.rawValue == 10);
 assert(GappedEnum.two.rawValue == 11); // Sequential value after ONE (10+1)
 assert(GappedEnum.three.rawValue == 14); // Explicit value again
+// Test discriminants that don't fit in 32 bits
+assert(EnumWithLargeDiscriminants.one.rawValue == 4294967295 + 3)
+assert(EnumWithLargeDiscriminants.two.rawValue == 4294967295 + 4)
+assert(roundtripEnumWithLargeDiscriminants(en: EnumWithLargeDiscriminants.one) == EnumWithLargeDiscriminants.one)
 // Enum methods
 assert(EnumWithData.a(value: 20, value2: 40).roundtrip() == EnumWithData.a(value: 20, value2: 40))

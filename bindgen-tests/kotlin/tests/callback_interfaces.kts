@@ -42,7 +42,8 @@ assert(invokeTestCallbackInterfaceGetValue(cbi) == 42u)
 invokeTestCallbackInterfaceSetValue(cbi, 43u)
 assert(invokeTestCallbackInterfaceGetValue(cbi) == 43u)
 assert(invokeTestCallbackInterfaceEcho(cbi, "test-string") == "test-string")
-
+assert(testOptionalCallbackInterface(cbi) == 43u)
+assert(testOptionalCallbackInterface(null) == null)
 
 assert(invokeTestCallbackInterfaceThrowIfEqual(cbi, CallbackInterfaceNumbers(1u, 2u)) == CallbackInterfaceNumbers(1u, 2u))
 try {

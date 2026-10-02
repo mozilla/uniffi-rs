@@ -172,6 +172,11 @@ class {{ e.self_type.ffi_converter_name }}(_UniffiConverterRustBuffer):
 
     @staticmethod
     def check_lower(value):
+        {%- if !e.is_flat %}
+        if not isinstance(value, {{ type_name }}):
+            raise ValueError(f"{value} is not a {{ type_name }}")
+        {%- endif %}
+
         {%- if e.variants.is_empty() %}
         pass
         {%- else %}
@@ -190,7 +195,7 @@ class {{ e.self_type.ffi_converter_name }}(_UniffiConverterRustBuffer):
             {%- endfor %}
             return
         {%- endfor %}
-        raise ValueError(value)
+        raise ValueError(f"{value} is not a {{ type_name }}")
         {%- endif %}
 
     @staticmethod
