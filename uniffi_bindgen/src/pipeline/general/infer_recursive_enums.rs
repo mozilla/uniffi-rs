@@ -68,92 +68,31 @@ fn mark_recursive_types(type_defs: &mut [TypeDefinition], recursive: &HashSet<St
 /// `Interface` references (`Arc<T>`) are treated as leaves.
 ///
 /// `deps` maps each node to the nodes it directly contains (outgoing edges).
-/// A node is in a cycle if any path of edges leads back to itself.
-///
-/// The cycles are found with Tarjan's strongly connected components algorithm.
-/// A node is recursive if its component has more than one member, or if it has
-/// an edge to itself. The result does not depend on the iteration order of `deps`.
+/// A node is recursive if some path of edges leads back to it. This is checked
+/// separately for each node, so the result does not depend on the iteration
+/// order of `deps`.
 ///
 /// This is the algorithmic core shared with `ComponentInterface::infer_recursive_types`.
 pub(crate) fn find_recursive_enum_names<T>(deps: &HashMap<T, HashSet<T>>) -> HashSet<T>
 where
     T: Eq + Hash + Clone,
 {
-    let mut state = TarjanState {
-        deps,
-        next_index: 0,
-        index: HashMap::new(),
-        lowlink: HashMap::new(),
-        stack: Vec::new(),
-        on_stack: HashSet::new(),
-        recursive: HashSet::new(),
-    };
-    for name in deps.keys() {
-        if !state.index.contains_key(name) {
-            state.strong_connect(name);
-        }
-    }
-    state.recursive
-}
-
-/// Bookkeeping for Tarjan's strongly connected components algorithm.
-struct TarjanState<'a, T> {
-    deps: &'a HashMap<T, HashSet<T>>,
-    next_index: usize,
-    /// Order in which each node was first visited.
-    index: HashMap<&'a T, usize>,
-    /// Smallest `index` reachable from each node while it is on `stack`.
-    lowlink: HashMap<&'a T, usize>,
-    stack: Vec<&'a T>,
-    on_stack: HashSet<&'a T>,
-    recursive: HashSet<T>,
-}
-
-impl<'a, T> TarjanState<'a, T>
-where
-    T: Eq + Hash + Clone,
-{
-    fn strong_connect(&mut self, node: &'a T) {
-        let deps = self.deps;
-        self.index.insert(node, self.next_index);
-        self.lowlink.insert(node, self.next_index);
-        self.next_index += 1;
-        self.stack.push(node);
-        self.on_stack.insert(node);
-
-        let neighbors = deps.get(node);
-        for dep in neighbors.into_iter().flatten() {
-            if !self.index.contains_key(dep) {
-                self.strong_connect(dep);
-                let low = self.lowlink[node].min(self.lowlink[dep]);
-                self.lowlink.insert(node, low);
-            } else if self.on_stack.contains(dep) {
-                let low = self.lowlink[node].min(self.index[dep]);
-                self.lowlink.insert(node, low);
+    let mut recursive = HashSet::new();
+    for start in deps.keys() {
+        // Search from the direct deps of `start`, with a `seen` set local to this node.
+        let mut seen = HashSet::new();
+        let mut stack: Vec<&T> = deps.get(start).into_iter().flatten().collect();
+        while let Some(node) = stack.pop() {
+            if node == start {
+                recursive.insert(start.clone());
+                break;
             }
-        }
-
-        // `node` is the root of a strongly connected component: pop the whole
-        // component off the stack.
-        if self.lowlink[node] == self.index[node] {
-            let mut component = Vec::new();
-            loop {
-                let member = self
-                    .stack
-                    .pop()
-                    .expect("the component root is still on the stack");
-                self.on_stack.remove(member);
-                component.push(member);
-                if member == node {
-                    break;
-                }
-            }
-            let has_self_edge = neighbors.is_some_and(|n| n.contains(node));
-            if component.len() > 1 || has_self_edge {
-                self.recursive.extend(component.into_iter().cloned());
+            if seen.insert(node) {
+                stack.extend(deps.get(node).into_iter().flatten());
             }
         }
     }
+    recursive
 }
 
 /// Return all enum and record names directly reachable from `ty`.
