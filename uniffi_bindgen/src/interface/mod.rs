@@ -46,11 +46,12 @@
 //!   * Error messages and general developer experience leave a lot to be desired.
 
 use std::{
-    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
+    collections::{BTreeMap, BTreeSet, HashSet},
     iter,
 };
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
+use indexmap::{IndexMap, IndexSet};
 
 pub mod universe;
 pub use uniffi_meta::{AsType, EnumShape, ObjectImpl, TraitKind, Type};
@@ -1243,9 +1244,9 @@ impl ComponentInterface {
     /// Both enums and records are nodes. Edges point from a type to every
     /// other enum or record name directly reachable through its fields
     /// (unwrapping `Optional`/`Sequence`/`Map` wrappers).
-    fn type_dep_graph(&self) -> HashMap<String, HashSet<String>> {
+    fn type_dep_graph(&self) -> IndexMap<String, IndexSet<String>> {
         let enum_entries = self.enums.iter().map(|e| {
-            let deps: HashSet<String> = e
+            let deps: IndexSet<String> = e
                 .variants()
                 .iter()
                 .flat_map(|v| v.fields())
@@ -1254,7 +1255,7 @@ impl ComponentInterface {
             (e.name().to_string(), deps)
         });
         let record_entries = self.records.iter().map(|r| {
-            let deps: HashSet<String> = r
+            let deps: IndexSet<String> = r
                 .fields()
                 .iter()
                 .flat_map(|f| type_names_in_type(&f.as_type()))
@@ -1762,7 +1763,7 @@ new definition: Enum {
         )
         .unwrap();
         let graph = ci.type_dep_graph();
-        assert_eq!(graph["Quine"], HashSet::from(["Quine".to_string()]));
+        assert_eq!(graph["Quine"], IndexSet::from(["Quine".to_string()]));
     }
 
     #[test]
@@ -1782,7 +1783,7 @@ new definition: Enum {
         )
         .unwrap();
         let graph = ci.type_dep_graph();
-        assert_eq!(graph["Socks"], HashSet::from(["Sock".to_string()]));
+        assert_eq!(graph["Socks"], IndexSet::from(["Sock".to_string()]));
     }
 
     #[test]
@@ -1800,7 +1801,7 @@ new definition: Enum {
         )
         .unwrap();
         let graph = ci.type_dep_graph();
-        assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
+        assert_eq!(graph["Outer"], IndexSet::from(["Inner".to_string()]));
     }
 
     #[test]
@@ -1818,7 +1819,7 @@ new definition: Enum {
         )
         .unwrap();
         let graph = ci.type_dep_graph();
-        assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
+        assert_eq!(graph["Outer"], IndexSet::from(["Inner".to_string()]));
     }
 
     #[test]
@@ -1836,7 +1837,7 @@ new definition: Enum {
         )
         .unwrap();
         let graph = ci.type_dep_graph();
-        assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
+        assert_eq!(graph["Outer"], IndexSet::from(["Inner".to_string()]));
     }
 
     #[test]
@@ -1901,7 +1902,7 @@ new definition: Enum {
         )
         .unwrap();
         let graph = ci.type_dep_graph();
-        assert_eq!(graph["Node"], HashSet::from(["Inner".to_string()]));
+        assert_eq!(graph["Node"], IndexSet::from(["Inner".to_string()]));
         assert!(ci.is_recursive("Node"));
         assert!(ci.is_recursive("Inner"));
     }
