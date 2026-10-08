@@ -71,6 +71,9 @@ class TestCallbackInterfaces < Test::Unit::TestCase
     assert_equal 43, UniffiBindgenTests.invoke_test_callback_interface_get_value(cbi)
     assert_equal 'test-string', UniffiBindgenTests.invoke_test_callback_interface_echo(cbi, 'test-string')
 
+    assert_equal 43, UniffiBindgenTests.test_optional_callback_interface(cbi)
+    assert_equal nil, UniffiBindgenTests.test_optional_callback_interface(nil)
+
     # The previous calls created a bunch of callback interface references.  Make sure they've been cleaned
     # up and the only remaining reference is for our `cbi` variable.
     assert_equal 1, CallbackImpl.callback_ref_count

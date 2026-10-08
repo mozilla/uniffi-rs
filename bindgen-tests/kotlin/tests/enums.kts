@@ -1,6 +1,11 @@
 import uniffi.uniffi_bindgen_tests.*
 
 // simple enums
+assert(roundtripEnumNoData(EnumNoData.A) == EnumNoData.A)
+assert(roundtripEnumNoData(EnumNoData.B) == EnumNoData.B)
+assert(roundtripEnumNoData(EnumNoData.C) == EnumNoData.C)
+
+// enums with data
 assert(roundtripEnumWithData(EnumWithData.A(10.toUByte(), 20.toUShort())) == EnumWithData.A(10.toUByte(), 20.toUShort()))
 assert(roundtripEnumWithData(EnumWithData.B("Ten", 10u)) == EnumWithData.B("Ten", 10u))
 assert(roundtripEnumWithData(EnumWithData.C) == EnumWithData.C)
@@ -31,5 +36,9 @@ assert(ExplicitValuedEnum.THIRTEENTH.value == 13.toUByte())
 assert(GappedEnum.ONE.value == 10.toUByte())
 assert(GappedEnum.TWO.value == 11.toUByte()) // Sequential value after ONE (10+1)
 assert(GappedEnum.THREE.value == 14.toUByte()) // Explicit value again
+// Test discriminants that don't fit in 32 bits
+assert(EnumWithLargeDiscriminants.ONE.value == 4294967295uL + 3uL)
+assert(EnumWithLargeDiscriminants.TWO.value == 4294967295uL + 4uL)
+assert(roundtripEnumWithLargeDiscriminants(EnumWithLargeDiscriminants.ONE) == EnumWithLargeDiscriminants.ONE)
 // Enum methods
 assert(EnumWithData.A(20.toUByte(), 40.toUShort()).roundtrip() == EnumWithData.A(20.toUByte(), 40.toUShort()))
