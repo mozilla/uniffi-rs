@@ -323,6 +323,12 @@ impl BasicError {
 pub enum SimpleError {
     A,
     B,
+    // An error type used in `Result<T, E>` must itself be `Send + Sync +
+    // 'static`, which is structural over every field including skipped
+    // ones, so the payload here can't be `Receiver<()>` like the plain-enum
+    // examples use.
+    #[uniffi(skip)]
+    Hidden(std::sync::atomic::AtomicPtr<()>),
 }
 
 impl From<uniffi::UnexpectedUniFFICallbackError> for BasicError {
@@ -346,6 +352,14 @@ pub enum FlatError {
     // Inner types that aren't FFI-convertible are allowed for flat errors
     #[error("OS error: {0}")]
     OsError(std::io::Error),
+
+    // Flat errors already allow arbitrary field types without #[uniffi(skip)],
+    // but skip must still work here: it hides the variant entirely. The
+    // payload must stay Send + Sync + 'static since that's a Result<T, E>
+    // requirement on the whole error type, unrelated to skip.
+    #[error("Hidden")]
+    #[uniffi(skip)]
+    Hidden(std::sync::atomic::AtomicPtr<()>),
 }
 
 #[uniffi::export]
@@ -533,3 +547,29 @@ impl ObjectWithDefaults {
 }
 
 uniffi::include_scaffolding!("proc-macro");
+
+#[cfg(test)]
+mod skip_variant_tests {
+    use super::{FlatError, SimpleError};
+    use std::sync::atomic::AtomicPtr;
+
+    #[test]
+    fn skipped_variant_is_constructible_in_rust() {
+        let value = SimpleError::Hidden(AtomicPtr::new(std::ptr::null_mut()));
+        assert!(matches!(value, SimpleError::Hidden(_)));
+    }
+
+    #[test]
+    #[should_panic(expected = "#[uniffi(skip)]")]
+    fn skipped_rich_error_variant_cannot_cross_the_ffi() {
+        let value = SimpleError::Hidden(AtomicPtr::new(std::ptr::null_mut()));
+        let _ = <SimpleError as uniffi::Lower<crate::UniFfiTag>>::lower(value);
+    }
+
+    #[test]
+    #[should_panic(expected = "#[uniffi(skip)]")]
+    fn skipped_flat_error_variant_cannot_cross_the_ffi() {
+        let value = FlatError::Hidden(AtomicPtr::new(std::ptr::null_mut()));
+        let _ = <FlatError as uniffi::Lower<crate::UniFfiTag>>::lower(value);
+    }
+}

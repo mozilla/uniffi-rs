@@ -48,3 +48,10 @@ fn do_http_request() -> Result<(), MyApiError> {
     // ...
 }
 ```
+
+An error variant can also be marked with `#[uniffi(skip)]`, the same as on a
+plain `Enum`; see [Skipping variants](./enumerations.md#skipping-variants). One
+extra rule applies here: a type used as the `E` in `Result<T, E>` must be
+`Send + Sync + 'static` as a whole, and that requirement is structural over
+every field, including skipped ones. So a skipped error variant's payload still
+needs to satisfy it, even though it never has to implement any FFI trait.
