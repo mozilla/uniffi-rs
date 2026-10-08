@@ -2,16 +2,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-//! Intermediate crate: its public type embeds types from the Ruby external
+//! Intermediate crate: its public type embeds types from the shared external
 //! source crate. A consumer that only names `MidRec` does not list those
 //! nested types in its own interface.
 
 uniffi::setup_scaffolding!("uniffi_bindgen_tests_mid_types");
 
-use uniffi_bindgen_tests_ruby_ext_source::{ExtSourceEnum, ExtSourceRec};
+use uniffi_bindgen_tests_external_types_source::{ExternalEnum, ExternalRec};
 
 #[derive(uniffi::Record)]
 pub struct MidRec {
-    pub inner: ExtSourceRec,
-    pub maybe_enum: Option<ExtSourceEnum>,
+    pub inner: ExternalRec,
+    pub maybe_enum: Option<ExternalEnum>,
 }

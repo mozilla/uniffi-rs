@@ -38,8 +38,6 @@ members = [
   "bindgen-tests/kotlin/keywords",
   "bindgen-tests/python",
   "bindgen-tests/ruby",
-  "bindgen-tests/ruby/ext",
-  "bindgen-tests/ruby/ext-source",
   "bindgen-tests/swift",
   "bindgen-tests/swift/keywords",
   "bindgen-tests/swift/callbacks-omit-labels",

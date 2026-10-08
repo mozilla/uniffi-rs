@@ -7,14 +7,9 @@
 require 'test/unit'
 require 'uri'
 require 'uniffi_bindgen_tests'
-require 'uniffi_bindgen_tests_ruby_ext'
 
 class TestExternalTypes < Test::Unit::TestCase
-  # Shared suite, same surface the other language backends compile.
   Ext = UniffiBindgenTestsExternalTypesSource
-  # Ruby-only fixtures. Not part of `bindgen-tests/lib`.
-  Rich = UniffiBindgenTestsRubyExtSource
-  Api = UniffiBindgenTestsRubyExt
   Mid = UniffiBindgenTestsMidTypes
 
   def test_ext_record
@@ -76,7 +71,7 @@ class TestExternalTypes < Test::Unit::TestCase
 
   def test_ext_url_is_uri
     url = URI.parse('http://example.com/')
-    result = Api.roundtrip_ext_url(url)
+    result = UniffiBindgenTests.roundtrip_ext_url(url)
 
     assert_kind_of URI, result
     assert_equal url, result
@@ -84,57 +79,57 @@ class TestExternalTypes < Test::Unit::TestCase
 
   def test_local_url_wrapping_imported_url
     url = URI.parse('http://example.com/local')
-    result = Api.roundtrip_local_url(url)
+    result = UniffiBindgenTests.roundtrip_local_url(url)
 
     assert_kind_of URI, result
     assert_equal url, result
   end
 
   def test_ext_nested_rec
-    rec = Rich::ExternalNestedRec.new(
-      en: Rich::ExtSourceEnum::ONE,
-      rec: Rich::ExtSourceRec.new(a: 7)
+    rec = Ext::ExternalNestedRec.new(
+      en: Ext::ExternalEnum::ONE,
+      rec: Ext::ExternalRec.new(a: 7)
     )
-    result = Api.roundtrip_ext_nested_rec(rec)
+    result = UniffiBindgenTests.roundtrip_ext_nested_rec(rec)
 
-    assert_equal Rich::ExtSourceEnum::ONE, result.en
+    assert_equal Ext::ExternalEnum::ONE, result.en
     assert_equal 7, result.rec.a
   end
 
   def test_nested_ext_rec_identity_custom
-    inner = Rich::ExtSourceRec.new(a: 9)
-    result = Api.roundtrip_nested_ext_rec(inner)
+    inner = Ext::ExternalRec.new(a: 9)
+    result = UniffiBindgenTests.roundtrip_nested_ext_rec(inner)
 
-    assert_instance_of Rich::ExtSourceRec, result
+    assert_instance_of Ext::ExternalRec, result
     assert_equal 9, result.a
   end
 
   def test_nested_ext_interface_identity_custom
-    obj = Rich::ExtSourceInterface.new(3)
-    result = Api.roundtrip_nested_ext_interface(obj)
+    obj = Ext::ExternalInterface.new(3)
+    result = UniffiBindgenTests.roundtrip_nested_ext_interface(obj)
 
-    assert_instance_of Rich::ExtSourceInterface, result
+    assert_instance_of Ext::ExternalInterface, result
     assert_equal 3, result.get_value
   end
 
   def test_optional_and_sequence
-    assert_nil Api.roundtrip_maybe_ext_enum(nil)
-    assert_equal Rich::ExtSourceEnum::TWO,
-                 Api.roundtrip_maybe_ext_enum(Rich::ExtSourceEnum::TWO)
-    assert_equal [Rich::ExtSourceEnum::ONE, Rich::ExtSourceEnum::THREE],
-                 Api.roundtrip_ext_enums(
-                   [Rich::ExtSourceEnum::ONE, Rich::ExtSourceEnum::THREE]
+    assert_nil UniffiBindgenTests.roundtrip_maybe_ext_enum(nil)
+    assert_equal Ext::ExternalEnum::TWO,
+                 UniffiBindgenTests.roundtrip_maybe_ext_enum(Ext::ExternalEnum::TWO)
+    assert_equal [Ext::ExternalEnum::ONE, Ext::ExternalEnum::THREE],
+                 UniffiBindgenTests.roundtrip_ext_enums(
+                   [Ext::ExternalEnum::ONE, Ext::ExternalEnum::THREE]
                  )
   end
 
   def test_async_ext_enum
-    result = Api.async_roundtrip_ext_enum(Rich::ExtSourceEnum::TWO)
-    assert_equal Rich::ExtSourceEnum::TWO, result
+    result = UniffiBindgenTests.async_roundtrip_ext_enum(Ext::ExternalEnum::TWO)
+    assert_equal Ext::ExternalEnum::TWO, result
   end
 
   def test_throw_ext_error
-    assert_raise Rich::ExternalError::Boom do
-      Api.throw_ext_error
+    assert_raise Ext::ExternalError::Boom do
+      UniffiBindgenTests.throw_ext_error
     end
   end
 
@@ -152,13 +147,13 @@ class TestExternalTypes < Test::Unit::TestCase
 
   def test_mid_rec_roundtrip
     rec = Mid::MidRec.new(
-      inner: Rich::ExtSourceRec.new(a: 11),
-      maybe_enum: Rich::ExtSourceEnum::ONE
+      inner: Ext::ExternalRec.new(a: 11),
+      maybe_enum: Ext::ExternalEnum::ONE
     )
-    result = Api.roundtrip_mid_rec(rec)
+    result = UniffiBindgenTests.roundtrip_mid_rec(rec)
 
     assert_equal 11, result.inner.a
-    assert_equal Rich::ExtSourceEnum::ONE, result.maybe_enum
+    assert_equal Ext::ExternalEnum::ONE, result.maybe_enum
   end
 
   # MidRec's nested External* fields are not in the consumer CI. Mid's generated
@@ -168,7 +163,7 @@ class TestExternalTypes < Test::Unit::TestCase
     assert_not_nil path, 'uniffi_bindgen_tests_mid_types.rb should be loaded'
     src = File.read(path)
 
-    assert_match(/require ['"]uniffi_bindgen_tests_ruby_ext_source['"]/, src)
-    assert_match(/UniffiBindgenTestsRubyExtSource::RustBuffer/, src)
+    assert_match(/require ['"]uniffi_bindgen_tests_external_types_source['"]/, src)
+    assert_match(/UniffiBindgenTestsExternalTypesSource::RustBuffer/, src)
   end
 end
