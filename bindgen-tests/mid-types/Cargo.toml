@@ -4,5 +4,5 @@ version = "0.31.0"
 edition = "2021"
 
 [dependencies]
-uniffi = { path = "../../uniffi" }
-uniffi-bindgen-tests-ruby-ext-source = { path = "../ruby/ext-source" }
+uniffi = { path = "../../uniffi", default-features = false }
+uniffi-bindgen-tests-external-types-source = { path = "../external-types" }

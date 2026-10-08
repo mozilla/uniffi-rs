@@ -3,11 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 extern crate uniffi_bindgen_tests;
-// Pull the Ruby-only fixtures into this cdylib. Their scaffolding is what the
-// generated Ruby calls, and a transitive dependency is not enough for that.
+// Mid-types scaffolding lives in that crate. A transitive dependency is not
+// enough for the generated Ruby to call it.
 extern crate uniffi_bindgen_tests_mid_types;
-extern crate uniffi_bindgen_tests_ruby_ext;
-extern crate uniffi_bindgen_tests_ruby_ext_source;
 
 #[cfg(test)]
 mod test {

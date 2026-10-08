@@ -5,12 +5,13 @@ edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
+# rustdoc links mid-types and external-types-source as two rlibs (E0460).
+doctest = false
 
 [dependencies]
 uniffi-bindgen-tests = { path = "../../bindgen-tests/lib", default-features = true }
 uniffi-bindgen-tests-external-types-source = { path = "../../bindgen-tests/external-types" }
 uniffi-bindgen-tests-mid-types = { path = "../../bindgen-tests/mid-types" }
-uniffi-bindgen-tests-ruby-ext-source = { path = "../../bindgen-tests/ruby/ext-source" }
 uniffi-bindgen-kotlin-jni-runtime = { path = "../runtime" }
 
 [build-dependencies]

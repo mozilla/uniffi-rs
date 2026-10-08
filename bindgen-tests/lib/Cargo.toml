@@ -5,6 +5,8 @@ edition = "2021"
 
 [lib]
 crate-type = ["lib", "cdylib", "staticlib"]
+# rustdoc does not pass `--extern` for mid-types (E0463).
+doctest = false
 
 [dependencies]
 async-trait = "0.1"
