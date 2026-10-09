@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use uniffi_bindgen::pipeline::general::sort::sort_type_definitions;
-
 use super::*;
 
 #[derive(Default, Clone)]
@@ -85,23 +83,17 @@ impl Context {
     fn populate_fields_from_type_definitions(&mut self, root: &general::Root) -> Result<()> {
         use anyhow::Context;
 
-        // Get type definitions for all packages and sort them.
-        // This makes it so that dependencies come before their dependant types,
-        // which simplifies the logic for the functions we're going to call.
-        //
-        // Note: recursive types can't be ordered in this manner and
-        // the following functions should take that into account.
-        let sorted_type_definitions = sort_type_definitions(
-            root.namespaces
-                .values()
-                .flat_map(|n| n.type_definitions.iter().cloned()),
-        );
-        self.ffi_type_oracle
-            .add_type_definitions(&sorted_type_definitions)
-            .context("while building the type ffi oracle")?;
-        self.layout_oracle
-            .add_type_definitions(&sorted_type_definitions)
-            .context("while building the ffi buffer layout oracle")?;
+        // Note: namespaces and type definitions are already sorted in the general pipeline and at
+        // the top of map_root.  This is needed to make `add_type_definitions` work.
+        for n in root.namespaces.values() {
+            self.ffi_type_oracle
+                .add_type_definitions(&n.type_definitions)
+                .context("while building the type ffi oracle")?;
+            self.layout_oracle
+                .add_type_definitions(&n.type_definitions)
+                .context("while building the ffi buffer layout oracle")?;
+        }
+
         Ok(())
     }
 

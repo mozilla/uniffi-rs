@@ -62,7 +62,7 @@ impl FfiBufferLayoutOracle {
             Type::UInt32 | Type::Int32 | Type::Float32 => Layout::from_size_align(4, 4)?,
             Type::UInt64 | Type::Int64 | Type::Float64 => Layout::from_size_align(8, 8)?,
             // One 8-byte handle
-            Type::Interface { .. } => Layout::from_size_align(8, 8)?,
+            Type::CallbackInterface { .. } | Type::Interface { .. } => Layout::from_size_align(8, 8)?,
             // 8-byte seconds at offset 0, 4-byte nanoseconds at offset 8
             // (see the timestamp/duration scaffolding templates)
             Type::Timestamp | Type::Duration => Layout::from_size_align(12, 8)?,
@@ -87,17 +87,24 @@ impl FfiBufferLayoutOracle {
         &mut self,
         sorted_type_definitions: &[general::TypeDefinition],
     ) -> Result<()> {
+        use anyhow::Context;
+
         for type_def in sorted_type_definitions {
             if self.layout_map.contains_key(type_def.self_type()) {
                 continue;
             }
+            self.add_type_definition(type_def)
+                .with_context(|| format!("while processing {:?}", type_def.self_type()))?;
+        }
+        Ok(())
+    }
 
-            match type_def {
-                general::TypeDefinition::Record(rec) => self.add_record(rec)?,
-                general::TypeDefinition::Enum(en) => self.add_enum(en)?,
-                general::TypeDefinition::Optional(opt) => self.add_optional(opt)?,
-                _ => (),
-            }
+    pub fn add_type_definition(&mut self, type_def: &general::TypeDefinition) -> Result<()> {
+        match type_def {
+            general::TypeDefinition::Record(rec) => self.add_record(rec)?,
+            general::TypeDefinition::Enum(en) => self.add_enum(en)?,
+            general::TypeDefinition::Optional(opt) => self.add_optional(opt)?,
+            _ => (),
         }
         Ok(())
     }

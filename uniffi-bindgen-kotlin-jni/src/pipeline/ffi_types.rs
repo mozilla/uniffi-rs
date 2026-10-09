@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use anyhow::Context;
+
 use super::*;
 
 /// Standard mappings Type -> FFI types
@@ -89,60 +91,66 @@ impl FfiTypeOracle {
         sorted_type_definitions: &[general::TypeDefinition],
     ) -> Result<()> {
         for type_def in sorted_type_definitions {
-            match type_def {
-                general::TypeDefinition::Record(rec) => {
-                    let mut ffi_types = vec![];
-                    for f in rec.fields.iter() {
-                        ffi_types.extend(self.get_ffi_types(&f.ty.ty)?)
-                    }
-                    self.user_type_map
-                        .insert(rec.self_type.ty.clone(), ffi_types);
+            self.add_type_definition(type_def)
+                .with_context(|| format!("while processing {:?}", type_def.self_type()))?;
+        }
+        Ok(())
+    }
+
+    pub fn add_type_definition(&mut self, type_def: &general::TypeDefinition) -> Result<()> {
+        match type_def {
+            general::TypeDefinition::Record(rec) => {
+                let mut ffi_types = vec![];
+                for f in rec.fields.iter() {
+                    ffi_types.extend(self.get_ffi_types(&f.ty.ty)?)
                 }
-                general::TypeDefinition::Enum(en) => {
-                    if matches!(en.shape, EnumShape::Error { flat: true }) {
-                        // Flat enums always lower to a discriminant plus a string value
-                        self.user_type_map.insert(
-                            en.self_type.ty.clone(),
-                            vec![FfiType::Int32, FfiType::String],
-                        );
-                        continue;
-                    }
-                    // Start with just a i32 for the variant index, we'll add to this as we process each
-                    // variant
-                    let mut all_ffi_types = vec![FfiType::Int32];
-                    for v in en.variants.iter() {
-                        let mut field_ffi_types = vec![];
-                        for f in v.fields.iter() {
-                            field_ffi_types.extend(self.get_ffi_types(&f.ty.ty)?);
-                        }
-                        // Extend `all_ffi_types` with the new FFI types for this variant.
-                        // However, if there already is an existing ffi type, then we can re-use it.
-                        let mut existing_types: HashSet<FfiType> =
-                            all_ffi_types.iter().skip(1).cloned().collect();
-                        for ffi_type in field_ffi_types {
-                            if !existing_types.remove(&ffi_type) {
-                                all_ffi_types.push(ffi_type);
-                            }
-                        }
-                    }
-                    self.user_type_map
-                        .insert(en.self_type.ty.clone(), all_ffi_types);
-                }
-                general::TypeDefinition::Optional(opt) => {
-                    if standard_ffi_type_mapping(&opt.self_type.ty).is_none() {
-                        let mut ffi_types = vec![FfiType::Boolean];
-                        ffi_types.extend(self.get_ffi_types(&opt.inner.ty)?);
-                        self.user_type_map
-                            .insert(opt.self_type.ty.clone(), ffi_types);
-                    }
-                }
-                general::TypeDefinition::Custom(custom) => {
-                    let ffi_types = self.get_ffi_types(&custom.builtin.ty)?;
-                    self.user_type_map
-                        .insert(custom.self_type.ty.clone(), ffi_types);
-                }
-                _ => (),
+                self.user_type_map
+                    .insert(rec.self_type.ty.clone(), ffi_types);
             }
+            general::TypeDefinition::Enum(en) => {
+                if matches!(en.shape, EnumShape::Error { flat: true }) {
+                    // Flat enums always lower to a discriminant plus a string value
+                    self.user_type_map.insert(
+                        en.self_type.ty.clone(),
+                        vec![FfiType::Int32, FfiType::String],
+                    );
+                    return Ok(());
+                }
+                // Start with just a i32 for the variant index, we'll add to this as we process each
+                // variant
+                let mut all_ffi_types = vec![FfiType::Int32];
+                for v in en.variants.iter() {
+                    let mut field_ffi_types = vec![];
+                    for f in v.fields.iter() {
+                        field_ffi_types.extend(self.get_ffi_types(&f.ty.ty)?);
+                    }
+                    // Extend `all_ffi_types` with the new FFI types for this variant.
+                    // However, if there already is an existing ffi type, then we can re-use it.
+                    let mut existing_types: HashSet<FfiType> =
+                        all_ffi_types.iter().skip(1).cloned().collect();
+                    for ffi_type in field_ffi_types {
+                        if !existing_types.remove(&ffi_type) {
+                            all_ffi_types.push(ffi_type);
+                        }
+                    }
+                }
+                self.user_type_map
+                    .insert(en.self_type.ty.clone(), all_ffi_types);
+            }
+            general::TypeDefinition::Optional(opt) => {
+                if standard_ffi_type_mapping(&opt.self_type.ty).is_none() {
+                    let mut ffi_types = vec![FfiType::Boolean];
+                    ffi_types.extend(self.get_ffi_types(&opt.inner.ty)?);
+                    self.user_type_map
+                        .insert(opt.self_type.ty.clone(), ffi_types);
+                }
+            }
+            general::TypeDefinition::Custom(custom) => {
+                let ffi_types = self.get_ffi_types(&custom.builtin.ty)?;
+                self.user_type_map
+                    .insert(custom.self_type.ty.clone(), ffi_types);
+            }
+            _ => (),
         }
         Ok(())
     }

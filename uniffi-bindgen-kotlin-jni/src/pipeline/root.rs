@@ -2,10 +2,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use uniffi_bindgen::pipeline::general::sort::sort_type_definitions_ignore_container_children;
+
 use super::*;
 
-pub fn map_root(input: general::Root, context: &Context) -> Result<Root> {
+pub fn map_root(mut input: general::Root, context: &Context) -> Result<Root> {
     let mut context = context.clone();
+    // Re-sort the type definitions with sort_type_definitions_ignore_container_children.
+    //
+    // It allows us to handle recursive types when calculating FFI layouts, since:
+    //   - box/vec/set have static FFI layouts, we don't care about the children
+    //   - Rust requires that one field is a box/vec/set when types are recursive.
+    for namespace in input.namespaces.values_mut() {
+        namespace.type_definitions =
+            sort_type_definitions_ignore_container_children(namespace.type_definitions.drain(..));
+    }
+
     context.update_from_root(&input)?;
 
     Ok(Root {
