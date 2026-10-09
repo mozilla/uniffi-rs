@@ -60,9 +60,6 @@ See ADR-0008 for the reasoning.
 
 ## Extra requirements compared to the normal macro code
 
-* All exported items must be `pub`. This includes types, fields, functions, etc.
-  Furthermore, types must be publicly reachable (there must be a path that other crates can import).
-* The top-level Rust crate must directly depend on all UniFFI crates
 * The top-level Rust crate must depend on `uniffi-bindgen-kotlin-jni-runtime`
-* UDL is only semi-supported:
-  - recursive types must to use proc-macros because we need to know which type is boxed in Rust.
+* All the requirements from ../uniffi_parse_rs/README.md
+* Recursive types defined in UDL are not supported because we need to know which type is boxed in Rust.

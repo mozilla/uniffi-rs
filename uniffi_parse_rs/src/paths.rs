@@ -348,12 +348,6 @@ impl<'ir> RPath<'ir> {
         namespace: Namespace,
     ) -> Result<ChildItem<'ir>> {
         let ident = ident.unraw();
-        if let Some(path) = self.child_udl_item(module, &ident, namespace)? {
-            return Ok(ChildItem {
-                path,
-                vis: Visibility::Public,
-            });
-        }
         if let Some(child) = self.child_special_item(ir, cache, module, &ident, namespace)? {
             return Ok(child);
         }
@@ -364,10 +358,15 @@ impl<'ir> RPath<'ir> {
             return Ok(child);
         }
         if let Some(child) = self.child_glob_use(ir, cache, &ident, use_globs, namespace)? {
-            Ok(child)
-        } else {
-            Err(Error::new(self.file_id(), ident.span(), NotFound))
+            return Ok(child);
         }
+        if let Some(path) = self.child_udl_item(module, &ident, namespace)? {
+            return Ok(ChildItem {
+                path,
+                vis: Visibility::Public,
+            });
+        }
+        Err(Error::new(self.file_id(), ident.span(), NotFound))
     }
 
     /// Try to find a UDL item for [Self::child]
