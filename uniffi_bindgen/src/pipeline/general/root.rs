@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use crate::pipeline::general::sort::sort_namespaces;
+
 use super::*;
 
 pub fn map_root(input: initial::Root, context: &Context) -> Result<Root> {
@@ -11,7 +13,10 @@ pub fn map_root(input: initial::Root, context: &Context) -> Result<Root> {
     Ok(Root {
         cdylib: input.cdylib,
         checksum_mode: input.checksum_mode,
-        namespaces: input.namespaces.map_node(&context)?,
+        namespaces: sort_namespaces(input.namespaces.map_node(&context)?.into_values())
+            .into_iter()
+            .map(|n| (n.name.clone(), n))
+            .collect(),
         builtin_types: builtin_types(&context)?,
     })
 }

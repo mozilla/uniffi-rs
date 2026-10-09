@@ -9,18 +9,36 @@
 
 use super::*;
 
+// Sort namespaces so that external type sources go first
+pub fn sort_namespaces(namespaces: impl IntoIterator<Item = Namespace>) -> Vec<Namespace> {
+    DependencySorter::new(namespaces, NamespaceDependencyLogic).sort()
+}
+
+// Sort types so that dependencies go first
 pub fn sort_type_definitions(
     type_definitions: impl IntoIterator<Item = TypeDefinition>,
 ) -> Vec<TypeDefinition> {
-    let type_sorter = DependencySorter::new(type_definitions, TypeDefinitionDependencyLogic);
-    type_sorter.sort()
+    DependencySorter::new(type_definitions, TypeDefinitionDependencyLogic::default()).sort()
 }
 
+// Like `sort_type_definitions`, but treats Box/Vec/Set as having no dependencies
+//
+// This is used by uniffi-bindgen-kotlin-jni.
+// See `uniffi-bindgen-kotlin-jni/src/pipeline/root.rs` for details.
+pub fn sort_type_definitions_ignore_container_children(
+    type_definitions: impl IntoIterator<Item = TypeDefinition>,
+) -> Vec<TypeDefinition> {
+    let logic = TypeDefinitionDependencyLogic {
+        ignore_container_children: true,
+    };
+    DependencySorter::new(type_definitions, logic).sort()
+}
+
+// Sort FFI types so that dependencies go first
 pub fn sort_ffi_definitions(
     ffi_definitions: impl IntoIterator<Item = FfiDefinition>,
 ) -> Vec<FfiDefinition> {
-    let ffi_dep_sorter = DependencySorter::new(ffi_definitions, FfiDefinitionDependencyLogic);
-    ffi_dep_sorter.sort()
+    DependencySorter::new(ffi_definitions, FfiDefinitionDependencyLogic).sort()
 }
 
 // Generalized dependency sort using a version of depth-first topological sort:
@@ -128,7 +146,30 @@ impl FfiDefinitionDependencyLogic {
     }
 }
 
-struct TypeDefinitionDependencyLogic;
+struct NamespaceDependencyLogic;
+
+impl DependencyLogic for NamespaceDependencyLogic {
+    type Item = Namespace;
+
+    fn item_name(&self, namespace: &Namespace) -> String {
+        namespace.name.clone()
+    }
+
+    fn dependency_names(&self, namespace: &Namespace) -> Vec<String> {
+        let mut dependencies = vec![];
+        for type_def in namespace.type_definitions.iter() {
+            if let TypeDefinition::External(ext) = type_def {
+                dependencies.push(ext.namespace.clone())
+            }
+        }
+        dependencies
+    }
+}
+
+#[derive(Default)]
+struct TypeDefinitionDependencyLogic {
+    ignore_container_children: bool,
+}
 
 impl TypeDefinitionDependencyLogic {
     fn type_name(ty: &TypeNode) -> String {
@@ -164,11 +205,17 @@ impl DependencyLogic for TypeDefinitionDependencyLogic {
     fn dependency_names(&self, type_def: &TypeDefinition) -> Vec<String> {
         match type_def {
             TypeDefinition::Simple(_) => vec![],
+            TypeDefinition::Optional(OptionalType { inner, .. }) => {
+                vec![Self::type_name(inner)]
+            }
             TypeDefinition::Box(BoxedType { inner, .. })
-            | TypeDefinition::Optional(OptionalType { inner, .. })
             | TypeDefinition::Sequence(SequenceType { inner, .. })
             | TypeDefinition::Set(SetType { inner, .. }) => {
-                vec![Self::type_name(inner)]
+                if self.ignore_container_children {
+                    vec![]
+                } else {
+                    vec![Self::type_name(inner)]
+                }
             }
             TypeDefinition::Map(MapType { key, value, .. }) => {
                 vec![Self::type_name(key), Self::type_name(value)]

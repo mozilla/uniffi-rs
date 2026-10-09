@@ -64,3 +64,5 @@ See ADR-0008 for the reasoning.
   Furthermore, types must be publicly reachable (there must be a path that other crates can import).
 * The top-level Rust crate must directly depend on all UniFFI crates
 * The top-level Rust crate must depend on `uniffi-bindgen-kotlin-jni-runtime`
+* UDL is only semi-supported:
+  - recursive types must to use proc-macros because we need to know which type is boxed in Rust.
