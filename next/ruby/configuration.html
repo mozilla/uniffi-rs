@@ -2255,6 +2255,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#internalerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        InternalError
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2858,6 +2869,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#internalerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        InternalError
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2901,9 +2923,19 @@
 <td>An explicit path to the shared library, passed as the <code>ffi_lib</code> argument.</td>
 </tr>
 <tr>
+<td><code>module_name</code></td>
+<td><code>UpperCamelCase(namespace)</code></td>
+<td>The Ruby module name emitted as <code>module …</code> in that crate's generated bindings. Must be a single constant identifier (e.g. <code>UniffiOne</code>), not a nested path (<code>Foo::Bar</code>).</td>
+</tr>
+<tr>
 <td><code>custom_types</code></td>
 <td></td>
 <td>A map which controls how custom types are exposed to Ruby. See the <a href="../types/custom_types.html#custom-types-in-the-bindings-code">custom types section of the manual</a></td>
+</tr>
+<tr>
+<td><code>external_packages</code></td>
+<td></td>
+<td>A map from Rust crate names to Ruby module names for use with <a href="../types/remote_ext_types.html">external types</a>. Keys are crate names, not UniFFI namespaces: the Cargo package name (<code>my-crate</code>) and the underscored Rust crate name (<code>my_crate</code>) are equivalent (<code>uniffi_one</code>, not <code>uniffi_one_ns</code>). This controls how generated code <em>references</em> external modules (e.g. <code>OtherCrate::SomeType</code>). <code>require</code> paths still use each crate's UniFFI namespace (the generated <code>.rb</code> filename). In library mode (<code>generate --library</code>) every peer crate is auto-filled from that crate's <code>module_name</code>; a listed value must match. A mismatch is a bindgen error. Omitting a key does not skip the crate or control mixin / <code>require</code> membership.</td>
 </tr>
 <tr>
 <td><code>rename</code></td>
@@ -2929,7 +2961,27 @@
 <span class="n">lift</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;URI.parse({})&quot;</span>
 <span class="n">lower</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{}.to_s&quot;</span>
 </code></pre></div>
+<p>Module name (defining crate):</p>
+<div class="highlight"><pre><span></span><code><span class="k">[bindings.ruby]</span>
+<span class="c1"># Default is UpperCamelCase of the UniFFI namespace (e.g. uniffi_one_ns → UniffiOneNs).</span>
+<span class="n">module_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;UniffiOne&quot;</span>
+</code></pre></div>
+<p>External Packages (consumer; optional in library mode):</p>
+<div class="highlight"><pre><span></span><code><span class="k">[bindings.ruby.external_packages]</span>
+<span class="c1"># Map the crate name from [External={name}] / Cargo.toml to its Ruby module name.</span>
+<span class="c1"># Hyphens and underscores are equivalent: `rust-crate-name` and `rust_crate_name` are the same key.</span>
+<span class="c1"># Library mode already maps every peer crate to that crate&#39;s `module_name`; a listed</span>
+<span class="c1"># value must match. Keys are crate names, not namespaces.</span>
+<span class="n">rust-crate-name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ExternalRubyModule&quot;</span>
+</code></pre></div>
 <p>Refer to <a href="https://github.com/mozilla/uniffi-rs/blob/main/examples/custom-types/uniffi.toml"><code>examples/custom-types/uniffi.toml</code></a> for a complete example.</p>
+<h2 id="internalerror">InternalError</h2>
+<p>Each generated module defines its own <code>InternalError</code> class (<code>StandardError</code> subclass), for example <code>Coverall::InternalError</code>.
+This is the same idea as Python <code>InternalError</code> and Kotlin <code>InternalException</code>: a public bindings-level error for panics, protocol mismatches, and corrupt buffers — not for declared API errors.</p>
+<p>Readers and writers for a type live in that type's crate (Ruby mixins, like Python/Kotlin converters).
+A corrupt buffer while lifting an <a href="../types/remote_ext_types.html">external type</a> therefore raises <strong>the defining crate's</strong> <code>InternalError</code>.
+<code>rescue ImportedTypesLib::InternalError</code> will not catch <code>UniffiOneNs::InternalError</code>.</p>
+<p>Rescue the crate that owns the type, rescue each crate you depend on, or use <code>rescue StandardError</code> as a catch-all.</p>
 
 
 

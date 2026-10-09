@@ -2831,6 +2831,9 @@ fn uniffi_foreign_handle(&amp;self) { ... }
 <p>"External types" refer to types defined in other crates that use UniFFI.
 This normally means types from other crates in your workspace.</p>
 <p>Proc-macros typically use external types automatically, but UDL needs them described.</p>
+<p>Bindings-level internal errors (<code>InternalError</code> / <code>InternalException</code>) are defined by the crate that owns the type — Ruby mixins and Python/Kotlin converters raise that crate's class, not the consumer's.</p>
+<h2 id="proc-macros_1">Proc-macros</h2>
+<p>Proc-macro-based code can use external types automatically, without any extra code.</p>
 <h2 id="udl_1">UDL</h2>
 <p>Suppose you depend on the <code>DemoDict</code> type from another UniFFIed crate in your workspace.
 You can reference this type by using the <code>[External]</code> attribute to wrap a typedef describing the concrete type.</p>
@@ -2884,6 +2887,30 @@ rust-crate-name = &quot;kotlin.package.name&quot;
 <p>For Swift, you must compile all generated <code>.swift</code> files together in a single
 module since the generate code expects that it can access external types
 without importing them.</p>
+<h3 id="ruby">Ruby</h3>
+<p>For Ruby, external types are supported in library mode
+(<code>generate --library [path-to-cdylib]</code>). Single-UDL generation (<code>generate [udl-path]</code>)
+is not supported for external types, as the generator cannot resolve types from
+other crates without their compiled scaffolding metadata; bindgen errors rather
+than emitting incomplete bindings. Library mode generates
+all bindings files together and uses <code>require</code> to pull in external modules at runtime.</p>
+<p>The defining crate's Ruby <code>module</code> name defaults to the UniFFI namespace converted
+to UpperCamelCase. Set <code>[bindings.ruby.module_name]</code> on that crate to change it.
+Library mode copies each peer's <code>module_name</code> into the consumer's
+<code>[bindings.ruby.external_packages]</code> map. A consumer-side entry is optional and
+must match; a mismatch is a bindgen error. <code>require</code> paths still use the
+namespace / <code>.rb</code> filename (references only):</p>
+<div class="highlight"><pre><span></span><code># defining crate
+[bindings.ruby]
+module_name = &quot;RubyModuleName&quot;
+
+# consumer (optional in library mode; must match the defining crate)
+[bindings.ruby.external_packages]
+# Map crate names from [External={name}] / Cargo.toml into Ruby module names.
+# `rust-crate-name` and `rust_crate_name` are the same key.
+rust-crate-name = &quot;RubyModuleName&quot;
+</code></pre></div>
+<p>See the <a href="../ruby/configuration.html">Ruby configuration</a> page for more details.</p>
 
 
 
