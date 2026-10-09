@@ -101,6 +101,18 @@ impl CallbackInterface {
         self.methods.iter().any(|m| m.callable.is_async)
     }
 
+    /// Whether any method needs the `#[async_trait]` attribute on the generated impl.
+    ///
+    /// Only methods declared with `async` / `#[async_trait]` need it (their impl uses
+    /// `async fn`). Methods that are async by virtue of a hand-written boxed-future return
+    /// type are emitted as plain `fn … -> Pin<Box<dyn Future<…>>>`, which `#[async_trait]`
+    /// would not (and must not) rewrite.
+    pub fn has_declared_async_method(&self) -> bool {
+        self.methods
+            .iter()
+            .any(|m| m.callable.is_async && !m.callable.desugared_async)
+    }
+
     pub fn free_fn_kt(&self) -> String {
         format!("callbackInterfaceFree{}", self.self_type.id)
     }

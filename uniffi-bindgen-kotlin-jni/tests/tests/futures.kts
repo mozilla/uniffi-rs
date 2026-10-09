@@ -82,3 +82,17 @@ runBlocking {
         CallbackInterfaceNumbers(a=10u, b=11u)
     ) == CallbackInterfaceNumbers(a=10u, b=11u))
 }
+
+// Callback interface whose async method is a hand-written boxed future (no `#[async_trait]`).
+// It should be exposed as a `suspend fun` and behave like any other async callback method.
+class BoxedFutureCallbackImpl : BoxedFutureTrait {
+    override suspend fun reply(ms: UShort, who: String): String {
+        return "Hello, $who!"
+    }
+}
+
+runBlocking {
+    val cbi = BoxedFutureCallbackImpl()
+    assert(invokeBoxedFutureTrait(cbi, 1.toUShort(), "Alice") == "Hello, Alice!")
+    assert(invokeBoxedFutureTrait(cbi, 2.toUShort(), "Bob") == "Hello, Bob!")
+}

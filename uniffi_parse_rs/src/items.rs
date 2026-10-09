@@ -72,6 +72,10 @@ pub enum BuiltinItem {
     Result,
     Arc,
     Box,
+    /// `std::pin::Pin`, e.g. `Pin<Box<dyn Future<Output = T>>>`
+    Pin,
+    /// `std::future::Future`, e.g. `dyn Future<Output = T>`
+    Future,
     From,
     UnexpectedUniFFICallbackError,
     UniffiMacro(&'static str),
@@ -88,6 +92,8 @@ impl BuiltinItem {
                 | Self::Option
                 | Self::Arc
                 | Self::Box
+                | Self::Pin
+                | Self::Future
                 | Self::Result
         )
     }
