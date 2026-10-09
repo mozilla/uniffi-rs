@@ -410,8 +410,7 @@ impl Ir {
 
     #[cfg(test)]
     pub fn new_for_test(test_sources: &[&str]) -> Self {
-        let mut ir = Self::new_for_test_with_env(test_sources, CompileEnv::new_for_test());
-        ir.resolve_items().expect("resolve_items failed");
+        let ir = Self::new_for_test_with_env(test_sources, CompileEnv::new_for_test());
         ir
     }
 

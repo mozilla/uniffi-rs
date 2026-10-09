@@ -786,7 +786,7 @@ impl<'a> GenericArgs<'a> {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::{paths::tests::path_for_module, ErrorKind};
+    use crate::{paths::tests::path_for_module, CompileEnv, ErrorKind};
     use uniffi_meta::{ObjectImpl, TraitKind};
 
     fn run_resolve_type<'ir>(
@@ -1684,6 +1684,45 @@ pub mod tests {
                     module_path: "udl_types".into(),
                     name: "UdlCallback".into(),
                 }),
+            })
+        );
+    }
+
+    // Custom types in UDL requires special handling because the presence of the UDL item
+    // interferes with finding the actual type.
+    #[test]
+    fn test_udl_custom_types() {
+        // Construct the Ir manually so we can run through the worst-case scenario: the UDL items
+        // are present before we resolve items
+        let env = CompileEnv::new_for_test();
+        let mut ir = Ir::default();
+        ir.add_crate_root(
+            "types",
+            &camino::Utf8PathBuf::from(format!("src/test_src/types.rs")),
+            env.clone(),
+        )
+        .unwrap();
+        ir.add_udl_metadata(
+            "types",
+            vec![uniffi_meta::CustomTypeMetadata {
+                module_path: "types".into(),
+                name: "Guid".into(),
+                orig_name: None,
+                builtin: uniffi_meta::Type::UInt64,
+                docstring: None,
+            }
+            .into()],
+        )
+        .unwrap();
+        ir.resolve_items().expect("resolve_items failed");
+
+        let mut cache = LookupCache::default();
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types", "Guid",),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                name: "Guid".into(),
+                bridge_type: Box::new(Type::UInt64),
             })
         );
     }
