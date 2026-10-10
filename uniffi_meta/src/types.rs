@@ -17,7 +17,7 @@
 //! about how these API-level types map into the lower-level types of the FFI layer as represented
 //! by the [`ffi::FfiType`](super::ffi::FfiType) enum, but that's a detail that is invisible to end users.
 
-use crate::Checksum;
+use crate::{crate_name, Checksum};
 use uniffi_pipeline::{MapNode, Node};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Checksum, Ord, PartialOrd, Node, MapNode)]
@@ -191,7 +191,7 @@ impl Type {
 
     pub fn crate_name(&self) -> Option<&str> {
         self.module_path()
-            .map(|module_path| module_path.split("::").next().unwrap())
+            .map(|module_path| crate_name(module_path))
     }
 
     fn rename(&mut self, new_name: String) {
