@@ -470,9 +470,10 @@ impl ComponentInterface {
     }
 
     pub fn find_component_interface(&self, module_path: &str) -> Option<&ComponentInterface> {
+        let crate_name = module_path.split("::").next().unwrap();
         self.all_component_interfaces
             .iter()
-            .find(|ci| ci.crate_name() == module_path)
+            .find(|ci| ci.crate_name() == crate_name)
     }
 
     // The namespace to use in crate-level FFI function definitions. Not used as the ffi
