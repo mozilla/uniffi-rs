@@ -8,6 +8,7 @@
 //!
 use anyhow::{Context, Result};
 use std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap};
+use uniffi_meta::crate_name;
 
 pub use uniffi_meta::{AsType, NamespaceMetadata, ObjectImpl, Type, TypeIterator};
 
@@ -194,7 +195,7 @@ fn normalize_type_module_path(ty: &Type) -> Type {
 }
 
 fn normalize_module_path(module_path: &str) -> String {
-    module_path.split("::").next().unwrap().to_string()
+    crate_name(module_path).to_string()
 }
 
 #[cfg(test)]

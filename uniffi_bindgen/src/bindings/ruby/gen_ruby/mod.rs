@@ -9,6 +9,7 @@ use heck::{ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 use std::borrow::Borrow;
 use std::collections::{BTreeSet, HashMap};
+use uniffi_meta::crate_name;
 
 use crate::interface::{Enum, *};
 
@@ -46,11 +47,7 @@ fn is_valid_ruby_constant(name: &str) -> bool {
 /// proc-macro `module_path!()` (`my_crate`) resolve to the same key. Matches
 /// [`crate::interface::ComponentInterface::namespace_for_module_path`].
 fn crate_name_from_module_path(module_path: &str) -> String {
-    module_path
-        .split("::")
-        .next()
-        .unwrap_or(module_path)
-        .replace('-', "_")
+    crate_name(module_path).replace('-', "_")
 }
 
 fn peel_boxes(type_: &Type) -> &Type {

@@ -223,13 +223,15 @@ fn search_module<'ir>(
 
 #[cfg(test)]
 mod test {
+    use uniffi_meta::crate_name;
+
     use crate::paths::tests::path_for_module;
 
     use super::*;
 
     pub fn run_public_path_to_item(ir: &Ir, item_path: &str) -> ItemNames {
         let mut cache = LookupCache::default();
-        let crate_path = path_for_module(ir, item_path.split("::").next().unwrap());
+        let crate_path = path_for_module(ir, crate_name(item_path));
         let item = crate_path
             .resolve(
                 ir,
