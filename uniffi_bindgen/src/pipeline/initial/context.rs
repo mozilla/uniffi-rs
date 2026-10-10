@@ -10,6 +10,8 @@ use std::{
     },
 };
 
+use uniffi_meta::crate_name;
+
 use super::*;
 
 #[derive(Default)]
@@ -40,10 +42,7 @@ pub struct Context {
 
 impl Context {
     pub fn get_namespace_name(&self, module_path: &str) -> Result<String> {
-        let crate_name = module_path
-            .split("::")
-            .next()
-            .unwrap()
+        let crate_name = crate_name(module_path)
             // fixup module paths from uniffi_udl;
             .replace("-", "_");
 
@@ -66,8 +65,7 @@ impl Context {
     }
 
     pub fn methods_for_type(&self, module_path: &str, type_name: &str) -> Result<Vec<Method>> {
-        let crate_name = module_path.split("::").next().unwrap();
-        let child_key = (crate_name.to_string(), type_name.to_string());
+        let child_key = (crate_name(module_path).to_string(), type_name.to_string());
 
         if let Some(methods) = self.methods.get(&child_key) {
             if self.trait_methods.contains_key(&child_key) {
@@ -97,8 +95,7 @@ impl Context {
         module_path: &str,
         type_name: &str,
     ) -> Result<Vec<Constructor>> {
-        let crate_name = module_path.split("::").next().unwrap();
-        let child_key = (crate_name.to_string(), type_name.to_string());
+        let child_key = (crate_name(module_path).to_string(), type_name.to_string());
 
         if let Some(constructors) = self.constructors.get(&child_key) {
             constructors
@@ -116,8 +113,7 @@ impl Context {
         module_path: &str,
         type_name: &str,
     ) -> Result<Vec<UniffiTrait>> {
-        let crate_name = module_path.split("::").next().unwrap();
-        let child_key = (crate_name.to_string(), type_name.to_string());
+        let child_key = (crate_name(module_path).to_string(), type_name.to_string());
 
         if let Some(uniffi_trait) = self.uniffi_traits.get(&child_key) {
             uniffi_trait
@@ -135,8 +131,7 @@ impl Context {
         module_path: &str,
         type_name: &str,
     ) -> Result<Vec<ObjectTraitImpl>> {
-        let crate_name = module_path.split("::").next().unwrap();
-        let child_key = (crate_name.to_string(), type_name.to_string());
+        let child_key = (crate_name(module_path).to_string(), type_name.to_string());
 
         if let Some(trait_impl) = self.trait_impls.get(&child_key) {
             trait_impl

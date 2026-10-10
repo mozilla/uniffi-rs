@@ -82,9 +82,9 @@ pub use ffi::{
 };
 pub use uniffi_meta::Radix;
 use uniffi_meta::{
-    ConstructorMetadata, DefaultValueMetadata, LiteralMetadata, MethodMetadata, NamespaceMetadata,
-    ObjectMetadata, ObjectTraitImplMetadata, TraitMethodMetadata, UniffiTraitMetadata,
-    UNIFFI_CONTRACT_VERSION,
+    crate_name, ConstructorMetadata, DefaultValueMetadata, LiteralMetadata, MethodMetadata,
+    NamespaceMetadata, ObjectMetadata, ObjectTraitImplMetadata, TraitMethodMetadata,
+    UniffiTraitMetadata, UNIFFI_CONTRACT_VERSION,
 };
 pub type Literal = LiteralMetadata;
 pub type DefaultValue = DefaultValueMetadata;
@@ -389,11 +389,7 @@ impl ComponentInterface {
 
     pub fn namespace_for_module_path(&self, module_path: &str) -> Result<&str> {
         // Need the `replace()` call to handle items from `uniffi_udl`
-        let crate_name = module_path
-            .split("::")
-            .next()
-            .unwrap_or(module_path)
-            .replace("-", "_");
+        let crate_name = crate_name(module_path).replace("-", "_");
         self.crate_to_namespace
             .get(&crate_name)
             .map(|n| n.name.as_ref())
@@ -470,9 +466,10 @@ impl ComponentInterface {
     }
 
     pub fn find_component_interface(&self, module_path: &str) -> Option<&ComponentInterface> {
+        let crate_name = crate_name(module_path);
         self.all_component_interfaces
             .iter()
-            .find(|ci| ci.crate_name() == module_path)
+            .find(|ci| ci.crate_name() == crate_name)
     }
 
     // The namespace to use in crate-level FFI function definitions. Not used as the ffi
