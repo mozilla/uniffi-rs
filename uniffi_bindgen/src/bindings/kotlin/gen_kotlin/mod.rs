@@ -10,6 +10,7 @@ use std::fmt::Debug;
 use askama::Template;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
+use uniffi_meta::crate_name;
 
 use crate::{
     anyhow, bail, interface::ffi::ExternalFfiMetadata, interface::*, to_askama_error, Context,
@@ -118,8 +119,7 @@ impl Config {
     // Get the package name for an external type
     fn external_package_name(&self, module_path: &str, namespace: Option<&str>) -> String {
         // config overrides are keyed by the crate name, default fallback is the namespace.
-        let crate_name = module_path.split("::").next().unwrap();
-        match self.external_packages.get(crate_name) {
+        match self.external_packages.get(crate_name(module_path)) {
             Some(name) => name.clone(),
             // If the module path is not in `external_packages`, we need to fall back to a default
             // with the namespace, which we hopefully have.  This is quite fragile, but it's
