@@ -48,6 +48,7 @@
 use std::{
     collections::{BTreeMap, BTreeSet, HashSet},
     iter,
+    ops::ControlFlow,
 };
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
@@ -416,10 +417,127 @@ impl ComponentInterface {
             .any(|t| matches!(t, Type::Object { .. }))
     }
 
+    /// Find the component interface with the type definitions for the given module.
+    fn find_ci_for(&self, module_path: &str) -> &ComponentInterface {
+        self.find_component_interface(module_path).unwrap_or(self)
+    }
+
+    fn find_types_iter<'a>(&'a self, item: &Type) -> Option<TypeIterator<'a>> {
+        // This is a little awkward because the various definition lookup methods return an `Option<T>`.
+        // In the unlikely event that one of them returns `None` then, rather than trying to advance
+        // to a non-existent type, we just leave the existing iterator in place and allow the recursive
+        // call to `next()` to try again with the next pending type.
+        // (This is fragile - not finding a type for a name will cause difficult to diagnose bugs!)
+        //
+        // FIXME: improve this comment
+        match item {
+            Type::Record {
+                module_path, name, ..
+            } => self
+                .find_ci_for(module_path)
+                .get_record_definition(name)
+                .map(Record::iter_types),
+            Type::Enum {
+                module_path, name, ..
+            } => self
+                .find_ci_for(module_path)
+                .get_enum_definition(name)
+                .map(Enum::iter_types),
+            Type::Object {
+                module_path, name, ..
+            } => self
+                .find_ci_for(module_path)
+                .get_object_definition(name)
+                .map(Object::iter_types),
+            Type::CallbackInterface {
+                module_path, name, ..
+            } => self
+                .find_ci_for(module_path)
+                .get_callback_interface_definition(name)
+                .map(CallbackInterface::iter_types),
+            _ => None,
+        }
+    }
+
     /// Check whether the given item contains any (possibly nested) unsigned types
     pub fn item_contains_unsigned_types(&self, item: &Type) -> bool {
         self.iter_types_in_item(item)
             .any(|t| matches!(t, Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64))
+    }
+
+    /// Check whether the given condition holds for either `item` or its children, recursively
+    ///
+    /// `f` should return `ControlFlow::Continue` to continue recursing or `ControlFlow::Break` to return a value
+    fn item_check_recursive<'a>(
+        &'a self,
+        item: &'a Type,
+        seen: &mut HashSet<(&'a str, &'a str)>,
+        f: impl Fn(&Type) -> ControlFlow<bool> + Copy,
+    ) -> bool {
+        if let (Some(crate_name), Some(name)) = (item.crate_name(), item.name()) {
+            if !seen.insert((crate_name, name)) {
+                return true; // we can safely return true even if `f` would return false because we later use `Iterator::all`
+            }
+        }
+        if let ControlFlow::Break(v) = f(item) {
+            return v;
+        }
+        let Some(mut iter) = self.find_types_iter(item) else {
+            return true;
+        };
+        iter.all(|item| self.item_check_recursive(item, seen, f))
+    }
+
+    /// Check whether the item has the trait method returned by `f`, or, if not, recursively checks its children if the method can be synthesized
+    ///
+    /// Usage:
+    /// ```no_run
+    /// let is_eq = ci.item_check_uniffi_trait_methods(ty, |utm| &utm.eq_eq);
+    /// ```
+    pub fn item_check_uniffi_trait_methods(
+        &self,
+        item: &Type,
+        f: impl Fn(&UniffiTraitMethods) -> &Option<Method>,
+    ) -> bool {
+        let r = self.item_check_recursive(item, &mut HashSet::new(), |ty| match ty {
+            Type::Record { module_path, name } => {
+                let uniffi_trait_methods = self
+                    .find_ci_for(module_path)
+                    .get_record_definition(name)
+                    .unwrap()
+                    .uniffi_trait_methods();
+                if f(&uniffi_trait_methods).is_some() {
+                    ControlFlow::Break(true)
+                } else {
+                    ControlFlow::Continue(())
+                }
+            }
+            Type::Enum { module_path, name } => {
+                let uniffi_trait_methods = self
+                    .find_ci_for(module_path)
+                    .get_enum_definition(name)
+                    .unwrap()
+                    .uniffi_trait_methods();
+                if f(&uniffi_trait_methods).is_some() {
+                    ControlFlow::Break(true)
+                } else {
+                    ControlFlow::Continue(())
+                }
+            }
+            Type::Object {
+                module_path, name, ..
+            } => {
+                let uniffi_trait_methods = self
+                    .find_ci_for(module_path)
+                    .get_object_definition(name)
+                    .unwrap()
+                    .uniffi_trait_methods();
+                ControlFlow::Break(f(&uniffi_trait_methods).is_some())
+            }
+            Type::CallbackInterface { .. } => ControlFlow::Break(false),
+            _ => ControlFlow::Continue(()),
+        });
+        r
     }
 
     /// Check whether the interface contains any optional types
@@ -1337,13 +1455,6 @@ impl<'a> RecursiveTypeIterator<'a> {
         }
     }
 
-    /// Find the component interface with the type definitions for the given module.
-    fn find_ci_for(&self, module_path: &str) -> &'a ComponentInterface {
-        self.ci
-            .find_component_interface(module_path)
-            .unwrap_or(self.ci)
-    }
-
     /// Advance the iterator to recurse into the next pending type, if any.
     ///
     /// This method is called when the current iterator is empty, and it will select
@@ -1351,39 +1462,7 @@ impl<'a> RecursiveTypeIterator<'a> {
     /// The return value will be the first item from the new iterator.
     fn advance_to_next_type(&mut self) -> Option<&'a Type> {
         if let Some(next_type) = self.pending.pop() {
-            // This is a little awkward because the various definition lookup methods return an `Option<T>`.
-            // In the unlikely event that one of them returns `None` then, rather than trying to advance
-            // to a non-existent type, we just leave the existing iterator in place and allow the recursive
-            // call to `next()` to try again with the next pending type.
-            // (This is fragile - not finding a type for a name will cause difficult to diagnose bugs!)
-            let next_iter = match next_type {
-                Type::Record {
-                    module_path, name, ..
-                } => self
-                    .find_ci_for(module_path)
-                    .get_record_definition(name)
-                    .map(Record::iter_types),
-                Type::Enum {
-                    module_path, name, ..
-                } => self
-                    .find_ci_for(module_path)
-                    .get_enum_definition(name)
-                    .map(Enum::iter_types),
-                Type::Object {
-                    module_path, name, ..
-                } => self
-                    .find_ci_for(module_path)
-                    .get_object_definition(name)
-                    .map(Object::iter_types),
-                Type::CallbackInterface {
-                    module_path, name, ..
-                } => self
-                    .find_ci_for(module_path)
-                    .get_callback_interface_definition(name)
-                    .map(CallbackInterface::iter_types),
-                _ => None,
-            };
-            if let Some(next_iter) = next_iter {
+            if let Some(next_iter) = self.ci.find_types_iter(next_type) {
                 self.current = next_iter;
             }
             // Advance the new iterator to its first item. If the new iterator happens to be empty,
