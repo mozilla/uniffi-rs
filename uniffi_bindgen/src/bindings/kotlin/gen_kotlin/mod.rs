@@ -549,7 +549,7 @@ impl KotlinCodeOracle {
             FfiType::Handle => "0.toLong()".to_owned(),
             FfiType::RustBuffer(_) => "RustBuffer.ByValue()".to_owned(),
             FfiType::Callback(_) => "null".to_owned(),
-            FfiType::RustCallStatus => "UniffiRustCallStatus.ByValue".to_owned(),
+            FfiType::RustCallStatus => "UniffiRustCallStatus.ByValue()".to_owned(),
             _ => unimplemented!("ffi_default_value: {ffi_type:?}"),
         }
     }
