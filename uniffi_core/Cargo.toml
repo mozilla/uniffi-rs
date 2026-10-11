@@ -13,7 +13,7 @@ readme = "../README.md"
 [dependencies]
 # Re-exported dependencies used in generated Rust scaffolding files.
 anyhow = "1"
-async-compat = { version = "0.2.6", optional = true }
+async-compat = "0.2.6"
 async-trait = "0.1"
 bytes = "1.11"
 once_cell = "1.10.0"
@@ -29,7 +29,7 @@ ffi-trace = []
 # Enable support for Tokio's futures.
 # This must still be opted into on a per-function basis using `#[uniffi::export(async_runtime = "tokio")]`.
 # Configure a custom runtime with `uniffi::set_tokio_runtime()` at startup.
-tokio = ["dep:async-compat", "dep:tokio", "tokio/rt-multi-thread"]
+tokio = ["dep:tokio", "tokio/rt-multi-thread"]
 
 # Enable support for the ffi buffer scaffolding functions
 scaffolding-ffi-buffer-fns = []
