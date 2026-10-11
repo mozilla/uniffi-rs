@@ -84,6 +84,12 @@ mod ffi_converter_traits;
 pub mod metadata;
 pub mod oneshot;
 
+#[cfg(feature = "tokio")]
+pub mod runtime;
+
+#[cfg(feature = "tokio")]
+pub use runtime::{set_tokio_runtime, AlreadySetError};
+
 pub use arc_or_owned::ArcOrOwned;
 pub use custom_types::CustomType;
 

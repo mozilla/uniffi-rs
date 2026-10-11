@@ -544,3 +544,42 @@ impl TestObject {
 }
 
 uniffi::include_scaffolding!("futures");
+
+/// Test that `tokio::task::block_in_place` works with the shared runtime.
+#[uniffi::export(async_runtime = "tokio")]
+pub async fn block_in_place_works() -> String {
+    tokio::task::block_in_place(|| {
+        std::thread::sleep(std::time::Duration::from_millis(10));
+        "ok".to_string()
+    })
+}
+
+/// Test that `tokio::spawn` works with the shared runtime.
+#[uniffi::export(async_runtime = "tokio")]
+pub async fn spawn_works() -> String {
+    let handle = tokio::spawn(async {
+        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+        "spawned".to_string()
+    });
+    handle.await.unwrap()
+}
+
+/// Test that the custom thread name is used.
+#[uniffi::export(async_runtime = "tokio")]
+pub async fn thread_name_works() -> String {
+    std::thread::current().name().unwrap_or("unknown").to_string()
+}
+
+/// Initialize the global Tokio runtime for testing.
+///
+/// This must be called before any async functions with `async_runtime = "tokio"` are used.
+#[uniffi::export]
+pub fn init_tokio_runtime() {
+    let rt = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(4)
+        .thread_name("uniffi-test-tokio")
+        .enable_all()
+        .build()
+        .expect("failed to build Tokio runtime");
+    uniffi::set_tokio_runtime(rt).expect("runtime already set");
+}
