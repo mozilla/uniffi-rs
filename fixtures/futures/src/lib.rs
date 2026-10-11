@@ -567,7 +567,10 @@ pub async fn spawn_works() -> String {
 /// Test that the custom thread name is used.
 #[uniffi::export(async_runtime = "tokio")]
 pub async fn thread_name_works() -> String {
-    std::thread::current().name().unwrap_or("unknown").to_string()
+    std::thread::current()
+        .name()
+        .unwrap_or("unknown")
+        .to_string()
 }
 
 /// Initialize the global Tokio runtime for testing.

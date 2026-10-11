@@ -63,6 +63,7 @@ pub fn set_tokio_runtime(rt: Runtime) -> Result<(), AlreadySetError> {
 ///
 /// Returns `None` if `set_tokio_runtime` has not been called.
 #[cfg(feature = "tokio")]
+#[allow(dead_code)]
 pub(crate) fn tokio_runtime() -> Option<Arc<Runtime>> {
     TOKIO_RUNTIME.get().cloned()
 }

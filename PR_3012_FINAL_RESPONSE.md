@@ -1,82 +1,60 @@
 ---
 
-## ✅ Aligned — Moving to Implementation
+## PR #3012: Global Tokio Runtime Configuration - Ready for Review
 
-Thanks @pronebird @bendk — the direction is clear. Here's what I'll implement:
+### 🎯 Summary
+Implements the global Tokio runtime configuration from #1726 (per @pronebird's proposal with 7 👍). Supersedes #2992.
 
----
+### 🔗 Links
+- **PR**: https://github.com/mozilla/uniffi-rs/pull/3012
+- **Implements**: #1726
+- **Supersedes**: #2992 (closed)
 
-### 🎯 Final Design (Agreed by Both)
+### ✅ Implementation Complete
 
-| Attribute | Generated Code |
-|-----------|----------------|
-| `#[export(async_runtime = "tokio")]` | Auto-enter shared runtime (requires `set_tokio_runtime`) |
-| No attribute | Runs on foreign executor (current behavior) |
+| Component | Status |
+|-----------|--------|
+| `uniffi_core/src/runtime.rs` | ✅ New module with `set_tokio_runtime()`, `tokio_runtime_compat()`, `shutdown_tokio_runtime()` |
+| `uniffi_macros/src/export/scaffolding.rs` | ✅ Generates `tokio_runtime_compat()` wrapper |
+| `uniffi_core/Cargo.toml` | ✅ Updated `async-compat` to 0.2.6, added `tokio/rt-multi-thread` |
+| `fixtures/futures/src/lib.rs` | ✅ Tests for `block_in_place`, `spawn`, `thread_name` |
+| `fixtures/futures/tests/bindings/test_futures.py` | ✅ Python tests for new functions |
+| `docs/manual/src/futures.md` | ✅ Documentation for custom runtime |
+| `CHANGELOG.md` | ✅ Release notes added |
 
-**Zero cost for non-users** — no `OnceLock` call, no branch, no code generated without the attribute. 🚀
+### ✅ Test Results
+- **Python tests**: 20/20 passing (including new tests)
+- **Core Rust tests**: All pass (uniffi_core, uniffi_macros, uniffi, uniffi_meta, uniffi_pipeline, uniffi_bindgen)
+- **Kotlin/Swift/Ruby**: Skipped (toolchains not in CI)
 
----
+### 🎯 Key Features
+- **Global runtime**: `uniffi::set_tokio_runtime(rt)` - configure once
+- **Auto-enter**: `async_runtime = "tokio"` functions automatically use shared runtime
+- **Zero cost**: No runtime code generated without `async_runtime = "tokio"`
+- **Backwards compat**: Existing code works via `async_compat` fallback
+- **Send-safe**: `TokioRuntimeCompat` enters runtime during polling, not across `.await`
 
-### 📦 Implementation Files
-
-```
-uniffi_core/src/runtime.rs          # NEW: OnceLock<Arc<Runtime>> + set/get
-uniffi_core/src/lib.rs              # pub mod runtime
-uniffi_macros/src/export/scaffolding.rs  # Generate guard ONLY when async_runtime = "tokio"
-fixtures/futures/src/lib.rs         # Tests: with/without attribute, block_in_place, multi-crate
-docs/manual/src/futures.md          # Documentation
-```
-
----
-
-### 🔧 Scaffolding Logic (Exact Pattern)
-
+### 📝 Usage Example
 ```rust
-// In gen_fn_scaffolding — ONLY when async_runtime = "tokio"
-if matches!(ar, Some(AsyncRuntime::Tokio(_))) {
-    future_expr = quote! {
-        {
-            let rt = ::uniffi::runtime::tokio_runtime()
-                .expect("Tokio runtime not configured; call uniffi::set_tokio_runtime() at startup");
-            async move {
-                let _guard = rt.enter();  // Guard lives DURING poll (inside async block)
-                #future_expr.await
-            }
-        }
-    };
+// At startup (once)
+uniffi::set_tokio_runtime(
+    tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(4)
+        .thread_name("my-app-tokio")
+        .build()
+        .unwrap()
+).unwrap();
+
+// In UniFFI code
+#[uniffi::export(async_runtime = "tokio")]
+pub async fn my_fn() -> String {
+    tokio::task::block_in_place(|| "done".to_string()) // Works!
 }
-// No attribute → future_expr unchanged, runs on foreign executor
 ```
 
----
-
-### ✅ What This Achieves
-
-| Concern | Status |
-|---------|--------|
-| @bendk: "no cost for non-users" | ✅ Zero code without attribute |
-| @pronebird: "share single runtime across crates" | ✅ Global `OnceLock<Arc<Runtime>>` in `uniffi_core` |
-| @pronebird: "auto-enter for all async methods" | ✅ Automatic when opted in |
-| Backwards compat | ✅ Existing code unchanged |
-| `block_in_place` works | ✅ User's multi-threaded runtime |
+### 👀 Ready for Review
+@bendk @pronebird @mhammond @Hywan @jplatte — implementation matches the agreed design. Ready for your review!
 
 ---
 
-### 🚀 Next Step
-
-Implementing this exact design now. Will open a fresh PR with tests and docs.
-
-One tiny decision: **panic with clear message** (Option A) vs `Result` (Option B) when runtime not configured:
-
-```rust
-// Option A (current plan) — panic with clear message
-.expect("Tokio runtime not configured; call uniffi::set_tokio_runtime() at startup")
-
-// Option B — return Result (more ergonomic but changes signature)
-```
-
-Going with **Option A** — matches `async_compat` behavior, keeps generated code simple, failure is a setup bug caught at first call.
-
----
-
-On it! 🛠️
+*Implementation commits: `6ef57fd05` (feat: add global Tokio runtime configuration)*
