@@ -6,13 +6,11 @@ internal const val UNIFFI_CALL_ERROR = 1.toByte()
 internal const val UNIFFI_CALL_UNEXPECTED_ERROR = 2.toByte()
 
 @Structure.FieldOrder("code", "error_buf")
-internal abstract class UniffiRustCallStatus : Structure() {
+internal open class UniffiRustCallStatus : Structure() {
     @JvmField var code: Byte = 0
-    @JvmField abstract var error_buf: RustBuffer.ByValue
+    @JvmField var error_buf: RustBuffer.ByValue? = null
 
-    class ByValue: UniffiRustCallStatus(), Structure.ByValue {
-        @JvmField override var error_buf: RustBuffer.ByValue = RustBuffer.ByValue()
-    }
+    class ByValue: UniffiRustCallStatus(), Structure.ByValue
 
     fun isSuccess(): Boolean {
         return code == UNIFFI_CALL_SUCCESS
@@ -64,13 +62,15 @@ private fun<E: kotlin.Exception> uniffiCheckCallStatus(errorHandler: UniffiRustC
     if (status.isSuccess()) {
         return
     } else if (status.isError()) {
-        throw errorHandler.lift(status.error_buf)
+        val buf = status.error_buf ?: RustBuffer.ByValue()
+        throw errorHandler.lift(buf)
     } else if (status.isPanic()) {
         // when the rust code sees a panic, it tries to construct a rustbuffer
         // with the message.  but if that code panics, then it just sends back
         // an empty buffer.
-        if (status.error_buf.len > 0) {
-            throw InternalException({{ Type::String.borrow()|lift_fn }}(status.error_buf))
+        val buf = status.error_buf ?: RustBuffer.ByValue()
+        if (buf.len > 0) {
+            throw InternalException({{ Type::String.borrow()|lift_fn }}(buf))
         } else {
             throw InternalException("Rust panic")
         }
