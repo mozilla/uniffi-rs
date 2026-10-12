@@ -8,7 +8,7 @@ internal const val UNIFFI_CALL_UNEXPECTED_ERROR = 2.toByte()
 @Structure.FieldOrder("code", "error_buf")
 internal open class UniffiRustCallStatus : Structure() {
     @JvmField var code: Byte = 0
-    @JvmField var error_buf: RustBuffer.ByValue? = null
+    @JvmField var error_buf: RustBuffer.ByValue = RustBuffer.ByValue()
 
     class ByValue: UniffiRustCallStatus(), Structure.ByValue
 
@@ -62,9 +62,11 @@ private object UniffiCallStatusPool {
             list.add(UniffiRustCallStatus.ByValue())
         }
         val status = list[newDepth - 1]
-        // Reset for reuse
+        // Reset for reuse - keep nested Structure instance, only reset fields
         status.code = 0
-        status.error_buf = null
+        status.error_buf.capacity = 0
+        status.error_buf.len = 0
+        status.error_buf.data = null
         return status
     }
 
@@ -89,9 +91,11 @@ private inline fun <U, E: kotlin.Exception> uniffiRustCallWithError(errorHandler
         return return_value
     } finally {
         // Ensure any owned error buffer is freed before reuse
-        // uniffiCheckCallStatus will have lifted/freed on error; on success error_buf is null
+        // uniffiCheckCallStatus will have lifted/freed on error; on success buffer is clean
         status.code = 0
-        status.error_buf = null
+        status.error_buf.capacity = 0
+        status.error_buf.len = 0
+        status.error_buf.data = null
         UniffiCallStatusPool.release()
     }
 }
