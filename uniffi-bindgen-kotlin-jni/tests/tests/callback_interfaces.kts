@@ -75,9 +75,15 @@ class NestedCallbackImpl(var value: UInt) : TestCallbackInterface {
 class ReentrantCallbackImpl(var value: UInt) : TestCallbackInterface {
     override fun noop() {}
     override fun getValue(): UInt {
-        // Nested UniFFI call - should use a separate status slot
-        val constVal = getConstant()
-        // Verify nested call succeeded and value is unchanged
+        // Nested UniFFI call that errors - should use a separate status slot
+        try {
+            getConstantMaybeErr(true)
+            // Should not reach here
+            throw RuntimeException("Expected error from nested call")
+        } catch (e: TestException.Failure1) {
+            // Expected: nested error should be isolated from outer call
+        }
+        // Verify nested error did not corrupt outer status
         return this.value
     }
     override fun setValue(value: UInt) { this.value = value }

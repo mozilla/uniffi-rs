@@ -67,6 +67,15 @@ pub fn get_constant() -> u32 {
 }
 
 #[uniffi::export]
+pub fn get_constant_maybe_err(should_err: bool) -> Result<u32, TestError> {
+    if should_err {
+        Err(TestError::Failure1)
+    } else {
+        Ok(42)
+    }
+}
+
+#[uniffi::export]
 pub fn invoke_nested_callback(cbi: Box<dyn TestCallbackInterface>) -> u32 {
     // Rust calls into Kotlin, which may call back into Rust
     let v1 = cbi.get_value();
