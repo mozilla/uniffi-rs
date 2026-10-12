@@ -6,11 +6,13 @@ internal const val UNIFFI_CALL_ERROR = 1.toByte()
 internal const val UNIFFI_CALL_UNEXPECTED_ERROR = 2.toByte()
 
 @Structure.FieldOrder("code", "error_buf")
-internal open class UniffiRustCallStatus : Structure() {
+internal abstract class UniffiRustCallStatus : Structure() {
     @JvmField var code: Byte = 0
-    @JvmField var error_buf: RustBuffer.ByValue
+    @JvmField abstract var error_buf: RustBuffer.ByValue
 
-    class ByValue: UniffiRustCallStatus(), Structure.ByValue
+    class ByValue: UniffiRustCallStatus(), Structure.ByValue {
+        @JvmField override var error_buf: RustBuffer.ByValue = RustBuffer.ByValue()
+    }
 
     fun isSuccess(): Boolean {
         return code == UNIFFI_CALL_SUCCESS
