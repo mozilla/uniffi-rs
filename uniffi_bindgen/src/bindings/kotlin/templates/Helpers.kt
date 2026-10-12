@@ -62,13 +62,13 @@ private fun<E: kotlin.Exception> uniffiCheckCallStatus(errorHandler: UniffiRustC
     if (status.isSuccess()) {
         return
     } else if (status.isError()) {
-        val buf = status.error_buf ?: RustBuffer.ByValue()
+        val buf = requireNotNull(status.error_buf) { "UniffiRustCallStatus.error_buf must be initialized by JNA for error status" }
         throw errorHandler.lift(buf)
     } else if (status.isPanic()) {
         // when the rust code sees a panic, it tries to construct a rustbuffer
         // with the message.  but if that code panics, then it just sends back
         // an empty buffer.
-        val buf = status.error_buf ?: RustBuffer.ByValue()
+        val buf = requireNotNull(status.error_buf) { "UniffiRustCallStatus.error_buf must be initialized by JNA for panic status" }
         if (buf.len > 0) {
             throw InternalException({{ Type::String.borrow()|lift_fn }}(buf))
         } else {
