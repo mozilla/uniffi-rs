@@ -60,17 +60,6 @@ try {
     assert(e.data.contains("unexpected failure"))
 }
 
-// Nested callback test: callback performs a nested UniFFI call
-class NestedCallbackImpl(var value: UInt) : TestCallbackInterface {
-    override fun noop() {}
-    override fun getValue(): UInt { return this.value }
-    override fun setValue(value: UInt) { this.value = value }
-    override fun throwIfEqual(numbers: CallbackInterfaceNumbers): CallbackInterfaceNumbers {
-        return numbers
-    }
-    override fun echo(s: String): String { return s }
-}
-
 // Callback that calls back into Rust during get_value
 class ReentrantCallbackImpl(var value: UInt) : TestCallbackInterface {
     override fun noop() {}
