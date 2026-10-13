@@ -290,6 +290,10 @@ impl Enum {
         self.variants().iter().any(|v| v.has_fields())
     }
 
+    pub fn uniffi_traits(&self) -> &[UniffiTrait] {
+        &self.uniffi_traits
+    }
+
     pub fn uniffi_trait_methods(&self) -> UniffiTraitMethods {
         UniffiTraitMethods::new(&self.uniffi_traits)
     }

@@ -35,14 +35,14 @@ public interface FfiConverter<KotlinType, FfiType> {
     // FfiType.  It's used by the callback interface code.  Callback interface
     // returns are always serialized into a `RustBuffer` regardless of their
     // normal FFI type.
-    fun lowerIntoRustBuffer(value: KotlinType): RustBuffer.ByValue {
+    fun lowerIntoRustBuffer(value: KotlinType): RustBuffer {
         val rbuf = RustBuffer.alloc(allocationSize(value))
         try {
-            val bbuf = rbuf.data!!.getByteBuffer(0, rbuf.capacity).also {
+            val bbuf = rbuf.data.getByteBuffer(0, rbuf.capacity).also {
                 it.order(ByteOrder.BIG_ENDIAN)
             }
             write(value, bbuf)
-            rbuf.writeField("len", bbuf.position().toLong())
+            rbuf.len = bbuf.position().toLong()
             return rbuf
         } catch (e: Throwable) {
             RustBuffer.free(rbuf)
@@ -54,7 +54,7 @@ public interface FfiConverter<KotlinType, FfiType> {
     //
     // This here mostly because of the symmetry with `lowerIntoRustBuffer()`.
     // It's currently only used by the `FfiConverterRustBuffer` class below.
-    fun liftFromRustBuffer(rbuf: RustBuffer.ByValue): KotlinType {
+    fun liftFromRustBuffer(rbuf: RustBuffer): KotlinType {
         val byteBuf = rbuf.asByteBuffer()!!
         try {
            val item = read(byteBuf)
@@ -73,7 +73,7 @@ public interface FfiConverter<KotlinType, FfiType> {
  *
  * @suppress
  */
-public interface FfiConverterRustBuffer<KotlinType>: FfiConverter<KotlinType, RustBuffer.ByValue> {
-    override fun lift(value: RustBuffer.ByValue) = liftFromRustBuffer(value)
+public interface FfiConverterRustBuffer<KotlinType>: FfiConverter<KotlinType, RustBuffer> {
+    override fun lift(value: RustBuffer) = liftFromRustBuffer(value)
     override fun lower(value: KotlinType) = lowerIntoRustBuffer(value)
 }

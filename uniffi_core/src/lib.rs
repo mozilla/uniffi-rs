@@ -82,8 +82,9 @@ mod ffi_converter_traits;
 pub mod metadata;
 mod oneshot;
 
-#[cfg(feature = "scaffolding-ffi-buffer-fns")]
-pub use ffi::ffiserialize::FfiBufferElement;
+#[cfg(feature = "pointer-ffi")]
+pub mod pointer_ffi;
+
 pub use ffi::*;
 pub use ffi_converter_traits::{
     ConvertError, FfiConverter, FfiConverterArc, HandleAlloc, Lift, LiftRef, LiftReturn, Lower,
@@ -94,7 +95,7 @@ pub use metadata::*;
 // Re-export the libs that we use in the generated code,
 // so the consumer doesn't have to depend on them directly.
 pub mod deps {
-    pub use crate::trace;
+    pub use crate::{trace, trace_and_return};
     pub use anyhow;
     #[cfg(feature = "tokio")]
     pub use async_compat;

@@ -89,11 +89,13 @@ pub fn method_checksum_symbol_name(module_path: &str, object_name: &str, name: &
     format!("uniffi_{namespace}_checksum_method_{object_name}_{name}")
 }
 
-/// Get the symbol name for a FFI-buffer version of a function
-pub fn ffi_buffer_symbol_name(fn_name: &str) -> String {
+/// Get the symbol name for a pointer FFI version of a function
+pub fn pointer_ffi_symbol_name(fn_name: &str) -> String {
     match fn_name.strip_prefix("uniffi_") {
-        Some(rest) => format!("uniffi_ffibuffer_{rest}"),
-        // this should never happen, but if it does let's try our best to prefix things properl.
-        None => format!("uniffi_ffibuffer_{fn_name}"),
+        Some(rest) => format!("uniffi_ptr_{rest}"),
+        None => match fn_name.strip_prefix("ffi_") {
+            Some(rest) => format!("uniffi_ptr_{rest}"),
+            None => panic!("ffi_pointer_symbol_name: can't handle FFI function name ({fn_name})"),
+        },
     }
 }

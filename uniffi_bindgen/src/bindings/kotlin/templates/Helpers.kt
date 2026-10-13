@@ -5,13 +5,7 @@ internal const val UNIFFI_CALL_SUCCESS = 0.toByte()
 internal const val UNIFFI_CALL_ERROR = 1.toByte()
 internal const val UNIFFI_CALL_UNEXPECTED_ERROR = 2.toByte()
 
-@Structure.FieldOrder("code", "error_buf")
-internal open class UniffiRustCallStatus : Structure() {
-    @JvmField var code: Byte = 0
-    @JvmField var error_buf: RustBuffer.ByValue = RustBuffer.ByValue()
-
-    class ByValue: UniffiRustCallStatus(), Structure.ByValue
-
+internal open class UniffiRustCallStatus(val code: Byte, val errorBuf: RustBuffer) {
     fun isSuccess(): Boolean {
         return code == UNIFFI_CALL_SUCCESS
     }
@@ -25,12 +19,7 @@ internal open class UniffiRustCallStatus : Structure() {
     }
 
     companion object {
-        fun create(code: Byte, errorBuf: RustBuffer.ByValue): UniffiRustCallStatus.ByValue {
-            val callStatus = UniffiRustCallStatus.ByValue()
-            callStatus.code = code
-            callStatus.error_buf = errorBuf
-            return callStatus
-        }
+        fun default() = UniffiRustCallStatus(UNIFFI_CALL_SUCCESS, RustBuffer.default())
     }
 }
 
@@ -42,33 +31,25 @@ class InternalException(message: String) : kotlin.Exception(message)
  * @suppress
  */
 interface UniffiRustCallStatusErrorHandler<E> {
-    fun lift(error_buf: RustBuffer.ByValue): E;
+    fun lift(error_buf: RustBuffer): E;
 }
 
 // Helpers for calling Rust
 // In practice we usually need to be synchronized to call this safely, so it doesn't
 // synchronize itself
 
-// Call a rust function that returns a Result<>.  Pass in the Error class companion that corresponds to the Err
-private inline fun <U, E: kotlin.Exception> uniffiRustCallWithError(errorHandler: UniffiRustCallStatusErrorHandler<E>, callback: (UniffiRustCallStatus) -> U): U {
-    var status = UniffiRustCallStatus()
-    val return_value = callback(status)
-    uniffiCheckCallStatus(errorHandler, status)
-    return return_value
-}
-
 // Check UniffiRustCallStatus and throw an error if the call wasn't successful
 private fun<E: kotlin.Exception> uniffiCheckCallStatus(errorHandler: UniffiRustCallStatusErrorHandler<E>, status: UniffiRustCallStatus) {
     if (status.isSuccess()) {
         return
     } else if (status.isError()) {
-        throw errorHandler.lift(status.error_buf)
+        throw errorHandler.lift(status.errorBuf)
     } else if (status.isPanic()) {
         // when the rust code sees a panic, it tries to construct a rustbuffer
         // with the message.  but if that code panics, then it just sends back
         // an empty buffer.
-        if (status.error_buf.len > 0) {
-            throw InternalException({{ Type::String.borrow()|lift_fn }}(status.error_buf))
+        if (status.errorBuf.len > 0) {
+            throw InternalException({{ Type::String.borrow()|lift_fn }}(status.errorBuf))
         } else {
             throw InternalException("Rust panic")
         }
@@ -83,47 +64,15 @@ private fun<E: kotlin.Exception> uniffiCheckCallStatus(errorHandler: UniffiRustC
  * @suppress
  */
 object UniffiNullRustCallStatusErrorHandler: UniffiRustCallStatusErrorHandler<InternalException> {
-    override fun lift(error_buf: RustBuffer.ByValue): InternalException {
+    override fun lift(error_buf: RustBuffer): InternalException {
         RustBuffer.free(error_buf)
         return InternalException("Unexpected CALL_ERROR")
     }
 }
 
-// Call a rust function that returns a plain value
-private inline fun <U> uniffiRustCall(callback: (UniffiRustCallStatus) -> U): U {
-    return uniffiRustCallWithError(UniffiNullRustCallStatusErrorHandler, callback)
-}
-
-internal inline fun<T> uniffiTraitInterfaceCall(
-    callStatus: UniffiRustCallStatus,
-    makeCall: () -> T,
-    writeReturn: (T) -> Unit,
-) {
-    try {
-        writeReturn(makeCall())
-    } catch(e: kotlin.Exception) {
-        val err = try { e.stackTraceToString() } catch(_: Throwable) { "" }
-        callStatus.code = UNIFFI_CALL_UNEXPECTED_ERROR
-        callStatus.error_buf = {{ Type::String.borrow()|lower_fn }}(err)
-    }
-}
-
-internal inline fun<T, reified E: Throwable> uniffiTraitInterfaceCallWithError(
-    callStatus: UniffiRustCallStatus,
-    makeCall: () -> T,
-    writeReturn: (T) -> Unit,
-    lowerError: (E) -> RustBuffer.ByValue
-) {
-    try {
-        writeReturn(makeCall())
-    } catch(e: kotlin.Exception) {
-        if (e is E) {
-            callStatus.code = UNIFFI_CALL_ERROR
-            callStatus.error_buf = lowerError(e)
-        } else {
-            val err = try { e.stackTraceToString() } catch(_: Throwable) { "" }
-            callStatus.code = UNIFFI_CALL_UNEXPECTED_ERROR
-            callStatus.error_buf = {{ Type::String.borrow()|lower_fn }}(err)
-        }
-    }
-}
+// Execute a lambda and return it's return value
+//
+// This is used to execute a series of statements as a single expression. This works like the
+// builtin `run` function, except it's always the non-extension version.  It never tries to capture
+// the `this` value.
+private inline fun<T> uniffiRun(callback: () -> T): T = callback()

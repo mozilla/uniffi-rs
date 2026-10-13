@@ -10,12 +10,12 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_todolist"
 
 [dependencies]
-uniffi = { workspace = true }
+uniffi = { workspace = true, features = ["pointer-ffi"] }
 once_cell = "1.12"
 thiserror = "2"
 
 [build-dependencies]
-uniffi = { workspace = true, features = ["build"] }
+uniffi = { workspace = true, features = ["build", "pointer-ffi"] }
 
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }

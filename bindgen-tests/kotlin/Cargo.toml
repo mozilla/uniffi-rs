@@ -9,5 +9,5 @@ crate-type = ["cdylib"]
 [dependencies]
 camino = "1"
 glob = "0.3"
-uniffi = { path = "../../uniffi", features = ["bindgen"] }
-uniffi-bindgen-tests = { path = "../lib" }
+uniffi = { path = "../../uniffi", features = ["bindgen", "pointer-ffi"] }
+uniffi-bindgen-tests = { path = "../lib", default-features = true }

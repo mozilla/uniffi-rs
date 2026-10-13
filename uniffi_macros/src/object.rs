@@ -85,15 +85,14 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
     let object = ObjectItem::new(input)?;
     let name = &object.foreign_name();
     let ident = object.ident();
-    let clone_fn_ident = Ident::new(
-        &uniffi_meta::clone_fn_symbol_name(&module_path, name),
-        Span::call_site(),
-    );
-    let free_fn_ident = Ident::new(
-        &uniffi_meta::free_fn_symbol_name(&module_path, name),
-        Span::call_site(),
-    );
-    let meta_static_var = options.generate_metadata.then(|| {
+
+    let mut tokens = TokenStream::default();
+    tokens.extend(object_helper_fns(&module_path, &object));
+    #[cfg(feature = "pointer-ffi")]
+    tokens.extend(object_helper_fns_pointer_ffi(&module_path, &object));
+
+    tokens.extend(interface_impl(&object, &options));
+    tokens.extend(options.generate_metadata.then(|| {
         interface_meta_static_var(
             name,
             orig_name_metadata(object.attr.name.is_some(), ident),
@@ -101,8 +100,22 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
             object.docstring(),
         )
         .unwrap_or_else(syn::Error::into_compile_error)
-    });
-    let interface_impl = interface_impl(&object, &options);
+    }));
+
+    Ok(tokens)
+}
+
+fn object_helper_fns(module_path: &str, object: &ObjectItem) -> syn::Result<TokenStream> {
+    let name = &object.foreign_name();
+    let ident = object.ident();
+    let clone_fn_ident = Ident::new(
+        &uniffi_meta::clone_fn_symbol_name(module_path, name),
+        Span::call_site(),
+    );
+    let free_fn_ident = Ident::new(
+        &uniffi_meta::free_fn_symbol_name(module_path, name),
+        Span::call_site(),
+    );
 
     Ok(quote! {
         #[doc(hidden)]
@@ -111,7 +124,7 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
             handle: ::uniffi::ffi::Handle,
             call_status: &mut ::uniffi::RustCallStatus
         ) -> ::uniffi::ffi::Handle {
-            ::uniffi::deps::trace!("clone: {} ({:?})", #name, handle);
+            ::uniffi::deps::trace!("{}.clone", #name);
             ::uniffi::rust_call(call_status, || {
                 unsafe {
                     handle.clone_arc_handle::<#ident>()
@@ -126,7 +139,7 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
             handle: ::uniffi::ffi::Handle,
             call_status: &mut ::uniffi::RustCallStatus
         ) {
-            ::uniffi::deps::trace!("free: {} ({:?})", #name, handle);
+            ::uniffi::deps::trace!("{}.free", #name);
             ::uniffi::rust_call(call_status, || {
                 ::std::mem::drop(unsafe {
                     handle.into_arc::<#ident>()
@@ -134,9 +147,53 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
                 ::std::result::Result::Ok(())
             });
         }
+    })
+}
 
-        #interface_impl
-        #meta_static_var
+#[cfg(feature = "pointer-ffi")]
+fn object_helper_fns_pointer_ffi(
+    module_path: &str,
+    object: &ObjectItem,
+) -> syn::Result<TokenStream> {
+    let name = &object.foreign_name();
+    let ident = object.ident();
+    let clone_fn_ident = Ident::new(
+        &uniffi_meta::pointer_ffi_symbol_name(&uniffi_meta::clone_fn_symbol_name(
+            module_path,
+            name,
+        )),
+        Span::call_site(),
+    );
+    let free_fn_ident = Ident::new(
+        &uniffi_meta::pointer_ffi_symbol_name(&uniffi_meta::free_fn_symbol_name(module_path, name)),
+        Span::call_site(),
+    );
+
+    Ok(quote! {
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn #clone_fn_ident(ffi_buffer: *mut u8) {
+            ::uniffi::deps::trace!("{}.clone", #name);
+
+            let mut args_buf = ::std::slice::from_raw_parts(ffi_buffer, ::uniffi::ffi_buffer_size!((::uniffi::Handle)));
+            let handle = <::uniffi::Handle as ::uniffi::FfiSerialize>::read(&mut args_buf);
+            let cloned = handle.clone_arc_handle::<#ident>();
+
+            let mut return_buf = ::std::slice::from_raw_parts_mut(ffi_buffer, ::uniffi::ffi_buffer_size!((::uniffi::Handle)));
+            <::uniffi::Handle as ::uniffi::FfiSerialize>::write(&mut return_buf, cloned);
+        }
+
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn #free_fn_ident(ffi_buffer: *mut u8) {
+            ::uniffi::deps::trace!("{}.free", #name);
+
+            let mut args_buf = ::std::slice::from_raw_parts(ffi_buffer, ::uniffi::ffi_buffer_size!((::uniffi::Handle)));
+            let handle = <::uniffi::Handle as ::uniffi::FfiSerialize>::read(&mut args_buf);
+            ::std::mem::drop(unsafe {
+                handle.into_arc::<#ident>()
+            });
+        }
     })
 }
 
@@ -191,14 +248,14 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
             /// call the destructor function specific to the type `T`. Calling the destructor
             /// function for other types may lead to undefined behaviour.
             fn lower(obj: ::std::sync::Arc<Self>) -> Self::FfiType {
-                ::uniffi::deps::trace!("lower: {} {:?}", #name, ::std::sync::Arc::as_ptr(&obj));
+                ::uniffi::deps::trace!("{}.lower", #name);
                 let handle = ::uniffi::ffi::Handle::from_arc(obj);
                 handle
             }
 
             /// When lifting, we receive an owned `Arc` that the foreign language code cloned.
             fn try_lift(handle: Self::FfiType) -> ::uniffi::Result<::std::sync::Arc<Self>> {
-                ::uniffi::deps::trace!("lift: {} ({:?})", #name, handle);
+                ::uniffi::deps::trace!("{}.lift", #name);
                 ::std::result::Result::Ok(unsafe { handle.into_arc() })
             }
 

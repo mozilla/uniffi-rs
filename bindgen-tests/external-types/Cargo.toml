@@ -8,4 +8,4 @@ crate-type = ["lib", "cdylib", "staticlib"]
 
 [dependencies]
 thiserror = "2"
-uniffi = { path = "../../uniffi", default-features = false }
+uniffi = { path = "../../uniffi", default-features = false, features = ["pointer-ffi"] }

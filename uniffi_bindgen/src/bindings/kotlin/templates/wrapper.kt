@@ -22,9 +22,11 @@ package {{ config.package_name() }}
 import com.sun.jna.Library
 import com.sun.jna.IntegerType
 import com.sun.jna.Native
+import com.sun.jna.Memory
 import com.sun.jna.Pointer
 import com.sun.jna.Structure
 import com.sun.jna.Callback
+import com.sun.jna.CallbackReference
 import com.sun.jna.ptr.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -32,6 +34,7 @@ import java.nio.CharBuffer
 import java.nio.charset.CodingErrorAction
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.math.max
 
 {%- for req in self.imports() %}
 {{ req.render() }}
@@ -39,8 +42,10 @@ import java.util.concurrent.ConcurrentHashMap
 
 {% include "RustBufferTemplate.kt" %}
 {% include "FfiConverterTemplate.kt" %}
+{% include "FfiSerializer.kt" %}
 {% include "Helpers.kt" %}
 {% include "HandleMap.kt" %}
+{% include "FfiCallbacks.kt" %}
 
 // Contains loading, initialization code,
 // and the FFI Function declarations in a com.sun.jna.Library.
