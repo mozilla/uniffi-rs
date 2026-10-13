@@ -135,6 +135,20 @@ private object UniffiFfiSerializerRustBuffer: UniffiFfiSerializer<RustBuffer.ByV
     }
 }
 
+private object UniffiFfiSerializerForeignBytes: UniffiFfiSerializer<ForeignBytes.ByValue> {
+    override fun size(): Long = 24
+    override fun read(buf: UniffiBufferCursor): ForeignBytes.ByValue {
+        var rustBuffer = ForeignBytes.ByValue()
+        rustBuffer.len = buf.readInt()
+        rustBuffer.data = Pointer(buf.readLong())
+        return rustBuffer
+    }
+    override fun write(buf: UniffiBufferCursor, value: ForeignBytes.ByValue) {
+        buf.writeInt(value.len)
+        buf.writeLong(Pointer.nativeValue(value.data))
+    }
+}
+
 private object UniffiFfiSerializerUniffiRustCallStatus: UniffiFfiSerializer<UniffiRustCallStatus.ByValue> {
     override fun size(): Long = 32
     override fun read(buf: UniffiBufferCursor): UniffiRustCallStatus.ByValue {

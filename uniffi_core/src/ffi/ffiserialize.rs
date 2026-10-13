@@ -217,19 +217,19 @@ impl FfiSerialize for RustBuffer {
 }
 
 impl FfiSerialize for ForeignBytes {
-    const SIZE: usize = 2;
+    const SIZE: usize = 16;
 
     unsafe fn get(buf: &[u8]) -> Self {
         let len = <i32 as FfiSerialize>::get(buf);
-        let data = <NonNull<u8> as FfiSerialize>::get(&buf[8..]);
-        unsafe { ForeignBytes::from_raw_parts(data.as_ptr(), len) }
+        let data = <*const std::ffi::c_void as FfiSerialize>::get(&buf[8..]);
+        unsafe { ForeignBytes::from_raw_parts(data.cast(), len) }
     }
 
     unsafe fn put(buf: &mut [u8], value: Self) {
         <i32 as FfiSerialize>::put(buf, value.len);
-        <NonNull<u8> as FfiSerialize>::put(
+        <*const std::ffi::c_void as FfiSerialize>::put(
             &mut buf[8..],
-            NonNull::new_unchecked(value.data.cast_mut()),
+            value.data.cast_mut().cast(),
         )
     }
 }

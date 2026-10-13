@@ -780,6 +780,13 @@ mod filters {
         _: &dyn askama::Values,
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
+        _ffi_serializer_name(ty, ci)
+    }
+
+    fn _ffi_serializer_name(
+        ty: &impl AsType,
+        ci: &ComponentInterface,
+    ) -> Result<String, askama::Error> {
         let ty = ty.as_type();
         let ffi_type = FfiType::from(&ty);
 
@@ -808,6 +815,24 @@ mod filters {
             FfiType::Handle => "UniffiFfiSerializerLong".to_string(),
             _ => unimplemented!("{ffi_type:?}"),
         })
+    }
+
+    /// Per-argument override of `ffi_serializer_name` for the foreign->Rust (lower)
+    /// direction only. Routes borrowed `Bytes` to `java.nio.ByteBuffer` —
+    /// the only Kotlin type JNA can expose a native pointer to. Other args
+    /// take the per-Type `type_name` path. Not used for Rust->Kotlin
+    /// (callback / lift) positions.
+    #[askama::filter_fn]
+    pub(super) fn ffi_serializer_name_for_arg(
+        arg: &Argument,
+        _: &dyn askama::Values,
+        ci: &ComponentInterface,
+    ) -> Result<String, askama::Error> {
+        if arg.is_borrowed_bytes() {
+            Ok("UniffiFfiSerializerForeignBytes".to_string())
+        } else {
+            _ffi_serializer_name(arg, ci)
+        }
     }
 
     #[askama::filter_fn]

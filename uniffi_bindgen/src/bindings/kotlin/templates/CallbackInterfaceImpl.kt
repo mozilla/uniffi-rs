@@ -9,7 +9,7 @@ internal object {{ trait_impl }} {
             var uniffiArgCursor = UniffiBufferCursor(uniffiFfiBuffer)
             val uniffiMethodHandle = UniffiFfiSerializerHandle.read(uniffiArgCursor)
             {%- for arg in meth.arguments() %}
-            val {{ arg.name()|var_name }} = {{ arg|ffi_serializer_name(ci) }}.read(uniffiArgCursor);
+            val {{ arg.name()|var_name }} = {{ arg|ffi_serializer_name_for_arg(ci) }}.read(uniffiArgCursor);
             {%- endfor %}
             val uniffiObj = {{ ffi_converter_name }}.handleMap.get(uniffiMethodHandle)
 
@@ -68,7 +68,7 @@ internal object {{ trait_impl }} {
             var uniffiArgCursor = UniffiBufferCursor(uniffiFfiBuffer)
             val uniffiMethodHandle = UniffiFfiSerializerHandle.read(uniffiArgCursor)
             {%- for arg in meth.arguments() %}
-            val {{ arg.name()|var_name }} = {{ arg|ffi_serializer_name(ci) }}.read(uniffiArgCursor);
+            val {{ arg.name()|var_name }} = {{ arg|ffi_serializer_name_for_arg(ci) }}.read(uniffiArgCursor);
             {%- endfor %}
             val uniffiCallback = UniffiFfiSerializerBoundCallback.read(uniffiArgCursor)
             val uniffiObj = {{ ffi_converter_name }}.handleMap.get(uniffiMethodHandle)

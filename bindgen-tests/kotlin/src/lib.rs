@@ -94,7 +94,6 @@ mod test {
     }
 
     #[test]
-    #[ignore]
     fn test_bytes() {
         run_tests(test_dir(), "tests/bytes.kts");
     }

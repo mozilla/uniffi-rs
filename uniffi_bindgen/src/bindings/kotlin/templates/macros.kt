@@ -23,7 +23,7 @@
             max(
                 // Size needed for the arguments
                 {%- for arg in args.iter() %}
-                {{ arg|ffi_serializer_name(ci) }}.size(){% if !loop.last %} + {% endif %}
+                {{ arg|ffi_serializer_name_for_arg(ci) }}.size(){% if !loop.last %} + {% endif %}
                 {%- endfor -%}
                 ,
                 // Size needed for the return value
@@ -41,7 +41,7 @@
         {%- if !args.is_empty() %}
         val uniffiArgsCursor = UniffiBufferCursor(uniffiFfiBuffer)
         {%- for arg in args.iter() %}
-        {{ arg|ffi_serializer_name(ci) }}.write(uniffiArgsCursor, {{ arg|lower_fn }}({{ arg|arg_name }}));
+        {{ arg|ffi_serializer_name_for_arg(ci) }}.write(uniffiArgsCursor, {{ arg|lower_fn_for_arg }}({{ arg|arg_name }}));
         {%- endfor %}
         {%- endif %}
 
@@ -136,7 +136,7 @@
             max(
                 // Size needed for the arguments
                 {%- for arg in args.iter() %}
-                {{ arg|ffi_serializer_name(ci) }}.size(){% if !loop.last %} + {% endif %}
+                {{ arg|ffi_serializer_name_for_arg(ci) }}.size(){% if !loop.last %} + {% endif %}
                 {%- endfor -%}
                 ,
                 // Size needed for the return value
@@ -155,7 +155,7 @@
         {%- if !args.is_empty() %}
         val uniffiArgsCursor = UniffiBufferCursor(uniffiFfiBuffer)
         {%- for arg in args.iter() %}
-        {{ arg|ffi_serializer_name(ci) }}.write(uniffiArgsCursor, {{ arg|lower_fn }}({{ arg|arg_name }}));
+        {{ arg|ffi_serializer_name_for_arg(ci) }}.write(uniffiArgsCursor, {{ arg|lower_fn_for_arg }}({{ arg|arg_name }}));
         {%- endfor %}
         {%- endif %}
 
