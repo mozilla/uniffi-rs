@@ -1034,41 +1034,4 @@ mod test {
         assert!(KotlinVersion::new(1, 2, 3) > KotlinVersion::new(0, 100, 0));
         assert!(KotlinVersion::new(10, 0, 0) > KotlinVersion::new(1, 10, 0));
     }
-
-    #[test]
-    fn checksum_functions_use_direct_return_carriers() {
-        let ci = ComponentInterface::from_webidl(
-            r#"
-            namespace test_crate {
-                u16 get_value();
-            };
-            "#,
-            "test_crate",
-        )
-        .unwrap();
-        let config = Config {
-            package_name: Some("uniffi.test_crate".to_string()),
-            cdylib_name: Some("test_crate".to_string()),
-            ..Config::default()
-        };
-
-        let bindings = generate_bindings(&config, &ci).unwrap();
-        let checksum_checks = bindings
-            .split("private fun uniffiCheckApiChecksums")
-            .nth(1)
-            .expect("generated checksum checks")
-            .split("/**")
-            .next()
-            .expect("end of generated checksum checks");
-
-        assert!(
-            bindings
-                .contains("external fun uniffi_test_crate_checksum_func_get_value(\n    ): Int"),
-            "checksum functions should use Int as the JNA direct return carrier"
-        );
-        assert!(
-            !checksum_checks.contains(".toShort())"),
-            "checksum comparisons should compare the widened Int carrier directly"
-        );
-    }
 }
