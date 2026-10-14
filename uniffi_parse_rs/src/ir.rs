@@ -368,8 +368,10 @@ impl Ir {
                     ObjectAttributes::parse(self, cache, module_path, env, &st.attrs)?
                 {
                     Some(Item::Object(Object::parse(attrs, st.ident, st.vis)?))
-                } else {
+                } else if env.should_process_non_uniffi(&st.attrs) {
                     Some(Item::NonUniffi(st.vis.into(), st.ident))
+                } else {
+                    None
                 }
             }
             syn::Item::Enum(en) => {
@@ -381,8 +383,10 @@ impl Ir {
                     EnumAttributes::parse(self, cache, module_path, env, &en.attrs)?
                 {
                     Some(Item::Enum(Enum::parse(env, attrs, en)?))
-                } else {
+                } else if env.should_process_non_uniffi(&en.attrs) {
                     Some(Item::NonUniffi(en.vis.into(), en.ident))
+                } else {
+                    None
                 }
             }
             syn::Item::Trait(tr) => {
