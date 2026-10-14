@@ -6,6 +6,12 @@ use std::collections::HashMap;
 #[derive(uniffi::Record)]
 struct TestRecord { }
 
+// Test that we ignore non-uniffi types where the #[cfg] doesn't match.
+// A real-world use for this would be a feature flag that changed the type definition depending on
+// if uniffi bindings were being generated or not.
+#[cfg(any())]
+pub struct TestRecord;
+
 #[derive(uniffi::Enum)]
 enum TestEnum { }
 

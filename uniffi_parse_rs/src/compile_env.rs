@@ -34,6 +34,10 @@ impl CompileEnv {
         self.parse_attrs(attrs).map(|m| m.is_some())
     }
 
+    pub fn should_process_non_uniffi(&self, attrs: &[Attribute]) -> bool {
+        matches!(self.parse_attrs(attrs), Ok(Some(_)))
+    }
+
     /// Parse attributes, taking into account the `#[cfg]` and `#[cfg_attr]` logic.
     ///
     /// Returns None if a `#[cfg]` attribute fails to match.
