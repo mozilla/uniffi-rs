@@ -320,3 +320,10 @@ pub fn roundtrip_async_test_trait_interface_list(
 ) -> Vec<Arc<dyn AsyncTestTraitInterface>> {
     interfaces
 }
+
+#[uniffi::export]
+pub fn roundtrip_optional_test_trait_interface(
+    interface: Option<Arc<dyn TestTraitInterface>>,
+) -> Option<Arc<dyn TestTraitInterface>> {
+    interface
+}

@@ -44,5 +44,17 @@ class TestCallbackInterfaces(unittest.TestCase):
         # up and the only remaining reference is for our `cbi` variable.
         assert(CallbackImpl.callback_ref_count == 1)
 
+    def test_optional_callback_interfaces(self):
+        # Callback interfaces can only be passed into Rust, so the Rust side calls a method on the
+        # callback interface and returns `None` when it wasn't passed one.
+        self.assertIsNone(invoke_optional_test_callback_interface_get_value(None))
+
+        cbi = CallbackImpl(42)
+        self.assertEqual(invoke_optional_test_callback_interface_get_value(cbi), 42)
+
+        # Make sure the calls above didn't leak any callback interface references
+        del cbi
+        self.assertEqual(CallbackImpl.callback_ref_count, 0)
+
 if __name__ == '__main__':
     unittest.main()
