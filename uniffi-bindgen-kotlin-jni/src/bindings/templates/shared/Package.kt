@@ -1,10 +1,14 @@
 @file:OptIn(kotlin.ExperimentalUnsignedTypes::class)
 package uniffi
 
-// In general, we prefer fully-qualified names to imports
-// However, we do need to import extension methods
-// since there's no other way to call them.
+{%- if root.has_async_fns %}
+{#
+ # In general, we prefer fully-qualified names to imports
+ # However, we do need to import extension methods
+ # since there's no other way to call them.
+ #}
 import kotlinx.coroutines.launch
+{%- endif %}
 
 class InternalException(message: kotlin.String) : Exception(message)
 

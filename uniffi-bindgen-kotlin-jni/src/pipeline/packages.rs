@@ -14,6 +14,7 @@ pub fn map_namespace(input: general::Namespace, context: &Context) -> Result<Pac
         .flat_map(|c| c.imports.clone())
         .flatten()
         .collect();
+    let has_async_fns = input.has_descendant(|callable: &general::Callable| callable.is_async());
 
     Ok(Package {
         name: context.package_name_for_namespace(&input.name)?.to_string(),
@@ -22,6 +23,7 @@ pub fn map_namespace(input: general::Namespace, context: &Context) -> Result<Pac
         functions: input.functions.map_node(&context)?,
         type_definitions: map_type_definitions(input.type_definitions, &context)?,
         imports,
+        has_async_fns,
     })
 }
 

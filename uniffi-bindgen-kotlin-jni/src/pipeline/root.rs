@@ -19,10 +19,13 @@ pub fn map_root(mut input: general::Root, context: &Context) -> Result<Root> {
     }
 
     context.update_from_root(&input)?;
+    let packages = Vec::from_iter(input.namespaces.map_node(&context)?.into_values());
+    let has_async_fns = packages.iter().any(|p| p.has_async_fns);
 
     Ok(Root {
         cdylib: input.cdylib,
-        packages: Vec::from_iter(input.namespaces.map_node(&context)?.into_values()),
+        packages,
+        has_async_fns,
     })
 }
 
