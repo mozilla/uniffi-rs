@@ -18,6 +18,7 @@ uniffi_pipeline::use_prev_node!(general::Type);
 pub struct Root {
     pub cdylib: Option<String>,
     pub packages: Vec<Package>,
+    pub has_async_fns: bool,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -30,6 +31,7 @@ pub struct Package {
     pub functions: Vec<Function>,
     pub type_definitions: Vec<TypeDefinition>,
     pub imports: IndexSet<String>,
+    pub has_async_fns: bool,
 }
 
 #[derive(Debug, Clone, Node)]
