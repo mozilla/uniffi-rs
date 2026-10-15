@@ -45,16 +45,59 @@ interface UniffiRustCallStatusErrorHandler<E> {
     fun lift(error_buf: RustBuffer.ByValue): E;
 }
 
+/**
+ * Per-thread pool of UniffiRustCallStatus instances to avoid allocating a new JNA Structure
+ * on every UniFFI call. Supports reentrancy via a depth-indexed stack.
+ */
+private object UniffiCallStatusPool {
+    private val stack = ThreadLocal.withInitial { mutableListOf<UniffiRustCallStatus.ByValue>() }
+    private val depth = ThreadLocal.withInitial { 0 }
+
+    fun acquire(): UniffiRustCallStatus.ByValue {
+        val d = depth.get()
+        val newDepth = d + 1
+        depth.set(newDepth)
+        val list = stack.get()
+        if (newDepth > list.size) {
+            list.add(UniffiRustCallStatus.ByValue())
+        }
+        val status = list[newDepth - 1]
+        // Reset for reuse - keep nested Structure instance, only reset fields
+        status.code = 0
+        status.error_buf.capacity = 0
+        status.error_buf.len = 0
+        status.error_buf.data = null
+        return status
+    }
+
+    fun release() {
+        val d = depth.get()
+        if (d > 0) {
+            depth.set(d - 1)
+        }
+    }
+}
+
 // Helpers for calling Rust
 // In practice we usually need to be synchronized to call this safely, so it doesn't
 // synchronize itself
 
 // Call a rust function that returns a Result<>.  Pass in the Error class companion that corresponds to the Err
 private inline fun <U, E: kotlin.Exception> uniffiRustCallWithError(errorHandler: UniffiRustCallStatusErrorHandler<E>, callback: (UniffiRustCallStatus) -> U): U {
-    var status = UniffiRustCallStatus()
-    val return_value = callback(status)
-    uniffiCheckCallStatus(errorHandler, status)
-    return return_value
+    val status = UniffiCallStatusPool.acquire()
+    try {
+        val return_value = callback(status)
+        uniffiCheckCallStatus(errorHandler, status)
+        return return_value
+    } finally {
+        // Ensure any owned error buffer is freed before reuse
+        // uniffiCheckCallStatus will have lifted/freed on error; on success buffer is clean
+        status.code = 0
+        status.error_buf.capacity = 0
+        status.error_buf.len = 0
+        status.error_buf.data = null
+        UniffiCallStatusPool.release()
+    }
 }
 
 // Check UniffiRustCallStatus and throw an error if the call wasn't successful
@@ -62,13 +105,15 @@ private fun<E: kotlin.Exception> uniffiCheckCallStatus(errorHandler: UniffiRustC
     if (status.isSuccess()) {
         return
     } else if (status.isError()) {
-        throw errorHandler.lift(status.error_buf)
+        val buf = requireNotNull(status.error_buf) { "UniffiRustCallStatus.error_buf must be initialized by JNA for error status" }
+        throw errorHandler.lift(buf)
     } else if (status.isPanic()) {
         // when the rust code sees a panic, it tries to construct a rustbuffer
         // with the message.  but if that code panics, then it just sends back
         // an empty buffer.
-        if (status.error_buf.len > 0) {
-            throw InternalException({{ Type::String.borrow()|lift_fn }}(status.error_buf))
+        val buf = requireNotNull(status.error_buf) { "UniffiRustCallStatus.error_buf must be initialized by JNA for panic status" }
+        if (buf.len > 0) {
+            throw InternalException({{ Type::String.borrow()|lift_fn }}(buf))
         } else {
             throw InternalException("Rust panic")
         }

@@ -59,3 +59,29 @@ try {
 } catch(e: TestException.Failure2) {
     assert(e.data.contains("unexpected failure"))
 }
+
+// Callback that calls back into Rust during get_value
+class ReentrantCallbackImpl(var value: UInt) : TestCallbackInterface {
+    override fun noop() {}
+    override fun getValue(): UInt {
+        // Nested UniFFI call that errors - should use a separate status slot
+        try {
+            getConstantMaybeErr(true)
+            // Should not reach here
+            throw RuntimeException("Expected error from nested call")
+        } catch (e: TestException.Failure1) {
+            // Expected: nested error should be isolated from outer call
+        }
+        // Verify nested error did not corrupt outer status
+        return this.value
+    }
+    override fun setValue(value: UInt) { this.value = value }
+    override fun throwIfEqual(numbers: CallbackInterfaceNumbers): CallbackInterfaceNumbers = numbers
+    override fun echo(s: String): String = s
+}
+
+val reentrant = ReentrantCallbackImpl(10u)
+val nestedResult = invokeNestedCallback(reentrant)
+assert(nestedResult == 52u) // 10 + 42
+assert(reentrant.getValue() == 52u)
+
