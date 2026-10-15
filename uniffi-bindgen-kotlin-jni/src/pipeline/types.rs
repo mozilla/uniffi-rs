@@ -560,4 +560,8 @@ impl TypeNode {
     pub fn is_interface(&self) -> bool {
         matches!(self.ty, Type::Interface { .. })
     }
+
+    pub fn is_callback_interface(&self) -> bool {
+        matches!(self.ty, Type::CallbackInterface { .. })
+    }
 }

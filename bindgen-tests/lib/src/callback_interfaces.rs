@@ -61,6 +61,13 @@ pub fn invoke_test_callback_interface_echo(
     cbi.echo(s)
 }
 
+#[uniffi::export]
+pub fn invoke_optional_test_callback_interface_get_value(
+    cbi: Option<Box<dyn TestCallbackInterface>>,
+) -> Option<u32> {
+    cbi.map(|cbi| cbi.get_value())
+}
+
 impl From<uniffi::UnexpectedUniFFICallbackError> for TestError {
     fn from(e: uniffi::UnexpectedUniFFICallbackError) -> Self {
         Self::Failure2 { data: e.reason }

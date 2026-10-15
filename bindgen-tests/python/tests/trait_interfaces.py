@@ -107,6 +107,17 @@ class TestTraitInterfaces(unittest.TestCase):
         del impl
         self.assertEqual(TraitImpl.ref_count, 0)
 
+    def test_rust_impl_roundtripped_optional(self):
+        self.assertIsNone(roundtrip_optional_test_trait_interface(None))
+        impl = roundtrip_optional_test_trait_interface(create_test_trait_interface(42))
+        self.check_rust_impl(impl)
+
+    def test_py_impl_roundtripped_optional(self):
+        impl = roundtrip_optional_test_trait_interface(TraitImpl(42))
+        self.check_py_impl(impl)
+        del impl
+        self.assertEqual(TraitImpl.ref_count, 0)
+
 class AsyncTraitImpl(AsyncTestTraitInterface):
     ref_count = 0
 

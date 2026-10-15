@@ -52,6 +52,9 @@ try {
     // Expected
 }
 
+assert(invokeOptionalTestCallbackInterfaceGetValue(null) == null)
+assert(invokeOptionalTestCallbackInterfaceGetValue(cbi) == 43u)
+
 // Test unexpected errors
 try {
     invokeTestCallbackInterfaceThrowIfEqual(cbi, CallbackInterfaceNumbers(6u, 7u))

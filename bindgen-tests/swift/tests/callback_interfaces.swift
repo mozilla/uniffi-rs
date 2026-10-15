@@ -60,6 +60,9 @@ invokeTestCallbackInterfaceSetValue(cbi: cbi, value: 43);
 assert(invokeTestCallbackInterfaceGetValue(cbi: cbi) == 43);
 assert(invokeTestCallbackInterfaceEcho(cbi: cbi, s: "test-string") == "test-string");
 
+assert(invokeOptionalTestCallbackInterfaceGetValue(cbi: nil) == nil);
+assert(invokeOptionalTestCallbackInterfaceGetValue(cbi: cbi) == 43);
+
 // The previcalls created a bunch of callback interface references.  Make sure they've been cleaned
 // up and the only remaining reference is for our `cbi` variable.
 callbackRefCountLock.withLock {

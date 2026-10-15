@@ -123,4 +123,13 @@ class TestCallbackInterfaces < Test::Unit::TestCase
     # Only our local Ruby reference should remain alive.
     assert_equal 1, CallbackImpl.callback_ref_count
   end
+
+  # Callback interfaces can only be passed into Rust, never returned from it, so the Rust side
+  # calls a method on the callback interface and returns nil when it wasn't passed one.
+  def test_optional_callback_interface
+    assert_nil UniffiBindgenTests.invoke_optional_test_callback_interface_get_value(nil)
+
+    cbi = CallbackImpl.new 42
+    assert_equal 42, UniffiBindgenTests.invoke_optional_test_callback_interface_get_value(cbi)
+  end
 end

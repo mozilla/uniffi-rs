@@ -69,8 +69,20 @@ unsafe fn {{ opt.self_type.lift_fn_rs() }}(
     })
 }
 
+{%- else if opt.inner.is_callback_interface() %}
+unsafe fn {{ opt.self_type.lift_fn_rs() }}(
+    env: *mut uniffi_jni::JNIEnv,
+    handle: ::std::primitive::i64,
+) -> uniffi::Result<{{ type_name }}> {
+    uniffi::Result::Ok(if handle != 0 {
+        ::std::option::Option::Some({{ opt.inner.lift_fn_rs() }}(env, handle)?)
+    } else {
+        ::std::option::Option::None
+    })
+}
 {%- endif %}
 
+{%- if !opt.inner.is_callback_interface() %}
 unsafe fn {{ opt.self_type.write_fn_rs() }}(
     ptr: *mut ::std::primitive::u8,
     value: {{ type_name }},
@@ -88,6 +100,7 @@ unsafe fn {{ opt.self_type.write_fn_rs() }}(
         uniffi::Result::Ok(())
     }
 }
+{%- endif %}
 
 unsafe fn {{ opt.self_type.read_fn_rs() }}(
     ptr: *mut ::std::primitive::u8,
