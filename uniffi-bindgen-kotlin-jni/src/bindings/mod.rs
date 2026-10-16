@@ -33,6 +33,7 @@ pub fn generate(
     }
 
     // Create a package for each crate
+    let java_8_compatible = root.java_8_compatible();
     for package in root.packages {
         if package.is_empty() {
             continue;
@@ -43,7 +44,13 @@ pub fn generate(
             PackageFfi { package: &package },
         )?;
 
-        render(&package_dir, BindingsPackage { package })?;
+        render(
+            &package_dir,
+            BindingsPackage {
+                package,
+                java_8_compatible,
+            },
+        )?;
     }
 
     Ok(())
@@ -73,6 +80,7 @@ pub fn render<T: Template>(package_dir: &Utf8Path, template: T) -> Result<()> {
 #[template(syntax = "kt", escape = "none", path = "Package.kt")]
 pub struct BindingsPackage {
     package: Package,
+    java_8_compatible: bool,
 }
 
 /// `[package].uniffi` -- Package-specific FFI code

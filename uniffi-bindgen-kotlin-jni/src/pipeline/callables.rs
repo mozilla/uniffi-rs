@@ -517,6 +517,10 @@ impl Argument {
             name
         }
     }
+
+    pub fn is_passed_as_borrowed_object(&self) -> bool {
+        matches!(&self.ffi, ArgumentFfi::Custom { lower_fn_kt, .. } if lower_fn_kt.starts_with("lowerObjectRef"))
+    }
 }
 
 /// Generates FFI argument names and argument indexes for callables

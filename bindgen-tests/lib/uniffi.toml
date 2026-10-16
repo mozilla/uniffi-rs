@@ -1,5 +1,5 @@
 # Uncomment one of the following lines to test different cleaner styles
-# disable_java_cleaner = true
+# java_8_compatible = true
 # android_cleaner = true
 
 #

@@ -9,9 +9,20 @@ val uniffiReturn = {{ package.name }}.uniffi.Scaffolding.{{ jni_method_name }}(
     {%- endfor %}
     {%- endfor %}
 )
+{%- if callable.is_async %}
+val uniffiReturnAwaited = {{ package.name }}.uniffi.{{ callable.result.async_await_future_fn() }}(uniffiReturn)
+{%- endif %}
+
+{%- for arg in callable.arguments_including_receiver() %}
+{%- if arg.is_passed_as_borrowed_object() %}
+// Use a reachability fence to ensure this object isn't finalized while the handle is borrowed by
+// the Rust side of things.
+{{ arg.name_kt() }}.uniffiReachabilityFence()
+{%- endif %}
+{%- endfor %}
 
 {%- if callable.is_async %}
-return {{ package.name }}.uniffi.{{ callable.result.async_await_future_fn() }}(uniffiReturn)
+return uniffiReturnAwaited
 {%- else %}
 {%- if callable.is_primary_constructor() %}
 this.uniffiHandle = uniffiReturn
