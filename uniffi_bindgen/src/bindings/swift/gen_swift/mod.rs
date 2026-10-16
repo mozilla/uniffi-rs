@@ -301,29 +301,40 @@ impl Config {
     /// Does the given Record have protocol conformances to list?
     ///
     /// This isn't the most efficient way to do this, but it should be fast enough.
-    pub fn record_has_conformances(&self, rec: &Record, contains_object_references: &bool) -> bool {
-        !self
-            .conformance_list_for_record(rec, contains_object_references)
-            .is_empty()
+    pub fn record_has_conformances(
+        &self,
+        rec: &Record,
+        type_: &Type,
+        ci: &ComponentInterface,
+    ) -> bool {
+        !self.conformance_list_for_record(rec, type_, ci).is_empty()
     }
 
     /// Programmatically generate the conformances for Record
     pub fn conformance_list_for_record(
         &self,
         rec: &Record,
-        contains_object_references: &bool,
+        type_: &Type,
+        ci: &ComponentInterface,
     ) -> String {
+        let uniffi_trait_methods = rec.uniffi_trait_methods();
+        let contains_object_references = ci.item_contains_object_references(type_);
+
         let mut conformances = vec![];
 
-        let uniffi_trait_methods = rec.uniffi_trait_methods();
-
-        // We auto-generate `Equatable, Hashable`, but only if we have no objects. We could do better - see #2409
-        if !contains_object_references || uniffi_trait_methods.eq_eq.is_some() {
+        if !contains_object_references
+            || uniffi_trait_methods.eq_eq.is_some()
+            || ci.item_check_uniffi_trait_methods(type_, |utm| &utm.eq_eq)
+        {
             conformances.push("Equatable");
-        }
 
-        if !contains_object_references || uniffi_trait_methods.hash_hash.is_some() {
-            conformances.push("Hashable");
+            // `Hashable` inherits from `Equatable`
+            if !contains_object_references
+                || uniffi_trait_methods.hash_hash.is_some()
+                || ci.item_check_uniffi_trait_methods(type_, |utm| &utm.hash_hash)
+            {
+                conformances.push("Hashable");
+            }
         }
 
         if uniffi_trait_methods.ord_cmp.is_some() {
@@ -349,25 +360,35 @@ impl Config {
     /// Does the given Enum have protocol conformances to list?
     ///
     /// This isn't the most efficient way to do this, but it should be fast enough.
-    pub fn enum_has_conformances(&self, e: &Enum, contains_object_references: &bool) -> bool {
-        !self
-            .conformance_list_for_enum(e, contains_object_references)
-            .is_empty()
+    pub fn enum_has_conformances(&self, e: &Enum, type_: &Type, ci: &ComponentInterface) -> bool {
+        !self.conformance_list_for_enum(e, type_, ci).is_empty()
     }
 
     /// Programmatically generate the conformances for an Enum
-    pub fn conformance_list_for_enum(&self, e: &Enum, contains_object_references: &bool) -> String {
+    pub fn conformance_list_for_enum(
+        &self,
+        e: &Enum,
+        type_: &Type,
+        ci: &ComponentInterface,
+    ) -> String {
         let uniffi_trait_methods = e.uniffi_trait_methods();
+        let contains_object_references = ci.item_contains_object_references(type_);
 
         let mut conformances = vec![];
 
-        // We auto-generate `Equatable, Hashable`, but only if we have no objects. We could do better - see #2409
-        if !contains_object_references || uniffi_trait_methods.eq_eq.is_some() {
+        if !contains_object_references
+            || uniffi_trait_methods.eq_eq.is_some()
+            || ci.item_check_uniffi_trait_methods(type_, |utm| &utm.eq_eq)
+        {
             conformances.push("Equatable");
-        }
 
-        if !contains_object_references || uniffi_trait_methods.hash_hash.is_some() {
-            conformances.push("Hashable");
+            // `Hashable` inherits from `Equatable`
+            if !contains_object_references
+                || uniffi_trait_methods.hash_hash.is_some()
+                || ci.item_check_uniffi_trait_methods(type_, |utm| &utm.hash_hash)
+            {
+                conformances.push("Hashable");
+            }
         }
 
         if uniffi_trait_methods.ord_cmp.is_some() {
@@ -400,10 +421,11 @@ impl Config {
     pub fn error_has_additional_conformances(
         &self,
         e: &Enum,
-        contains_object_references: &bool,
+        type_: &Type,
+        ci: &ComponentInterface,
     ) -> bool {
         !self
-            .additional_conformance_list_for_error(e, contains_object_references)
+            .additional_conformance_list_for_error(e, type_, ci)
             .is_empty()
     }
 
@@ -411,19 +433,27 @@ impl Config {
     pub fn additional_conformance_list_for_error(
         &self,
         e: &Enum,
-        contains_object_references: &bool,
+        type_: &Type,
+        ci: &ComponentInterface,
     ) -> String {
         let uniffi_trait_methods = e.uniffi_trait_methods();
+        let contains_object_references = ci.item_contains_object_references(type_);
 
         let mut conformances = vec![];
 
-        // We auto-generate `Equatable, Hashable`, but only if we have no objects. We could do better - see #2409
-        if !contains_object_references || uniffi_trait_methods.eq_eq.is_some() {
+        if !contains_object_references
+            || uniffi_trait_methods.eq_eq.is_some()
+            || ci.item_check_uniffi_trait_methods(type_, |utm| &utm.eq_eq)
+        {
             conformances.push("Equatable");
-        }
 
-        if !contains_object_references || uniffi_trait_methods.hash_hash.is_some() {
-            conformances.push("Hashable");
+            // `Hashable` inherits from `Equatable`
+            if !contains_object_references
+                || uniffi_trait_methods.hash_hash.is_some()
+                || ci.item_check_uniffi_trait_methods(type_, |utm| &utm.hash_hash)
+            {
+                conformances.push("Hashable");
+            }
         }
 
         if uniffi_trait_methods.ord_cmp.is_some() {
@@ -463,10 +493,11 @@ impl Config {
 
         if uniffi_trait_methods.eq_eq.is_some() {
             conformances.push("Equatable");
-        }
 
-        if uniffi_trait_methods.hash_hash.is_some() {
-            conformances.push("Hashable");
+            // `Hashable` inherits from `Equatable`
+            if uniffi_trait_methods.hash_hash.is_some() {
+                conformances.push("Hashable");
+            }
         }
 
         if uniffi_trait_methods.ord_cmp.is_some() {
