@@ -285,10 +285,13 @@ pub(super) fn gen_ffi_function(
             #scaffolding_fn_ffi_buffer_version
         }
     } else {
-        let mut future_expr = rust_fn_call;
-        if matches!(ar, Some(AsyncRuntime::Tokio(_))) {
-            future_expr = quote! { ::uniffi::deps::async_compat::Compat::new(#future_expr) }
-        }
+        let future_expr = if matches!(ar, Some(AsyncRuntime::Tokio(_))) {
+            // When user opts in with async_runtime = "tokio", use the shared runtime
+            quote! { ::uniffi::runtime::tokio_runtime_compat(#rust_fn_call) }
+        } else {
+            // Fallback to async_compat for backwards compatibility
+            quote! { ::uniffi::deps::async_compat::Compat::new(#rust_fn_call) }
+        };
         let scaffolding_fn_ffi_buffer_version =
             ffi_buffer_scaffolding_fn(&ffi_ident, &quote! { ::uniffi::Handle}, &param_types, false);
 

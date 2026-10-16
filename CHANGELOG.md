@@ -7,6 +7,11 @@
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
 ### What's New?
+- Added `uniffi::set_tokio_runtime()` and `uniffi::shutdown_tokio_runtime()` for configuring a
+  custom Tokio runtime. Functions annotated with `#[uniffi::export(async_runtime = "tokio")]`
+  will automatically use this runtime, enabling `tokio::spawn`, `tokio::task::block_in_place`,
+  and other Tokio APIs. The `tokio` feature now pulls in `tokio/rt-multi-thread` for
+  multi-threaded runtime support.
 - Added `uniffi_parse_rs`, which generates metadata by parsing Rust sources directly.
   This allows using the macros syntax to describe your interface, without requiring you to build the
   library before generating bindings.

@@ -84,6 +84,12 @@ mod ffi_converter_traits;
 pub mod metadata;
 pub mod oneshot;
 
+#[cfg(feature = "tokio")]
+pub mod runtime;
+
+#[cfg(feature = "tokio")]
+pub use runtime::{set_tokio_runtime, AlreadySetError};
+
 pub use arc_or_owned::ArcOrOwned;
 pub use custom_types::CustomType;
 
@@ -101,7 +107,6 @@ pub use metadata::*;
 pub mod deps {
     pub use crate::trace;
     pub use anyhow;
-    #[cfg(feature = "tokio")]
     pub use async_compat;
     pub use async_trait;
     pub use bytes;

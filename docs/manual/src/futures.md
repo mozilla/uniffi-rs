@@ -103,6 +103,77 @@ Unlike Python and Swift, Ruby has no native async/await. When Rust calls an asyn
 method, UniFFI spawns a new OS thread for each invocation. There is no event loop requirement,
 though a Fiber scheduler is supported for the Ruby -> Rust polling direction.
 
+## Using Tokio
+
+When your async Rust code needs to use Tokio APIs (such as `tokio::time::sleep`, `tokio::spawn`,
+`tokio::task::block_in_place`, `tokio::sync::Mutex`, etc.), you can opt into using a shared
+Tokio runtime by annotating your async function with `#[uniffi::export(async_runtime = "tokio")]`.
+
+```rust
+#[uniffi::export(async_runtime = "tokio")]
+pub async fn say_after_with_tokio(ms: u16, who: String) -> String {
+    tokio::time::sleep(Duration::from_millis(ms.into())).await;
+    format!("Hello, {who} (with Tokio)!")
+}
+```
+
+Each call to such a function happens inside a Tokio runtime context. By default, UniFFI uses
+[`async-compat`](https://docs.rs/async-compat) to provide a minimal Tokio context (a current-thread
+runtime) on demand. This works for simple cases like timers, but has limitations:
+- `tokio::task::block_in_place` will panic because the fallback runtime is single-threaded
+- Spawned tasks run on a single thread, limiting parallelism
+
+### Configuring a Custom Tokio Runtime
+
+To overcome these limitations and have full control over the Tokio runtime (thread count, thread
+names, sharing with your application), you can configure a custom runtime at application startup:
+
+```rust
+use tokio::runtime::Builder;
+use uniffi::set_tokio_runtime;
+
+fn init_uniffi_runtime() {
+    let rt = Builder::new_multi_thread()
+        .worker_threads(4)
+        .thread_name("my-app-tokio")
+        .enable_all()
+        .build()
+        .expect("failed to build Tokio runtime");
+
+    // This must be called once at application startup, before any async functions
+    // with `async_runtime = "tokio"` are called.
+    uniffi::set_tokio_runtime(rt).expect("runtime already set");
+}
+```
+
+When a custom runtime is configured:
+- All functions with `async_runtime = "tokio"` will automatically run inside this runtime
+- `tokio::spawn` will use the configured thread pool
+- `tokio::task::block_in_place` will work correctly (multi-threaded runtime)
+- Thread names and worker count are fully configurable
+- The runtime is shared across all crates in the workspace
+
+The runtime is stored in a global `OnceLock` and initialized lazily on first use. If no runtime
+is configured when a Tokio-annotated function is called, a clear panic message will indicate
+that `set_tokio_runtime()` must be called first.
+
+### Graceful Shutdown
+
+Optionally, you can shut down the runtime gracefully at application shutdown:
+
+```rust
+uniffi::shutdown_tokio_runtime();
+```
+
+This allows the runtime to finish any pending work before the application exits.
+
+### Backwards Compatibility
+
+If you don't call `set_tokio_runtime()`, functions with `async_runtime = "tokio"` will still work
+using the `async-compat` fallback (a current-thread runtime). This ensures backwards compatibility
+with existing code. However, `block_in_place` and multi-threaded spawn behavior will not be
+available without a custom runtime.
+
 ## Cancelling async code.
 
 We don't directly support cancellation in UniFFI even when the underlying platforms do.
