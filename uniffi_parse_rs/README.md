@@ -11,6 +11,9 @@ This crate is experimental and not supported by any existing bindings.
 * Recursing through modules -- both inline and in separate source files.
 * Parsing UDL and combining the metadata.
 * Conditional compilation based on features and the `#[cfg]` and `#[cfg_attr]` macros
+    * The attributes must be spelled out as `cfg` and `cfg_attr`.
+      Renaming them via a `use` statement is not supported,
+      nor is renaming other macros to `cfg` or `cfg_attr`.
 * External types in the parsed crates, i.e. following `use` statements to find the source type
 * Type aliases in the parsed crates
 

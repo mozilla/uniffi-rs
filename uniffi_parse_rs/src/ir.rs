@@ -10,9 +10,9 @@ use syn::{ext::IdentExt, Ident};
 use uniffi_meta::MetadataGroup;
 
 use crate::{
-    items::resolve_simple_items, macros::resolve_uniffi_macros, paths::LookupCache,
-    trait_impls::resolve_trait_items, CompileEnv, Error, ErrorKind::*, Item, MetadataGroupMap,
-    Module, RPath, Result,
+    cfg_select::resolve_cfg_select_macros, items::resolve_simple_items,
+    macros::resolve_uniffi_macros, paths::LookupCache, trait_impls::resolve_trait_items,
+    CompileEnv, Error, ErrorKind::*, Item, MetadataGroupMap, Module, RPath, Result,
 };
 
 /// Intermediate representation of the interface
@@ -166,7 +166,9 @@ impl Ir {
     ///
     /// This needs to run after adding all crates parsing, since it requires looking up module paths.
     pub fn resolve_items(&mut self) -> Result<()> {
-        // Simple items come first
+        // cfg_select! macros first, since they can generate other items
+        resolve_cfg_select_macros(self)?;
+        // Simple items next
         resolve_simple_items(self)?;
         // UniFFI macros next.
         //
@@ -301,6 +303,8 @@ impl CrateRoot {
 pub struct IrChanges {
     // Map module ids to items to add
     items: HashMap<usize, Vec<Item>>,
+    // Map module ids to syn items
+    syn_items: HashMap<usize, Vec<syn::Item>>,
 }
 
 impl IrChanges {
@@ -308,22 +312,44 @@ impl IrChanges {
         self.items.entry(module_id).or_default().push(item);
     }
 
-    pub fn apply(mut self, ir: &mut Ir) {
-        let mut stack: Vec<&mut Module> = ir
-            .crate_roots
-            .values_mut()
-            .map(CrateRoot::module_mut)
-            .collect();
-        while let Some(module) = stack.pop() {
-            if let Some(items) = self.items.remove(&module.id) {
-                module.items.extend(items);
+    pub fn extend(&mut self, module_id: usize, items: impl IntoIterator<Item = Item>) {
+        self.items.entry(module_id).or_default().extend(items);
+    }
+
+    pub fn add_syn(&mut self, module_id: usize, item: syn::Item) {
+        self.syn_items.entry(module_id).or_default().push(item);
+    }
+
+    pub fn extend_syn_items(
+        &mut self,
+        module_id: usize,
+        items: impl IntoIterator<Item = syn::Item>,
+    ) {
+        self.syn_items.entry(module_id).or_default().extend(items);
+    }
+
+    pub fn apply(mut self, ir: &mut Ir) -> Result<()> {
+        for crate_root in ir.crate_roots.values_mut() {
+            let mut stack = vec![];
+            match &mut crate_root.module {
+                Item::Module(module) => stack.push(module),
+                item => panic!("crate_root.module is not Item::Module ({item:?})"),
             }
-            for item in module.items.iter_mut() {
-                if let Item::Module(m) = item {
-                    stack.push(m);
+            while let Some(module) = stack.pop() {
+                if let Some(items) = self.items.remove(&module.id) {
+                    module.items.extend(items);
+                }
+                if let Some(unresolved_items) = self.syn_items.remove(&module.id) {
+                    module.add_items(&crate_root.compile_env, unresolved_items)?;
+                }
+                for item in module.items.iter_mut() {
+                    if let Item::Module(m) = item {
+                        stack.push(m);
+                    }
                 }
             }
         }
+        Ok(())
     }
 }
 
