@@ -174,7 +174,12 @@ open class {{ cls.name_kt() }} : {{ cls.base_classes|join(", ") }} {
         if (uniffiHandle == 0.toLong()) {
             throw uniffi.InternalException("uniffiCloneHandle() called on NoHandle object");
         }
-        return uniffi.Scaffolding.{{ cls.jni_clone_name() }}(uniffiHandle)
+        val clonedHandle = uniffi.Scaffolding.{{ cls.jni_clone_name() }}(uniffiHandle)
+        // Use a reachability fence to ensure this object isn't finalized while `handle` is
+        // "in-flight" to the Rust side of things.  Otherwise, it's possible that the GC could
+        // finalize this object and free the handle before Rust can clone it.
+        java.lang.ref.Reference.reachabilityFence(this)
+        return clonedHandle
     }
 
     {% for meth in cls.methods -%}

@@ -219,7 +219,12 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
             throw InternalException("uniffiCloneHandle() called on NoHandle object");
         }
         return uniffiRustCall() { status ->
-            UniffiLib.{{ obj.ffi_object_clone().name() }}(handle, status)
+            val clonedHandle = UniffiLib.{{ obj.ffi_object_clone().name() }}(handle, status)
+            // Use a reachability fence to ensure this object isn't finalized while `handle` is
+            // "in-flight" to the Rust side of things.  Otherwise, it's possible that the GC could
+            // finalize this object and free the handle before Rust can clone it.
+            java.lang.ref.Reference.reachabilityFence(this)
+            return clonedHandle
         }
     }
 
