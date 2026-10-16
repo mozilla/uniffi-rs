@@ -153,6 +153,14 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
     private val wasDestroyed = AtomicBoolean(false)
     private val callCounter = AtomicLong(1)
 
+    {%- if config.java_8_compatible %}
+    /**
+     * @suppress
+     */
+    @Volatile
+    public var reachabilityFenceWorkaround: Boolean = false
+    {%- endif %}
+
     /**
      * Whether the current object has been destroyed and its reference is gone in the Rust side.
      */
@@ -219,7 +227,19 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
             throw InternalException("uniffiCloneHandle() called on NoHandle object");
         }
         return uniffiRustCall() { status ->
-            UniffiLib.{{ obj.ffi_object_clone().name() }}(handle, status)
+            UniffiLib.{{ obj.ffi_object_clone().name() }}(handle, status).also {
+                {%- if !config.java_8_compatible %}
+                // Use a reachability fence to ensure this object isn't finalized while `handle` is
+                // "in-flight" to the Rust side of things.  Otherwise, it's possible that the GC could
+                // finalize this object and free the handle before Rust can clone it.
+                java.lang.ref.Reference.reachabilityFence(this)
+                {%- else %}
+                // We want to ensure this object isn't finalized while `handle` is "in-flight" to the Rust side of things. 
+                // However, the `java_8_compatible` flag is set, so we can't use `reachabilityFence`.
+                // Mutate a volatile variable instead, which achieves the same thing at the cost of some performance
+                reachabilityFenceWorkaround = !reachabilityFenceWorkaround
+                {%- endif %}
+            }
         }
     }
 

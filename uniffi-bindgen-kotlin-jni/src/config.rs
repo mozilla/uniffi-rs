@@ -26,7 +26,7 @@ pub struct Config {
     #[serde(default)]
     pub kotlin_target_version: Option<String>,
     #[serde(default)]
-    pub disable_java_cleaner: bool,
+    pub java_8_compatible: bool,
     #[serde(default)]
     pub(super) exclude: Vec<String>,
     // Note: we ignore `external_packages`.  We don't need it since we process all packages at once

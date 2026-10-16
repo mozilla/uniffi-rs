@@ -132,7 +132,13 @@ open class {{ cls.name_kt() }} : {{ cls.base_classes|join(", ") }} {
     protected val uniffiCleanable: uniffi.Cleanable?
 
     private val wasDestroyed = java.util.concurrent.atomic.AtomicBoolean(false)
-    private val callCounter = java.util.concurrent.atomic.AtomicLong(1)
+    {%- if java_8_compatible %}
+    /**
+     * @suppress
+     */
+    @Volatile
+    public var reachabilityFenceWorkaround: Boolean = false
+    {%- endif %}
 
     /**
      * Whether the current object has been destroyed and its reference is gone in the Rust side.
@@ -143,10 +149,7 @@ open class {{ cls.name_kt() }} : {{ cls.base_classes|join(", ") }} {
         // Only allow a single call to this method.
         // TODO: maybe we should log a warning if called more than once?
         if (this.wasDestroyed.compareAndSet(false, true)) {
-            // This decrement always matches the initial count of 1 given at creation time.
-            if (this.callCounter.decrementAndGet() == 0L) {
-                uniffiCleanable?.clean()
-            }
+            uniffiCleanable?.clean()
         }
     }
 
@@ -174,7 +177,19 @@ open class {{ cls.name_kt() }} : {{ cls.base_classes|join(", ") }} {
         if (uniffiHandle == 0.toLong()) {
             throw uniffi.InternalException("uniffiCloneHandle() called on NoHandle object");
         }
-        return uniffi.Scaffolding.{{ cls.jni_clone_name() }}(uniffiHandle)
+        return uniffi.Scaffolding.{{ cls.jni_clone_name() }}(uniffiHandle).also {
+            {%- if !java_8_compatible %}
+            // Use a reachability fence to ensure this object isn't finalized while `handle` is
+            // "in-flight" to the Rust side of things.  Otherwise, it's possible that the GC could
+            // finalize this object and free the handle before Rust can clone it.
+            java.lang.ref.Reference.reachabilityFence(this)
+            {%- else %}
+            // We want to ensure this object isn't finalized while `handle` is "in-flight" to the Rust side of things. 
+            // However, the `java_8_compatible` flag is set, so we can't use `reachabilityFence`.
+            // Mutate a volatile variable instead, which achieves the same thing at the cost of some performance
+            reachabilityFenceWorkaround = !reachabilityFenceWorkaround
+            {%- endif %}
+        }
     }
 
     {% for meth in cls.methods -%}
