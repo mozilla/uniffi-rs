@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::collections::BTreeSet;
+
 use uniffi_bindgen::pipeline::general::sort::sort_type_definitions_ignore_container_children;
 
 use super::*;
@@ -140,6 +142,20 @@ impl Root {
 
     pub fn boxes(&self) -> impl Iterator<Item = &BoxedType> {
         self.packages.iter().flat_map(Package::boxes)
+    }
+
+    pub fn imports(&self) -> impl Iterator<Item = &str> + '_ {
+        // Use a btree set to de-dupe and sort the imports
+        let mut imports: BTreeSet<_> = self
+            .packages
+            .iter()
+            .flat_map(|p| p.imports.iter().map(String::as_str))
+            .collect();
+        if self.has_async_fns {
+            // Needed so that we can use the extension method
+            imports.insert("kotlinx.coroutines.launch");
+        }
+        imports.into_iter()
     }
 
     pub fn disable_java_cleaner(&self) -> bool {
