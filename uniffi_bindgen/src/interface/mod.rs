@@ -1413,9 +1413,14 @@ fn throws_name(throws: &Option<Type>) -> Option<&str> {
     // Type has no `name()` method, just `canonical_name()` which isn't what we want.
     match throws {
         None => None,
-        Some(Type::Enum { name, .. }) | Some(Type::Object { name, .. }) => Some(name),
+        Some(Type::Record { name, .. })
+        | Some(Type::Enum { name, .. })
+        | Some(Type::Object { name, .. }) => Some(name),
         Some(Type::Custom { name, builtin, .. })
-            if matches!(&**builtin, Type::Enum { .. } | Type::Object { .. }) =>
+            if matches!(
+                &**builtin,
+                Type::Record { .. } | Type::Enum { .. } | Type::Object { .. }
+            ) =>
         {
             Some(name)
         }
