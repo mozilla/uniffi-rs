@@ -10,34 +10,52 @@ use syn::{
 };
 
 use crate::{
-    attrs::extract_docstring, kw, paths::LookupCache, BuiltinItem, Ir, Item, Namespace, RPath,
+    attrs::extract_docstring, cfg_select, kw, paths::LookupCache, BuiltinItem, CompileEnv, Ir,
+    Item, Namespace, RPath,
 };
 
-/// Try resolving Item::Macro into a more specific item like Item::UseRemoteType
-pub fn maybe_resolve_macro<'ir>(
+#[allow(clippy::large_enum_variant)]
+pub enum ResolveMacroResult {
+    /// Resolved to a single item, for example CustomTypeMacroCall
+    Item(Item),
+    /// Resolved to a list of syn Items, for example from `cfg_select!`
+    SynItems(Vec<syn::Item>),
+    /// Unknown macro call, we should ignore it.
+    Unknown,
+}
+
+/// Try resolving Item::Macro into one or more specific items like Item::UseRemoteType
+pub fn resolve_macro<'ir>(
     ir: &'ir Ir,
     cache: &mut LookupCache<'ir>,
     path: &RPath<'ir>,
+    env: &CompileEnv,
     mac: &ItemMacro,
-) -> syn::Result<Option<Item>> {
+) -> syn::Result<ResolveMacroResult> {
     let builtin = match path.resolve(ir, cache, &mac.mac.path, Namespace::Macro) {
         // Ignore errors, maybe the macro comes from an unparsed crate.
-        Err(_) => return Ok(None),
+        Err(_) => return Ok(ResolveMacroResult::Unknown),
         Ok(path) => match path.item() {
             Ok(Item::Builtin(b)) => b,
-            _ => return Ok(None),
+            _ => return Ok(ResolveMacroResult::Unknown),
         },
     };
     match builtin {
         // Note: custom_newtype and custom_type share enough of the same syntax that we can use the
         // same parser for both
-        BuiltinItem::UniffiMacro("custom_type") | BuiltinItem::UniffiMacro("custom_newtype") => {
-            Ok(Some(Item::CustomTypeMacroCall(mac.mac.parse_body()?)))
-        }
-        BuiltinItem::UniffiMacro("use_remote_type") => {
-            Ok(Some(Item::UseRemoteType(mac.mac.parse_body()?)))
-        }
-        _ => Ok(None),
+        BuiltinItem::UniffiMacro("custom_type") | BuiltinItem::UniffiMacro("custom_newtype") => Ok(
+            ResolveMacroResult::Item(Item::CustomTypeMacroCall(mac.mac.parse_body()?)),
+        ),
+        BuiltinItem::UniffiMacro("use_remote_type") => Ok(ResolveMacroResult::Item(
+            Item::UseRemoteType(mac.mac.parse_body()?),
+        )),
+        BuiltinItem::CfgIfMacro => Ok(ResolveMacroResult::SynItems(cfg_select::resolve_cfg_if(
+            env, &mac.mac,
+        )?)),
+        BuiltinItem::CfgSelectMacro => Ok(ResolveMacroResult::SynItems(
+            cfg_select::resolve_cfg_select(env, &mac.mac)?,
+        )),
+        _ => Ok(ResolveMacroResult::Unknown),
     }
 }
 

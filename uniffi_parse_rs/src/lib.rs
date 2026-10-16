@@ -9,6 +9,7 @@ pub use target_lexicon::Triple;
 pub use uniffi_meta::MetadataGroup;
 
 mod attrs;
+mod cfg_select;
 mod compile_env;
 mod custom_types;
 mod enums;

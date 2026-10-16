@@ -14,7 +14,7 @@ use crate::{
         EnumAttributes, FunctionAttributes, ImplAttributes, ObjectAttributes, RecordAttributes,
         TraitAttributes,
     },
-    macros::{maybe_resolve_macro, CustomTypeMacroCall},
+    macros::{resolve_macro, CustomTypeMacroCall, ResolveMacroResult},
     paths::LookupCache,
     trace,
     types::Type,
@@ -193,12 +193,14 @@ impl Ir {
 
                 let mut resolved_items = vec![];
                 for item in unresolved {
-                    let resolved = self
-                        .resolve_item(&mut cache, rpath, &crate_root.compile_env, item)
-                        .map_err(|e| Error::new_syn(module.source, e))?;
-                    if let Some(item) = resolved {
-                        resolved_items.push(item);
-                    }
+                    self.resolve_item(
+                        &mut resolved_items,
+                        &mut cache,
+                        rpath,
+                        &crate_root.compile_env,
+                        item,
+                    )
+                    .map_err(|e| Error::new_syn(module.source, e))?;
                 }
                 resolved_map.insert(module.id, resolved_items);
                 Ok(())
@@ -340,22 +342,21 @@ impl Ir {
         Ok(())
     }
 
-    /// Resolve an unresolved item
+    /// Resolve unresolved items, pushing them to `current_items`
     fn resolve_item<'ir>(
         &'ir self,
+        current_items: &mut Vec<Item>,
         cache: &mut LookupCache<'ir>,
         module_path: &RPath<'ir>,
         env: &CompileEnv,
         item: syn::Item,
-    ) -> syn::Result<Option<Item>> {
-        Ok(match item {
+    ) -> syn::Result<()> {
+        match item {
             syn::Item::Fn(func) => {
                 if let Some(attrs) =
                     FunctionAttributes::parse(self, cache, module_path, env, &func.attrs)?
                 {
-                    Some(Item::Fn(Function::parse(attrs, func.clone())?))
-                } else {
-                    None
+                    current_items.push(Item::Fn(Function::parse(attrs, func.clone())?));
                 }
             }
             syn::Item::Struct(st) => {
@@ -363,53 +364,58 @@ impl Ir {
                     RecordAttributes::parse(self, cache, module_path, env, &st.attrs)?
                 {
                     let r = Record::parse(env, attrs, st)?;
-                    Some(Item::Record(r))
+                    current_items.push(Item::Record(r));
                 } else if let Some(attrs) =
                     ObjectAttributes::parse(self, cache, module_path, env, &st.attrs)?
                 {
-                    Some(Item::Object(Object::parse(attrs, st.ident, st.vis)?))
+                    current_items.push(Item::Object(Object::parse(attrs, st.ident, st.vis)?));
                 } else if env.should_process_non_uniffi(&st.attrs) {
-                    Some(Item::NonUniffi(st.vis.into(), st.ident))
-                } else {
-                    None
+                    current_items.push(Item::NonUniffi(st.vis.into(), st.ident));
                 }
             }
             syn::Item::Enum(en) => {
                 if let Some(attrs) =
                     ObjectAttributes::parse(self, cache, module_path, env, &en.attrs)?
                 {
-                    Some(Item::Object(Object::parse(attrs, en.ident, en.vis)?))
+                    current_items.push(Item::Object(Object::parse(attrs, en.ident, en.vis)?));
                 } else if let Some(attrs) =
                     EnumAttributes::parse(self, cache, module_path, env, &en.attrs)?
                 {
-                    Some(Item::Enum(Enum::parse(env, attrs, en)?))
+                    current_items.push(Item::Enum(Enum::parse(env, attrs, en)?));
                 } else if env.should_process_non_uniffi(&en.attrs) {
-                    Some(Item::NonUniffi(en.vis.into(), en.ident))
-                } else {
-                    None
+                    current_items.push(Item::NonUniffi(en.vis.into(), en.ident));
                 }
             }
             syn::Item::Trait(tr) => {
                 if let Some(attrs) =
                     TraitAttributes::parse(self, cache, module_path, env, &tr.attrs)?
                 {
-                    Some(Item::Trait(Trait::parse(env, attrs, tr)?))
-                } else {
-                    None
+                    current_items.push(Item::Trait(Trait::parse(env, attrs, tr)?));
                 }
             }
             syn::Item::Impl(imp) => {
                 if let Some(attrs) =
                     ImplAttributes::parse(self, cache, module_path, env, &imp.attrs)?
                 {
-                    Some(Item::Impl(Impl::parse(env, attrs, imp)?))
+                    current_items.push(Item::Impl(Impl::parse(env, attrs, imp)?));
                 } else {
-                    Some(Item::UnresolvedImpl(imp))
+                    current_items.push(Item::UnresolvedImpl(imp));
                 }
             }
-            syn::Item::Macro(mac) => maybe_resolve_macro(self, cache, module_path, &mac)?,
-            _ => None,
-        })
+            syn::Item::Macro(mac) => match resolve_macro(self, cache, module_path, env, &mac)? {
+                ResolveMacroResult::Item(item) => {
+                    current_items.push(item);
+                }
+                ResolveMacroResult::SynItems(items) => {
+                    for item in items {
+                        self.resolve_item(current_items, cache, module_path, env, item)?;
+                    }
+                }
+                ResolveMacroResult::Unknown => (),
+            },
+            _ => (),
+        };
+        Ok(())
     }
 
     #[cfg(test)]

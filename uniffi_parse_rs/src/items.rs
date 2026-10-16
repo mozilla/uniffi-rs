@@ -76,6 +76,8 @@ pub enum BuiltinItem {
     UnexpectedUniFFICallbackError,
     UniffiMacro(&'static str),
     UniffiDerive(&'static str),
+    CfgSelectMacro,
+    CfgIfMacro,
 }
 
 impl BuiltinItem {
