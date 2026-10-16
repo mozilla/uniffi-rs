@@ -137,6 +137,6 @@ pub fn resolve_uniffi_macros(ir: &mut Ir) -> Result<()> {
             _ => Ok(VisitUnresolvedItem::Keep),
         }
     })?;
-    changes.apply(ir);
+    changes.apply(ir)?;
     Ok(())
 }

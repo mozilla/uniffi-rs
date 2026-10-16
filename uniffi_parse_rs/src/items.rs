@@ -77,6 +77,8 @@ pub enum BuiltinItem {
     UnexpectedUniFFICallbackError,
     UniffiMacro(&'static str),
     UniffiDerive(&'static str),
+    CfgSelectMacro,
+    CfgIfMacro,
 }
 
 impl BuiltinItem {
@@ -250,7 +252,7 @@ pub fn resolve_simple_items(ir: &mut Ir) -> Result<()> {
             None => Ok(VisitUnresolvedItem::Keep),
         },
     )?;
-    changes.apply(ir);
+    changes.apply(ir)?;
     Ok(())
 }
 

@@ -36,7 +36,7 @@ pub fn resolve_trait_items(ir: &mut Ir) -> Result<()> {
             _ => Ok(VisitUnresolvedItem::Keep),
         }
     })?;
-    changes.apply(ir);
+    changes.apply(ir)?;
     Ok(())
 }
 

@@ -158,6 +158,8 @@ impl<'ir> RPath<'ir> {
                     BuiltinItem::UnexpectedUniFFICallbackError => {
                         path.push_str("UnexpectedUniFFICallbackError")
                     }
+                    BuiltinItem::CfgSelectMacro => path.push_str("cfg_select"),
+                    BuiltinItem::CfgIfMacro => path.push_str("cfg_if"),
                 }
             } else {
                 path.push_str(&item.name());
@@ -653,7 +655,10 @@ impl Namespace {
                 | Item::NonUniffi(_, _) => true,
                 Item::Builtin(builtin) => !matches!(
                     builtin,
-                    BuiltinItem::UniffiMacro(_) | BuiltinItem::UniffiDerive(_)
+                    BuiltinItem::UniffiMacro(_)
+                        | BuiltinItem::UniffiDerive(_)
+                        | BuiltinItem::CfgSelectMacro
+                        | BuiltinItem::CfgIfMacro
                 ),
                 _ => false,
             },
@@ -662,7 +667,10 @@ impl Namespace {
                 Item::Builtin(builtin) => {
                     matches!(
                         builtin,
-                        BuiltinItem::UniffiMacro(_) | BuiltinItem::UniffiDerive(_)
+                        BuiltinItem::UniffiMacro(_)
+                            | BuiltinItem::UniffiDerive(_)
+                            | BuiltinItem::CfgSelectMacro
+                            | BuiltinItem::CfgIfMacro
                     )
                 }
                 _ => true,
@@ -764,6 +772,10 @@ fn get_builtin_item(path: &Path) -> Option<&'static Item> {
         "std::sync::Arc" => Some(&Item::Builtin(BuiltinItem::Arc)),
         "std::time::SystemTime" => Some(&Item::Builtin(BuiltinItem::SystemTime)),
         "std::time::Duration" => Some(&Item::Builtin(BuiltinItem::Duration)),
+        "cfg_select" | "std::cfg_select" | "core::cfg_select" => {
+            Some(&Item::Builtin(BuiltinItem::CfgSelectMacro))
+        }
+        "cfg_if::cfg_if" => Some(&Item::Builtin(BuiltinItem::CfgIfMacro)),
         "uniffi::custom_type" => Some(&Item::Builtin(BuiltinItem::UniffiMacro("custom_type"))),
         "uniffi::custom_newtype" => {
             Some(&Item::Builtin(BuiltinItem::UniffiMacro("custom_newtype")))
@@ -792,7 +804,7 @@ pub mod tests {
 
     use super::*;
 
-    fn run_resolve_item<'ir>(
+    pub fn run_resolve_item<'ir>(
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
         module_path: &str,

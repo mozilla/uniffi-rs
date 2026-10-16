@@ -53,7 +53,8 @@ impl Module {
         let (file_id, content) = read_to_string(file_path)?;
         let file = parse_file(file_id, content, file_path)?;
         let mut module = Self::empty(ident, file_id, Visibility::Public, vec![], crate_root)?;
-        module.add_items(file.attrs, file.items, env)?;
+        module.set_docstring(file.attrs);
+        module.add_items(env, file.items)?;
         Ok(module)
     }
 
@@ -71,7 +72,8 @@ impl Module {
         let mut module_names = self.module_names.clone();
         module_names.push(ident.to_string());
         let mut module = Self::empty(ident, source, vis, module_names, crate_root)?;
-        module.add_items(attrs, items, env)?;
+        module.set_docstring(attrs);
+        module.add_items(env, items)?;
         Ok(module)
     }
 
@@ -111,18 +113,16 @@ impl Module {
         candidates.into_iter().find(|p| p.exists())
     }
 
-    fn add_items(
-        &mut self,
-        attrs: Vec<syn::Attribute>,
-        syn_items: Vec<syn::Item>,
-        env: &CompileEnv,
-    ) -> Result<()> {
+    fn set_docstring(&mut self, attrs: Vec<syn::Attribute>) {
         // Ignore errors in `extract_docstring`, maybe the module is using a macro or something to
         // generate the docstring.  This is only needed for modules, since we parse every all
         // of them unlike types which are only parsed if they have a UniFFI derive.
         for a in attrs.iter().filter(|a| a.path().is_ident("doc")) {
             extract_docstring(&mut self.docstring, &a.meta);
         }
+    }
+
+    pub fn add_items(&mut self, env: &CompileEnv, syn_items: Vec<syn::Item>) -> Result<()> {
         for item in syn_items {
             match item {
                 syn::Item::Mod(submod)
