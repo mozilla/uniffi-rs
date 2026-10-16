@@ -1,7 +1,7 @@
 {#
  # Builtin cleaner
  #
- # This is used when `disable_java_cleaner` is set in the Config.
+ # This is used when `java_8_compatible` is set in the Config.
  # It doesn't depend on a system `Cleaner` implementation
  # or even the `Cleaner` interface definition, which was added in Java 9.
  #}

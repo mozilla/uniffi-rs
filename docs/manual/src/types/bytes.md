@@ -42,6 +42,16 @@ namespace example {
   function. Don't store it, don't hand it to a spawned task, and
   don't capture it in async work that outlives the call. If you need
   the data afterwards, copy it (`data.to_vec()`).
+- **Aliasing is the caller's responsibility.** Rust borrows the buffer for
+  the duration of the call, so the usual aliasing rules apply across the FFI:
+    - Don't mutate or free the buffer from another thread while a Rust
+      function is borrowing it.
+- **The caller must keep the object alive.**
+  Callers are responsible keeping the object alive for the duration of the call,
+  since the Rust code will be referencing data owned by object.
+  On garbage collected languages, if the buffer is not used after the call,
+  use something like [reachabilityFence](https://docs.oracle.com/en/java/javase/23/docs/api/java.base/java/lang/ref/Reference.html#reachabilityFence(java.lang.Object))
+  to ensure that a strong reference remains during the duration of the call.
 
 ## Foreign-language types
 
@@ -93,6 +103,12 @@ Every `&[u8]` rule above still holds. Two more:
       separate threads at the same time.
     - Don't mutate or free the buffer from another thread while a Rust
       function is borrowing it.
+- **The caller must keep the object alive.**
+  Callers are responsible keeping the object alive for the duration of the call,
+  since the Rust code will be referencing data owned by object.
+  On garbage collected languages, if the buffer is not used after the call,
+  use something like [reachabilityFence](https://docs.oracle.com/en/java/javase/23/docs/api/java.base/java/lang/ref/Reference.html#reachabilityFence(java.lang.Object))
+  to ensure that a strong reference remains during the duration of the call.
 
 Each binding maps a mutable argument to a writable type:
 

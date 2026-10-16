@@ -86,7 +86,7 @@ pub struct Config {
     #[serde(default)]
     kotlin_target_version: Option<String>,
     #[serde(default)]
-    disable_java_cleaner: bool,
+    pub java_8_compatible: bool,
     #[serde(default)]
     pub(super) rename: toml::Table,
     #[serde(default)]
@@ -213,10 +213,6 @@ impl Config {
     /// and the record is not listed in `mutable_records`.
     pub fn is_record_immutable(&self, name: &str) -> bool {
         self.generate_immutable_records() && !self.mutable_records.contains(name)
-    }
-
-    pub fn disable_java_cleaner(&self) -> bool {
-        self.disable_java_cleaner
     }
 }
 
