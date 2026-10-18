@@ -157,6 +157,11 @@ The runtime is stored in a global `OnceLock` and initialized lazily on first use
 is configured when a Tokio-annotated function is called, a clear panic message will indicate
 that `set_tokio_runtime()` must be called first.
 
+**Note on performance:** When `async_runtime = "tokio"` is specified, there is a small
+runtime cost per poll (an atomic load and branch to check the `OnceLock`). This cost is
+negligible for most applications. When the attribute is **not** specified, there is **zero
+overhead** — no runtime code is generated.
+
 ### Graceful Shutdown
 
 Optionally, you can shut down the runtime gracefully at application shutdown:

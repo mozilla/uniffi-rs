@@ -286,7 +286,9 @@ pub(super) fn gen_ffi_function(
         }
     } else {
         let future_expr = if matches!(ar, Some(AsyncRuntime::Tokio(_))) {
-            // When user opts in with async_runtime = "tokio", use the shared runtime
+            // When user opts in with async_runtime = "tokio", use the shared runtime.
+            // Cost: One atomic load + branch per poll (OnceLock::get). Zero overhead when
+            // the attribute is NOT used (no code generated).
             quote! { ::uniffi::runtime::tokio_runtime_compat(#rust_fn_call) }
         } else {
             // Fallback to async_compat for backwards compatibility
