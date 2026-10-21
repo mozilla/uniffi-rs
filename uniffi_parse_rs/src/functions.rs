@@ -37,15 +37,15 @@ impl Function {
         Ok(Self {
             attrs,
             ident: f.sig.ident,
-            vis: f.vis.into(),
+            vis: (&f.vis).into(),
             is_async: f.sig.asyncness.is_some(),
             args: f
                 .sig
                 .inputs
-                .into_iter()
+                .iter()
                 .map(Argument::parse)
                 .collect::<syn::Result<Vec<_>>>()?,
-            return_ty: ReturnType::parse(f.sig.output)?,
+            return_ty: ReturnType::new(f.sig.output)?,
         })
     }
 
@@ -80,19 +80,19 @@ impl Function {
 }
 
 impl Argument {
-    pub fn parse(arg: FnArg) -> syn::Result<Self> {
+    pub fn parse(arg: &FnArg) -> syn::Result<Self> {
         let span = arg.span();
         let pat_ty = match arg {
             FnArg::Receiver(_) => return Err(syn::Error::new(span, InvalidArgType)),
             FnArg::Typed(pat_ty) => pat_ty,
         };
-        let ident = match *pat_ty.pat {
-            Pat::Ident(p) => p.ident,
+        let ident = match pat_ty.pat.as_ref() {
+            Pat::Ident(p) => p.ident.clone(),
             _ => return Err(syn::Error::new(span, InvalidArgType)),
         };
         Ok(Self {
             ident,
-            ty: *pat_ty.ty,
+            ty: (*pat_ty.ty).clone(),
         })
     }
 
@@ -139,7 +139,7 @@ impl Argument {
 }
 
 impl ReturnType {
-    pub fn parse(return_ty: syn::ReturnType) -> syn::Result<Self> {
+    pub fn new(return_ty: syn::ReturnType) -> syn::Result<Self> {
         Ok(Self { return_ty })
     }
 

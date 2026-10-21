@@ -46,7 +46,11 @@ pub struct SelfArg {
 }
 
 impl Object {
-    pub fn parse(attrs: ObjectAttributes, ident: Ident, vis: syn::Visibility) -> syn::Result<Self> {
+    pub fn parse(
+        attrs: ObjectAttributes,
+        ident: Ident,
+        vis: &syn::Visibility,
+    ) -> syn::Result<Self> {
         Ok(Self {
             attrs,
             ident,
@@ -73,18 +77,18 @@ impl Object {
 }
 
 impl Constructor {
-    pub fn parse(attrs: ConstructorAttributes, f: ImplItemFn) -> syn::Result<Self> {
+    pub fn parse(attrs: ConstructorAttributes, f: &ImplItemFn) -> syn::Result<Self> {
         Ok(Self {
             attrs,
             is_async: f.sig.asyncness.is_some(),
-            ident: f.sig.ident,
+            ident: f.sig.ident.clone(),
             args: f
                 .sig
                 .inputs
-                .into_iter()
+                .iter()
                 .map(Argument::parse)
                 .collect::<syn::Result<Vec<_>>>()?,
-            return_type: ReturnType::parse(f.sig.output)?,
+            return_type: ReturnType::new(f.sig.output.clone())?,
         })
     }
 
@@ -133,19 +137,19 @@ impl Constructor {
 }
 
 impl Method {
-    pub fn parse(attrs: MethodAttributes, f: ImplItemFn) -> syn::Result<Self> {
-        let mut inputs = f.sig.inputs.into_iter();
+    pub fn parse(attrs: MethodAttributes, f: &ImplItemFn) -> syn::Result<Self> {
+        let mut inputs = f.sig.inputs.iter();
         let self_arg = SelfArg::parse(inputs.next(), f.sig.ident.span())?;
 
         Ok(Self {
             attrs,
-            ident: f.sig.ident,
+            ident: f.sig.ident.clone(),
             is_async: f.sig.asyncness.is_some(),
             self_arg,
             args: inputs
                 .map(Argument::parse)
                 .collect::<syn::Result<Vec<_>>>()?,
-            return_type: ReturnType::parse(f.sig.output)?,
+            return_type: ReturnType::new(f.sig.output.clone())?,
         })
     }
 
@@ -198,9 +202,11 @@ impl Method {
 
 impl SelfArg {
     /// Parses sig.inputs.first() into a `SelfArg`
-    pub fn parse(arg: Option<FnArg>, ident_span: Span) -> syn::Result<Self> {
+    pub fn parse(arg: Option<&FnArg>, ident_span: Span) -> syn::Result<Self> {
         match arg {
-            Some(FnArg::Receiver(receiver)) => Ok(Self { receiver }),
+            Some(FnArg::Receiver(receiver)) => Ok(Self {
+                receiver: receiver.clone(),
+            }),
             Some(_) => Err(syn::Error::new(arg.span(), InvalidSelfType)),
             None => Err(syn::Error::new(ident_span, MissingSelfType)),
         }

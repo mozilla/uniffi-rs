@@ -164,3 +164,11 @@ impl std::convert::From<uniffi::UnexpectedUniFFICallbackError> for Error {
         Self
     }
 }
+
+// Implement some other traits to test that we ignore them
+impl other_crate::Trait for Error { }
+impl std::convert::From<anyhow::Error> for Error {
+    fn from(e: anyhow::Error) -> Self {
+        Self
+    }
+}

@@ -6,21 +6,13 @@ use std::collections::{BTreeSet, HashMap};
 
 use camino::Utf8Path;
 use quote::format_ident;
-use syn::{ext::IdentExt, Ident, TypePath};
+use syn::{ext::IdentExt, Ident};
 use uniffi_meta::MetadataGroup;
 
 use crate::{
-    attrs::{
-        EnumAttributes, FunctionAttributes, ImplAttributes, ObjectAttributes, RecordAttributes,
-        TraitAttributes,
-    },
-    macros::{maybe_resolve_macro, CustomTypeMacroCall},
-    paths::LookupCache,
-    trace,
-    types::Type,
-    CompileEnv, CustomType, Enum, Error,
-    ErrorKind::*,
-    Function, Impl, Item, MetadataGroupMap, Module, Object, RPath, Record, Result, Trait,
+    items::resolve_simple_items, macros::resolve_uniffi_macros, paths::LookupCache,
+    trait_impls::resolve_trait_items, CompileEnv, Error, ErrorKind::*, Item, MetadataGroupMap,
+    Module, RPath, Result,
 };
 
 /// Intermediate representation of the interface
@@ -38,7 +30,7 @@ pub struct CrateRoot {
     /// This is an `Item::Module` because of `RPath`.
     /// That type wants to store a `Vec<&Item>` for each component of the path.
     module: Item,
-    compile_env: CompileEnv,
+    pub compile_env: CompileEnv,
 }
 
 impl Ir {
@@ -170,246 +162,86 @@ impl Ir {
             .collect()
     }
 
-    /// Resolve Item::Unresolved to more specific items like Item::UseRemoteType
+    /// Resolve syn items into `Item` instances and add them to the IR
     ///
     /// This needs to run after adding all crates parsing, since it requires looking up module paths.
     pub fn resolve_items(&mut self) -> Result<()> {
-        // Find and remove unresolved items from all modules
-        let mut unresolved_map = HashMap::new();
-        for crate_root in self.crate_roots.values_mut() {
-            crate_root.visit_modules_mut(|module| {
-                unresolved_map.insert(module.id, module.remove_unresolved_items());
-            });
-        }
-
-        // Resolve the items
-        let mut resolved_map = HashMap::new();
-        let mut cache = LookupCache::default();
-        for crate_root in self.crate_roots.values() {
-            crate_root.try_visit_modules_and_paths(|module, rpath| {
-                let Some(unresolved) = unresolved_map.remove(&module.id) else {
-                    return Result::Ok(());
-                };
-
-                let mut resolved_items = vec![];
-                for item in unresolved {
-                    let resolved = self
-                        .resolve_item(&mut cache, rpath, &crate_root.compile_env, item)
-                        .map_err(|e| Error::new_syn(module.source, e))?;
-                    if let Some(item) = resolved {
-                        resolved_items.push(item);
-                    }
-                }
-                resolved_map.insert(module.id, resolved_items);
-                Ok(())
-            })?;
-        }
-
-        let custom_type_macro_calls = self.add_resolved_items_phase1(resolved_map)?;
-        self.add_resolved_items_phase2(custom_type_macro_calls)?;
+        // Simple items come first
+        resolve_simple_items(self)?;
+        // UniFFI macros next.
+        //
+        // We need to lookup the Rust type for `custom_type!` calls, which is handled by `resolve_simple_items`
+        resolve_uniffi_macros(self)?;
+        // Last is trait impls
+        //
+        // We need to look up which type the trait was implemented for,
+        // which is handled by the previous items
+        resolve_trait_items(self)?;
         Ok(())
     }
 
-    /// Add resolved items back to modules (phase 1)
+    /// Visit modules and their unresolved items
     ///
-    /// This adds all items except custom types and
-    /// returns a map of module_id -> custom_types for phase2
-    fn add_resolved_items_phase1(
-        &mut self,
-        mut resolved_map: HashMap<usize, Vec<Item>>,
-    ) -> Result<HashMap<usize, Vec<CustomTypeMacroCall>>> {
-        let mut custom_type_macro_calls: HashMap<usize, Vec<CustomTypeMacroCall>> = HashMap::new();
-        for crate_root in self.crate_roots.values_mut() {
-            crate_root.try_visit_modules_mut(|module| {
-                let Some(resolved) = resolved_map.remove(&module.id) else {
-                    return Ok(());
-                };
-                for item in resolved {
-                    match item {
-                        Item::CustomTypeMacroCall(macro_call) => {
-                            // Processing custom types requires resolving paths,
-                            // but we can't do that now since we're still adding back the resolved items.
-                            // Remember the macro calls and process them in phase 2
-                            custom_type_macro_calls
-                                .entry(module.id)
-                                .or_default()
-                                .push(macro_call);
+    /// Calls the visitor with (crate_root, module, module_path, unresolved_item) tuples.
+    ///
+    /// If visitors handle the unresolved_item, they should return `VisitUnresolvedItem::Remove` to
+    /// remove it from the list.
+    pub fn visit_unresolved_items<'ir>(
+        &'ir self,
+        mut visitor: impl FnMut(&CrateRoot, &'ir Module, &RPath<'ir>, &syn::Item) -> VisitUnresolvedItem,
+    ) {
+        self.try_visit_unresolved_items(|crate_root, module, path, unresolved| {
+            Ok(visitor(crate_root, module, path, unresolved))
+        })
+        .unwrap()
+    }
+
+    /// Failable version of `visit_unresolved_items`
+    pub fn try_visit_unresolved_items<'ir>(
+        &'ir self,
+        mut visitor: impl FnMut(
+            &CrateRoot,
+            &'ir Module,
+            &RPath<'ir>,
+            &syn::Item,
+        ) -> Result<VisitUnresolvedItem>,
+    ) -> Result<()> {
+        for crate_root in self.crate_roots.values() {
+            let mut stack = vec![(crate_root.module(), RPath::new(&crate_root.module))];
+            while let Some((module, path)) = stack.pop() {
+                // take the unresolved items so we can process them
+                let mut unresolved = module.unresolved_items.take();
+                let mut err = None;
+                unresolved.retain(|unresolved_item| {
+                    if err.is_some() {
+                        return true;
+                    }
+                    match visitor(crate_root, module, &path, unresolved_item) {
+                        Ok(VisitUnresolvedItem::Keep) => true,
+                        Ok(VisitUnresolvedItem::Remove) => false,
+                        Err(e) => {
+                            // visit failed, keep the rest of the items
+                            err = Some(e);
+                            true
                         }
-                        Item::CustomType(c) => {
-                            return Err(Error::new(
-                                module.source,
-                                c.macro_call.ident.span(),
-                                InternalError(
-                                    "Saw Item::CustomType in add_resolved_items_phase1".into(),
-                                ),
-                            ));
-                        }
-                        i => module.items.push(i),
+                    }
+                });
+                module.extend_unresolved_items(unresolved);
+
+                // Return errors now
+                if let Some(e) = err {
+                    return Err(e);
+                }
+
+                // find child modules to visit
+                for item in module.items.iter() {
+                    if let Item::Module(m) = item {
+                        stack.push((m, path.append_child(item)));
                     }
                 }
-                Ok(())
-            })?;
+            }
         }
-        Ok(custom_type_macro_calls)
-    }
-
-    /// Add resolved items back to modules (phase 2)
-    fn add_resolved_items_phase2(
-        &mut self,
-        mut custom_type_macro_calls: HashMap<usize, Vec<CustomTypeMacroCall>>,
-    ) -> Result<()> {
-        // Convert custom_type_macro_calls into a map where:
-        // * The keys are the module id for the Rust type, instead of the module
-        //   with the `custom_type!` macro call.
-        // * The `CustomTypeMacroCall` items are converted to `CustomType` items.
-        //   This requires resolving some types, which we couldn't do before.
-        let mut custom_type_source_modules: HashMap<usize, Vec<CustomType>> = HashMap::new();
-        let mut cache = LookupCache::default();
-        for crate_root in self.crate_roots.values() {
-            crate_root.try_visit_modules_and_paths(|module, path| {
-                let Some(macro_calls) = custom_type_macro_calls.remove(&module.id) else {
-                    return Ok(());
-                };
-                for macro_call in macro_calls {
-                    let mut custom_type = CustomType {
-                        macro_call,
-                        macro_call_module_path: path.syn_path(),
-                        // set below
-                        rust_type_ident: None,
-                    };
-
-                    let dest_module_id = if custom_type.macro_call.remote {
-                        // Remote types stay where the custom_type! macro was called,
-                        // for now at least.
-                        // See https://github.com/mozilla/uniffi-rs/issues/2994
-                        module.id
-                    } else {
-                        // Non-remote custom types move to the Rust type's module.
-                        trace!("Finding custom type {}", custom_type.macro_call.ident);
-                        let rust_type = path.resolve_type(
-                            self,
-                            &mut cache,
-                            &syn::Type::Path(TypePath {
-                                qself: None,
-                                path: custom_type.macro_call.ident.clone().into(),
-                            }),
-                        )?;
-                        match rust_type {
-                            Type::NonUniffi { module_id, ident } => {
-                                if ident != custom_type.macro_call.ident {
-                                    // The Rust type has a different name than
-                                    // the one used in the `custom_type!` call.
-                                    //
-                                    // Remember this so type resolution works.
-                                    custom_type.rust_type_ident = Some(ident);
-                                }
-                                module_id
-                            }
-                            _ => {
-                                return Err(Error::new(
-                                    module.source,
-                                    custom_type.macro_call.ident.span(),
-                                    InvalidCustomType,
-                                ))
-                            }
-                        }
-                    };
-                    custom_type_source_modules
-                        .entry(dest_module_id)
-                        .or_default()
-                        .push(custom_type);
-                }
-                Ok(())
-            })?;
-        }
-
-        // Now that we know the correct module for the custom types, we can add them.
-        for crate_root in self.crate_roots.values_mut() {
-            crate_root.visit_modules_mut(|module| {
-                let Some(custom_types) = custom_type_source_modules.remove(&module.id) else {
-                    return;
-                };
-                for c in custom_types {
-                    module.items.push(Item::CustomType(c));
-                }
-                // Note: the Item::NonUniffi is still present in the module, maybe we should remove them.
-                // However, things are working now so let's err towards more information.
-            });
-        }
-
         Ok(())
-    }
-
-    /// Resolve an unresolved item
-    fn resolve_item<'ir>(
-        &'ir self,
-        cache: &mut LookupCache<'ir>,
-        module_path: &RPath<'ir>,
-        env: &CompileEnv,
-        item: syn::Item,
-    ) -> syn::Result<Option<Item>> {
-        Ok(match item {
-            syn::Item::Fn(func) => {
-                if let Some(attrs) =
-                    FunctionAttributes::parse(self, cache, module_path, env, &func.attrs)?
-                {
-                    Some(Item::Fn(Function::parse(attrs, func.clone())?))
-                } else {
-                    None
-                }
-            }
-            syn::Item::Struct(st) => {
-                if let Some(attrs) =
-                    RecordAttributes::parse(self, cache, module_path, env, &st.attrs)?
-                {
-                    let r = Record::parse(env, attrs, st)?;
-                    Some(Item::Record(r))
-                } else if let Some(attrs) =
-                    ObjectAttributes::parse(self, cache, module_path, env, &st.attrs)?
-                {
-                    Some(Item::Object(Object::parse(attrs, st.ident, st.vis)?))
-                } else if env.should_process_non_uniffi(&st.attrs) {
-                    Some(Item::NonUniffi(st.vis.into(), st.ident))
-                } else {
-                    None
-                }
-            }
-            syn::Item::Enum(en) => {
-                if let Some(attrs) =
-                    ObjectAttributes::parse(self, cache, module_path, env, &en.attrs)?
-                {
-                    Some(Item::Object(Object::parse(attrs, en.ident, en.vis)?))
-                } else if let Some(attrs) =
-                    EnumAttributes::parse(self, cache, module_path, env, &en.attrs)?
-                {
-                    Some(Item::Enum(Enum::parse(env, attrs, en)?))
-                } else if env.should_process_non_uniffi(&en.attrs) {
-                    Some(Item::NonUniffi(en.vis.into(), en.ident))
-                } else {
-                    None
-                }
-            }
-            syn::Item::Trait(tr) => {
-                if let Some(attrs) =
-                    TraitAttributes::parse(self, cache, module_path, env, &tr.attrs)?
-                {
-                    Some(Item::Trait(Trait::parse(env, attrs, tr)?))
-                } else {
-                    None
-                }
-            }
-            syn::Item::Impl(imp) => {
-                if let Some(attrs) =
-                    ImplAttributes::parse(self, cache, module_path, env, &imp.attrs)?
-                {
-                    Some(Item::Impl(Impl::parse(env, attrs, imp)?))
-                } else {
-                    Some(Item::UnresolvedImpl(imp))
-                }
-            }
-            syn::Item::Macro(mac) => maybe_resolve_macro(self, cache, module_path, &mac)?,
-            _ => None,
-        })
     }
 
     #[cfg(test)]
@@ -433,6 +265,13 @@ impl Ir {
     }
 }
 
+pub enum VisitUnresolvedItem {
+    /// Keep the unresolved item for a later pass
+    Keep,
+    /// Remove the unresolved item after resolving it
+    Remove,
+}
+
 impl CrateRoot {
     pub fn module_item(&self) -> &Item {
         &self.module
@@ -451,53 +290,40 @@ impl CrateRoot {
             item => panic!("crate_root.module is not Item::Module ({item:?})"),
         }
     }
+}
 
-    // Couple of helper modules for `Ir::resolve_items`
-    //
-    // There's more combinations that could be implemented, but no need yet.
+/// Set of IR changes that we can apply later
+///
+/// The main use for this is to collect a bunch of changes inside a `try_visit_unresolved_items`
+/// closure where we have a shared reference to the IR, then apply those changes later when we can
+/// take a mutable reference.
+#[derive(Default)]
+pub struct IrChanges {
+    // Map module ids to items to add
+    items: HashMap<usize, Vec<Item>>,
+}
 
-    fn try_visit_modules_and_paths<'ir>(
-        &'ir self,
-        mut visitor: impl FnMut(&'ir Module, &RPath<'ir>) -> Result<()>,
-    ) -> Result<()> {
-        let mut stack = vec![(self.module(), RPath::new(&self.module))];
-        while let Some((module, path)) = stack.pop() {
-            visitor(module, &path)?;
-            for item in module.items.iter() {
-                if let Item::Module(m) = item {
-                    stack.push((m, path.append_child(item)));
-                }
-            }
-        }
-        Ok(())
+impl IrChanges {
+    pub fn add(&mut self, module_id: usize, item: Item) {
+        self.items.entry(module_id).or_default().push(item);
     }
 
-    fn visit_modules_mut(&mut self, mut visitor: impl FnMut(&mut Module)) {
-        let mut stack = vec![self.module_mut()];
+    pub fn apply(mut self, ir: &mut Ir) {
+        let mut stack: Vec<&mut Module> = ir
+            .crate_roots
+            .values_mut()
+            .map(CrateRoot::module_mut)
+            .collect();
         while let Some(module) = stack.pop() {
-            visitor(module);
+            if let Some(items) = self.items.remove(&module.id) {
+                module.items.extend(items);
+            }
             for item in module.items.iter_mut() {
                 if let Item::Module(m) = item {
                     stack.push(m);
                 }
             }
         }
-    }
-
-    fn try_visit_modules_mut(
-        &mut self,
-        mut visitor: impl FnMut(&mut Module) -> Result<()>,
-    ) -> Result<()> {
-        let mut stack = vec![self.module_mut()];
-        while let Some(module) = stack.pop() {
-            visitor(module)?;
-            for item in module.items.iter_mut() {
-                if let Item::Module(m) = item {
-                    stack.push(m);
-                }
-            }
-        }
-        Ok(())
     }
 }
 
