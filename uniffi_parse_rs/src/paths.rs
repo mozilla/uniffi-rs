@@ -578,6 +578,26 @@ impl<'ir> RPath<'ir> {
             })),
         }
     }
+
+    /// Try to resolve a syn path to a builtin item
+    ///
+    /// Returns an option instead of a result, since the main use-case for this is finding if a
+    /// macro call came from a builtin macro.  If there's an error, we just ignore the call.
+    pub fn resolve_builtin(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        path: &Path,
+        namespace: Namespace,
+    ) -> Option<BuiltinItem> {
+        match self.resolve(ir, cache, path, namespace) {
+            Err(_) => None,
+            Ok(rpath) => match rpath.item() {
+                Ok(Item::Builtin(b)) => Some(*b),
+                _ => None,
+            },
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -598,8 +618,8 @@ impl Visibility {
     }
 }
 
-impl From<syn::Visibility> for Visibility {
-    fn from(vis: syn::Visibility) -> Self {
+impl From<&syn::Visibility> for Visibility {
+    fn from(vis: &syn::Visibility) -> Self {
         match vis {
             syn::Visibility::Public(_) => Self::Public,
             _ => Self::Private,

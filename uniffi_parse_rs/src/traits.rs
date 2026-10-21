@@ -29,9 +29,9 @@ pub struct TraitMethod {
 }
 
 impl Trait {
-    pub fn parse(env: &CompileEnv, attrs: TraitAttributes, tr: ItemTrait) -> syn::Result<Self> {
+    pub fn parse(env: &CompileEnv, attrs: TraitAttributes, tr: &ItemTrait) -> syn::Result<Self> {
         let mut methods = vec![];
-        for item in tr.items {
+        for item in tr.items.iter() {
             if let TraitItem::Fn(f) = item {
                 if let Some(attrs) = MethodAttributes::parse(env, &f.attrs)? {
                     methods.push(TraitMethod::parse(attrs, f)?);
@@ -41,8 +41,8 @@ impl Trait {
 
         Ok(Self {
             attrs,
-            ident: tr.ident,
-            vis: tr.vis.into(),
+            ident: tr.ident.clone(),
+            vis: (&tr.vis).into(),
             methods,
         })
     }
@@ -120,19 +120,19 @@ impl Trait {
 }
 
 impl TraitMethod {
-    pub fn parse(attrs: MethodAttributes, f: TraitItemFn) -> syn::Result<Self> {
-        let mut inputs = f.sig.inputs.into_iter();
+    pub fn parse(attrs: MethodAttributes, f: &TraitItemFn) -> syn::Result<Self> {
+        let mut inputs = f.sig.inputs.iter();
         let self_arg = SelfArg::parse(inputs.next(), f.sig.ident.span())?;
 
         Ok(Self {
             attrs,
-            ident: f.sig.ident,
+            ident: f.sig.ident.clone(),
             is_async: f.sig.asyncness.is_some(),
             self_arg,
             args: inputs
                 .map(Argument::parse)
                 .collect::<syn::Result<Vec<_>>>()?,
-            return_type: ReturnType::parse(f.sig.output)?,
+            return_type: ReturnType::new(f.sig.output.clone())?,
         })
     }
 

@@ -6,40 +6,13 @@ use syn::{
     braced,
     parse::{Parse, ParseStream},
     token::Brace,
-    Attribute, ExprClosure, Ident, ItemMacro, LitStr, Macro, Token,
+    Attribute, ExprClosure, Ident, LitStr, Macro, Token,
 };
 
 use crate::{
-    attrs::extract_docstring, kw, paths::LookupCache, BuiltinItem, Ir, Item, Namespace, RPath,
+    attrs::extract_docstring, custom_types::resolve_custom_type_macro, kw, paths::LookupCache,
+    BuiltinItem, Error, Ir, IrChanges, Item, Namespace, Result, VisitUnresolvedItem,
 };
-
-/// Try resolving Item::Macro into a more specific item like Item::UseRemoteType
-pub fn maybe_resolve_macro<'ir>(
-    ir: &'ir Ir,
-    cache: &mut LookupCache<'ir>,
-    path: &RPath<'ir>,
-    mac: &ItemMacro,
-) -> syn::Result<Option<Item>> {
-    let builtin = match path.resolve(ir, cache, &mac.mac.path, Namespace::Macro) {
-        // Ignore errors, maybe the macro comes from an unparsed crate.
-        Err(_) => return Ok(None),
-        Ok(path) => match path.item() {
-            Ok(Item::Builtin(b)) => b,
-            _ => return Ok(None),
-        },
-    };
-    match builtin {
-        // Note: custom_newtype and custom_type share enough of the same syntax that we can use the
-        // same parser for both
-        BuiltinItem::UniffiMacro("custom_type") | BuiltinItem::UniffiMacro("custom_newtype") => {
-            Ok(Some(Item::CustomTypeMacroCall(mac.mac.parse_body()?)))
-        }
-        BuiltinItem::UniffiMacro("use_remote_type") => {
-            Ok(Some(Item::UseRemoteType(mac.mac.parse_body()?)))
-        }
-        _ => Ok(None),
-    }
-}
 
 /// Parsed custom_type! macro call
 pub struct CustomTypeMacroCall {
@@ -125,4 +98,45 @@ pub fn parse_include_scaffolding(mac: &Macro) -> syn::Result<Option<LitStr>> {
         Some(s) if s.ident == "include_scaffolding" => Ok(Some(mac.parse_body()?)),
         _ => Ok(None),
     }
+}
+
+pub fn resolve_uniffi_macros(ir: &mut Ir) -> Result<()> {
+    let mut changes = IrChanges::default();
+    let mut cache = LookupCache::default();
+    ir.try_visit_unresolved_items(|_, module, path, unresolved| {
+        let syn::Item::Macro(mac) = unresolved else {
+            return Ok(VisitUnresolvedItem::Keep);
+        };
+        let Some(builtin) = path.resolve_builtin(ir, &mut cache, &mac.mac.path, Namespace::Macro)
+        else {
+            return Ok(VisitUnresolvedItem::Keep);
+        };
+        match builtin {
+            // Note: custom_newtype and custom_type share enough of the same syntax that we can use the
+            // same parser for both
+            BuiltinItem::UniffiMacro("custom_type")
+            | BuiltinItem::UniffiMacro("custom_newtype") => {
+                resolve_custom_type_macro(
+                    ir,
+                    &mut cache,
+                    module,
+                    path,
+                    mac.mac.clone(),
+                    &mut changes,
+                )?;
+                Ok(VisitUnresolvedItem::Remove)
+            }
+            BuiltinItem::UniffiMacro("use_remote_type") => {
+                let path = mac
+                    .mac
+                    .parse_body()
+                    .map_err(|e| Error::new_syn(module.source, e))?;
+                changes.add(module.id, Item::UseRemoteType(path));
+                Ok(VisitUnresolvedItem::Remove)
+            }
+            _ => Ok(VisitUnresolvedItem::Keep),
+        }
+    })?;
+    changes.apply(ir);
+    Ok(())
 }
