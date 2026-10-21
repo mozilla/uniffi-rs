@@ -30,9 +30,9 @@ pub struct Variant {
 }
 
 impl Enum {
-    pub fn parse(env: &CompileEnv, attrs: EnumAttributes, e: syn::ItemEnum) -> syn::Result<Self> {
+    pub fn parse(env: &CompileEnv, attrs: EnumAttributes, e: &syn::ItemEnum) -> syn::Result<Self> {
         let mut variants = vec![];
-        for v in e.variants {
+        for v in e.variants.iter() {
             if let Some(variant_attrs) = VariantAttributes::parse(env, &v.attrs)? {
                 variants.push(Variant::parse(env, &attrs, variant_attrs, v)?);
             }
@@ -40,8 +40,8 @@ impl Enum {
 
         Ok(Self {
             attrs,
-            ident: e.ident,
-            vis: e.vis.into(),
+            ident: e.ident.clone(),
+            vis: (&e.vis).into(),
             variants,
         })
     }
@@ -78,11 +78,11 @@ impl Variant {
         env: &CompileEnv,
         enum_attrs: &EnumAttributes,
         attrs: VariantAttributes,
-        v: syn::Variant,
+        v: &syn::Variant,
     ) -> syn::Result<Self> {
-        let discr = Self::parse_discriminant(&v, enum_attrs)?;
+        let discr = Self::parse_discriminant(v, enum_attrs)?;
         let mut fields = vec![];
-        for f in v.fields {
+        for f in v.fields.iter() {
             if let Some(field_attrs) = FieldAttributes::parse(env, &f.attrs)? {
                 fields.push(Field::parse(field_attrs, f)?);
             }
@@ -90,7 +90,7 @@ impl Variant {
 
         Ok(Self {
             attrs,
-            ident: v.ident,
+            ident: v.ident.clone(),
             discr,
             fields,
         })

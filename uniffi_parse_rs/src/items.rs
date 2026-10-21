@@ -7,8 +7,13 @@ use std::fmt;
 use syn::{ext::IdentExt, Ident, ItemType, LitStr, Path};
 
 use crate::{
-    macros::CustomTypeMacroCall, CustomType, Enum, Function, Impl, Module, Object, Record, Trait,
-    UseGlob, UseItem, Visibility,
+    attrs::{
+        EnumAttributes, FunctionAttributes, ImplAttributes, ObjectAttributes, RecordAttributes,
+        TraitAttributes,
+    },
+    paths::LookupCache,
+    CompileEnv, CustomType, Enum, Error, Function, Impl, Ir, IrChanges, Module, Object, RPath,
+    Record, Result, Trait, UseGlob, UseItem, Visibility, VisitUnresolvedItem,
 };
 
 /// Item enum
@@ -28,15 +33,11 @@ pub enum Item {
     UseGlob(UseGlob),
     UseRemoteType(Path),
     IncludeScaffolding(LitStr),
-    // Unresolved syn::Item, we'll process this in [crate::Ir::resolve_items]
-    Unresolved(syn::Item),
-    // Unresolved trait impl.  We'll process this [module::create_metadata].
-    UnresolvedImpl(syn::ItemImpl),
     // syn::Item that's doesn't have a UniFFI attribute.
     // These still can be used as custom types though.
     NonUniffi(Visibility, Ident),
-    /// Custom type macro expression
-    CustomTypeMacroCall(CustomTypeMacroCall),
+    // From<UnexpectedUniffiCallbackError> implementation for a type
+    FromUnexpectedUniffiCallbackError(uniffi_meta::Type),
     CustomType(CustomType),
     Udl(uniffi_meta::Type),
     /// Builtin items that we know about.
@@ -142,16 +143,14 @@ impl Item {
             Self::UseItem(u) => u.vis,
             Self::UseGlob(u) => u.vis,
             Self::NonUniffi(vis, _) => *vis,
-            Self::Type(t) => t.vis.clone().into(),
-            Self::Builtin(_) | Self::UseRemoteType(_) | Self::CustomType(_) | Self::Udl(_) => {
-                Visibility::Public
-            }
+            Self::Type(t) => (&t.vis).into(),
+            Self::Builtin(_)
+            | Self::UseRemoteType(_)
+            | Self::CustomType(_)
+            | Self::FromUnexpectedUniffiCallbackError(_)
+            | Self::Udl(_) => Visibility::Public,
             // "visibility" doesn't mean anything for these items, let's return `Private`
-            Self::Unresolved(_)
-            | Self::CustomTypeMacroCall(_)
-            | Self::UnresolvedImpl(_)
-            | Self::Impl(_)
-            | Self::IncludeScaffolding(_) => Visibility::Private,
+            Self::Impl(_) | Self::IncludeScaffolding(_) => Visibility::Private,
         }
     }
 
@@ -179,7 +178,7 @@ impl Item {
 impl fmt::Debug for Item {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Module(m) => f.debug_tuple("Module").field(&m).finish(),
+            Self::Module(m) => f.debug_tuple("Module").field(&m.ident).finish(),
             Self::Record(rec) => f
                 .debug_tuple("Record")
                 .field(&rec.ident.to_string())
@@ -215,17 +214,112 @@ impl fmt::Debug for Item {
             Self::UseRemoteType(_) => f.debug_tuple("UseRemoteType").finish(),
             Self::IncludeScaffolding(_) => f.debug_tuple("IncludeScaffolding").finish(),
             Self::Builtin(builtin) => f.debug_tuple("Builtin").field(&builtin).finish(),
-            Self::CustomTypeMacroCall(c) => f
-                .debug_struct("CustomTypeMacroCall")
-                .field("ident", &c.ident.to_string())
+            Self::FromUnexpectedUniffiCallbackError(ty) => f
+                .debug_tuple("FromUnexpectedUniffiCallbackError")
+                .field(&ty)
                 .finish(),
             Self::CustomType(c) => f
                 .debug_struct("CustomType")
                 .field("ident", &c.macro_call.ident.to_string())
                 .finish(),
             Self::Udl(ty) => f.debug_tuple("Udl").field(ty).finish(),
-            Self::Unresolved(_) => f.debug_tuple("Unresolved").finish(),
-            Self::UnresolvedImpl(_) => f.debug_tuple("UnresolvedImpl").finish(),
         }
     }
+}
+
+/// Resolve items in the IR that don't require special handling
+///
+/// Other items are resolved in separate passes, see `Ir::resolve_items`.
+pub fn resolve_simple_items(ir: &mut Ir) -> Result<()> {
+    let mut changes = IrChanges::default();
+    let mut cache = LookupCache::default();
+    ir.try_visit_unresolved_items(
+        |crate_root, module, path, unresolved| match resolve_simple_item(
+            ir,
+            &mut cache,
+            path,
+            &crate_root.compile_env,
+            unresolved,
+        )
+        .map_err(|e| Error::new_syn(module.source, e))?
+        {
+            Some(i) => {
+                changes.add(module.id, i);
+                Ok(VisitUnresolvedItem::Remove)
+            }
+            None => Ok(VisitUnresolvedItem::Keep),
+        },
+    )?;
+    changes.apply(ir);
+    Ok(())
+}
+
+fn resolve_simple_item<'ir>(
+    ir: &'ir Ir,
+    cache: &mut LookupCache<'ir>,
+    module_path: &RPath<'ir>,
+    env: &CompileEnv,
+    unresolved: &syn::Item,
+) -> syn::Result<Option<Item>> {
+    Ok(match unresolved {
+        syn::Item::Fn(func) => {
+            if let Some(attrs) =
+                FunctionAttributes::parse(ir, cache, module_path, env, &func.attrs)?
+            {
+                Some(Item::Fn(Function::parse(attrs, func.clone())?))
+            } else {
+                None
+            }
+        }
+        syn::Item::Struct(st) => {
+            if let Some(attrs) = RecordAttributes::parse(ir, cache, module_path, env, &st.attrs)? {
+                let r = Record::parse(env, attrs, st)?;
+                Some(Item::Record(r))
+            } else if let Some(attrs) =
+                ObjectAttributes::parse(ir, cache, module_path, env, &st.attrs)?
+            {
+                Some(Item::Object(Object::parse(
+                    attrs,
+                    st.ident.clone(),
+                    &st.vis,
+                )?))
+            } else if env.should_process_non_uniffi(&st.attrs) {
+                Some(Item::NonUniffi((&st.vis).into(), st.ident.clone()))
+            } else {
+                None
+            }
+        }
+        syn::Item::Enum(en) => {
+            if let Some(attrs) = ObjectAttributes::parse(ir, cache, module_path, env, &en.attrs)? {
+                Some(Item::Object(Object::parse(
+                    attrs,
+                    en.ident.clone(),
+                    &en.vis,
+                )?))
+            } else if let Some(attrs) =
+                EnumAttributes::parse(ir, cache, module_path, env, &en.attrs)?
+            {
+                Some(Item::Enum(Enum::parse(env, attrs, en)?))
+            } else if env.should_process_non_uniffi(&en.attrs) {
+                Some(Item::NonUniffi((&en.vis).into(), en.ident.clone()))
+            } else {
+                None
+            }
+        }
+        syn::Item::Trait(tr) => {
+            if let Some(attrs) = TraitAttributes::parse(ir, cache, module_path, env, &tr.attrs)? {
+                Some(Item::Trait(Trait::parse(env, attrs, tr)?))
+            } else {
+                None
+            }
+        }
+        syn::Item::Impl(imp) => {
+            if let Some(attrs) = ImplAttributes::parse(ir, cache, module_path, env, &imp.attrs)? {
+                Some(Item::Impl(Impl::parse(env, attrs, imp)?))
+            } else {
+                None
+            }
+        }
+        _ => None,
+    })
 }

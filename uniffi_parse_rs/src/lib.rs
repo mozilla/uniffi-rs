@@ -41,16 +41,15 @@ pub use enums::{Enum, Variant};
 pub use errors::{Error, ErrorContext, ErrorKind};
 pub use functions::{Argument, Function, ReturnType};
 pub use impls::Impl;
-pub use ir::Ir;
+pub use ir::{Ir, IrChanges, VisitUnresolvedItem};
 pub use items::{BuiltinItem, Item};
 pub use modules::Module;
 pub use objects::{Constructor, Method, Object, SelfArg};
 pub use paths::{ChildItem, Namespace, RPath, Visibility};
 pub use public_paths::ItemNames;
 pub use records::{Field, Record};
-pub use trait_impls::TraitImpl;
 pub use traits::Trait;
-pub use types::GenericArgs;
+pub use types::{GenericArgs, Type};
 pub use use_::{parse_use, UseGlob, UseItem};
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
