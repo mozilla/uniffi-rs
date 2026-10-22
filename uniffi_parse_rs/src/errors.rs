@@ -67,6 +67,8 @@ pub enum ErrorKind {
     NotFound,
     #[error("Failed to add UDL metadata {0}")]
     AddUdlMetadataError(String),
+    #[error("Multiple UDL includes: {0:?}")]
+    MultipleUdlIncludes(Vec<String>),
     #[error("`super` invalid")]
     SuperInvalid,
     #[error("`crate` invalid")]
