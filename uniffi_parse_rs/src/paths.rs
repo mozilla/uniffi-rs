@@ -1135,9 +1135,9 @@ pub mod tests {
         let mut ir = Ir::new_for_test(&["raw_idents"]);
         let mut cache = LookupCache::default();
 
-        ir.add_udl_metadata(
-            "raw_idents",
-            vec![uniffi_meta::RecordMetadata {
+        ir.lookup_root_module_mut("raw_idents")
+            .unwrap()
+            .add_udl_metadata(vec![uniffi_meta::RecordMetadata {
                 module_path: "raw_idents".into(),
                 name: "Record".into(),
                 orig_name: None,
@@ -1145,9 +1145,7 @@ pub mod tests {
                 fields: vec![],
                 docstring: None,
             }
-            .into()],
-        )
-        .unwrap();
+            .into()]);
         assert_eq!(
             run_resolve_item(&ir, &mut cache, "raw_idents", "r#Record"),
             Ok("raw_idents::Record".to_string()),

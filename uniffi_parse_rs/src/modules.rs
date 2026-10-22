@@ -171,6 +171,48 @@ impl Module {
         Ok(())
     }
 
+    pub fn add_udl_metadata(&mut self, items: impl IntoIterator<Item = uniffi_meta::Metadata>) {
+        for i in items {
+            match &i {
+                uniffi_meta::Metadata::Enum(e) => {
+                    self.items.push(Item::Udl(uniffi_meta::Type::Enum {
+                        module_path: e.module_path.clone(),
+                        name: e.name.clone(),
+                    }));
+                }
+                uniffi_meta::Metadata::Record(r) => {
+                    self.items.push(Item::Udl(uniffi_meta::Type::Record {
+                        module_path: r.module_path.clone(),
+                        name: r.name.clone(),
+                    }));
+                }
+                uniffi_meta::Metadata::Object(o) => {
+                    self.items.push(Item::Udl(uniffi_meta::Type::Object {
+                        module_path: o.module_path.clone(),
+                        name: o.name.clone(),
+                        imp: o.imp,
+                    }));
+                }
+                uniffi_meta::Metadata::CallbackInterface(c) => {
+                    self.items
+                        .push(Item::Udl(uniffi_meta::Type::CallbackInterface {
+                            module_path: c.module_path.clone(),
+                            name: c.name.clone(),
+                        }));
+                }
+                uniffi_meta::Metadata::CustomType(c) => {
+                    self.items.push(Item::Udl(uniffi_meta::Type::Custom {
+                        module_path: c.module_path.clone(),
+                        name: c.name.clone(),
+                        builtin: Box::new(c.builtin.clone()),
+                    }));
+                }
+                _ => (),
+            }
+            self.metadata_from_udl.push(i);
+        }
+    }
+
     /// Extend `unresolved_items` with new syn items
     ///
     /// Note that this can be called from a shared reference.
