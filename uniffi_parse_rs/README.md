@@ -3,6 +3,31 @@
 This crate parses Rust sources into UniFFI metadata that can then be used to generate the bindings.
 This crate is experimental and not supported by any existing bindings.
 
+# How to use it
+
+Specify `src::[rust-crate-name]` as the source when generating bindings.
+`uniffi_bindgen` will use `uniffi_parse_rs` to parse the source.
+
+## Skipping parsing for some crates
+
+Use the `package.metadata.uniffi` table in `Cargo.toml` to control which crates get parsed.
+
+To skip a crate from being parsed ` use:
+```
+[package.metadata.uniffi]
+skip_parsing = true
+```
+
+To skip a crate's dependencies from being parsed use:
+```
+[package.metadata.uniffi]
+skip_dependencies = [
+    "crate-one",
+    "crate-two",
+    // ...
+]
+```
+
 # What works
 
 * `#[derive(uniffi::Record)]`, `#[derive(uniffi::Enum)]` and `#[derive(uniffi::Object)]`
