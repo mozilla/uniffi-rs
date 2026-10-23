@@ -119,8 +119,8 @@ impl BindgenPathsLayer for CrateConfigSupplier {
                 continue;
             };
             if should_parse_package(package) {
-                if let Some(src_path) = find_src_lib(package) {
-                    found.push((package.name.to_string(), src_path.clone()));
+                if let Some((crate_name, src_path)) = find_src_lib(package) {
+                    found.push((package.name.to_string(), crate_name, src_path.clone()));
                 }
             }
 
@@ -174,19 +174,20 @@ impl BindgenPathsLayer for CrateConfigSupplier {
         Some(
             found
                 .into_iter()
-                .map(|(name, src_path)| {
+                .map(|(package_name, crate_name, src_path)| {
                     let mut features = vec![];
-                    if let Some(f) = feature_map.get(name.as_str()) {
+                    if let Some(f) = feature_map.get(package_name.as_str()) {
                         features.extend(f.iter().map(|s| s.to_string()));
                     }
-                    if enable_default_features.contains(name.as_str()) {
-                        if let Some(f) = default_feature_map.get(name.as_str()) {
+                    if enable_default_features.contains(package_name.as_str()) {
+                        if let Some(f) = default_feature_map.get(package_name.as_str()) {
                             features.extend(f.iter().map(|s| s.to_string()));
                         }
                     }
                     SourceCrate {
+                        package_name,
+                        crate_name,
                         features,
-                        name,
                         src_path,
                     }
                 })
@@ -238,10 +239,10 @@ fn dependencies_to_parse(package: &Package) -> Vec<&Dependency> {
         .collect()
 }
 
-fn find_src_lib(package: &Package) -> Option<Utf8PathBuf> {
+fn find_src_lib(package: &Package) -> Option<(String, Utf8PathBuf)> {
     package
         .targets
         .iter()
         .find(|t| t.is_lib() || t.is_rlib() || t.is_cdylib() || t.is_staticlib())
-        .map(|t| t.src_path.clone())
+        .map(|t| (t.name.clone(), t.src_path.clone()))
 }

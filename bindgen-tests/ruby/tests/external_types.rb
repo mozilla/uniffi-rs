@@ -9,7 +9,7 @@ require 'uri'
 require 'uniffi_bindgen_tests'
 
 class TestExternalTypes < Test::Unit::TestCase
-  Ext = UniffiBindgenTestsExternalTypesSource
+  Ext = ExtTypes
   Mid = UniffiBindgenTestsMidTypes
 
   def test_ext_record
@@ -163,7 +163,7 @@ class TestExternalTypes < Test::Unit::TestCase
     assert_not_nil path, 'uniffi_bindgen_tests_mid_types.rb should be loaded'
     src = File.read(path)
 
-    assert_match(/require ['"]uniffi_bindgen_tests_external_types_source['"]/, src)
-    assert_match(/UniffiBindgenTestsExternalTypesSource::RustBuffer/, src)
+    assert_match(/require ['"]ext_types['"]/, src)
+    assert_match(/ExtTypes::RustBuffer/, src)
   end
 end

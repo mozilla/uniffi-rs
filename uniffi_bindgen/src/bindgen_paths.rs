@@ -102,7 +102,8 @@ pub struct CargoMetadataOptions {
 
 #[derive(Debug)]
 pub struct SourceCrate {
-    pub name: String,
+    pub crate_name: String,
+    pub package_name: String,
     pub src_path: Utf8PathBuf,
     pub features: Vec<String>,
 }

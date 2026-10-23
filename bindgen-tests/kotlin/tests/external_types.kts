@@ -1,5 +1,5 @@
 import uniffi.uniffi_bindgen_tests.*
-import uniffi.uniffi_bindgen_tests_external_types_source.*
+import uniffi.ext_types.*
 
 assert(roundtripExtRecord(ExternalRec(a=42.toUByte())) == ExternalRec(a=42.toUByte()))
 assert(roundtripExtEnum(ExternalEnum.TWO) == ExternalEnum.TWO)
