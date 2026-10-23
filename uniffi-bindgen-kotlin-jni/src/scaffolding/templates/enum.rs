@@ -54,6 +54,10 @@ unsafe fn {{ en.self_type.lower_fn_rs() }}(
                 {%- endif %}
             }
             {%- endfor %}
+            {% if en.non_exhaustive %}
+            {# Enum is non-exhaustive, but we can be confident we matched exhaustively, since we just parsed the source code #}
+            _ => unreachable!()
+            {%- endif %}
         }
     }
 }
@@ -130,6 +134,10 @@ unsafe fn {{ en.self_type.write_fn_rs() }}(
                 uniffi::Result::Ok(())
             }
             {%- endfor %}
+            {% if en.non_exhaustive %}
+            {# Enum is non-exhaustive, but we can be confident we matched exhaustively, since we just parsed the source code #}
+            _ => unreachable!()
+            {%- endif %}
         }
     }
 }
@@ -185,6 +193,10 @@ unsafe fn {{ en.self_type.lower_fn_rs() }}(
                 uniffi::Result::Ok(({{ loop.index0 }}, jstring))
             }
             {%- endfor %}
+            {% if en.non_exhaustive %}
+            {# Enum is non-exhaustive, but we can be confident we matched exhaustively, since we just parsed the source code #}
+            _ => unreachable!()
+            {%- endif %}
         }
     }
 }
@@ -203,6 +215,10 @@ unsafe fn {{ en.self_type.write_fn_rs() }}(
                 uniffi::Result::Ok(())
             }
             {%- endfor %}
+            {% if en.non_exhaustive %}
+            {# Enum is non-exhaustive, but we can be confident we matched exhaustively, since we just parsed the source code #}
+            _ => unreachable!()
+            {%- endif %}
         }
     }
 }

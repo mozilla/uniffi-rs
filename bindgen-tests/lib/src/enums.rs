@@ -25,7 +25,9 @@ impl EnumWithData {
     }
 }
 
+// Complex enum testing corner cases, including the `non_exhaustive` attribute.
 #[derive(uniffi::Enum)]
+#[non_exhaustive]
 pub enum ComplexEnum {
     A { value: EnumNoData },
     B { value: EnumWithData },

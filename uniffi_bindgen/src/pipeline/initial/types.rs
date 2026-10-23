@@ -102,6 +102,7 @@ pub fn map_enum(input: uniffi_meta::EnumMetadata, context: &Context) -> Result<E
         shape: input.shape,
         variants: input.variants.map_node(context)?,
         discr_type: input.discr_type.map_node(context)?,
+        non_exhaustive: input.non_exhaustive,
         docstring: input.docstring,
     })
 }

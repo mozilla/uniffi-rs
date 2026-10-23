@@ -223,6 +223,7 @@ pub struct Enum {
     pub shape: EnumShape,
     pub variants: Vec<Variant>,
     pub discr_type: Option<Type>,
+    pub non_exhaustive: bool,
     pub docstring: Option<String>,
 }
 

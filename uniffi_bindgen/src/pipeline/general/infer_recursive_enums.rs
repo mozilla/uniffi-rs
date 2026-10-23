@@ -243,6 +243,7 @@ mod tests {
             shape: EnumShape::Enum,
             constructors: vec![],
             methods: vec![],
+            non_exhaustive: false,
             docstring: None,
             recursive: false,
             variants: vec![Variant {
@@ -281,6 +282,7 @@ mod tests {
             shape: EnumShape::Enum,
             constructors: vec![],
             methods: vec![],
+            non_exhaustive: false,
             docstring: None,
             recursive: false,
             variants: vec![Variant {
@@ -348,6 +350,7 @@ mod tests {
             shape: EnumShape::Enum,
             constructors: vec![],
             methods: vec![],
+            non_exhaustive: false,
             docstring: None,
             recursive: false,
             variants,

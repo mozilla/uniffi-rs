@@ -83,6 +83,7 @@ pub struct Enum {
     pub uniffi_trait_methods: UniffiTraitMethods,
     pub shape: EnumShape,
     pub kotlin_kind: KotlinEnumKind,
+    pub non_exhaustive: bool,
     pub docstring: Option<String>,
     pub recursive: bool,
     pub ffi_fields: Vec<FfiField>,
