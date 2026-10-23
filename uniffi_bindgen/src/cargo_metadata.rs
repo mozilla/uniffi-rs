@@ -7,7 +7,7 @@
 
 use anyhow::{Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
-use cargo_metadata::Package;
+use cargo_metadata::{Dependency, Package};
 use std::collections::{HashMap, HashSet};
 
 use crate::{bindgen_paths::SourceCrate, BindgenPathsLayer, CargoMetadataOptions};
@@ -124,7 +124,9 @@ impl BindgenPathsLayer for CrateConfigSupplier {
                 }
             }
 
-            for dep in package.dependencies.iter() {
+            let dependencies = dependencies_to_parse(package);
+
+            for dep in dependencies.iter() {
                 feature_map
                     .entry(dep.name.as_str())
                     .or_default()
@@ -161,7 +163,7 @@ impl BindgenPathsLayer for CrateConfigSupplier {
                 }
             }
 
-            for dep in package.dependencies.iter() {
+            for dep in dependencies.iter() {
                 if dep.uses_default_features {
                     enable_default_features.insert(dep.name.as_str());
                 }
@@ -197,11 +199,43 @@ fn should_parse_package(package: &Package) -> bool {
     let skip_parsing = package
         .metadata
         .pointer("/uniffi/skip_parsing")
-        .and_then(|v| v.as_bool())
+        .map(|v| {
+            v.as_bool().unwrap_or_else(|| {
+                panic!(
+                    "uniffi::skip_parsing not a bool (package: {})",
+                    package.name
+                )
+            })
+        })
         .unwrap_or_default();
     let depends_on_uniffi = package.dependencies.iter().any(|d| d.name == "uniffi");
 
     depends_on_uniffi && !skip_parsing
+}
+
+fn dependencies_to_parse(package: &Package) -> Vec<&Dependency> {
+    let mut skip_set = HashSet::new();
+    if let Some(value) = package.metadata.pointer("/uniffi/skip_dependencies") {
+        let list = value.as_array().unwrap_or_else(|| {
+            panic!(
+                "uniffi::skip_dependencies not a list (package: {})",
+                package.name
+            )
+        });
+        for v in list {
+            skip_set.insert(v.as_str().unwrap_or_else(|| {
+                panic!(
+                    "uniffi::skip_dependencies not a list of strings (package: {})",
+                    package.name
+                )
+            }));
+        }
+    }
+    package
+        .dependencies
+        .iter()
+        .filter(move |d| !skip_set.contains(d.name.as_str()))
+        .collect()
 }
 
 fn find_src_lib(package: &Package) -> Option<Utf8PathBuf> {
