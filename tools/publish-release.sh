@@ -30,6 +30,8 @@ cargo publish -p uniffi_core
 cargo publish -p uniffi_testing
 cargo publish -p uniffi_udl
 cargo publish -p uniffi_bindgen
+cargo publish -p uniffi-bindgen-kotlin-jni
+cargo publish -p uniffi-bindgen-kotlin-jni-runtime
 cargo publish -p uniffi_build
 cargo publish -p uniffi_macros
 cargo publish -p uniffi
