@@ -312,6 +312,7 @@ pub struct Enum {
     pub constructors: Vec<Constructor>,
     #[map_node(objects::methods(self.methods, context)?)]
     pub methods: Vec<Method>,
+    pub non_exhaustive: bool,
     pub docstring: Option<String>,
     #[map_node(false)]
     pub recursive: bool,

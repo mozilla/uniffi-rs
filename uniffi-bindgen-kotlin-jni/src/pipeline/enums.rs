@@ -55,6 +55,7 @@ pub fn map_enum(input: general::Enum, context: &Context) -> Result<Enum> {
         base_classes,
         uniffi_trait_methods: input.uniffi_trait_methods.map_node(&context)?,
         shape: input.shape,
+        non_exhaustive: input.non_exhaustive,
         docstring: input.docstring,
         recursive: input.recursive,
         ffi_fields,
