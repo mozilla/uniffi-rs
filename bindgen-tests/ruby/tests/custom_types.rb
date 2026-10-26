@@ -25,4 +25,11 @@ class TestEnums < Test::Unit::TestCase
     iface = CustomTypeInterface.new 67
     assert_equal(67, UniffiBindgenTests.roundtrip_custom_type3(iface).get_value())
   end
+
+  def test_error_casting
+    assert_equal(100, UniffiBindgenTests.try_roundtrip_custom_type1(100))
+    assert_raises(UniffiBindgenTests::CustomTypeError::Overflow) {
+      UniffiBindgenTests.try_roundtrip_custom_type1(10000)
+    }
+  end
 end

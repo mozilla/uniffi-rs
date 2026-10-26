@@ -16,5 +16,10 @@ class TestCustomTypes(unittest.TestCase):
         i = CustomTypeInterface(67)
         self.assertEqual(roundtrip_custom_type3(i).get_value(), 67)
 
+    def test_error_casting(self):
+        self.assertEqual(try_roundtrip_custom_type1(100), 100)
+        with self.assertRaises(CustomTypeError.Overflow):
+            try_roundtrip_custom_type1(10000)
+
 if __name__ == '__main__':
     unittest.main()

@@ -11,7 +11,13 @@ pub struct CustomType1(u64);
 pub struct CustomType2(u64);
 
 uniffi::custom_type!(CustomType1, u64, {
-    try_lift: |val| Ok(CustomType1(val)),
+    try_lift: |val| {
+        if val > 1000 {
+            Err(CustomTypeError::Overflow.into())
+        } else {
+            Ok(CustomType1(val))
+        }
+    },
     lower: |custom| custom.0,
 });
 uniffi::custom_type!(CustomType2, u64, {
@@ -57,4 +63,15 @@ pub fn roundtrip_custom_type2(custom2: CustomType2) -> CustomType2 {
 #[uniffi::export]
 pub fn roundtrip_custom_type3(custom3: CustomType3) -> CustomType3 {
     custom3
+}
+
+#[derive(Debug, thiserror::Error, uniffi::Error)]
+pub enum CustomTypeError {
+    #[error("Overflow")]
+    Overflow,
+}
+
+#[uniffi::export]
+pub fn try_roundtrip_custom_type1(custom1: CustomType1) -> Result<CustomType1, CustomTypeError> {
+    Ok(custom1)
 }

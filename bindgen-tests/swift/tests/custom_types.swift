@@ -12,3 +12,10 @@ assert(roundtripCustomType2(custom2: ["value": 200]) == ["value": 200])
 
 let i = CustomTypeInterface(value: 67)
 assert(roundtripCustomType3(custom3: i).getValue() == 67)
+
+assert(try! tryRoundtripCustomType1(custom1: 100) == 100)
+do {
+    let _ = try tryRoundtripCustomType1(custom1: 20000)
+} catch CustomTypeError.Overflow {
+    // Expected
+}
