@@ -279,7 +279,7 @@ pub struct Argument {
     pub orig_name: String,
     pub index: usize,
     pub ty: TypeNode,
-    pub by_ref: bool,
+    pub pass_by: PassBy,
     pub optional: bool,
     pub ffi: ArgumentFfi,
     pub default: Option<DefaultValueNode>,

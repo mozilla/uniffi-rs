@@ -235,6 +235,13 @@ mod tests {
     #[test]
     fn async_ref_bytes_is_allowed() {
         // Read-only `&[u8]` in an async fn is fine — only `&mut` is unsound.
-        assert!(reject_async_by_mut_ref(true, "sum", &[bytes_arg(PassBy::Ref)]).is_ok());
+        assert!(
+            reject_async_by_mut_ref(true, "sum", &[bytes_arg(PassBy::Ref { is_arc: false })])
+                .is_ok()
+        );
+        assert!(
+            reject_async_by_mut_ref(true, "sum", &[bytes_arg(PassBy::Ref { is_arc: true })])
+                .is_ok()
+        );
     }
 }

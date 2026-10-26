@@ -544,7 +544,7 @@ impl NamedArg {
                     pass_by: if is_mut_u8_slice {
                         PassBy::MutRef
                     } else {
-                        PassBy::Ref
+                        PassBy::ref_()
                     },
                     default: defaults.remove(&ident),
                     ident,

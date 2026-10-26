@@ -16,9 +16,22 @@ pub fn call_double_value(i: &ReferenceTestInterface, a: u32) -> u32 {
     i.double_value(&a)
 }
 
+#[uniffi::export]
+pub fn call_double_value_ref_arc(i: &Arc<ReferenceTestInterface>, a: u32) -> u32 {
+    i.double_value(&a)
+}
+
 // Input an trait interface reference
 #[uniffi::export]
 pub fn call_triple_value_trait_interface(t: &dyn ReferenceTestTraitInterface, a: u32) -> u32 {
+    t.triple_value(a)
+}
+
+#[uniffi::export]
+pub fn call_triple_value_trait_interface_ref_arc(
+    t: &Arc<dyn ReferenceTestTraitInterface>,
+    a: u32,
+) -> u32 {
     t.triple_value(a)
 }
 
@@ -38,7 +51,7 @@ impl ReferenceTestInterface {
     }
 }
 
-#[uniffi::export]
+#[uniffi::export(rust, foreign)]
 pub trait ReferenceTestTraitInterface: Send + Sync {
     fn triple_value(&self, a: u32) -> u32;
 }

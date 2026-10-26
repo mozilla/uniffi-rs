@@ -2,7 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::{collections::HashMap, str::FromStr};
+use std::{
+    collections::HashMap,
+    str::FromStr,
+    sync::atomic::{AtomicBool, Ordering},
+};
 
 use camino::Utf8Path;
 pub use target_lexicon::Triple;
@@ -94,7 +98,9 @@ impl Parser {
         &mut self,
         crate_name: &str,
         items: impl IntoIterator<Item = uniffi_meta::Metadata>,
+        path: &Utf8Path,
     ) -> anyhow::Result<()> {
+        note_source_file(path);
         self.ir
             .add_udl_metadata(crate_name, items)
             .map_err(|e| anyhow::anyhow!("{e}"))
@@ -107,5 +113,19 @@ impl Parser {
         self.ir
             .into_metadata_group_map()
             .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+}
+
+static BUILD_SCRIPT_MODE: AtomicBool = AtomicBool::new(false);
+
+/// Call when we're inside a build script to print `cargo::rerun-if-changed`
+/// lines when parsing files.
+pub fn set_build_script_mode() {
+    BUILD_SCRIPT_MODE.store(true, Ordering::Relaxed);
+}
+
+fn note_source_file(path: &Utf8Path) {
+    if BUILD_SCRIPT_MODE.load(Ordering::Relaxed) {
+        println!("cargo::rerun-if-changed={path}");
     }
 }

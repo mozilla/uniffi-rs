@@ -98,7 +98,7 @@ fn method_ffi_def(
     let mut all_args = vec![initial::Argument {
         name: "uniffi_self".to_string(),
         ty: receiver_ty.clone(),
-        pass_by: PassBy::Ref,
+        pass_by: PassBy::ref_(),
         optional: false,
         default: None,
     }];
@@ -185,7 +185,7 @@ mod tests {
     #[test]
     fn byref_bytes_maps_to_foreignbytes() {
         let context = Context::new("test");
-        let arg = make_arg(Type::Bytes, PassBy::Ref);
+        let arg = make_arg(Type::Bytes, PassBy::ref_());
         let ffi_arg = argument_to_ffi_argument(&arg, &context).expect("should convert");
         assert!(
             matches!(ffi_arg.ty, FfiType::ForeignBytes),

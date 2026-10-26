@@ -109,39 +109,46 @@ pub fn map_callable(
         CallableKind::Method {
             self_type,
             takes_self_by_arc,
-        } => Some(Argument {
-            ty: self_type.clone(),
-            by_ref: !takes_self_by_arc,
-            ffi: argument_ffi(
-                self_type,
-                if *takes_self_by_arc {
-                    PassBy::Value
-                } else {
-                    PassBy::Ref
-                },
-                true,
-                &mut allocator,
-            ),
-            index: allocator.next_arg_index(),
-            name: "".into(),
-            orig_name: "".into(),
-            optional: false,
-            default: None,
-        }),
+        } => {
+            let pass_by = if *takes_self_by_arc {
+                PassBy::Value
+            } else {
+                // Receivers can't be `&Arc<T>`, it's an invalid self type
+                PassBy::Ref { is_arc: false }
+            };
+            Some(Argument {
+                ty: self_type.clone(),
+                pass_by,
+                ffi: argument_ffi(self_type, pass_by, true, &mut allocator),
+                index: allocator.next_arg_index(),
+                name: "".into(),
+                orig_name: "".into(),
+                optional: false,
+                default: None,
+            })
+        }
         CallableKind::VTableMethod {
             self_type,
             takes_self_by_arc,
             ..
-        } => Some(Argument {
-            ty: self_type.clone(),
-            by_ref: !takes_self_by_arc,
-            ffi: argument_ffi(self_type, PassBy::Ref, true, &mut allocator),
-            index: allocator.next_arg_index(),
-            name: "".into(),
-            orig_name: "".into(),
-            optional: false,
-            default: None,
-        }),
+        } => {
+            let pass_by = if *takes_self_by_arc {
+                PassBy::Value
+            } else {
+                // Receivers can't be `&Arc<T>`, it's an invalid self type
+                PassBy::Ref { is_arc: false }
+            };
+            Some(Argument {
+                ty: self_type.clone(),
+                pass_by,
+                ffi: argument_ffi(self_type, pass_by, true, &mut allocator),
+                index: allocator.next_arg_index(),
+                name: "".into(),
+                orig_name: "".into(),
+                optional: false,
+                default: None,
+            })
+        }
         _ => None,
     };
 
@@ -180,7 +187,7 @@ fn map_arguments(
                 optional: arg.optional,
                 ffi: argument_ffi(&ty, arg.pass_by, false, allocator),
                 ty,
-                by_ref: arg.pass_by.is_borrowed(),
+                pass_by: arg.pass_by,
                 default: arg.default.map_node(context)?,
             })
         })
@@ -194,8 +201,10 @@ fn argument_ffi(
     allocator: &mut ArgAllocator,
 ) -> ArgumentFfi {
     let id = ty.id;
-    match (&ty.ty, pass_by.is_borrowed()) {
-        (Type::Interface { imp, .. }, true) if !imp.has_callback_interface() => {
+    match (&ty.ty, pass_by) {
+        (Type::Interface { imp, .. }, PassBy::Ref { is_arc: false })
+            if !imp.has_callback_interface() =>
+        {
             ArgumentFfi::Custom {
                 ffi_args: allocator.create_ffi_args(&[FfiType::Int64]),
                 // Kotlin -> Rust uses optimized lower/lift functions that avoid a clone
@@ -208,7 +217,9 @@ fn argument_ffi(
                 type_kt: ty.type_kt.clone(),
             }
         }
-        (Type::Interface { imp, .. }, true) if imp.has_callback_interface() && receiver => {
+        (Type::Interface { imp, .. }, PassBy::Ref { is_arc: false })
+            if imp.has_callback_interface() && receiver =>
+        {
             // For trait interface that can be implemented in Kotlin,
             // it's tricky to optimize passing refs in general.
             //
@@ -226,7 +237,7 @@ fn argument_ffi(
                 type_kt: ty.type_kt.clone(),
             }
         }
-        (Type::Bytes, true) => {
+        (Type::Bytes, PassBy::Ref { .. }) | (Type::Bytes, PassBy::MutRef) => {
             // For this case we Lift java.nio.ByteBuffer directly into a `&[u8]` (or
             // `&mut [u8]` for `[ByMutRef]`) slice. Rust writes through the mutable
             // slice land directly in the direct buffer's backing store.
@@ -482,22 +493,28 @@ impl Argument {
     ///
     /// This is the argument name, optionally prefixed with things like `&`/`*`
     pub fn pass_to_rust_fn(&self, name: String) -> String {
-        match (self.by_ref, &self.ty.ty) {
-            (true, Type::Interface { imp, .. }) => {
-                if !imp.has_callback_interface() {
-                    // For non-callback trait interfaces, we have an optimized lift_ref
-                    // implementation that already gives us a ref, no need to do anything here
-                    name
-                } else {
-                    // Trait interface with a callback interface: use `&*` to go from the `Arc<dyn T>` to `&dyn T`
-                    format!("&*{name}")
+        if self.pass_by.is_borrowed() {
+            match &self.ty.ty {
+                Type::Interface { imp, .. } => {
+                    if matches!(self.pass_by, PassBy::Ref { is_arc: true }) {
+                        // &Arc<T> doesn't get any special handling
+                        format!("&{name}")
+                    } else if !imp.has_callback_interface() {
+                        // For interfaces without a foreign impl, we have an optimized lift_ref implementation.
+                        // That already gives us a ref that we can use directly
+                        name
+                    } else {
+                        // Trait interface with a callback interface: use `&*` to go from the `Arc<dyn T>` to `&dyn T`
+                        format!("&*{name}")
+                    }
                 }
+                // Bytes references are also special-cased and don't need an extra reference.
+                Type::Bytes => name,
+                // All other refs just need `&`
+                _ => format!("&{name}"),
             }
-            // Bytes references are also special-cased and don't need an extra reference.
-            (true, Type::Bytes) => name,
-            // All other refs just need `&`
-            (true, _) => format!("&{name}"),
-            _ => name,
+        } else {
+            name
         }
     }
 }

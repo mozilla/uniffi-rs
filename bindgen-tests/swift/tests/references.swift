@@ -9,6 +9,8 @@ assert(roundtripU8Ref(a: 2) == 2)
 let interface = ReferenceTestInterface()
 assert(interface.doubleValue(a: 2) == 4)
 assert(callDoubleValue(i: interface, a: 3) == 6)
+assert(callDoubleValueRefArc(i: interface, a: 3) == 6)
 
 let traitInterface = createReferenceTestTraitInterface()
 assert(callTripleValueTraitInterface(t: traitInterface, a: 10) == 30)
+assert(callTripleValueTraitInterfaceRefArc(t: traitInterface, a: 10) == 30)

@@ -42,7 +42,7 @@ impl Module {
             .ok_or_else(|| Error::new_without_location(InvalidPath(file_path.to_path_buf())))?
             .to_path_buf();
         let (file_id, content) = read_to_string(file_path)?;
-        let file = parse_file(file_id, content)?;
+        let file = parse_file(file_id, content, file_path)?;
         let mut module = Self::empty(ident, file_id, Visibility::Public, vec![], crate_root)?;
         module.add_items(file.attrs, file.items, env)?;
         Ok(module)
@@ -127,7 +127,7 @@ impl Module {
                             // file.
                             if let Some(path) = self.child_module_path(&ident) {
                                 let (file_id, content) = read_to_string(&path)?;
-                                let file = parse_file(file_id, content)?;
+                                let file = parse_file(file_id, content, &path)?;
                                 self.items.push(Item::Module(self.new_child(
                                     file_id,
                                     ident.clone(),
@@ -317,6 +317,7 @@ impl Module {
     }
 }
 
-fn parse_file(file_id: FileId, content: &str) -> Result<syn::File> {
+fn parse_file(file_id: FileId, content: &str, path: &Utf8Path) -> Result<syn::File> {
+    crate::note_source_file(path);
     syn::parse_file(content).map_err(|e| Error::new(file_id, e.span(), SynError(e.to_string())))
 }
