@@ -16,6 +16,16 @@ class TestCustomTypes(unittest.TestCase):
         i = CustomTypeInterface(67)
         self.assertEqual(roundtrip_custom_type3(i).get_value(), 67)
 
+    def test_optional_custom_type(self):
+        i = CustomTypeInterface(67)
+        self.assertEqual(roundtrip_custom_type1_opt(100), 100)
+        self.assertEqual(roundtrip_custom_type2_opt({ "value": 200 }), { "value": 200 })
+        self.assertEqual(roundtrip_custom_type3_opt(i).get_value(), 67)
+
+        self.assertEqual(roundtrip_custom_type1_opt(None), None)
+        self.assertEqual(roundtrip_custom_type2_opt(None), None)
+        self.assertEqual(roundtrip_custom_type3_opt(None), None)
+
     def test_error_casting(self):
         self.assertEqual(try_roundtrip_custom_type1(100), 100)
         with self.assertRaises(CustomTypeError.Overflow):
