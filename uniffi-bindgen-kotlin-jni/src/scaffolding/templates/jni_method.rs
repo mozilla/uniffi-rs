@@ -17,12 +17,38 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
     unsafe {
         uniffi_jni::rust_call_with_env(uniffi_env, |uniffi_env| {
             {%- for arg in callable.arguments_including_receiver() %}
-            let uniffi_arg_lifted_{{ loop.index0 }} = {{ arg.lift_fn_rs() }}(
+            let uniffi_lift_result_{{ loop.index0 }} = {{ arg.lift_fn_rs() }}(
                 uniffi_env,
                 {%- for ffi_arg in arg.ffi_args() %}
                 {{ ffi_arg.name_rs() }},
                 {%- endfor %}
-            )?;
+            );
+            let uniffi_arg_lifted_{{ loop.index0 }} = match uniffi_lift_result_{{ loop.index0 }} {
+                Ok(v) => v,
+                Err(uniffi_err) => {
+                    {%- if let Some(throws_type) = callable.throws_type() %}
+                    // If we can, downcast the anyhow error the callable error type and throw that.
+                    let uniffi_err = uniffi_err.downcast::<{{ throws_type.type_rs }}>()?;
+                    let uniffi_err_deconstructed = {{ throws_type.lower_fn_rs() }}(uniffi_env, uniffi_err)?;
+                    let uniffi_err_obj = {{ throws_type.lift_kt_from_rust_var() }}.call_object(
+                        uniffi_env,
+                        [
+                            {%- for (var, ffi_type) in throws_type.ffi_values_rs("uniffi_err_deconstructed") %}
+                            uniffi_jni::jvalue {
+                                {{ ffi_type.jvalue_field() }}: {{ var }},
+                            },
+                            {%- endfor %}
+                        ]
+                    ).to_anyhow_result(uniffi_env, "{{ throws_type.lift_fn_kt() }}")?;
+                    if ((**uniffi_env).v1_4.Throw)(uniffi_env, uniffi_err_obj) != 0 {
+                        uniffi::deps::anyhow::bail!("Failed to throw exception for {{ jni_method_name }}");
+                    }
+                    return uniffi::Result::Ok(::std::default::Default::default());
+                    {%- else %}
+                    return Err(uniffi_err);
+                    {%- endif %}
+                }
+            };
             {%- endfor %}
 
             {%- match jni_method_kind %}
@@ -126,12 +152,38 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
     unsafe {
         uniffi_jni::rust_call_with_env(uniffi_env, |uniffi_env| {
             {%- for arg in callable.arguments_including_receiver() %}
-            let uniffi_arg_lifted_{{ arg.index }} = {{ arg.lift_fn_rs() }}(
+            let uniffi_lift_result_{{ arg.index }} = {{ arg.lift_fn_rs() }}(
                 uniffi_env,
                 {%- for ffi_arg in arg.ffi_args() %}
                 {{ ffi_arg.name_rs() }},
                 {%- endfor %}
-            )?;
+            );
+            let uniffi_arg_lifted_{{ loop.index0 }} = match uniffi_lift_result_{{ loop.index0 }} {
+                Ok(v) => v,
+                Err(uniffi_err) => {
+                    {%- if let Some(throws_type) = callable.throws_type() %}
+                    // If we can, downcast the anyhow error the callable error type and throw that.
+                    let uniffi_err = uniffi_err.downcast::<{{ throws_type.type_rs }}>()?;
+                    let uniffi_err_deconstructed = {{ throws_type.lower_fn_rs() }}(uniffi_env, uniffi_err)?;
+                    let uniffi_err_obj = {{ throws_type.lift_kt_from_rust_var() }}.call_object(
+                        uniffi_env,
+                        [
+                            {%- for (var, ffi_type) in throws_type.ffi_values_rs("uniffi_err_deconstructed") %}
+                            uniffi_jni::jvalue {
+                                {{ ffi_type.jvalue_field() }}: {{ var }},
+                            },
+                            {%- endfor %}
+                        ]
+                    ).to_anyhow_result(uniffi_env, "{{ throws_type.lift_fn_kt() }}")?;
+                    if ((**uniffi_env).v1_4.Throw)(uniffi_env, uniffi_err_obj) != 0 {
+                        uniffi::deps::anyhow::bail!("Failed to throw exception for {{ jni_method_name }}");
+                    }
+                    return uniffi::Result::Ok(::std::default::Default::default());
+                    {%- else %}
+                    return Err(uniffi_err);
+                    {%- endif %}
+                }
+            };
             {%- endfor %}
 
             let uniffi_future = async move {
