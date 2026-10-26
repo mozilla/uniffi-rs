@@ -13,6 +13,15 @@ assert(roundtripCustomType2(custom2: ["value": 200]) == ["value": 200])
 let i = CustomTypeInterface(value: 67)
 assert(roundtripCustomType3(custom3: i).getValue() == 67)
 
+
+assert(roundtripCustomType1Opt(custom1: 100) == 100)
+assert(roundtripCustomType2Opt(custom2: ["value": 200]) == ["value": 200])
+assert(roundtripCustomType3Opt(custom3: i)?.getValue() == 67)
+
+assert(roundtripCustomType1Opt(custom1: nil) == nil)
+assert(roundtripCustomType2Opt(custom2: nil) == nil)
+assert(roundtripCustomType3Opt(custom3: nil) == nil)
+
 assert(try! tryRoundtripCustomType1(custom1: 100) == 100)
 do {
     let _ = try tryRoundtripCustomType1(custom1: 20000)

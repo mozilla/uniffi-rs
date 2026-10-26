@@ -16,6 +16,7 @@ pub fn map_type_node(type_node: general::TypeNode, context: &Context) -> Result<
         id: type_node.id,
         type_rs: type_rs(ty, context)?,
         type_kt: type_kt(ty, context)?,
+        jni_signature: jni_signature(ty, false, context)?,
         has_from_unexpected_callback_error_impl: type_node.has_from_unexpected_callback_error_impl,
         ty: type_node.ty.map_node(context)?,
         ffi_types,
@@ -147,6 +148,113 @@ pub fn type_kt(ty: &Type, context: &Context) -> Result<String> {
         Type::Duration => "java.time.Duration".into(),
         Type::Timestamp => "java.time.Instant".into(),
         Type::Bytes => "kotlin.ByteArray".into(),
+    })
+}
+
+fn jni_signature(ty: &Type, nullable: bool, context: &Context) -> Result<String> {
+    if nullable {
+        // Nullable primitive types require special handling
+        match ty {
+            // Nullable primitives are passed as the boxed versions of themselves
+            Type::Int8 => return Ok("Ljava/lang/Byte;".into()),
+            Type::Int16 => return Ok("Ljava/lang/Short;".into()),
+            Type::Int32 => return Ok("Ljava/lang/Int;".into()),
+            Type::Int64 => return Ok("Ljava/lang/Long;".into()),
+            Type::Float32 => return Ok("Ljava/lang/Float;".into()),
+            Type::Float64 => return Ok("Ljava/lang/Double;".into()),
+            Type::Boolean => return Ok("Ljava/lang/Boolean;".into()),
+            // The boxed class comes from Kotlin for unsigned types
+            Type::UInt8 => return Ok("Lkotlin/UByte;".into()),
+            Type::UInt16 => return Ok("Lkotlin/UShort;".into()),
+            Type::UInt32 => return Ok("Lkotlin/UInt;".into()),
+            Type::UInt64 => return Ok("Lkotlin/ULong;".into()),
+            _ => (),
+        }
+    };
+
+    Ok(match ty {
+        Type::Int8 | Type::UInt8 => "B".into(),
+        Type::Int16 | Type::UInt16 => "S".into(),
+        Type::Int32 | Type::UInt32 => "I".into(),
+        Type::Int64 | Type::UInt64 => "J".into(),
+        Type::Float32 => "F".into(),
+        Type::Float64 => "D".into(),
+        Type::Boolean => "Z".into(),
+        Type::Optional { inner_type } => jni_signature(inner_type, true, context)?,
+        Type::String => "Ljava/lang/String;".into(),
+        Type::Sequence { .. } => "Ljava/util/List;".into(),
+        Type::Map { .. } => "Ljava/util/Map;".into(),
+        Type::Set { .. } => "Ljava/util/Set;".into(),
+        Type::Custom {
+            namespace,
+            name,
+            builtin,
+            ..
+        } => {
+            match context
+                .get_custom_type_config(namespace, name)
+                .and_then(|c| c.type_name.as_ref())
+            {
+                Some(type_name) => {
+                    custom_type_jni_signature(namespace, type_name, nullable, context)?
+                }
+                None => jni_signature(builtin, nullable, context)?,
+            }
+        }
+        ty => format!(
+            "L{};",
+            type_kt(ty, context)?.replace(".", "/").replace("`", "")
+        ),
+    })
+}
+
+/// Generate a JNI signature name based on a custom type's type name
+///
+/// This function does it's best to interpret Kotlin type names and convert them to JNI signatures.
+/// It will fail in certain cases, for example type aliases which don't exist in the JVM.
+/// Hopefully it works okay in practice though.
+fn custom_type_jni_signature(
+    namespace: &str,
+    type_name: &str,
+    nullable: bool,
+    context: &Context,
+) -> Result<String> {
+    if nullable {
+        // Nullable primitive types require special handling
+        match type_name {
+            // Nullable primitives are passed as the boxed versions of themselves
+            "Byte" => return Ok("Ljava/lang/Byte;".into()),
+            "Short" => return Ok("Ljava/lang/Short;".into()),
+            "Int" => return Ok("Ljava/lang/Int;".into()),
+            "Long" => return Ok("Ljava/lang/Long;".into()),
+            "Float" => return Ok("Ljava/lang/Float;".into()),
+            "Double" => return Ok("Ljava/lang/Double;".into()),
+            "Boolean" => return Ok("Ljava/lang/Boolean;".into()),
+            // The boxed class comes from Kotlin for unsigned types
+            "UByte" => return Ok("Lkotlin/UByte;".into()),
+            "UShort" => return Ok("Lkotlin/UShort;".into()),
+            "UInt" => return Ok("Lkotlin/UInt;".into()),
+            "ULong" => return Ok("Lkotlin/ULong;".into()),
+            _ => (),
+        }
+    };
+    Ok(match type_name {
+        "Byte" | "UByte" => "B".into(),
+        "Short" | "UShort" => "S".into(),
+        "Int" | "UInt" => "I".into(),
+        "Long" | "ULong" => "J".into(),
+        "Float" => "F".into(),
+        "Double" => "D".into(),
+        "Boolean" => "Z".into(),
+        "String" => "Ljava/lang/String;".into(),
+        name if name.starts_with("List") => "Ljava/util/List;".into(),
+        name if name.starts_with("Map") => "Ljava/util/Map;".into(),
+        name if name.starts_with("Set") => "Ljava/util/Set;".into(),
+        name if name.contains(".") => format!("L{name};"),
+        name => {
+            let package_name = context.package_name_for_namespace(namespace)?;
+            format!("L{package_name}.{name};")
+        }
     })
 }
 
@@ -512,49 +620,8 @@ impl TypeNode {
             .iter()
             .map(|ffi_type| ffi_type.jni_signature())
             .collect();
-        let ret = self.jni_return_signature();
+        let ret = &self.jni_signature;
         format!("({args}){ret}")
-    }
-
-    fn jni_return_signature(&self) -> String {
-        let mut type_name = self.type_kt.as_str();
-
-        if let Some(inner) = type_name.strip_suffix("?") {
-            // Some optional types get special-cased.
-            // For others, remove the trailing `?`.
-            match inner {
-                // Optional primitives are passed as the boxed versions of themselves
-                "kotlin.Byte" => return "Ljava/lang/Byte;".into(),
-                "kotlin.Short" => return "Ljava/lang/Short;".into(),
-                "kotlin.Int" => return "Ljava/lang/Int;".into(),
-                "kotlin.Long" => return "Ljava/lang/Long;".into(),
-                "kotlin.Float" => return "Ljava/lang/Float;".into(),
-                "kotlin.Double" => return "Ljava/lang/Double;".into(),
-                "kotlin.Boolean" => return "Ljava/lang/Boolean;".into(),
-                // The boxed class comes from Kotlin for unsigned types
-                "kotlin.UByte" => return "Lkotlin/UByte;".into(),
-                "kotlin.UShort" => return "Lkotlin/UShort;".into(),
-                "kotlin.UInt" => return "Lkotlin/UInt;".into(),
-                "kotlin.ULong" => return "Lkotlin/ULong;".into(),
-                inner => type_name = inner,
-            }
-        }
-
-        match type_name {
-            // Primitive types
-            "kotlin.Byte" | "kotlin.UByte" => "B".into(),
-            "kotlin.Short" | "kotlin.UShort" => "S".into(),
-            "kotlin.Int" | "kotlin.UInt" => "I".into(),
-            "kotlin.Long" | "kotlin.ULong" => "J".into(),
-            "kotlin.Float" => "F".into(),
-            "kotlin.Double" => "D".into(),
-            "kotlin.Boolean" => "Z".into(),
-            // Signatures for generics use the java class and don't include the inner type
-            t if t.starts_with("kotlin.collections.List") => "Ljava/util/List;".into(),
-            t if t.starts_with("kotlin.collections.Map") => "Ljava/util/Map;".into(),
-            t if t.starts_with("kotlin.collections.Set") => "Ljava/util/Set;".into(),
-            type_name => format!("L{};", type_name.replace(".", "/").replace("`", "")),
-        }
     }
 
     pub fn is_interface(&self) -> bool {

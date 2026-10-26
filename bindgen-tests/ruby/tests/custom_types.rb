@@ -26,6 +26,18 @@ class TestEnums < Test::Unit::TestCase
     assert_equal(67, UniffiBindgenTests.roundtrip_custom_type3(iface).get_value())
   end
 
+  # CustomType1 has no foreign-side config: treat as raw u64
+  def test_optional_custom_type
+    iface = CustomTypeInterface.new 67
+    assert_equal 100, UniffiBindgenTests.roundtrip_custom_type1_opt(100)
+    assert_equal({ 'value' => 200 }, UniffiBindgenTests.roundtrip_custom_type2_opt({ 'value' => 200 }))
+    assert_equal(67, UniffiBindgenTests.roundtrip_custom_type3_opt(iface).get_value())
+
+    assert_equal nil, UniffiBindgenTests.roundtrip_custom_type1_opt(nil)
+    assert_equal nil, UniffiBindgenTests.roundtrip_custom_type2_opt(nil)
+    assert_equal nil, UniffiBindgenTests.roundtrip_custom_type3_opt(nil)
+  end
+
   def test_error_casting
     assert_equal(100, UniffiBindgenTests.try_roundtrip_custom_type1(100))
     assert_raises(UniffiBindgenTests::CustomTypeError::Overflow) {

@@ -13,6 +13,8 @@ pub struct Context {
     pub crate_map: HashMap<String, String>,
     // Map namespace names to Config values
     pub config_map: HashMap<String, Config>,
+    // Map custom type ids to the TypeNode for their builtin
+    pub custom_type_map: HashMap<u64, TypeNode>,
     pub type_module_path_map: HashMap<Type, String>,
     pub package_map: HashMap<String, String>,
     pub ffi_type_oracle: FfiTypeOracle,
@@ -24,8 +26,6 @@ pub struct Context {
 impl Context {
     pub fn update_from_root(&mut self, root: &general::Root) -> Result<()> {
         self.populate_type_module_path_map(root);
-        self.populate_fields_from_type_definitions(root)?;
-        self.populate_types_used_as_error(root);
 
         for namespace in root.namespaces.values() {
             let config = Config::from_toml(namespace.config_toml.as_deref())?;
@@ -39,6 +39,9 @@ impl Context {
             self.crate_map
                 .insert(namespace.name.clone(), namespace.crate_name.clone());
         }
+
+        self.populate_fields_from_type_definitions(root)?;
+        self.populate_types_used_as_error(root);
         Ok(())
     }
 
@@ -92,6 +95,13 @@ impl Context {
             self.layout_oracle
                 .add_type_definitions(&n.type_definitions)
                 .context("while building the ffi buffer layout oracle")?;
+
+            for type_def in &n.type_definitions {
+                if let general::TypeDefinition::Custom(c) = type_def {
+                    self.custom_type_map
+                        .insert(c.self_type.id, c.builtin.clone().map_node(self)?);
+                }
+            }
         }
 
         Ok(())
@@ -158,6 +168,12 @@ impl Context {
         self.config_map
             .get(namespace_name)
             .ok_or_else(|| anyhow!("config not found: {namespace_name}"))
+    }
+
+    pub fn get_custom_type_config(&self, namespace: &str, name: &str) -> Option<&CustomTypeConfig> {
+        self.config_map
+            .get(namespace)
+            .and_then(|config| config.custom_types.get(name))
     }
 
     pub fn current_package_name(&self) -> Result<&str> {

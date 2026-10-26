@@ -65,6 +65,21 @@ pub fn roundtrip_custom_type3(custom3: CustomType3) -> CustomType3 {
     custom3
 }
 
+#[uniffi::export]
+pub fn roundtrip_custom_type1_opt(custom1: Option<CustomType1>) -> Option<CustomType1> {
+    custom1
+}
+
+#[uniffi::export]
+pub fn roundtrip_custom_type2_opt(custom2: Option<CustomType2>) -> Option<CustomType2> {
+    custom2
+}
+
+#[uniffi::export]
+pub fn roundtrip_custom_type3_opt(custom3: Option<CustomType3>) -> Option<CustomType3> {
+    custom3
+}
+
 #[derive(Debug, thiserror::Error, uniffi::Error)]
 pub enum CustomTypeError {
     #[error("Overflow")]

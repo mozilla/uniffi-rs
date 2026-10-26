@@ -365,6 +365,10 @@ pub struct TypeNode {
     pub ty: Type,
     pub type_rs: String,
     pub type_kt: String,
+    /// JNI signature for this type.
+    /// This is used to determine the JNI signature for the lift function return.
+    /// All other cases use [FfiType::jni_signature()]
+    pub jni_signature: String,
     pub is_used_as_error: bool,
     pub ffi_types: Vec<FfiType>,
 }
