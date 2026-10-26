@@ -540,15 +540,15 @@ impl Method {
     // Methods have a special implicit first argument for the object instance,
     // hence `arguments` and `full_arguments` are different.
     pub fn full_arguments(&self) -> Vec<Argument> {
-        let pass_by = if !self.takes_self_by_arc {
-            uniffi_meta::PassBy::Ref
-        } else {
-            uniffi_meta::PassBy::Value
-        };
         vec![Argument {
             name: "ptr".to_string(),
             type_: self.self_type.clone(),
-            pass_by,
+            pass_by: if !self.takes_self_by_arc {
+                // Receivers can't be `&Arc<T>`, that's an invalid self argument
+                uniffi_meta::PassBy::Ref { is_arc: false }
+            } else {
+                uniffi_meta::PassBy::Value
+            },
             optional: false,
             default: None,
         }]

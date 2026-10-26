@@ -98,6 +98,7 @@ fn _generate_scaffolding() -> Result<()> {
     let features = env::var("CARGO_CFG_FEATURE").context("CARGO_CFG_FEATURE env not set")?;
     let target = env::var("TARGET").context("TARGET env not set")?;
     let out_dir = env::var("OUT_DIR").context("OUT_DIR env not set")?;
+    uniffi_parse_rs::set_build_script_mode();
 
     let args = cli::StandardArgs {
         source: Utf8PathBuf::from(format!("src:{pkg_name}")),

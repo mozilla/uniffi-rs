@@ -334,7 +334,7 @@ impl ArgumentAttributes {
         if self.by_mut_ref() {
             PassBy::MutRef
         } else if self.by_ref() {
-            PassBy::Ref
+            PassBy::ref_()
         } else {
             PassBy::Value
         }

@@ -16,7 +16,9 @@
                 FnParamMetadata {
                     name: "b",
                     ty: Bytes,
-                    pass_by: Ref,
+                    pass_by: Ref {
+                        is_arc: false,
+                    },
                     optional: false,
                     default: None,
                 },
@@ -74,14 +76,18 @@
                         module_path: "full_interface",
                         name: "EnumRenamed",
                     },
-                    pass_by: Ref,
+                    pass_by: Ref {
+                        is_arc: false,
+                    },
                     optional: false,
                     default: None,
                 },
                 FnParamMetadata {
                     name: "s",
                     ty: String,
-                    pass_by: Ref,
+                    pass_by: Ref {
+                        is_arc: false,
+                    },
                     optional: false,
                     default: None,
                 },
@@ -123,7 +129,9 @@
                             Both,
                         ),
                     },
-                    pass_by: Ref,
+                    pass_by: Ref {
+                        is_arc: false,
+                    },
                     optional: false,
                     default: None,
                 },
@@ -791,7 +799,9 @@
                             name: "ObjectRenamed",
                             imp: Struct,
                         },
-                        pass_by: Ref,
+                        pass_by: Ref {
+                            is_arc: false,
+                        },
                         optional: false,
                         default: None,
                     },
@@ -818,7 +828,9 @@
                             name: "ObjectRenamed",
                             imp: Struct,
                         },
-                        pass_by: Ref,
+                        pass_by: Ref {
+                            is_arc: false,
+                        },
                         optional: false,
                         default: None,
                     },
@@ -868,7 +880,9 @@
                             name: "ObjectRenamed",
                             imp: Struct,
                         },
-                        pass_by: Ref,
+                        pass_by: Ref {
+                            is_arc: false,
+                        },
                         optional: false,
                         default: None,
                     },

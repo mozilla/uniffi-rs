@@ -9,6 +9,8 @@ assert(roundtripU8Ref(2.toUByte()) == 2.toUByte())
 val i = ReferenceTestInterface()
 assert(i.doubleValue(2u) == 4u)
 assert(callDoubleValue(i, 3u) == 6u)
+assert(callDoubleValueRefArc(i, 3u) == 6u)
 
 val t = createReferenceTestTraitInterface()
 assert(callTripleValueTraitInterface(t, 10u) == 30u)
+assert(callTripleValueTraitInterfaceRefArc(t, 10u) == 30u)

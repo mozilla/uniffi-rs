@@ -1865,6 +1865,7 @@ dependencies = [
  "serde",
  "toml",
  "uniffi_bindgen",
+ "uniffi_parse_rs",
  "uniffi_pipeline",
 ]
 

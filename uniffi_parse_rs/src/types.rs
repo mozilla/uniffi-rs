@@ -265,7 +265,7 @@ impl<'ir> RPath<'ir> {
             Type::Ref { mutable, ty } => match *ty {
                 Type::Str => ArgType {
                     ty: uniffi_meta::Type::String,
-                    pass_by: uniffi_meta::PassBy::Ref,
+                    pass_by: uniffi_meta::PassBy::Ref { is_arc: false },
                 },
                 Type::Trait {
                     module_path,
@@ -273,7 +273,7 @@ impl<'ir> RPath<'ir> {
                     export_ty,
                 } => ArgType {
                     ty: trait_to_uniffi_meta(module_path, name, export_ty),
-                    pass_by: uniffi_meta::PassBy::Ref,
+                    pass_by: uniffi_meta::PassBy::Ref { is_arc: false },
                 },
                 Type::Slice(inner) => {
                     let ty = Type::Vec(inner).try_into_uniffi_meta(
@@ -288,13 +288,17 @@ impl<'ir> RPath<'ir> {
                     let pass_by = if by_mut_ref {
                         uniffi_meta::PassBy::MutRef
                     } else {
-                        uniffi_meta::PassBy::Ref
+                        uniffi_meta::PassBy::Ref { is_arc: false }
                     };
                     ArgType { ty, pass_by }
                 }
+                Type::Arc { .. } => ArgType {
+                    ty: ty.try_into_uniffi_meta(self.file_id(), syn_ty.span(), self_ty)?,
+                    pass_by: uniffi_meta::PassBy::Ref { is_arc: true },
+                },
                 ty => ArgType {
                     ty: ty.try_into_uniffi_meta(self.file_id(), syn_ty.span(), self_ty)?,
-                    pass_by: uniffi_meta::PassBy::Ref,
+                    pass_by: uniffi_meta::PassBy::Ref { is_arc: false },
                 },
             },
             ty => ArgType {
@@ -1813,7 +1817,24 @@ pub mod tests {
                     module_path: "types".into(),
                     name: "TestRecord".into(),
                 },
-                pass_by: uniffi_meta::PassBy::Ref,
+                pass_by: uniffi_meta::PassBy::Ref { is_arc: false },
+            }),
+        );
+        assert_eq!(
+            run_resolve_arg(
+                &ir,
+                &mut cache,
+                "types",
+                "&::std::sync::Arc<TestInterface>",
+                None
+            ),
+            Ok(ArgType {
+                ty: uniffi_meta::Type::Object {
+                    module_path: "types".into(),
+                    name: "TestInterface".into(),
+                    imp: ObjectImpl::Struct,
+                },
+                pass_by: uniffi_meta::PassBy::Ref { is_arc: true },
             }),
         );
         assert_eq!(
@@ -1824,7 +1845,7 @@ pub mod tests {
                     name: "TraitInterface".into(),
                     imp: ObjectImpl::Trait(TraitKind::RustOnly),
                 },
-                pass_by: uniffi_meta::PassBy::Ref,
+                pass_by: uniffi_meta::PassBy::Ref { is_arc: false },
             }),
         );
         assert_eq!(
@@ -1836,7 +1857,7 @@ pub mod tests {
                         name: "TestRecord".into(),
                     }),
                 },
-                pass_by: uniffi_meta::PassBy::Ref,
+                pass_by: uniffi_meta::PassBy::Ref { is_arc: false },
             }),
         );
         // A `&mut [T]` slice of non-u8 elements is copied by value, so `&mut`
@@ -1850,7 +1871,7 @@ pub mod tests {
                         name: "TestRecord".into(),
                     }),
                 },
-                pass_by: uniffi_meta::PassBy::Ref,
+                pass_by: uniffi_meta::PassBy::Ref { is_arc: false },
             }),
         );
         // `&[u8]` is zero-copy bytes, by-ref but not mutable.
@@ -1858,7 +1879,7 @@ pub mod tests {
             run_resolve_arg(&ir, &mut cache, "types", "&[u8]", None),
             Ok(ArgType {
                 ty: uniffi_meta::Type::Bytes,
-                pass_by: uniffi_meta::PassBy::Ref,
+                pass_by: uniffi_meta::PassBy::Ref { is_arc: false },
             }),
         );
         // `&mut [u8]` is zero-copy mutable bytes.

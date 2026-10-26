@@ -458,7 +458,7 @@ mod test {
         let arg = Argument {
             name: "buf".into(),
             type_: Type::Bytes,
-            pass_by: PassBy::Ref,
+            pass_by: PassBy::ref_(),
             optional: false,
             default: None,
         };
@@ -525,7 +525,7 @@ mod test {
         let arg = Argument {
             name: "buf".to_string(),
             type_: Type::Bytes,
-            pass_by: PassBy::Ref,
+            pass_by: PassBy::ref_(),
             optional: false,
             default: None,
         };

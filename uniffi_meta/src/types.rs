@@ -265,16 +265,31 @@ pub type TypeIterator<'a> = Box<dyn Iterator<Item = &'a Type> + 'a>;
 /// How a value is passed to a function or method.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, PartialOrd, Ord, Checksum, MapNode, Node)]
 pub enum PassBy {
+    /// T
     Value,
-    Ref,
+    /// &T
+    Ref { is_arc: bool },
+    /// &mut T
     MutRef,
 }
 
 impl PassBy {
+    /// Generate a PassBy::Ref value when we don't care about the `is_arc` part
+    ///
+    /// This will produce the correct results in most cases
+    /// since `is_arc` doesn't affect bindings generation at all
+    ///
+    /// The only time we need to specify `is_arc` is if the value could be used by crates
+    /// like `uniffi-bindgen-kotlin-jni` that generated scaffolding from the metadata.
+    ///
+    pub fn ref_() -> Self {
+        Self::Ref { is_arc: false }
+    }
+
     /// True for any borrow, mutable or not. This is the predicate that replaces
     /// the old `by_ref` flag, which was always set alongside `by_mut_ref`.
     pub fn is_borrowed(&self) -> bool {
-        matches!(self, Self::Ref | Self::MutRef)
+        matches!(self, Self::Ref { .. } | Self::MutRef)
     }
 
     /// True only for `&mut [u8]` / `[ByMutRef] bytes`. Implies
@@ -295,7 +310,8 @@ mod tests {
         // mutable one. Callers that mean "any borrow" want the former.
         for (pass_by, borrowed, is_mut_ref) in [
             (PassBy::Value, false, false),
-            (PassBy::Ref, true, false),
+            (PassBy::Ref { is_arc: false }, true, false),
+            (PassBy::Ref { is_arc: true }, true, false),
             (PassBy::MutRef, true, true),
         ] {
             assert_eq!(pass_by.is_borrowed(), borrowed, "is_borrowed {pass_by:?}");

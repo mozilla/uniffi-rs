@@ -534,7 +534,7 @@ impl<'a> MetadataReader<'a> {
         let by_mut_ref = self.read_bool()?;
         Ok(match (by_ref, by_mut_ref) {
             (false, false) => PassBy::Value,
-            (true, false) => PassBy::Ref,
+            (true, false) => PassBy::ref_(),
             (true, true) => PassBy::MutRef,
             (false, true) => bail!("Invalid pass_by combination: by_ref=false and by_mut_ref=true"),
         })
