@@ -46,6 +46,14 @@ class TestFutures < Test::Unit::TestCase
     end
   end
 
+  # A callback interface whose async method is a hand-written boxed future (no
+  # `#[async_trait]`); it should behave like any other async callback method.
+  class BoxedFutureTraitImpl
+    def reply(ms, who)
+      "#{who} replied at #{ms}"
+    end
+  end
+
   def test_simple_calls
     assert_equal 42, UniffiBindgenTests.async_roundtrip_u8(42)
     assert_equal -42, UniffiBindgenTests.async_roundtrip_i8(-42)
@@ -101,4 +109,10 @@ class TestFutures < Test::Unit::TestCase
       )
     )
  end
+
+  def test_boxed_future_callback_interface
+    cbi = BoxedFutureTraitImpl.new
+    assert_equal 'Alice replied at 1234',
+                 UniffiBindgenTests.invoke_boxed_future_trait(cbi, 1234, 'Alice')
+  end
 end
