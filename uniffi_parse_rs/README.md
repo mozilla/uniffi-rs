@@ -46,6 +46,11 @@ skip_dependencies = [
 * `use` statements or Type aliases that go through crates that aren't parsed.
 * Checksum checks are currently disabled (https://github.com/mozilla/uniffi-rs/issues/2932)
 
+# What's different
+* If a Rust package generates a library with a different name than the package,
+  the library name will be used for the foreign module.
+  The `uniffi_parse_rs` name matches the crate name in Rust.
+
 # Extra requirements
 * Types and functions used in the API must be `pub` and reachable from outside crates.
 * The types used in macros like `remote_type!` and `custom_type!`

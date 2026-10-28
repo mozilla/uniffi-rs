@@ -148,7 +148,7 @@ mod test {
         let mut f = fs::File::create(tempdir.join("combined.modulemap")).unwrap();
         let source_filenames = [
             "uniffi_bindgen_testsFFI.modulemap",
-            "uniffi_bindgen_tests_external_types_sourceFFI.modulemap",
+            "ext_typesFFI.modulemap",
             "uniffi_bindgen_tests_mid_typesFFI.modulemap",
         ];
         for filename in source_filenames {
@@ -179,7 +179,7 @@ mod test {
             .arg("-L")
             .arg(tempdir)
             .arg("uniffi_bindgen_tests.swift")
-            .arg("uniffi_bindgen_tests_external_types_source.swift")
+            .arg("ext_types.swift")
             .arg("uniffi_bindgen_tests_mid_types.swift");
         let status = command
             .spawn()

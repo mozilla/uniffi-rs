@@ -4,6 +4,8 @@ version = "0.31.0"
 edition = "2021"
 
 [lib]
+# Choose a different name for the library to test that bindgens can handle this
+name = "ext_types"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [dependencies]
