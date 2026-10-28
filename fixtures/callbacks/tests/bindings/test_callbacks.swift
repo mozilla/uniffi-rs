@@ -160,3 +160,31 @@ do {
     }
 
 }
+
+// 2. Call the callback from a thread spawned by Rust.
+// Such threads have no autorelease pool of their own, so anything autoreleased by a callback has to
+// be released when the callback returns, not when the thread exits.
+#if canImport(ObjectiveC)
+import Foundation
+
+final class AutoreleasingThreadObserver: ForeignThreadObserver, @unchecked Sendable {
+    weak var autoreleasedObject: NSObject?
+    var wasReleasedBetweenCalls = false
+
+    func firstCall() {
+        let object = NSObject()
+        autoreleasedObject = object
+        _ = Unmanaged.passRetained(object).autorelease()
+    }
+
+    func secondCall() {
+        wasReleasedBetweenCalls = autoreleasedObject == nil
+    }
+}
+
+do {
+    let observer = AutoreleasingThreadObserver()
+    callTwiceFromRustThread(observer: observer)
+    assert(observer.wasReleasedBetweenCalls, "objects autoreleased by a callback should be released when it returns")
+}
+#endif
