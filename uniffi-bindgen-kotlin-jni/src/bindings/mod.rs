@@ -30,10 +30,18 @@ pub fn generate(
     )?;
 
     // Create a package for each crate
+    let java_8_compatible = root.java_8_compatible();
     for package in root.packages {
         let package_dir = out_dir.join(package.name.split(".").collect::<Utf8PathBuf>());
         let filename = format!("{}.kt", package.name);
-        render(&package_dir, &filename, BindingsPackage { package })?;
+        render(
+            &package_dir,
+            &filename,
+            BindingsPackage {
+                package,
+                java_8_compatible,
+            },
+        )?;
     }
 
     Ok(())
@@ -53,6 +61,7 @@ pub fn render<T: Template>(package_dir: &Utf8Path, filename: &str, template: T) 
 #[template(syntax = "kt", escape = "none", path = "Package.kt")]
 pub struct BindingsPackage {
     package: Package,
+    java_8_compatible: bool,
 }
 
 #[derive(Debug, Clone, Template)]

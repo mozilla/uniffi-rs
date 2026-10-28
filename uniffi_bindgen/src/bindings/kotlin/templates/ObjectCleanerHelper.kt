@@ -33,7 +33,7 @@ private class UniffiJnaCleanable(
     override fun clean() = cleanable.clean()
 }
 
-{% if config.disable_java_cleaner() %}
+{% if config.java_8_compatible %}
 private fun UniffiCleaner.Companion.create(): UniffiCleaner = UniffiJnaCleaner()
 {% else %}
 // We decide at uniffi binding generation time whether we were
