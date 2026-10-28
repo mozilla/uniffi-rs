@@ -24,6 +24,9 @@
 - Ruby: Add external types support (via [#2980](https://github.com/mozilla/uniffi-rs/pull/2980)).
 
 ### What's Fixed
+- `#[derive(Node)]` now emits its `has_descendant_type` checks in field declaration order.
+  Previously the order came from a `HashSet` and changed on every compile, so `uniffi_bindgen` did
+  not build reproducibly (via [#3048](https://github.com/mozilla/uniffi-rs/issues/3048)).
 - Recursive enums and records are now detected when the cycle passes through a custom type.
   Previously these types were not marked `recursive`, so the Swift bindings were missing `indirect`
   and failed to compile (via [#3005](https://github.com/mozilla/uniffi-rs/issues/3005)).
