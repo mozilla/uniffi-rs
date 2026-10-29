@@ -20,10 +20,10 @@ pub struct Impl {
 }
 
 impl Impl {
-    pub fn parse(env: &CompileEnv, attrs: ImplAttributes, imp: ItemImpl) -> syn::Result<Self> {
+    pub fn parse(env: &CompileEnv, attrs: ImplAttributes, imp: &ItemImpl) -> syn::Result<Self> {
         let mut constructors = vec![];
         let mut methods = vec![];
-        for item in imp.items {
+        for item in imp.items.iter() {
             if let ImplItem::Fn(f) = item {
                 if let Some(attrs) = ConstructorAttributes::parse(env, &f.attrs)? {
                     constructors.push(Constructor::parse(attrs, f)?);
@@ -35,7 +35,7 @@ impl Impl {
 
         Ok(Self {
             attrs,
-            self_type: *imp.self_ty,
+            self_type: imp.self_ty.as_ref().clone(),
             constructors,
             methods,
         })

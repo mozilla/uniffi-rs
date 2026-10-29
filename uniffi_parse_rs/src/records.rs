@@ -26,17 +26,17 @@ pub struct Field {
 }
 
 impl Record {
-    pub fn parse(env: &CompileEnv, attrs: RecordAttributes, st: ItemStruct) -> syn::Result<Self> {
+    pub fn parse(env: &CompileEnv, attrs: RecordAttributes, st: &ItemStruct) -> syn::Result<Self> {
         let mut fields = vec![];
-        for f in st.fields {
+        for f in st.fields.iter() {
             if let Some(field_attrs) = FieldAttributes::parse(env, &f.attrs)? {
                 fields.push(Field::parse(field_attrs, f)?);
             }
         }
         Ok(Self {
             attrs,
-            ident: st.ident,
-            vis: st.vis.into(),
+            ident: st.ident.clone(),
+            vis: (&st.vis).into(),
             fields,
         })
     }
@@ -64,11 +64,11 @@ impl Record {
 }
 
 impl Field {
-    pub fn parse(attrs: FieldAttributes, f: syn::Field) -> syn::Result<Self> {
+    pub fn parse(attrs: FieldAttributes, f: &syn::Field) -> syn::Result<Self> {
         Ok(Self {
             attrs,
-            ident: f.ident,
-            ty: f.ty,
+            ident: f.ident.clone(),
+            ty: f.ty.clone(),
         })
     }
 

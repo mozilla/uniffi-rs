@@ -158,6 +158,8 @@ impl<'ir> RPath<'ir> {
                     BuiltinItem::UnexpectedUniFFICallbackError => {
                         path.push_str("UnexpectedUniFFICallbackError")
                     }
+                    BuiltinItem::CfgSelectMacro => path.push_str("cfg_select"),
+                    BuiltinItem::CfgIfMacro => path.push_str("cfg_if"),
                 }
             } else {
                 path.push_str(&item.name());
@@ -578,6 +580,26 @@ impl<'ir> RPath<'ir> {
             })),
         }
     }
+
+    /// Try to resolve a syn path to a builtin item
+    ///
+    /// Returns an option instead of a result, since the main use-case for this is finding if a
+    /// macro call came from a builtin macro.  If there's an error, we just ignore the call.
+    pub fn resolve_builtin(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        path: &Path,
+        namespace: Namespace,
+    ) -> Option<BuiltinItem> {
+        match self.resolve(ir, cache, path, namespace) {
+            Err(_) => None,
+            Ok(rpath) => match rpath.item() {
+                Ok(Item::Builtin(b)) => Some(*b),
+                _ => None,
+            },
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -598,8 +620,8 @@ impl Visibility {
     }
 }
 
-impl From<syn::Visibility> for Visibility {
-    fn from(vis: syn::Visibility) -> Self {
+impl From<&syn::Visibility> for Visibility {
+    fn from(vis: &syn::Visibility) -> Self {
         match vis {
             syn::Visibility::Public(_) => Self::Public,
             _ => Self::Private,
@@ -633,7 +655,10 @@ impl Namespace {
                 | Item::NonUniffi(_, _) => true,
                 Item::Builtin(builtin) => !matches!(
                     builtin,
-                    BuiltinItem::UniffiMacro(_) | BuiltinItem::UniffiDerive(_)
+                    BuiltinItem::UniffiMacro(_)
+                        | BuiltinItem::UniffiDerive(_)
+                        | BuiltinItem::CfgSelectMacro
+                        | BuiltinItem::CfgIfMacro
                 ),
                 _ => false,
             },
@@ -642,7 +667,10 @@ impl Namespace {
                 Item::Builtin(builtin) => {
                     matches!(
                         builtin,
-                        BuiltinItem::UniffiMacro(_) | BuiltinItem::UniffiDerive(_)
+                        BuiltinItem::UniffiMacro(_)
+                            | BuiltinItem::UniffiDerive(_)
+                            | BuiltinItem::CfgSelectMacro
+                            | BuiltinItem::CfgIfMacro
                     )
                 }
                 _ => true,
@@ -744,6 +772,10 @@ fn get_builtin_item(path: &Path) -> Option<&'static Item> {
         "std::sync::Arc" => Some(&Item::Builtin(BuiltinItem::Arc)),
         "std::time::SystemTime" => Some(&Item::Builtin(BuiltinItem::SystemTime)),
         "std::time::Duration" => Some(&Item::Builtin(BuiltinItem::Duration)),
+        "cfg_select" | "std::cfg_select" | "core::cfg_select" => {
+            Some(&Item::Builtin(BuiltinItem::CfgSelectMacro))
+        }
+        "cfg_if::cfg_if" => Some(&Item::Builtin(BuiltinItem::CfgIfMacro)),
         "uniffi::custom_type" => Some(&Item::Builtin(BuiltinItem::UniffiMacro("custom_type"))),
         "uniffi::custom_newtype" => {
             Some(&Item::Builtin(BuiltinItem::UniffiMacro("custom_newtype")))
@@ -772,7 +804,7 @@ pub mod tests {
 
     use super::*;
 
-    fn run_resolve_item<'ir>(
+    pub fn run_resolve_item<'ir>(
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
         module_path: &str,
