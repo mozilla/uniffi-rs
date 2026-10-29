@@ -1871,7 +1871,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi-bindgen-kotlin-jni-runtime"
-version = "0.31.1"
+version = "0.32.1"
 dependencies = [
  "anyhow",
  "jni-sys",
