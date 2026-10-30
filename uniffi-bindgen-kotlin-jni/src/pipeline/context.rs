@@ -15,17 +15,21 @@ pub struct Context {
     pub config_map: HashMap<String, Config>,
     // Map custom type ids to the TypeNode for their builtin
     pub custom_type_map: HashMap<u64, TypeNode>,
+    // Map type IDs to the JVM class that stores their FFI functions
+    pub ffi_class_map: HashMap<u64, String>,
     pub type_module_path_map: HashMap<Type, String>,
     pub package_map: HashMap<String, String>,
     pub ffi_type_oracle: FfiTypeOracle,
     pub layout_oracle: ffi_buffer::FfiBufferLayoutOracle,
     pub current_enum: Option<general::Enum>,
     pub types_used_as_error: HashSet<Type>,
+    pub builtin_types: Option<BuiltinTypes>,
 }
 
 impl Context {
     pub fn update_from_root(&mut self, root: &general::Root) -> Result<()> {
         self.populate_type_module_path_map(root);
+        self.builtin_types = Some(root.builtin_types.clone().map_node(self)?);
 
         for namespace in root.namespaces.values() {
             let config = Config::from_toml(namespace.config_toml.as_deref())?;
@@ -114,6 +118,12 @@ impl Context {
 
     pub fn update_from_enum(&mut self, en: &general::Enum) {
         self.current_enum = Some(en.clone());
+    }
+
+    pub fn builtin_types(&self) -> Result<&BuiltinTypes> {
+        self.builtin_types
+            .as_ref()
+            .ok_or_else(|| anyhow!("builtin_types not set"))
     }
 
     pub fn current_crate_name(&self) -> Result<&str> {
