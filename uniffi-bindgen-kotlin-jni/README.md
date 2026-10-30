@@ -52,6 +52,16 @@ For example:
 
 `cargo run -p [bindgen-binary-crate] bindings src:[top-level-library-crate] [out-dir]`
 
+## File layout
+
+`uniffi_bindgen_kotlin_jni` generates source code that looks like this:
+
+* `uniffi/Uniffi.kt` -- shared FFI code
+* For each package:
+    * `path/to/package/Uniffi.kt` -- Generated user-facing code.  Import from this package.
+    * `path/to/package/uniffi/Uniffi.kt` -- Generated FFI code. 
+      This is public so that other generated code can use it, but it's not intended for end-users.
+
 ## Differences from `uniffi-bindgen`
 
 Records and enums that store objects no longer implement the `Disposable` interface.

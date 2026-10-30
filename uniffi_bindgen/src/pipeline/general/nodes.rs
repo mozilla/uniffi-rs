@@ -644,21 +644,25 @@ pub struct UniffiTraitMethods {
 }
 
 impl TypeDefinition {
-    pub fn self_type(&self) -> &Type {
+    pub fn type_node(&self) -> &TypeNode {
         match self {
-            Self::Interface(int) => &int.self_type.ty,
-            Self::CallbackInterface(cbi) => &cbi.self_type.ty,
-            Self::Record(rec) => &rec.self_type.ty,
-            Self::Enum(en) => &en.self_type.ty,
-            Self::Custom(custom) => &custom.self_type.ty,
-            Self::Simple(type_node) => &type_node.ty,
-            Self::Box(boxed) => &boxed.self_type.ty,
-            Self::Optional(opt) => &opt.self_type.ty,
-            Self::Sequence(seq) => &seq.self_type.ty,
-            Self::Map(map) => &map.self_type.ty,
-            Self::Set(set) => &set.self_type.ty,
-            Self::External(ext) => &ext.self_type.ty,
+            Self::Interface(int) => &int.self_type,
+            Self::CallbackInterface(cbi) => &cbi.self_type,
+            Self::Record(rec) => &rec.self_type,
+            Self::Enum(en) => &en.self_type,
+            Self::Custom(custom) => &custom.self_type,
+            Self::Simple(type_node) => type_node,
+            Self::Box(boxed) => &boxed.self_type,
+            Self::Optional(opt) => &opt.self_type,
+            Self::Sequence(seq) => &seq.self_type,
+            Self::Map(map) => &map.self_type,
+            Self::Set(set) => &set.self_type,
+            Self::External(ext) => &ext.self_type,
         }
+    }
+
+    pub fn self_type(&self) -> &Type {
+        &self.type_node().ty
     }
 }
 
