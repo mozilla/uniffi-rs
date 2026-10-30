@@ -19,7 +19,7 @@ pub fn generate(
     match crate_filter.as_deref() {
         Some("uniffi") => {
             // special-case: only render the shared package
-            return render_shared_package(&root, out_dir);
+            return render_uniffi_package(&root, out_dir);
         }
         Some(crate_filter) => {
             // Only generate bindings for the crate
@@ -28,37 +28,40 @@ pub fn generate(
         }
         None => {
             // Render the shared package and don't filter
-            render_shared_package(&root, out_dir)?;
+            render_uniffi_package(&root, out_dir)?;
         }
     }
 
     // Create a package for each crate
     for package in root.packages {
         let package_dir = out_dir.join(package.name.split(".").collect::<Utf8PathBuf>());
-        let filename = format!("{}.kt", package.name);
-        render(&package_dir, &filename, BindingsPackage { package })?;
+        render(
+            &package_dir.join("uniffi"),
+            PackageFfi { package: &package },
+        )?;
+
+        render(&package_dir, BindingsPackage { package })?;
     }
 
     Ok(())
 }
 
-pub fn render_shared_package(root: &Root, out_dir: &Utf8Path) -> Result<()> {
+pub fn render_uniffi_package(root: &Root, out_dir: &Utf8Path) -> Result<()> {
     render(
         &out_dir.join("uniffi"),
-        "Uniffi.kt",
-        UniffiPackage {
+        UniffiShared {
             cdylib: root.cdylib_name()?,
             root,
         },
     )
 }
 
-pub fn render<T: Template>(package_dir: &Utf8Path, filename: &str, template: T) -> Result<()> {
+pub fn render<T: Template>(package_dir: &Utf8Path, template: T) -> Result<()> {
     if !package_dir.exists() {
         std::fs::create_dir_all(package_dir)?;
     }
     let output = template.render()?;
-    let mut f = File::create(package_dir.join(filename))?;
+    let mut f = File::create(package_dir.join("Uniffi.kt"))?;
     write!(f, "{output}")?;
     Ok(())
 }
@@ -69,9 +72,24 @@ pub struct BindingsPackage {
     package: Package,
 }
 
+/// `[package].uniffi` -- Package-specific FFI code
+///
+/// This contains functions to lift/lower types defined in that package.
+///
+/// The package name in `[package_name].uniffi`.
 #[derive(Debug, Clone, Template)]
-#[template(syntax = "kt", escape = "none", path = "shared/Package.kt")]
-pub struct UniffiPackage<'a> {
+#[template(syntax = "kt", escape = "none", path = "ffi/Package.kt")]
+pub struct PackageFfi<'a> {
+    package: &'a Package,
+}
+
+/// `uniffi` package: shared FFI code.
+///
+/// This contains functions to lift/lower types builtin UniFFI types,
+/// including composite types like `Vec<Option<String>>`
+#[derive(Debug, Clone, Template)]
+#[template(syntax = "kt", escape = "none", path = "ffi/Shared.kt")]
+pub struct UniffiShared<'a> {
     cdylib: String,
     root: &'a Root,
 }

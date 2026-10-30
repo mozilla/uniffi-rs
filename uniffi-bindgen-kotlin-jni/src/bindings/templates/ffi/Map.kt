@@ -2,7 +2,7 @@
 
 @JvmName("{{ map.self_type.lower_fn_kt() }}")
 fun {{ map.self_type.lower_fn_kt() }}(value: {{ type_name }}): java.nio.ByteBuffer {
-    val buf = Scaffolding.ffiBufferAlloc(value.size * {{ map.item_size }}).order(java.nio.ByteOrder.nativeOrder())
+    val buf = uniffi.Scaffolding.ffiBufferAlloc(value.size * {{ map.item_size }}).order(java.nio.ByteOrder.nativeOrder())
     var offset = 0
     value.forEach {
         {{ map.key.write_fn_kt() }}(buf, offset, it.key)
@@ -28,16 +28,16 @@ fun {{ map.self_type.lift_fn_kt() }}(buf: java.nio.ByteBuffer?): {{ type_name }}
             }
         }
     } finally {
-        Scaffolding.ffiBufferFree(buf)
+        uniffi.Scaffolding.ffiBufferFree(buf)
     }
 }
 
 fun {{ map.self_type.write_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int, value: {{ type_name }}) {
     val childBuf = {{ map.self_type.lower_fn_kt() }}(value)
-    writeBuffer(buf, offset, childBuf)
+    uniffi.writeBuffer(buf, offset, childBuf)
 }
 
 fun {{ map.self_type.read_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int): {{ type_name }} {
-    val childBuf = readBuffer(buf, offset)
+    val childBuf = uniffi.readBuffer(buf, offset)
     return {{ map.self_type.lift_fn_kt() }}(childBuf)
 }
