@@ -66,6 +66,9 @@ pub struct StandardArgs {
     pub source: Utf8PathBuf,
 
     /// Limit binding/scaffolding generation to a single crate.
+    ///
+    /// Use `--crate=uniffi` to only generate the shared `uniffi` package.
+    /// If `--crate` is set to any other value, the shared `uniffi` package won't be generated.
     #[clap(long = "crate")]
     pub crate_filter: Option<String>,
 
