@@ -16,18 +16,21 @@ pub fn generate(
     crate_filter: Option<String>,
 ) -> Result<()> {
     let mut root = pipeline().execute(initial_root)?;
-    if let Some(crate_filter) = crate_filter {
-        let crate_filter = crate_filter.replace("-", "_");
-        root.packages.retain(|pkg| pkg.crate_name == crate_filter);
+    match crate_filter.as_deref() {
+        Some("uniffi") => {
+            // special-case: only render the shared package
+            return render_shared_package(&root, out_dir);
+        }
+        Some(crate_filter) => {
+            // Only generate bindings for the crate
+            let crate_filter = crate_filter.replace("-", "_");
+            root.packages.retain(|pkg| pkg.crate_name == crate_filter);
+        }
+        None => {
+            // Render the shared package and don't filter
+            render_shared_package(&root, out_dir)?;
+        }
     }
-    render(
-        &out_dir.join("uniffi"),
-        "Uniffi.kt",
-        UniffiPackage {
-            cdylib: root.cdylib_name()?,
-            root: &root,
-        },
-    )?;
 
     // Create a package for each crate
     for package in root.packages {
@@ -37,6 +40,17 @@ pub fn generate(
     }
 
     Ok(())
+}
+
+pub fn render_shared_package(root: &Root, out_dir: &Utf8Path) -> Result<()> {
+    render(
+        &out_dir.join("uniffi"),
+        "Uniffi.kt",
+        UniffiPackage {
+            cdylib: root.cdylib_name()?,
+            root,
+        },
+    )
 }
 
 pub fn render<T: Template>(package_dir: &Utf8Path, filename: &str, template: T) -> Result<()> {
