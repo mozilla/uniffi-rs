@@ -163,7 +163,7 @@ open class {{ cls.name_kt() }} : {{ cls.base_classes|join(", ") }} {
                 // Fake object created with `NoHandle`, don't try to free.
                 return;
             }
-            uniffi.Scaffolding.{{ cls.jni_free_name() }}(uniffiHandle)
+            {{ package.name }}.uniffi.Scaffolding.{{ cls.jni_free_name() }}(uniffiHandle)
         }
     }
 
@@ -174,7 +174,7 @@ open class {{ cls.name_kt() }} : {{ cls.base_classes|join(", ") }} {
         if (uniffiHandle == 0.toLong()) {
             throw uniffi.InternalException("uniffiCloneHandle() called on NoHandle object");
         }
-        return uniffi.Scaffolding.{{ cls.jni_clone_name() }}(uniffiHandle)
+        return {{ package.name }}.uniffi.Scaffolding.{{ cls.jni_clone_name() }}(uniffiHandle)
     }
 
     {% for meth in cls.methods -%}

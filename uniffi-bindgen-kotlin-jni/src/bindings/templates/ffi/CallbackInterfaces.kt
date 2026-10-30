@@ -9,7 +9,7 @@ private const val UNIFFI_HANDLEMAP_DELTA = 2.toLong()
 //
 // Callback handles are always odd, which allows us to differentiate them from Rust-generated
 // handles.
-internal class HandleMap<T: Any> {
+class HandleMap<T: Any> {
     private val map = java.util.concurrent.ConcurrentHashMap<kotlin.Long, T>()
     private val counter = java.util.concurrent.atomic.AtomicLong(UNIFFI_HANDLEMAP_INITIAL)
 

@@ -149,7 +149,7 @@ fun {{ en.self_type.lift_fn_kt() }}(v0: kotlin.Int, v1: kotlin.String): {{ type_
 
 
 fun {{ en.self_type.read_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int): {{ type_name }} {
-    val uniffiDiscriminent = uniffi.readInt(buf, offset)
+    val uniffiDiscriminent = readInt(buf, offset)
     return when(uniffiDiscriminent) {
         {%- for v in en.variants %}
         {{ loop.index0 }} -> {{ type_name }}.{{ v.name_kt }}(readString(buf, offset + 8))
