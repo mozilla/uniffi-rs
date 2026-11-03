@@ -97,6 +97,15 @@ impl Package {
         self.name.replace(".", "/")
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.functions.is_empty()
+            && self.interfaces.is_empty()
+            && !self
+                .type_definitions
+                .iter()
+                .any(|t| !matches!(t, TypeDefinition::External(_)))
+    }
+
     /// JNI methods to define/export from Rust
     ///
     /// Generates a list of (jni_method_name, callable) pairs.

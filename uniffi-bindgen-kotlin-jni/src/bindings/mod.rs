@@ -34,6 +34,9 @@ pub fn generate(
 
     // Create a package for each crate
     for package in root.packages {
+        if package.is_empty() {
+            continue;
+        }
         let package_dir = out_dir.join(package.name.split(".").collect::<Utf8PathBuf>());
         render(
             &package_dir.join("uniffi"),
