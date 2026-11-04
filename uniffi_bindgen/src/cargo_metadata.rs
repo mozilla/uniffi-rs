@@ -19,6 +19,7 @@ pub struct CrateConfigSupplier {
     /// Map library target names to Package instances
     lib_to_package_map: HashMap<String, Package>,
     options: CargoMetadataOptions,
+    build_script_mode: bool,
 }
 
 impl CrateConfigSupplier {
@@ -59,15 +60,28 @@ impl CrateConfigSupplier {
                 .collect(),
             lib_to_package_map,
             options,
+            build_script_mode: false,
         }
     }
 
     fn get_package(&self, crate_name: &str) -> Option<&Package> {
-        self.package_map.get(&crate_name.replace("-", "_"))
+        self.package_map
+            .get(&crate_name.replace("-", "_"))
+            .inspect(|p| {
+                if self.build_script_mode {
+                    println!("cargo::rerun-if-changed={}", p.manifest_path)
+                }
+            })
     }
 
     fn get_package_by_library_name(&self, library_name: &str) -> Option<&Package> {
-        self.lib_to_package_map.get(&library_name.replace("-", "_"))
+        self.lib_to_package_map
+            .get(&library_name.replace("-", "_"))
+            .inspect(|p| {
+                if self.build_script_mode {
+                    println!("cargo::rerun-if-changed={}", p.manifest_path)
+                }
+            })
     }
 
     fn get_crate_root(&self, crate_name: &str) -> Option<&Utf8Path> {
@@ -192,6 +206,10 @@ impl BindgenPathsLayer for CrateConfigSupplier {
                 })
                 .collect(),
         )
+    }
+
+    fn set_build_script_mode(&mut self, mode: bool) {
+        self.build_script_mode = mode;
     }
 }
 
