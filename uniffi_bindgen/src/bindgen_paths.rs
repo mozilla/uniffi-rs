@@ -16,6 +16,7 @@ use crate::Result;
 #[derive(Default)]
 pub struct BindgenPaths {
     layers: Vec<Box<dyn BindgenPathsLayer>>,
+    build_script_mode: bool,
 }
 
 impl BindgenPaths {
@@ -53,6 +54,11 @@ impl BindgenPaths {
         self.layers
             .iter()
             .find_map(|l| l.get_config_path(crate_name))
+            .inspect(|p| {
+                if self.build_script_mode {
+                    println!("cargo::rerun-if-changed={p}");
+                }
+            })
     }
 
     /// Get the UDL path for a crate
@@ -60,6 +66,11 @@ impl BindgenPaths {
         self.layers
             .iter()
             .find_map(|l| l.get_udl_path(crate_name, udl_name))
+            .inspect(|p| {
+                if self.build_script_mode {
+                    println!("cargo::rerun-if-changed={p}");
+                }
+            })
     }
 
     /// Get the name of the cdylib for a crate
@@ -88,6 +99,13 @@ impl BindgenPaths {
         self.layers
             .iter()
             .find_map(|l| l.get_source_crates(source_crate))
+    }
+
+    pub fn set_build_script_mode(&mut self, mode: bool) {
+        self.build_script_mode = mode;
+        for layer in self.layers.iter_mut() {
+            layer.set_build_script_mode(mode);
+        }
     }
 }
 
@@ -145,4 +163,14 @@ pub trait BindgenPathsLayer {
     fn get_source_crates(&self, _source_crate: &str) -> Option<Vec<SourceCrate>> {
         None
     }
+
+    /// Enable/disable build-script mode
+    ///
+    /// When in build-script mode, print out `cargo::rerun-if-changed={path}` for each path read.
+    /// This tells cargo to re-build the scaffolding when those files change.
+    ///
+    /// BindgenPathsLayer impls only need to print out lines for paths read internally, not paths
+    /// returned by `get_udl_path()` or `get_config_path()`  The `BindgenPaths` struct handles
+    /// those.
+    fn set_build_script_mode(&mut self, _mode: bool) {}
 }
