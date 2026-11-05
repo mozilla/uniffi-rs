@@ -8,7 +8,7 @@ use crate::{
     ffiops,
     util::{
         create_metadata_items, extract_docstring, ident_to_string, orig_name_metadata,
-        try_metadata_value_from_usize, AttributeSliceExt,
+        try_u32_metadata_value_from_usize, AttributeSliceExt,
     },
     DeriveOptions,
 };
@@ -199,9 +199,11 @@ pub(crate) fn error_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream>
 
 pub fn flat_error_variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
     let enum_ = item.enum_();
-    let variants_len =
-        try_metadata_value_from_usize(enum_.variants.len(), "UniFFI limits enums to 256 variants")?;
-    std::iter::once(Ok(quote! { .concat_value(#variants_len) }))
+    let variants_len = try_u32_metadata_value_from_usize(
+        enum_.variants.len(),
+        "UniFFI limits enums to u32::MAX variants",
+    )?;
+    std::iter::once(Ok(quote! { .concat_u32(#variants_len) }))
         .chain(enum_.variants.iter().map(|v| {
             let attrs = v.attrs.parse_uniffi_attr_args::<VariantAttr>()?;
             let orig_name = orig_name_metadata(attrs.name.is_some(), &v.ident);

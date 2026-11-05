@@ -481,7 +481,7 @@ impl<'a> MetadataReader<'a> {
     }
 
     fn read_variants(&mut self) -> Result<Vec<VariantMetadata>> {
-        let len = self.read_u8()?;
+        let len = self.read_u32()?;
         (0..len)
             .map(|_| {
                 Ok(VariantMetadata {
@@ -496,7 +496,7 @@ impl<'a> MetadataReader<'a> {
     }
 
     fn read_flat_variants(&mut self) -> Result<Vec<VariantMetadata>> {
-        let len = self.read_u8()?;
+        let len = self.read_u32()?;
         (0..len)
             .map(|_| {
                 Ok(VariantMetadata {
