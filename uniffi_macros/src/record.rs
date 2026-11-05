@@ -193,7 +193,7 @@ fn record_meta_static_var(record: &RecordItem) -> syn::Result<TokenStream> {
     let docstring = record.docstring();
     let fields_len = try_metadata_value_from_usize(
         record.struct_().fields.len(),
-        "UniFFI limits structs to 256 fields",
+        "UniFFI limits structs to u32::MAX fields",
     )?;
 
     let concat_fields: TokenStream = record
@@ -237,7 +237,7 @@ fn record_meta_static_var(record: &RecordItem) -> syn::Result<TokenStream> {
                 .concat_str(module_path!())
                 .concat_str(#name)
                 #rec_orig_name_metadata
-                .concat_value(#fields_len)
+                .concat_u32(#fields_len)
                 #concat_fields
                 .concat_long_str(#docstring)
         },

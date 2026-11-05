@@ -87,43 +87,58 @@ mod error {
     }
 }
 
-mod many_variants {
-    macro_rules! many_variants {
-        ($($variant:ident),* $(,)?) => {
+mod many_items {
+    macro_rules! many_items {
+        ($($name:ident),* $(,)?) => {
             #[derive(uniffi::Enum, Debug)]
+            #[allow(non_camel_case_types)]
             pub enum ManyVariants {
-                $($variant),*
+                $($name),*
             }
 
             #[derive(Debug, thiserror::Error, uniffi::Error)]
             #[uniffi(flat_error)]
-            #[allow(dead_code)]
+            #[allow(dead_code, non_camel_case_types)]
             pub enum ManyVariantsError {
-                $(#[error("error")] $variant),*
+                $(#[error("error")] $name),*
             }
+
+            #[derive(uniffi::Record, Debug)]
+            pub struct ManyFields {
+                $(pub $name: u8),*
+            }
+
+            #[derive(uniffi::Enum, Debug)]
+            pub enum ManyVariantFields {
+                Variant { $($name: u8),* },
+            }
+
+            #[uniffi::export]
+            #[allow(unused, clippy::too_many_arguments)]
+            pub fn many_args($($name: u8),*) {}
         };
     }
 
-    many_variants!(
-        V0, V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, V11, V12, V13, V14, V15, V16, V17, V18, V19,
-        V20, V21, V22, V23, V24, V25, V26, V27, V28, V29, V30, V31, V32, V33, V34, V35, V36, V37,
-        V38, V39, V40, V41, V42, V43, V44, V45, V46, V47, V48, V49, V50, V51, V52, V53, V54, V55,
-        V56, V57, V58, V59, V60, V61, V62, V63, V64, V65, V66, V67, V68, V69, V70, V71, V72, V73,
-        V74, V75, V76, V77, V78, V79, V80, V81, V82, V83, V84, V85, V86, V87, V88, V89, V90, V91,
-        V92, V93, V94, V95, V96, V97, V98, V99, V100, V101, V102, V103, V104, V105, V106, V107,
-        V108, V109, V110, V111, V112, V113, V114, V115, V116, V117, V118, V119, V120, V121, V122,
-        V123, V124, V125, V126, V127, V128, V129, V130, V131, V132, V133, V134, V135, V136, V137,
-        V138, V139, V140, V141, V142, V143, V144, V145, V146, V147, V148, V149, V150, V151, V152,
-        V153, V154, V155, V156, V157, V158, V159, V160, V161, V162, V163, V164, V165, V166, V167,
-        V168, V169, V170, V171, V172, V173, V174, V175, V176, V177, V178, V179, V180, V181, V182,
-        V183, V184, V185, V186, V187, V188, V189, V190, V191, V192, V193, V194, V195, V196, V197,
-        V198, V199, V200, V201, V202, V203, V204, V205, V206, V207, V208, V209, V210, V211, V212,
-        V213, V214, V215, V216, V217, V218, V219, V220, V221, V222, V223, V224, V225, V226, V227,
-        V228, V229, V230, V231, V232, V233, V234, V235, V236, V237, V238, V239, V240, V241, V242,
-        V243, V244, V245, V246, V247, V248, V249, V250, V251, V252, V253, V254, V255, V256, V257,
-        V258, V259, V260, V261, V262, V263, V264, V265, V266, V267, V268, V269, V270, V271, V272,
-        V273, V274, V275, V276, V277, V278, V279, V280, V281, V282, V283, V284, V285, V286, V287,
-        V288, V289, V290, V291, V292, V293, V294, V295, V296, V297, V298, V299,
+    many_items!(
+        x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x19,
+        x20, x21, x22, x23, x24, x25, x26, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37,
+        x38, x39, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52, x53, x54, x55,
+        x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, x66, x67, x68, x69, x70, x71, x72, x73,
+        x74, x75, x76, x77, x78, x79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91,
+        x92, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104, x105, x106, x107,
+        x108, x109, x110, x111, x112, x113, x114, x115, x116, x117, x118, x119, x120, x121, x122,
+        x123, x124, x125, x126, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137,
+        x138, x139, x140, x141, x142, x143, x144, x145, x146, x147, x148, x149, x150, x151, x152,
+        x153, x154, x155, x156, x157, x158, x159, x160, x161, x162, x163, x164, x165, x166, x167,
+        x168, x169, x170, x171, x172, x173, x174, x175, x176, x177, x178, x179, x180, x181, x182,
+        x183, x184, x185, x186, x187, x188, x189, x190, x191, x192, x193, x194, x195, x196, x197,
+        x198, x199, x200, x201, x202, x203, x204, x205, x206, x207, x208, x209, x210, x211, x212,
+        x213, x214, x215, x216, x217, x218, x219, x220, x221, x222, x223, x224, x225, x226, x227,
+        x228, x229, x230, x231, x232, x233, x234, x235, x236, x237, x238, x239, x240, x241, x242,
+        x243, x244, x245, x246, x247, x248, x249, x250, x251, x252, x253, x254, x255, x256, x257,
+        x258, x259, x260, x261, x262, x263, x264, x265, x266, x267, x268, x269, x270, x271, x272,
+        x273, x274, x275, x276, x277, x278, x279, x280, x281, x282, x283, x284, x285, x286, x287,
+        x288, x289, x290, x291, x292, x293, x294, x295, x296, x297, x298, x299
     );
 }
 
@@ -452,7 +467,7 @@ mod test_metadata {
     fn many_variants_metadata() -> Vec<VariantMetadata> {
         (0..300)
             .map(|i| VariantMetadata {
-                name: format!("V{i}"),
+                name: format!("x{i}"),
                 orig_name: None,
                 discr: None,
                 fields: vec![],
@@ -464,9 +479,9 @@ mod test_metadata {
     #[test]
     fn test_enum_with_many_variants() {
         check_metadata(
-            &many_variants::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ENUM_MANYVARIANTS,
+            &many_items::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ENUM_MANYVARIANTS,
             EnumMetadata {
-                module_path: "uniffi_fixture_metadata::tests::many_variants".into(),
+                module_path: "uniffi_fixture_metadata::tests::many_items".into(),
                 name: "ManyVariants".into(),
                 orig_name: None,
                 shape: EnumShape::Enum,
@@ -482,9 +497,9 @@ mod test_metadata {
     #[test]
     fn test_flat_error_with_many_variants() {
         check_metadata(
-            &many_variants::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ERROR_MANYVARIANTSERROR,
+            &many_items::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ERROR_MANYVARIANTSERROR,
             EnumMetadata {
-                module_path: "uniffi_fixture_metadata::tests::many_variants".into(),
+                module_path: "uniffi_fixture_metadata::tests::many_items".into(),
                 name: "ManyVariantsError".into(),
                 orig_name: None,
                 shape: EnumShape::Error { flat: true },
@@ -494,6 +509,74 @@ mod test_metadata {
                 non_exhaustive: false,
                 docstring: None,
             },
+        );
+    }
+
+    fn many_fields_metadata() -> Vec<FieldMetadata> {
+        (0..300)
+            .map(|i| FieldMetadata {
+                name: format!("x{i}"),
+                orig_name: None,
+                ty: Type::UInt8,
+                default: None,
+                docstring: None,
+            })
+            .collect()
+    }
+
+    #[test]
+    fn test_record_with_many_fields() {
+        check_metadata(
+            &many_items::UNIFFI_META_UNIFFI_FIXTURE_METADATA_RECORD_MANYFIELDS,
+            RecordMetadata {
+                module_path: "uniffi_fixture_metadata::tests::many_items".into(),
+                name: "ManyFields".into(),
+                orig_name: None,
+                remote: false,
+                fields: many_fields_metadata(),
+                docstring: None,
+            },
+        );
+    }
+
+    #[test]
+    fn test_enum_variant_with_many_fields() {
+        check_metadata(
+            &many_items::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ENUM_MANYVARIANTFIELDS,
+            EnumMetadata {
+                module_path: "uniffi_fixture_metadata::tests::many_items".into(),
+                name: "ManyVariantFields".into(),
+                orig_name: None,
+                shape: EnumShape::Enum,
+                remote: false,
+                discr_type: None,
+                variants: vec![VariantMetadata {
+                    name: "Variant".into(),
+                    orig_name: None,
+                    discr: None,
+                    fields: many_fields_metadata(),
+                    docstring: None,
+                }],
+                non_exhaustive: false,
+                docstring: None,
+            },
+        );
+    }
+
+    #[test]
+    fn test_function_with_many_args() {
+        let Metadata::Func(meta) =
+            read_metadata(&many_items::UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_MANY_ARGS).unwrap()
+        else {
+            panic!("expected function metadata");
+        };
+        assert_eq!(meta.name, "many_args");
+        assert_eq!(meta.return_type, None);
+        assert_eq!(
+            meta.inputs,
+            (0..300)
+                .map(|i| FnParamMetadata::simple(&format!("x{i}"), Type::UInt8))
+                .collect::<Vec<_>>()
         );
     }
 

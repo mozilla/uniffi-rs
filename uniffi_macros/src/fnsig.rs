@@ -305,7 +305,7 @@ impl FnSignature {
             // Use param_lifts to calculate this instead of sig.inputs to avoid counting any self
             // params
             self.args.len(),
-            "UniFFI limits functions to 256 arguments",
+            "UniFFI limits functions to u32::MAX arguments",
         )?;
         let arg_metadata_calls = self
             .args
@@ -323,7 +323,7 @@ impl FnSignature {
                     .concat_str(#name)
                     #orig_name
                     .concat_bool(#is_async)
-                    .concat_value(#args_len)
+                    .concat_u32(#args_len)
                     #(#arg_metadata_calls)*
                     .concat(#type_id_meta)
                     .concat_long_str(#docstring)
@@ -340,7 +340,7 @@ impl FnSignature {
                         .concat_str(#name)
                         #orig_name
                         .concat_bool(#is_async)
-                        .concat_value(#args_len)
+                        .concat_u32(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(#type_id_meta)
                         .concat_long_str(#docstring)
@@ -357,7 +357,7 @@ impl FnSignature {
                         .concat_str(#name)
                         #orig_name
                         .concat_bool(#is_async)
-                        .concat_value(#args_len)
+                        .concat_u32(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(#type_id_meta)
                         .concat_long_str(#docstring)
@@ -375,7 +375,7 @@ impl FnSignature {
                         .concat_str(#name)
                         #orig_name
                         .concat_bool(#is_async)
-                        .concat_value(#args_len)
+                        .concat_u32(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(#type_id_meta)
                         .concat_long_str(#docstring)
