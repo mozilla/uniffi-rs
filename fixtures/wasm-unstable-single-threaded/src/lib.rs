@@ -131,6 +131,7 @@ pub trait SimpleNoopTrait: Send + Sync {
 // `get_obj` can't be implemented as an async method.
 #[cfg(not(target_arch = "wasm32"))]
 #[uniffi::export(with_foreign)]
+#[allow(clippy::double_must_use)]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 pub trait AsyncNoopTrait: Send + Sync {
@@ -140,6 +141,7 @@ pub trait AsyncNoopTrait: Send + Sync {
 
 #[cfg(target_arch = "wasm32")]
 #[uniffi::export(with_foreign)]
+#[allow(clippy::double_must_use)]
 #[async_trait(?Send)]
 pub trait AsyncNoopTrait {
     async fn return_void(&self);
@@ -157,6 +159,7 @@ pub trait SimpleNoopCbi: Send + Sync {
 // `get_obj` can't be implemented as an async method.
 #[cfg(not(target_arch = "wasm32"))]
 #[uniffi::export(callback_interface)]
+#[allow(clippy::double_must_use)]
 #[async_trait]
 pub trait AsyncNoopCbi: Send + Sync {
     async fn return_void(&self);
@@ -165,6 +168,7 @@ pub trait AsyncNoopCbi: Send + Sync {
 
 #[cfg(target_arch = "wasm32")]
 #[uniffi::export(callback_interface)]
+#[allow(clippy::double_must_use)]
 #[async_trait(?Send)]
 pub trait AsyncNoopCbi {
     async fn return_void(&self);
@@ -181,6 +185,7 @@ pub trait SimpleTrait: Send + Sync {
 
 #[cfg(not(target_arch = "wasm32"))]
 #[uniffi::export(with_foreign)]
+#[allow(clippy::double_must_use)]
 #[async_trait]
 pub trait AsyncTrait: Send + Sync {
     async fn return_void(&self);
@@ -189,6 +194,7 @@ pub trait AsyncTrait: Send + Sync {
 
 #[cfg(target_arch = "wasm32")]
 #[uniffi::export(with_foreign)]
+#[allow(clippy::double_must_use)]
 #[async_trait(?Send)]
 pub trait AsyncTrait {
     async fn return_void(&self);
@@ -204,6 +210,7 @@ pub trait SimpleCbi: Send + Sync {
 
 #[cfg(not(target_arch = "wasm32"))]
 #[uniffi::export(callback_interface)]
+#[allow(clippy::double_must_use)]
 #[async_trait]
 pub trait AsyncSimpleCbi: Send + Sync {
     async fn return_void(&self);
@@ -212,6 +219,7 @@ pub trait AsyncSimpleCbi: Send + Sync {
 
 #[cfg(target_arch = "wasm32")]
 #[uniffi::export(callback_interface)]
+#[allow(clippy::double_must_use)]
 #[async_trait(?Send)]
 pub trait AsyncSimpleCbi {
     async fn return_void(&self);

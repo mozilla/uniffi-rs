@@ -9,7 +9,7 @@ help: the trait `FfiConverterArc<UniFfiTag>` is not implemented for `Foo`
     |
   8 | pub struct Foo;
     | ^^^^^^^^^^^^^^
-help: the trait `LowerReturn<UT>` is implemented for `Arc<T>`
+help: the trait `LowerReturn<UT>` is conditionally implemented for `Arc<T>`
    --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
     |
     |         unsafe impl $(<$($generic),*>)* $crate::LowerReturn<$ut> for $ty $(where $($where)*)*
@@ -18,7 +18,10 @@ help: the trait `LowerReturn<UT>` is implemented for `Arc<T>`
    ::: $WORKSPACE/uniffi_core/src/ffi_converter_impls.rs
     |
     | derive_ffi_traits!(impl<T, UT> LowerReturn<UT> for Arc<T> where Arc<T>: Lower<UT>, T: ?Sized);
-    | --------------------------------------------------------------------------------------------- in this macro invocation
+    | ---------------------------------------------------------------------------------------------
+    | |                                                                       |
+    | |                                                                       unsatisfied requirement introduced here: `Arc<Foo>: uniffi::Lower<UniFfiTag>`
+    | in this macro invocation
     = note: required for `Arc<Foo>` to implement `FfiConverter<UniFfiTag>`
     = note: required for `Arc<Foo>` to implement `uniffi::Lower<UniFfiTag>`
     = note: required for `Arc<Foo>` to implement `LowerReturn<UniFfiTag>`
@@ -35,7 +38,7 @@ help: the trait `FfiConverterArc<UniFfiTag>` is not implemented for `Foo`
     |
   8 | pub struct Foo;
     | ^^^^^^^^^^^^^^
-help: the trait `uniffi::TypeId<UT>` is implemented for `Arc<T>`
+help: the trait `uniffi::TypeId<UT>` is conditionally implemented for `Arc<T>`
    --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
     |
     |         impl $(<$($generic),*>)* $crate::TypeId<$ut> for $ty $(where $($where)*)*
@@ -44,7 +47,10 @@ help: the trait `uniffi::TypeId<UT>` is implemented for `Arc<T>`
    ::: $WORKSPACE/uniffi_core/src/ffi_converter_impls.rs
     |
     | derive_ffi_traits!(impl<T, UT> TypeId<UT> for Arc<T> where Arc<T>: FfiConverter<UT>, T: ?Sized);
-    | ----------------------------------------------------------------------------------------------- in this macro invocation
+    | -----------------------------------------------------------------------------------------------
+    | |                                                                  |
+    | |                                                                  unsatisfied requirement introduced here: `Arc<Foo>: FfiConverter<UniFfiTag>`
+    | in this macro invocation
     = note: required for `Arc<Foo>` to implement `FfiConverter<UniFfiTag>`
     = note: required for `Arc<Foo>` to implement `uniffi::TypeId<UniFfiTag>`
     = note: this error originates in the macro `derive_ffi_traits` (in Nightly builds, run with -Z macro-backtrace for more info)
@@ -60,7 +66,7 @@ help: the trait `FfiConverterArc<UniFfiTag>` is not implemented for `child::Foo`
     |
  18 |     enum Foo {}
     |     ^^^^^^^^
-help: the trait `Lift<UT>` is implemented for `Arc<T>`
+help: the trait `Lift<UT>` is conditionally implemented for `Arc<T>`
    --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
     |
     |         unsafe impl $(<$($generic),*>)* $crate::Lift<$ut> for $ty $(where $($where)*)*
@@ -69,7 +75,10 @@ help: the trait `Lift<UT>` is implemented for `Arc<T>`
    ::: $WORKSPACE/uniffi_core/src/ffi_converter_impls.rs
     |
     | derive_ffi_traits!(impl<T, UT> Lift<UT> for Arc<T> where Arc<T>: FfiConverter<UT>, T: ?Sized);
-    | --------------------------------------------------------------------------------------------- in this macro invocation
+    | ---------------------------------------------------------------------------------------------
+    | |                                                                |
+    | |                                                                unsatisfied requirement introduced here: `Arc<child::Foo>: FfiConverter<UniFfiTag>`
+    | in this macro invocation
     = note: required for `Arc<child::Foo>` to implement `FfiConverter<UniFfiTag>`
     = note: required for `Arc<child::Foo>` to implement `Lift<UniFfiTag>`
     = note: this error originates in the attribute macro `uniffi::export` which comes from the expansion of the macro `derive_ffi_traits` (in Nightly builds, run with -Z macro-backtrace for more info)
@@ -85,7 +94,7 @@ help: the trait `FfiConverterArc<UniFfiTag>` is not implemented for `child::Foo`
     |
  18 |     enum Foo {}
     |     ^^^^^^^^
-help: the trait `uniffi::TypeId<UT>` is implemented for `Arc<T>`
+help: the trait `uniffi::TypeId<UT>` is conditionally implemented for `Arc<T>`
    --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
     |
     |         impl $(<$($generic),*>)* $crate::TypeId<$ut> for $ty $(where $($where)*)*
@@ -94,7 +103,10 @@ help: the trait `uniffi::TypeId<UT>` is implemented for `Arc<T>`
    ::: $WORKSPACE/uniffi_core/src/ffi_converter_impls.rs
     |
     | derive_ffi_traits!(impl<T, UT> TypeId<UT> for Arc<T> where Arc<T>: FfiConverter<UT>, T: ?Sized);
-    | ----------------------------------------------------------------------------------------------- in this macro invocation
+    | -----------------------------------------------------------------------------------------------
+    | |                                                                  |
+    | |                                                                  unsatisfied requirement introduced here: `Arc<child::Foo>: FfiConverter<UniFfiTag>`
+    | in this macro invocation
     = note: required for `Arc<child::Foo>` to implement `FfiConverter<UniFfiTag>`
     = note: required for `Arc<child::Foo>` to implement `uniffi::TypeId<UniFfiTag>`
     = note: this error originates in the macro `derive_ffi_traits` (in Nightly builds, run with -Z macro-backtrace for more info)
@@ -110,13 +122,15 @@ help: the trait `FfiConverterArc<UniFfiTag>` is not implemented for `Foo`
     |
   8 | pub struct Foo;
     | ^^^^^^^^^^^^^^
-help: the trait `FfiConverter<UT>` is implemented for `Arc<T>`
+help: the trait `FfiConverter<UT>` is conditionally implemented for `Arc<T>`
    --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
     |
     | / unsafe impl<T, UT> FfiConverter<UT> for Arc<T>
     | | where
     | |     T: FfiConverterArc<UT> + ?Sized,
-    | |____________________________________^
+    | |________-------------------_________^
+    |          |
+    |          unsatisfied requirement introduced here: `Foo: FfiConverterArc<UniFfiTag>`
     = note: required for `Arc<Foo>` to implement `FfiConverter<UniFfiTag>`
     = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
 
@@ -131,13 +145,15 @@ help: the trait `FfiConverterArc<UniFfiTag>` is not implemented for `child::Foo`
     |
  18 |     enum Foo {}
     |     ^^^^^^^^
-help: the trait `FfiConverter<UT>` is implemented for `Arc<T>`
+help: the trait `FfiConverter<UT>` is conditionally implemented for `Arc<T>`
    --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
     |
     | / unsafe impl<T, UT> FfiConverter<UT> for Arc<T>
     | | where
     | |     T: FfiConverterArc<UT> + ?Sized,
-    | |____________________________________^
+    | |________-------------------_________^
+    |          |
+    |          unsatisfied requirement introduced here: `child::Foo: FfiConverterArc<UniFfiTag>`
     = note: required for `Arc<child::Foo>` to implement `FfiConverter<UniFfiTag>`
     = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
 

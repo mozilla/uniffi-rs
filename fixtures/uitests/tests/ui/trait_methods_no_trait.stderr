@@ -9,7 +9,7 @@ help: the trait `std::fmt::Display` is not implemented for `UdlEnum`
    |
 17 | pub enum UdlEnum {
    | ^^^^^^^^^^^^^^^^
-   = note: in format strings you may be able to use `{:?}` (or {:#?} for pretty-print) instead
+   = note: in format strings you may be able to use `{:?}` (or `{:#?}` for pretty-print) instead
    = note: required for `&UdlEnum` to implement `std::fmt::Display`
    = note: this error originates in the macro `$crate::__export::format_args` which comes from the expansion of the attribute macro `::uniffi::export_for_udl_derive` (in Nightly builds, run with -Z macro-backtrace for more info)
 
@@ -42,7 +42,7 @@ help: the trait `std::fmt::Display` is not implemented for `TraitMethods`
   |
  8 | pub struct TraitMethods {}
    | ^^^^^^^^^^^^^^^^^^^^^^^
-   = note: in format strings you may be able to use `{:?}` (or {:#?} for pretty-print) instead
+   = note: in format strings you may be able to use `{:?}` (or `{:#?}` for pretty-print) instead
    = note: required for `&TraitMethods` to implement `std::fmt::Display`
    = note: this error originates in the macro `$crate::__export::format_args` which comes from the expansion of the attribute macro `::uniffi::export_for_udl_derive` (in Nightly builds, run with -Z macro-backtrace for more info)
 
