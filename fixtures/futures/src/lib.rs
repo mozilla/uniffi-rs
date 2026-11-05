@@ -384,6 +384,7 @@ pub async fn use_shared_resource(options: SharedResourceOptions) -> Result<(), A
 
 // Example of an trait with async methods
 #[uniffi::export]
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 pub trait SayAfterTrait: Send + Sync {
     async fn say_after(&self, ms: u16, who: String) -> String;
@@ -391,6 +392,7 @@ pub trait SayAfterTrait: Send + Sync {
 
 // Example of async trait defined in the UDL file
 #[uniffi::trait_interface]
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 pub trait SayAfterUdlTrait: Send + Sync {
     async fn say_after(&self, ms: u16, who: String) -> String;
@@ -400,6 +402,7 @@ struct SayAfterImpl1;
 
 struct SayAfterImpl2;
 
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 impl SayAfterTrait for SayAfterImpl1 {
     async fn say_after(&self, ms: u16, who: String) -> String {
@@ -407,6 +410,7 @@ impl SayAfterTrait for SayAfterImpl1 {
     }
 }
 
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 impl SayAfterTrait for SayAfterImpl2 {
     async fn say_after(&self, ms: u16, who: String) -> String {
@@ -419,6 +423,7 @@ fn get_say_after_traits() -> Vec<Arc<dyn SayAfterTrait>> {
     vec![Arc::new(SayAfterImpl1), Arc::new(SayAfterImpl2)]
 }
 
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 impl SayAfterUdlTrait for SayAfterImpl1 {
     async fn say_after(&self, ms: u16, who: String) -> String {
@@ -426,6 +431,7 @@ impl SayAfterUdlTrait for SayAfterImpl1 {
     }
 }
 
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 impl SayAfterUdlTrait for SayAfterImpl2 {
     async fn say_after(&self, ms: u16, who: String) -> String {
@@ -440,11 +446,13 @@ fn get_say_after_udl_traits() -> Vec<Arc<dyn SayAfterUdlTrait>> {
 
 // Example of an async trait whose Rust implementation uses tokio resources.
 #[uniffi::export(with_foreign, async_runtime = "tokio")]
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 pub trait SayAfterTraitTokio: Send + Sync {
     async fn say_after(&self, ms: u16, who: String) -> String;
 }
 
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 impl SayAfterTraitTokio for SayAfterImpl1 {
     async fn say_after(&self, ms: u16, who: String) -> String {
@@ -452,6 +460,7 @@ impl SayAfterTraitTokio for SayAfterImpl1 {
     }
 }
 
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 impl SayAfterTraitTokio for SayAfterImpl2 {
     async fn say_after(&self, ms: u16, who: String) -> String {
@@ -466,6 +475,7 @@ fn get_say_after_tokio_traits() -> Vec<Arc<dyn SayAfterTraitTokio>> {
 
 // Async callback interface implemented in foreign code
 #[uniffi::export(with_foreign)]
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 pub trait AsyncParser: Send + Sync {
     // Simple async method

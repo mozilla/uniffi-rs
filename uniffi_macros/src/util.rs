@@ -127,6 +127,7 @@ pub fn create_metadata_items(
     });
 
     quote! {
+        #[allow(clippy::large_const_arrays)]
         const #const_ident: ::uniffi::MetadataBuffer = #metadata_expr;
         #[unsafe(no_mangle)]
         #[doc(hidden)]
@@ -348,7 +349,10 @@ pub(crate) fn async_trait_annotation() -> TokenStream {
     }
     #[cfg(not(feature = "wasm-unstable-single-threaded"))]
     {
+        // Note: double_must_use is needed until we update async-trait to 0.1.92 or so, but we're
+        // currently holding that back because it requires upgrading to syn v3.
         quote! {
+            #[allow(clippy::double_must_use)]
             #[::async_trait::async_trait]
         }
     }

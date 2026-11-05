@@ -185,6 +185,7 @@ pub fn ffi_converter_callback_interface_impl(
             #[doc(hidden)]
             #[automatically_derived]
             #type_id_impl_specs {
+                #[allow(clippy::large_const_arrays)]
                 const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(
                     ::uniffi::metadata::codes::TYPE_CALLBACK_INTERFACE,
                 )

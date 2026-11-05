@@ -62,7 +62,7 @@ pub fn checksums(namespace: &initial::Namespace) -> Result<Vec<Checksum>> {
 pub fn ffi_uniffi_contract_version(namespace: &initial::Namespace) -> RustFfiFunctionName {
     RustFfiFunctionName(format!(
         "ffi_{}_uniffi_contract_version",
-        &namespace.crate_name
+        namespace.crate_name
     ))
 }
 

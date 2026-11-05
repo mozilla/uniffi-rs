@@ -116,6 +116,7 @@ pub async fn async_roundtrip_obj(v: Arc<AsyncInterface>) -> Arc<AsyncInterface> 
 
 /// Async version of `TestCallbackInterface`
 #[uniffi::export(callback_interface)]
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 pub trait TestAsyncCallbackInterface: Send + Sync {
     async fn noop(&self);
