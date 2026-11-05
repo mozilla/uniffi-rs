@@ -156,6 +156,12 @@ pub fn try_metadata_value_from_usize(value: usize, error_message: &str) -> syn::
         .map_err(|_| syn::Error::new(Span::call_site(), error_message))
 }
 
+pub fn try_u32_metadata_value_from_usize(value: usize, error_message: &str) -> syn::Result<u32> {
+    value
+        .try_into()
+        .map_err(|_| syn::Error::new(Span::call_site(), error_message))
+}
+
 pub fn chain<T>(
     a: impl IntoIterator<Item = T>,
     b: impl IntoIterator<Item = T>,
