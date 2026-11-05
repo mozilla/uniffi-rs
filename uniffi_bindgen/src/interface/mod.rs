@@ -1327,11 +1327,9 @@ impl<'a> RecursiveTypeIterator<'a> {
             }
             | Type::CallbackInterface {
                 module_path, name, ..
-            } => {
-                if !self.seen.contains(&(module_path.as_str(), name.as_str())) {
-                    self.pending.push(type_);
-                    self.seen.insert((module_path.as_str(), name.as_str()));
-                }
+            } if !self.seen.contains(&(module_path.as_str(), name.as_str())) => {
+                self.pending.push(type_);
+                self.seen.insert((module_path.as_str(), name.as_str()));
             }
             _ => (),
         }

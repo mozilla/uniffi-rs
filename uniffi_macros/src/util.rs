@@ -127,6 +127,7 @@ pub fn create_metadata_items(
     });
 
     quote! {
+        #[allow(clippy::large_const_arrays)]
         const #const_ident: ::uniffi::MetadataBuffer = #metadata_expr;
         #[unsafe(no_mangle)]
         #[doc(hidden)]
