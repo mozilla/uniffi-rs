@@ -150,13 +150,7 @@ pub fn orig_name_metadata(name_from_attrs: bool, ident: &Ident) -> TokenStream {
     }
 }
 
-pub fn try_metadata_value_from_usize(value: usize, error_message: &str) -> syn::Result<u8> {
-    value
-        .try_into()
-        .map_err(|_| syn::Error::new(Span::call_site(), error_message))
-}
-
-pub fn try_u32_metadata_value_from_usize(value: usize, error_message: &str) -> syn::Result<u32> {
+pub fn try_metadata_value_from_usize(value: usize, error_message: &str) -> syn::Result<u32> {
     value
         .try_into()
         .map_err(|_| syn::Error::new(Span::call_site(), error_message))

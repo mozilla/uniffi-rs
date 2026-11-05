@@ -11,8 +11,8 @@ use crate::{
     record::FieldAttributeArguments,
     util::{
         create_metadata_items, either_attribute_arg, extract_docstring, ident_to_string, kw,
-        orig_name_metadata, try_metadata_value_from_usize, try_read_field,
-        try_u32_metadata_value_from_usize, AttributeSliceExt, UniffiAttributeArgs,
+        orig_name_metadata, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
+        UniffiAttributeArgs,
     },
     DeriveOptions,
 };
@@ -352,7 +352,7 @@ fn variant_value(v: &Variant) -> syn::Result<TokenStream> {
 
 pub fn variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
     let enum_ = item.enum_();
-    let variants_len = try_u32_metadata_value_from_usize(
+    let variants_len = try_metadata_value_from_usize(
         enum_.variants.len(),
         "UniFFI limits enums to u32::MAX variants",
     )?;
@@ -360,7 +360,7 @@ pub fn variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
         .chain(enum_.variants.iter().map(|v| {
             let fields_len = try_metadata_value_from_usize(
                 v.fields.len(),
-                "UniFFI limits enum variants to 256 fields",
+                "UniFFI limits enum variants to u32::MAX fields",
             )?;
 
             let field_metadata = v
@@ -405,7 +405,7 @@ pub fn variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
                 .concat_str(#name)
                 #variant_orig_name
                 #value_tokens
-                .concat_value(#fields_len)
+                .concat_u32(#fields_len)
                     #(#field_metadata)*
                 .concat_long_str(#docstring)
             })

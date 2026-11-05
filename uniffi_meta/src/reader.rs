@@ -462,7 +462,7 @@ impl<'a> MetadataReader<'a> {
     }
 
     fn read_fields(&mut self) -> Result<Vec<FieldMetadata>> {
-        let len = self.read_u8()?;
+        let len = self.read_u32()?;
         (0..len)
             .map(|_| {
                 let name = self.read_string()?;
@@ -511,7 +511,7 @@ impl<'a> MetadataReader<'a> {
     }
 
     fn read_inputs(&mut self) -> Result<Vec<FnParamMetadata>> {
-        let len = self.read_u8()?;
+        let len = self.read_u32()?;
         (0..len)
             .map(|_| {
                 let name = self.read_string()?;
