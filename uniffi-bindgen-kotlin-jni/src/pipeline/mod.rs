@@ -27,7 +27,7 @@ use context::Context;
 use ffi_buffer::FfiBufferLayoutBuilder;
 use ffi_types::FfiTypeOracle;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
-use indexmap::IndexSet;
+use indexmap::{IndexMap, IndexSet};
 use uniffi_bindgen::pipeline::{general, initial};
 use uniffi_pipeline::{MapNode, Node, Pipeline};
 

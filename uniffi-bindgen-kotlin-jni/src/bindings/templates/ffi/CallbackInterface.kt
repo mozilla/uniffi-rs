@@ -1,6 +1,6 @@
 {%- let type_name = cbi.self_type.type_kt %}
 
-private val {{ cbi.handle_map_kt() }} = HandleMap<{{ type_name }}>();
+public val {{ cbi.handle_map_kt() }} = uniffi.HandleMap<{{ type_name }}>();
 
 {%- for meth in cbi.methods %}
 {%- if !meth.callable.is_async %}
@@ -21,7 +21,7 @@ fun {{ meth.dispatch_fn_kt }}(
     val uniffiObj = {{ cbi.handle_map_kt() }}.get(uniffiHandle)
 
     {%- for arg in meth.callable.arguments %}
-    val {{ arg.name_kt() }} = uniffi.{{ arg.ty.lift_fn_kt() }}(
+    val {{ arg.name_kt() }} = {{ arg.ty.lift_fn_kt() }}(
         {%- for ffi_arg in arg.ffi_args() %}
         {{ ffi_arg.name_kt() }},
         {%- endfor %}
@@ -87,7 +87,7 @@ fun {{ meth.dispatch_fn_kt }}(
             val uniffiObj = {{ cbi.handle_map_kt() }}.get(uniffiHandle)
 
             {%- for arg in meth.callable.arguments %}
-            val {{ arg.name_kt() }} = uniffi.{{ arg.ty.lift_fn_kt() }}(
+            val {{ arg.name_kt() }} = {{ arg.ty.lift_fn_kt() }}(
                 {%- for ffi_arg in arg.ffi_args() %}
                 {{ ffi_arg.name_kt() }},
                 {%- endfor %}

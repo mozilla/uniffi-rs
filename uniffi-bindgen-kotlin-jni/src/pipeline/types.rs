@@ -23,6 +23,16 @@ pub fn map_type_node(type_node: general::TypeNode, context: &Context) -> Result<
     })
 }
 
+pub fn map_external_type(input: general::ExternalType, context: &Context) -> Result<ExternalType> {
+    Ok(ExternalType {
+        package_name: format!(
+            "{}.uniffi",
+            context.package_name_for_namespace(&input.namespace)?,
+        ),
+        self_type: input.self_type.map_node(context)?,
+    })
+}
+
 pub fn type_rs(ty: &Type, context: &Context) -> Result<String> {
     Ok(match ty {
         Type::UInt8 => "::std::primitive::u8".into(),
@@ -609,11 +619,6 @@ impl TypeNode {
         }
     }
 
-    /// Static Rust variable to call the Kotlin lift function from Rust
-    pub fn lift_kt_from_rust_var(&self) -> String {
-        format!("UNIFFI_CACHED_LIFT_KT_{}", self.id)
-    }
-
     pub fn lift_fn_jni_signature(&self) -> String {
         let args: String = self
             .ffi_types
@@ -630,5 +635,51 @@ impl TypeNode {
 
     pub fn is_callback_interface(&self) -> bool {
         matches!(self.ty, Type::CallbackInterface { .. })
+    }
+}
+
+impl TypeDefinition {
+    pub fn type_node(&self) -> &TypeNode {
+        match self {
+            Self::Record(r) => &r.self_type,
+            Self::Enum(e) => &e.self_type,
+            Self::Class(c) => &c.self_type,
+            Self::CallbackInterface(c) => &c.self_type,
+            Self::Custom(c) => &c.self_type,
+            Self::Box(b) => &b.self_type,
+            Self::Optional(o) => &o.self_type,
+            Self::Sequence(s) => &s.self_type,
+            Self::Map(m) => &m.self_type,
+            Self::Set(s) => &s.self_type,
+            Self::External(e) => &e.self_type,
+            Self::Simple(tn) => tn,
+        }
+    }
+
+    pub fn type_id(&self) -> u64 {
+        match self {
+            TypeDefinition::Record(r) => r.self_type.id,
+            TypeDefinition::Enum(e) => e.self_type.id,
+            TypeDefinition::Optional(o) => o.self_type.id,
+            TypeDefinition::Sequence(s) => s.self_type.id,
+            TypeDefinition::Map(m) => m.self_type.id,
+            TypeDefinition::Set(s) => s.self_type.id,
+            TypeDefinition::Class(c) => c.self_type.id,
+            TypeDefinition::Custom(c) => c.self_type.id,
+            TypeDefinition::CallbackInterface(c) => c.self_type.id,
+            TypeDefinition::Box(b) => b.self_type.id,
+            TypeDefinition::External(e) => e.self_type.id,
+            TypeDefinition::Simple(tn) => tn.id,
+        }
+    }
+}
+
+impl BoxedType {
+    pub fn lift_from_handle_fn_rs(&self) -> String {
+        format!("lift_from_handle{}", self.self_type.id)
+    }
+
+    pub fn lower_into_handle_fn_rs(&self) -> String {
+        format!("lower_into_handle{}", self.self_type.id)
     }
 }
