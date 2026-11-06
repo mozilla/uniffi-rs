@@ -5,7 +5,8 @@ fileprivate let uniffiContinuationHandleMap = UniffiHandleMap<UnsafeContinuation
 
 fileprivate func uniffiRustCallAsync<F, T>(
     rustFutureFunc: () -> UInt64,
-    pollFunc: (UInt64, @escaping UniffiRustFutureContinuationCallback, UInt64) -> (),
+    pollFunc: @escaping (UInt64, @escaping UniffiRustFutureContinuationCallback, UInt64) -> (),
+    cancelFunc: ((UInt64) -> ())?,
     completeFunc: (UInt64, UnsafeMutablePointer<RustCallStatus>) -> F,
     freeFunc: (UInt64) -> (),
     liftFunc: (F) throws -> T,
@@ -18,8 +19,8 @@ fileprivate func uniffiRustCallAsync<F, T>(
     defer {
         freeFunc(rustFuture)
     }
-    var pollResult: Int8;
-    repeat {
+    var pollResult: Int8 = UNIFFI_RUST_FUTURE_POLL_WAKE;
+    let poll = {
         pollResult = await withUnsafeContinuation {
             pollFunc(
                 rustFuture,
@@ -28,6 +29,18 @@ fileprivate func uniffiRustCallAsync<F, T>(
                 },
                 uniffiContinuationHandleMap.insert(obj: $0)
             )
+        }
+    }
+
+    repeat {
+        if let cancelFunc {
+            await withTaskCancellationHandler {
+                await poll()
+            } onCancel: {
+                cancelFunc(rustFuture)
+            }
+        } else {
+            await poll()
         }
     } while pollResult != UNIFFI_RUST_FUTURE_POLL_READY
 

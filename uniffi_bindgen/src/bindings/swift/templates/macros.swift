@@ -109,6 +109,7 @@ public convenience init(
                 )
             },
             pollFunc: {{ callable.ffi_rust_future_poll(ci) }},
+            cancelFunc: {% if callable.throws() %}{{ callable.ffi_rust_future_cancel(ci) }}{% else %}nil{% endif %},
             completeFunc: {{ callable.ffi_rust_future_complete(ci) }},
             freeFunc: {{ callable.ffi_rust_future_free(ci) }},
             {%- match callable.return_type() %}
