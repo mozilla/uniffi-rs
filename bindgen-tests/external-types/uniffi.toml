@@ -1,13 +1,24 @@
 [bindings.kotlin]
 omit_checksums = true
+# Test renaming generated module names
+package_name = "uniffi.ext_types_renamed"
+
 [bindings.python]
 omit_checksums = true
+# Test renaming generated module names
+module_name = "ext_types_renamed"
+
 [bindings.swift]
 omit_checksums = true
+# Test renaming generated module names
+module_name = "ext_types_renamed"
+
+[bindings.ruby]
+# Test renaming generated file names
+file_name = "ext_types_renamed.rb"
 
 [bindings.ruby.custom_types.ExternalUrl]
 type_name = "URI"
 imports = ["uri"]
 lift = "URI.parse({})"
 lower = "{}.to_s"
-
