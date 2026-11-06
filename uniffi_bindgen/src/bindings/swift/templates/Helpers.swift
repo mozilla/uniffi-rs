@@ -109,16 +109,30 @@ private func uniffiCheckCallStatus<E: Swift.Error>(
     }
 }
 
+// Rust can call foreign methods from any thread, including threads it spawned itself. Those threads
+// have no autorelease pool, so on Apple platforms anything a method autoreleases would only be
+// released when the thread exits, which for a long-lived thread means never. Drain a pool around
+// each call instead.
+private func uniffiWithAutoreleasePool(_ body: () -> ()) {
+#if canImport(ObjectiveC)
+    autoreleasepool(invoking: body)
+#else
+    body()
+#endif
+}
+
 private func uniffiTraitInterfaceCall<T>(
     callStatus: UnsafeMutablePointer<RustCallStatus>,
     makeCall: () throws -> T,
     writeReturn: (T) -> ()
 ) {
-    do {
-        try writeReturn(makeCall())
-    } catch let error {
-        callStatus.pointee.code = CALL_UNEXPECTED_ERROR
-        callStatus.pointee.errorBuf = {{ Type::String.borrow()|lower_fn }}(String(describing: error))
+    uniffiWithAutoreleasePool {
+        do {
+            try writeReturn(makeCall())
+        } catch let error {
+            callStatus.pointee.code = CALL_UNEXPECTED_ERROR
+            callStatus.pointee.errorBuf = {{ Type::String.borrow()|lower_fn }}(String(describing: error))
+        }
     }
 }
 
@@ -128,13 +142,15 @@ private func uniffiTraitInterfaceCallWithError<T, E>(
     writeReturn: (T) -> (),
     lowerError: (E) -> RustBuffer
 ) {
-    do {
-        try writeReturn(makeCall())
-    } catch let error as E {
-        callStatus.pointee.code = CALL_ERROR
-        callStatus.pointee.errorBuf = lowerError(error)
-    } catch {
-        callStatus.pointee.code = CALL_UNEXPECTED_ERROR
-        callStatus.pointee.errorBuf = {{ Type::String.borrow()|lower_fn }}(String(describing: error))
+    uniffiWithAutoreleasePool {
+        do {
+            try writeReturn(makeCall())
+        } catch let error as E {
+            callStatus.pointee.code = CALL_ERROR
+            callStatus.pointee.errorBuf = lowerError(error)
+        } catch {
+            callStatus.pointee.code = CALL_UNEXPECTED_ERROR
+            callStatus.pointee.errorBuf = {{ Type::String.borrow()|lower_fn }}(String(describing: error))
+        }
     }
 }

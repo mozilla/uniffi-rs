@@ -123,4 +123,20 @@ impl RustStringifier {
     }
 }
 
+trait ForeignThreadObserver: Send {
+    fn first_call(&self);
+    fn second_call(&self);
+}
+
+fn call_twice_from_rust_thread(observer: Box<dyn ForeignThreadObserver>) {
+    // Both calls happen on the same thread, and the thread is still alive for the second one, so
+    // anything the foreign side only cleans up when the thread exits is still around at that point.
+    std::thread::spawn(move || {
+        observer.first_call();
+        observer.second_call();
+    })
+    .join()
+    .unwrap();
+}
+
 uniffi::include_scaffolding!("callbacks");
