@@ -6,6 +6,12 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### ⚠️ Breaking Changes ⚠️
+- When the Rust package name and library name differ, foreign bindings now default to using the
+  library name as their module name rather than the package name.  The new default matches the name
+  in `use` statements for Rust.  Use configuration options like `bindings.kotlin.package_name` or
+  the `bindings.python.module_name` to override the default.
+
 ### What's New?
 - Added `uniffi_parse_rs`, which generates metadata by parsing Rust sources directly.
   This allows using the macros syntax to describe your interface, without requiring you to build the

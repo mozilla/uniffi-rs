@@ -2,11 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::sync::Arc;
-use uniffi_bindgen_tests_external_types_source::{
+use ext_types::{
     ExternalCustomType, ExternalEnum, ExternalError, ExternalInterface, ExternalNestedRec,
     ExternalRec, ExternalUrl, NestedExternalInterface, NestedExternalRec,
 };
+use std::sync::Arc;
 use uniffi_bindgen_tests_mid_types::MidRec;
 
 #[uniffi::export]

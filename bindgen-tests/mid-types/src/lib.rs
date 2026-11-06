@@ -8,7 +8,7 @@
 
 uniffi::setup_scaffolding!("uniffi_bindgen_tests_mid_types");
 
-use uniffi_bindgen_tests_external_types_source::{ExternalEnum, ExternalRec};
+use ext_types::{ExternalEnum, ExternalRec};
 
 #[derive(uniffi::Record)]
 pub struct MidRec {
