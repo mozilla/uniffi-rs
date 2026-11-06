@@ -5,7 +5,10 @@
 use std::{
     future::Future,
     pin::Pin,
-    sync::{Arc, Mutex, MutexGuard},
+    sync::{
+        atomic::{AtomicBool, AtomicU32, Ordering},
+        Arc, Mutex, MutexGuard,
+    },
     task::{Context, Poll, Waker},
     thread,
     time::Duration,
@@ -540,6 +543,113 @@ impl TestObject {
     #[uniffi::constructor]
     pub async fn new() -> Self {
         Self
+    }
+}
+
+// Cancellation tests.
+//
+// These callables are listed in `bindings.swift.async_cancellable` in `uniffi.toml`, so cancelling
+// the Swift task that awaits them cancels and drops the Rust future.  The counters let the tests
+// check whether the future was polled and dropped.  The Swift tests that use them run one at a
+// time.
+
+static CANCELLABLE_POLL_COUNT: AtomicU32 = AtomicU32::new(0);
+static CANCELLABLE_DROP_COUNT: AtomicU32 = AtomicU32::new(0);
+static CANCELLABLE_LIVE_COUNT: AtomicU32 = AtomicU32::new(0);
+static CANCELLABLE_IN_POLL: AtomicBool = AtomicBool::new(false);
+
+/// Held by a cancellable future while its body runs, so we can see when the future is dropped.
+struct CancellableGuard;
+
+impl CancellableGuard {
+    fn new() -> Self {
+        CANCELLABLE_LIVE_COUNT.fetch_add(1, Ordering::SeqCst);
+        Self
+    }
+}
+
+impl Drop for CancellableGuard {
+    fn drop(&mut self) {
+        CANCELLABLE_LIVE_COUNT.fetch_sub(1, Ordering::SeqCst);
+        CANCELLABLE_DROP_COUNT.fetch_add(1, Ordering::SeqCst);
+    }
+}
+
+/// A future that's never ready and never wakes up, so only cancellation can end it.
+async fn never_ready(block_first_poll: Duration) {
+    let mut first_poll = true;
+    std::future::poll_fn(|_| {
+        CANCELLABLE_POLL_COUNT.fetch_add(1, Ordering::SeqCst);
+        if first_poll {
+            first_poll = false;
+            CANCELLABLE_IN_POLL.store(true, Ordering::SeqCst);
+            thread::sleep(block_first_poll);
+            CANCELLABLE_IN_POLL.store(false, Ordering::SeqCst);
+        }
+        Poll::<()>::Pending
+    })
+    .await
+}
+
+/// Never completes unless cancelled.  It can't fail, but it's cancellable, so Swift declares it
+/// `async throws`.
+#[uniffi::export]
+pub async fn cancellable_pending() -> bool {
+    let _guard = CancellableGuard::new();
+    never_ready(Duration::ZERO).await;
+    true
+}
+
+/// Like `cancellable_pending`, but the first poll blocks the polling thread for `block_ms`, so
+/// the test can cancel while that poll is in progress.
+#[uniffi::export]
+pub async fn cancellable_blocking_poll(block_ms: u16) -> Result<bool, MyError> {
+    let _guard = CancellableGuard::new();
+    never_ready(Duration::from_millis(block_ms.into())).await;
+    Ok(true)
+}
+
+/// Completes after `ms` milliseconds, unless cancelled first.
+#[uniffi::export(async_runtime = "tokio")]
+pub async fn cancellable_sleep(ms: u16) -> bool {
+    let _guard = CancellableGuard::new();
+    tokio::time::sleep(Duration::from_millis(ms.into())).await;
+    true
+}
+
+#[uniffi::export]
+pub fn cancellable_poll_count() -> u32 {
+    CANCELLABLE_POLL_COUNT.load(Ordering::SeqCst)
+}
+
+#[uniffi::export]
+pub fn cancellable_drop_count() -> u32 {
+    CANCELLABLE_DROP_COUNT.load(Ordering::SeqCst)
+}
+
+#[uniffi::export]
+pub fn cancellable_live_count() -> u32 {
+    CANCELLABLE_LIVE_COUNT.load(Ordering::SeqCst)
+}
+
+#[uniffi::export]
+pub fn cancellable_in_poll() -> bool {
+    CANCELLABLE_IN_POLL.load(Ordering::SeqCst)
+}
+
+/// An object with cancellable async methods and constructors.
+#[derive(uniffi::Object)]
+pub struct CancellableObject;
+
+#[uniffi::export]
+impl CancellableObject {
+    #[uniffi::constructor]
+    pub async fn new() -> Arc<Self> {
+        Arc::new(Self)
+    }
+
+    pub async fn pending(&self) -> bool {
+        cancellable_pending().await
     }
 }
 

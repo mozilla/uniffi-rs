@@ -4,7 +4,7 @@ use std::{
     mem::ManuallyDrop,
     panic,
     pin::Pin,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, Weak},
     task::{Context, Poll, Waker},
 };
 
@@ -199,6 +199,92 @@ fn test_cancel() {
 
     let (_, call_status) = complete(rust_future);
     assert_eq!(call_status.code, RustCallStatusCode::Cancelled);
+}
+
+// Cancelling before the first poll should never poll the inner future.  Swift does this when the
+// task is already cancelled when the async call starts.
+#[test]
+fn test_cancel_before_first_poll() {
+    let (sender, rust_future) = channel();
+    let channel_weak = Arc::downgrade(&sender.0);
+
+    rust_future.cancel();
+    let continuation_result = poll(&rust_future);
+    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Ready));
+    // The inner future never ran, so it never stored a waker
+    assert!(sender.0.lock().unwrap().waker.is_none());
+
+    drop(sender);
+    let (_, call_status) = complete(rust_future);
+    assert_eq!(call_status.code, RustCallStatusCode::Cancelled);
+    // `complete` released the inner future
+    assert!(channel_weak.upgrade().is_none());
+}
+
+// A future that cancels its own `RustFuture` from inside `poll`, then returns `Pending`.  This is
+// what happens when a foreign task is cancelled on another thread while a poll is in progress.
+struct CancelDuringPoll(Arc<Mutex<Option<Weak<RustFuture<RustBuffer>>>>>);
+
+impl Future for CancelDuringPoll {
+    type Output = Result<Result<String, TestError>, LiftArgsError>;
+
+    fn poll(self: Pin<&mut Self>, _context: &mut Context<'_>) -> Poll<Self::Output> {
+        if let Some(rust_future) = self.0.lock().unwrap().take().and_then(|w| w.upgrade()) {
+            rust_future.cancel();
+        }
+        Poll::Pending
+    }
+}
+
+#[test]
+fn test_cancel_during_poll() {
+    let slot = Arc::new(Mutex::new(None));
+    let rust_future: Arc<RustFuture<RustBuffer>> = Arc::new(RustFuture::new(
+        Box::pin(CancelDuringPoll(slot.clone())),
+        crate::UniFfiTag,
+    ));
+    *slot.lock().unwrap() = Some(Arc::downgrade(&rust_future));
+
+    // The poll returns `Pending` after the cancel, so the continuation must still be invoked with
+    // `Ready` -- exactly once (`poll_continuation` panics on a second call).
+    let continuation_result = poll(&rust_future);
+    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Ready));
+
+    let (_, call_status) = complete(rust_future);
+    assert_eq!(call_status.code, RustCallStatusCode::Cancelled);
+}
+
+// Cancelling more than once is a no-op after the first call, including after `complete`.
+#[test]
+fn test_repeated_cancel() {
+    let (_sender, rust_future) = channel();
+
+    let continuation_result = poll(&rust_future);
+    rust_future.cancel();
+    // `poll_continuation` panics if the continuation is invoked twice
+    rust_future.cancel();
+    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Ready));
+
+    let (_, call_status) = complete(rust_future.clone());
+    assert_eq!(call_status.code, RustCallStatusCode::Cancelled);
+    rust_future.cancel();
+    rust_future.free();
+}
+
+// `free` after `cancel` releases the inner future and doesn't invoke the continuation again.
+// (`cancel` after `free` is not allowed: the handle is invalid after `rust_future_free`.  The
+// bindings must make sure every `rust_future_cancel` call happens before `rust_future_free`.)
+#[test]
+fn test_cancel_then_free() {
+    let (sender, rust_future) = channel();
+    let channel_weak = Arc::downgrade(&sender.0);
+    drop(sender);
+
+    let continuation_result = poll(&rust_future);
+    rust_future.cancel();
+    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Ready));
+    rust_future.free();
+    assert!(channel_weak.upgrade().is_none());
 }
 
 // Once `free` is called, the inner future should be released, even if wakers still hold a

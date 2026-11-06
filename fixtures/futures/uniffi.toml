@@ -1,8 +1,16 @@
 [bindings.python]
 # Python doesn't support async constructors
-exclude = ["Megaphone.new", "FallibleMegaphone.new", "TestObject.new", "UdlMegaphone.new"]
+exclude = ["Megaphone.new", "FallibleMegaphone.new", "TestObject.new", "UdlMegaphone.new", "CancellableObject.new"]
 
 [bindings.kotlin]
 package_name = "uniffi.fixture.futures"
 # Kotlin doesn't support async constructors
-exclude = ["Megaphone.new", "FallibleMegaphone.new", "TestObject.new", "UdlMegaphone.new"]
+exclude = ["Megaphone.new", "FallibleMegaphone.new", "TestObject.new", "UdlMegaphone.new", "CancellableObject.new"]
+
+[bindings.swift.async_cancellable]
+use_shared_resource = true
+cancellable_pending = true
+cancellable_blocking_poll = true
+cancellable_sleep = true
+"CancellableObject.new" = true
+"CancellableObject.pending" = true

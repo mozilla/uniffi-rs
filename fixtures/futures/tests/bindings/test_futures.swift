@@ -416,24 +416,149 @@ Task {
 	counter.leave()
 }
 
+// Wait for a task that should be cancelled, and check that it threw `CancellationError`.
+func expectCancellation<T: Sendable>(_ task: Task<T, Error>, _ what: String) async {
+	do {
+		let value = try await task.value
+		fatalError("\(what): expected CancellationError, got \(value)")
+	} catch is CancellationError {
+	} catch {
+		fatalError("\(what): expected CancellationError, got \(error)")
+	}
+}
+
+func waitUntil(_ what: String, _ condition: @Sendable () -> Bool) async {
+	let deadline = Date().addingTimeInterval(5)
+	while !condition() {
+		if Date() > deadline {
+			fatalError("timed out waiting for \(what)")
+		}
+		try! await Task.sleep(nanoseconds: 1_000_000)
+	}
+}
+
 // Test a future that uses a lock and that is cancelled.
+//
+// `use_shared_resource` is listed in `bindings.swift.async_cancellable`, so cancelling the task
+// drops the Rust future, which releases the lock long before `releaseAfterMs`.
 counter.enter()
 Task {
 	let task = Task {
-	    try! await useSharedResource(options: SharedResourceOptions(releaseAfterMs: 100, timeoutMs: 1000))
+		try await useSharedResource(options: SharedResourceOptions(releaseAfterMs: 10_000, timeoutMs: 1000))
 	}
 
 	// Wait some time to ensure the task has locked the shared resource
 	try await Task.sleep(nanoseconds: 50_000_000)
-	// Cancel the job task the shared resource has been released.
-	//
-	// FIXME: this test currently passes because `test.cancel()` doesn't actually cancel the
-	// operation.  We need to rework the Swift async handling to handle this properly.
 	task.cancel()
+	await expectCancellation(task, "useSharedResource")
 
-	// Try accessing the shared resource again.  The initial task should release the shared resource
-	// before the timeout expires.
+	// Try accessing the shared resource again.  The cancelled task released the shared resource, so
+	// this doesn't time out.
 	try! await useSharedResource(options: SharedResourceOptions(releaseAfterMs: 0, timeoutMs: 1000))
+	counter.leave()
+}
+
+// Test cancelling the callables listed in `bindings.swift.async_cancellable`.
+//
+// These share counters, so they run one after another in a single task.
+counter.enter()
+Task {
+	// Cancel before the first poll: the task is already cancelled when the call starts, so the
+	// cancellation handler runs before the Rust future is polled.  Rust never polls the inner
+	// future and the call throws `CancellationError`.
+	do {
+		let polls = cancellablePollCount()
+		let task = Task { () async throws -> Bool in
+			withUnsafeCurrentTask { $0!.cancel() }
+			return try await cancellablePending()
+		}
+		await expectCancellation(task, "cancel before first poll")
+		assert(cancellablePollCount() == polls)
+		assert(cancellableLiveCount() == 0)
+	}
+
+	// Cancel a pending future: Rust is waiting for a wakeup that never comes, so only
+	// cancellation can finish the call.  The Rust future is dropped.
+	do {
+		let drops = cancellableDropCount()
+		let task = Task { try await cancellablePending() }
+		await waitUntil("first poll") { cancellableLiveCount() == 1 }
+		task.cancel()
+		await expectCancellation(task, "cancel pending future")
+		assert(cancellableDropCount() == drops + 1)
+		assert(cancellableLiveCount() == 0)
+	}
+
+	// Cancel during a poll: the first poll blocks for 500ms.  `Task.cancel()` runs the
+	// cancellation handler synchronously, so `rust_future_cancel` runs while Rust is still inside
+	// that poll.  When the poll returns `Pending`, Rust sees that the future was cancelled and
+	// resumes the poll loop with READY.
+	do {
+		let drops = cancellableDropCount()
+		let task = Task { try await cancellableBlockingPoll(blockMs: 500) }
+		await waitUntil("poll in progress") { cancellableInPoll() }
+		task.cancel()
+		assert(cancellableInPoll(), "the cancel should land while the poll is still running")
+		await expectCancellation(task, "cancel during poll")
+		assert(cancellableDropCount() == drops + 1)
+		assert(cancellableLiveCount() == 0)
+	}
+
+	// Repeated cancel: cancelling again, including after the call finished, is harmless.  Swift
+	// runs the cancellation handler at most once, and `rust_future_cancel` is idempotent anyway.
+	do {
+		let drops = cancellableDropCount()
+		let task = Task { try await cancellablePending() }
+		await waitUntil("first poll") { cancellableLiveCount() == 1 }
+		task.cancel()
+		task.cancel()
+		await expectCancellation(task, "repeated cancel")
+		task.cancel()
+		assert(cancellableDropCount() == drops + 1)
+		assert(cancellableLiveCount() == 0)
+	}
+
+	// Cancel racing completion and `rust_future_free`: cancel calls that finish around the time
+	// they're cancelled.  Each call must either return its value or throw `CancellationError`,
+	// and every Rust future must be dropped.
+	do {
+		var tasks: [Task<Bool, Error>] = []
+		for i in 0..<300 {
+			tasks.append(Task { try await cancellableSleep(ms: UInt16(i % 3)) })
+		}
+		for (i, task) in tasks.enumerated() {
+			if i % 10 == 0 {
+				try! await Task.sleep(nanoseconds: 200_000)
+			}
+			task.cancel()
+		}
+		var completed = 0
+		var cancelled = 0
+		for task in tasks {
+			do {
+				let value = try await task.value
+				assert(value)
+				completed += 1
+			} catch is CancellationError {
+				cancelled += 1
+			} catch {
+				fatalError("cancel race: unexpected error \(error)")
+			}
+		}
+		assert(completed + cancelled == tasks.count)
+		assert(cancellableLiveCount() == 0)
+	}
+
+	// Cancellable async constructor and method.
+	do {
+		let obj = try await CancellableObject()
+		let task = Task { try await obj.pending() }
+		await waitUntil("first poll") { cancellableLiveCount() == 1 }
+		task.cancel()
+		await expectCancellation(task, "cancellable method")
+		assert(cancellableLiveCount() == 0)
+	}
+
 	counter.leave()
 }
 

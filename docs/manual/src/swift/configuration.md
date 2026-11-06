@@ -24,6 +24,7 @@ more likely to change than other configurations.
 | `generate_codable_conformance`       | `false`                  | Whether to make generated record, enum and error types conform to `Codable`.                                                                                                                                |
 | `omit_checksums`                     | `false`                  | Whether to omit checking the library checksums as the library is initialized. Changing this will shoot yourself in the foot if you mixup your build pipeline in any way, but might speed up initialization. |
 | `link_frameworks`                    | `[]`                     | The extra frameworks to link this binary against, such as `CoreBluetooth` or `CoreAudio`. Usually only used for interacting with native platform libraries.                                                 |
+| `async_cancellable`                  |                          | A map of async functions, methods and constructors that cancel their Rust future when the calling Swift task is cancelled. These throw `CancellationError` and are declared `throws`. See [Cancelling async code](../futures.md#swift-async_cancellable). |
 
 [^1]: `namespace` is the top-level namespace from your UDL file.
 
