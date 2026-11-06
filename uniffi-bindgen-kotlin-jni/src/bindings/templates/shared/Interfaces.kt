@@ -69,7 +69,7 @@ object WithHandle
  * */
 object NoHandle
 
-{% if root.disable_java_cleaner() %}
+{% if root.java_8_compatible() %}
 {% include "BuiltinCleaner.kt" %}
 
 {% else if root.enable_android_cleaner() %}

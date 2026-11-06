@@ -158,11 +158,11 @@ impl Root {
         imports.into_iter()
     }
 
-    pub fn disable_java_cleaner(&self) -> bool {
+    pub fn java_8_compatible(&self) -> bool {
         // Try to merge the different config values as best we can.
         //
         // Maybe we can leverage https://github.com/mozilla/uniffi-rs/issues/2866 to improve this
-        self.packages.iter().any(|p| p.config.disable_java_cleaner)
+        self.packages.iter().any(|p| p.config.java_8_compatible)
     }
 
     pub fn enable_android_cleaner(&self) -> bool {

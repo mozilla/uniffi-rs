@@ -6,6 +6,10 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### Breaking changes
+- Kotlin: `disable_java_cleaner` was renamed to `java_8_compatible`.
+  It now controls multiple features that require Java 9 (minSdk 28 on Android)
+
 ### What's New?
 - Added `uniffi_parse_rs`, which generates metadata by parsing Rust sources directly.
   This allows using the macros syntax to describe your interface, without requiring you to build the
