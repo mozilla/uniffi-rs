@@ -111,6 +111,11 @@ public convenience init(
             pollFunc: {{ callable.ffi_rust_future_poll(ci) }},
             completeFunc: {{ callable.ffi_rust_future_complete(ci) }},
             freeFunc: {{ callable.ffi_rust_future_free(ci) }},
+            {%- if config.is_async_cancellable(callable.ffi_func().name()) %}
+            cancelFunc: { {{ callable.ffi_rust_future_cancel(ci) }}($0) },
+            {%- else %}
+            cancelFunc: nil,
+            {%- endif %}
             {%- match callable.return_type() %}
             {%- when Some(return_type) %}
             liftFunc: {{ return_type|lift_fn }},
@@ -188,12 +193,16 @@ v{{- field_num -}}
 {%- if func.is_async() %}async {% endif %}
 {%- endmacro -%}
 
+{#-
+// Cancellable async callables (`bindings.swift.async_cancellable`) throw `CancellationError` when
+// the calling task is cancelled, so they're declared `throws` even if the Rust function can't fail.
+-#}
 {%- macro throws(func) %}
-{%- if func.throws() %}throws {% endif %}
+{%- if func.throws() || config.is_async_cancellable(func.ffi_func().name()) %}throws {% endif %}
 {%- endmacro -%}
 
 {%- macro is_try(func) %}
-{%- if func.throws() %}try {% else %}try! {% endif %}
+{%- if func.throws() || config.is_async_cancellable(func.ffi_func().name()) %}try {% else %}try! {% endif %}
 {%- endmacro -%}
 
 {%- macro docstring_value(maybe_docstring, indent_spaces) %}

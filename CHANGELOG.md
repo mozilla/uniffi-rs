@@ -22,6 +22,10 @@
   `[bindings.ruby.external_packages]` is auto-filled from each peer's `module_name`; a consumer
   override that does not match is a bindgen error (via [#2980](https://github.com/mozilla/uniffi-rs/pull/2980)).
 - Ruby: Add external types support (via [#2980](https://github.com/mozilla/uniffi-rs/pull/2980)).
+- Swift: Add `[bindings.swift.async_cancellable]` to propagate Swift task cancellation to Rust futures.
+  Cancelling the calling task drops the Rust future and the call throws `CancellationError`.
+  Listed callables are declared `async throws`; everything else is unchanged.
+  See the "Cancelling async code" section of the futures documentation.
 
 ### What's Fixed
 - `#[derive(Node)]` now emits its `has_descendant_type` checks in field declaration order.

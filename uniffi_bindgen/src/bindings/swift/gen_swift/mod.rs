@@ -8,7 +8,7 @@ use std::cell::RefCell;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use askama::Template;
 
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
@@ -186,6 +186,14 @@ pub struct Config {
     pub(super) exclude: Vec<String>,
     #[serde(default)]
     pub(super) rename: toml::Table,
+    /// Async functions, methods and constructors that propagate Swift task cancellation to
+    /// their Rust future, keyed by `"function"`, `"Type.method"` or `"Type.constructor"`.
+    #[serde(default)]
+    async_cancellable: HashMap<String, bool>,
+    /// Scaffolding function names of the callables enabled in `async_cancellable`.
+    /// Filled in by [Config::resolve_async_cancellable].
+    #[serde(skip)]
+    async_cancellable_ffi_funcs: HashSet<String>,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -220,6 +228,108 @@ impl CustomTypeConfig {
 }
 
 impl Config {
+    /// Resolve the `async_cancellable` table against the component interface.
+    ///
+    /// Keys use the Rust/UDL names (before any `rename` is applied), like `exclude` does.
+    /// Unknown names, sync callables and methods of foreign-implementable traits are errors, so a
+    /// typo can't silently leave a callable uncancellable.
+    pub(super) fn resolve_async_cancellable(&mut self, ci: &ComponentInterface) -> Result<()> {
+        if self.async_cancellable.is_empty() {
+            return Ok(());
+        }
+        struct Candidate<'a> {
+            is_async: bool,
+            ffi_func: &'a str,
+            unsupported: Option<&'static str>,
+        }
+        fn candidate<'a>(
+            callable: &'a impl Callable,
+            unsupported: Option<&'static str>,
+        ) -> Candidate<'a> {
+            Candidate {
+                is_async: callable.is_async(),
+                ffi_func: callable.ffi_func().name(),
+                unsupported,
+            }
+        }
+
+        let mut candidates = HashMap::new();
+        for func in ci.function_definitions() {
+            candidates.insert(func.name().to_string(), candidate(func, None));
+        }
+        for obj in ci.object_definitions() {
+            // Swift implementations of these traits are called through the same protocol, and
+            // that call path doesn't handle the extra `throws`.
+            let unsupported = obj
+                .has_callback_interface()
+                .then_some("methods of traits with foreign implementations can't be cancellable");
+            for cons in obj.constructors() {
+                candidates.insert(
+                    format!("{}.{}", obj.name(), cons.name()),
+                    candidate(cons, None),
+                );
+            }
+            for meth in obj.methods() {
+                candidates.insert(
+                    format!("{}.{}", obj.name(), meth.name()),
+                    candidate(meth, unsupported),
+                );
+            }
+        }
+        for rec in ci.record_definitions() {
+            for cons in rec.constructors() {
+                candidates.insert(
+                    format!("{}.{}", rec.name(), cons.name()),
+                    candidate(cons, None),
+                );
+            }
+            for meth in rec.methods() {
+                candidates.insert(
+                    format!("{}.{}", rec.name(), meth.name()),
+                    candidate(meth, None),
+                );
+            }
+        }
+        for enum_ in ci.enum_definitions() {
+            for cons in enum_.constructors() {
+                candidates.insert(
+                    format!("{}.{}", enum_.name(), cons.name()),
+                    candidate(cons, None),
+                );
+            }
+            for meth in enum_.methods() {
+                candidates.insert(
+                    format!("{}.{}", enum_.name(), meth.name()),
+                    candidate(meth, None),
+                );
+            }
+        }
+
+        for (name, &enabled) in &self.async_cancellable {
+            let Some(candidate) = candidates.get(name) else {
+                bail!("bindings.swift.async_cancellable: no function, method or constructor named `{name}`");
+            };
+            if !candidate.is_async {
+                bail!("bindings.swift.async_cancellable: `{name}` is not async");
+            }
+            if let Some(reason) = candidate.unsupported {
+                bail!("bindings.swift.async_cancellable: `{name}`: {reason}");
+            }
+            if enabled {
+                self.async_cancellable_ffi_funcs
+                    .insert(candidate.ffi_func.to_string());
+            }
+        }
+        Ok(())
+    }
+
+    /// Whether the async callable with this scaffolding function cancels its Rust future when the
+    /// calling Swift task is cancelled. Such callables are generated as `async throws` and throw
+    /// `CancellationError` when cancelled.
+    pub fn is_async_cancellable(&self, ffi_func_name: &str) -> bool {
+        self.async_cancellable_ffi_funcs.contains(ffi_func_name)
+    }
+
     /// The name of the Swift module containing the high-level foreign-language bindings.
     /// Panics if the module name hasn't been configured.
     pub fn module_name(&self) -> String {
@@ -1202,5 +1312,60 @@ pub mod filters {
         _: &dyn askama::Values,
     ) -> Result<(String, String), askama::Error> {
         Ok(SwiftCodeOracle.object_names(obj))
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    const UDL: &str = r#"
+        namespace test {
+            [Async] boolean pending();
+            boolean not_async();
+        };
+        interface Obj {
+            [Async] constructor();
+            [Async] boolean pending();
+        };
+    "#;
+
+    fn resolve(toml: &str) -> Result<Config> {
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name")?;
+        let mut config: Config = toml::from_str(toml)?;
+        config.resolve_async_cancellable(&ci)?;
+        Ok(config)
+    }
+
+    #[test]
+    fn async_cancellable_resolves_to_scaffolding_functions() {
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        let config = resolve(
+            r#"
+            [async_cancellable]
+            pending = true
+            "Obj.new" = true
+            "Obj.pending" = false
+            "#,
+        )
+        .unwrap();
+
+        let func = ci.get_function_definition("pending").unwrap();
+        let obj = ci.get_object_definition("Obj").unwrap();
+        let cons = obj.primary_constructor().unwrap();
+        let meth = obj.get_method("pending");
+        assert!(config.is_async_cancellable(func.ffi_func().name()));
+        assert!(config.is_async_cancellable(cons.ffi_func().name()));
+        assert!(!config.is_async_cancellable(meth.ffi_func().name()));
+    }
+
+    #[test]
+    fn async_cancellable_rejects_unknown_and_sync_callables() {
+        let err = resolve("[async_cancellable]\nmissing = true").unwrap_err();
+        assert!(err
+            .to_string()
+            .contains("no function, method or constructor named `missing`"));
+        let err = resolve("[async_cancellable]\nnot_async = true").unwrap_err();
+        assert!(err.to_string().contains("`not_async` is not async"));
     }
 }

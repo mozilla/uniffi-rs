@@ -102,7 +102,10 @@ private func uniffiCheckCallStatus<E: Swift.Error>(
             }
 
         case CALL_CANCELLED:
-            fatalError("Cancellation not supported yet")
+            // Only returned by `rust_future_complete` after `rust_future_cancel`, which is called
+            // when the Swift task running an `async_cancellable` callable is cancelled.  The error
+            // buffer is always empty for this status.
+            throw CancellationError()
 
         default:
             throw UniffiInternalError.unexpectedRustCallStatusCode
