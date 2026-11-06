@@ -85,5 +85,18 @@ class TestFutures(unittest.IsolatedAsyncioTestCase):
         # up and the only remaining reference is for our `cbi` variable.
         self.assertEqual(AsyncCallbackImpl.ref_count, 1)
 
+    async def test_boxed_future_callback_interface(self):
+        # A callback interface whose async method is a hand-written boxed future (no
+        # `#[async_trait]`); it should behave like any other async callback method.
+        class BoxedFutureTraitImpl:
+            async def reply(self, ms, who):
+                return f"{who} replied at {ms}"
+
+        cbi = BoxedFutureTraitImpl()
+        self.assertEqual(
+            await invoke_boxed_future_trait(cbi, 1234, "Alice"),
+            "Alice replied at 1234",
+        )
+
 if __name__ == '__main__':
     unittest.main()

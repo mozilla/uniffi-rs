@@ -120,3 +120,15 @@ let returnedNumbers = try! await invokeTestAsyncCallbackInterfaceThrowIfEqual(
     numbers: CallbackInterfaceNumbers(a: 10, b: 11)
 )
 assert(returnedNumbers == CallbackInterfaceNumbers(a: 10, b: 11))
+
+// Callback interface whose async method is a hand-written boxed future (no `#[async_trait]`).
+// It is exposed as an `async` method and invoked from Rust via `invokeBoxedFutureTrait`.
+class BoxedFutureTraitImpl: BoxedFutureTrait, @unchecked Sendable {
+    func reply(ms: UInt16, who: String) async -> String {
+        return "\(who) replied at \(ms)"
+    }
+}
+
+let boxedFutureCallback = BoxedFutureTraitImpl()
+let boxedFutureResult = await invokeBoxedFutureTrait(cbi: boxedFutureCallback, ms: 1234, who: "Alice")
+assert(boxedFutureResult == "Alice replied at 1234")

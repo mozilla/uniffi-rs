@@ -87,10 +87,14 @@ pub(super) fn trait_impl(
         .iter()
         .map(|sig| gen_method_impl(sig, &vtable_cell))
         .collect::<syn::Result<Vec<_>>>()?;
-    let has_async_method = methods.iter().any(|m| m.is_async);
+    // Only methods declared with `async` / `#[async_trait]` need the `#[async_trait]` attribute
+    // (they are implemented as `async fn`). Methods that are async by virtue of a hand-written
+    // boxed-future return type are implemented as plain `fn … -> Pin<Box<dyn Future<…>>>`, which
+    // `#[async_trait]` must not rewrite.
+    let has_declared_async_method = methods.iter().any(|m| m.is_async && !m.desugared_async);
 
     // Conditionally apply the async_trait attribute with or without ?Send based on the target
-    let impl_attributes = has_async_method.then(async_trait_annotation);
+    let impl_attributes = has_declared_async_method.then(async_trait_annotation);
 
     let single_threaded_annotation = wasm_single_threaded_annotation();
 
@@ -203,6 +207,7 @@ fn gen_method_impl(sig: &FnSignature, vtable_cell: &Ident) -> syn::Result<TokenS
     let FnSignature {
         ident,
         is_async,
+        desugared_async,
         return_ty,
         kind,
         receiver,
@@ -252,21 +257,42 @@ fn gen_method_impl(sig: &FnSignature, vtable_cell: &Ident) -> syn::Result<TokenS
             }
         })
     } else {
-        Ok(quote! {
-            async fn #ident(#self_param, #(#params),*) -> #return_ty {
-                let vtable = #vtable_cell.get();
-                ::uniffi::foreign_async_call::<_, #return_ty, crate::UniFfiTag>(
-                    move |uniffi_future_callback, uniffi_future_callback_data, uniffi_foreign_future_dropped_callback| {
-                        (vtable.#ident)(
-                            self.handle,
-                            #(#lower_exprs,)*
-                            uniffi_future_callback,
-                            uniffi_future_callback_data,
-                            uniffi_foreign_future_dropped_callback
-                        );
-                }).await
-            }
-        })
+        // The body is identical for both async styles; only the method signature and how the
+        // future is produced differ.
+        let uniffi_call = quote! {
+            let vtable = #vtable_cell.get();
+            ::uniffi::foreign_async_call::<_, #return_ty, crate::UniFfiTag>(
+                move |uniffi_future_callback, uniffi_future_callback_data, uniffi_foreign_future_dropped_callback| {
+                    (vtable.#ident)(
+                        self.handle,
+                        #(#lower_exprs,)*
+                        uniffi_future_callback,
+                        uniffi_future_callback_data,
+                        uniffi_foreign_future_dropped_callback
+                    );
+            }).await
+        };
+        if *desugared_async {
+            // The trait declares the method by hand as a boxed future, so its signature is
+            // late-bound. Match it with a plain `fn … -> Pin<Box<dyn Future<…> + Send + '_>>`
+            // returning `Box::pin(async move { … })`, instead of an `#[async_trait] async fn`
+            // (which would be early-bound and fail to match — E0195).
+            Ok(quote! {
+                fn #ident(#self_param, #(#params),*)
+                    -> ::std::pin::Pin<::std::boxed::Box<dyn ::std::future::Future<Output = #return_ty> + ::std::marker::Send + '_>>
+                {
+                    ::std::boxed::Box::pin(async move {
+                        #uniffi_call
+                    })
+                }
+            })
+        } else {
+            Ok(quote! {
+                async fn #ident(#self_param, #(#params),*) -> #return_ty {
+                    #uniffi_call
+                }
+            })
+        }
     }
 }
 
