@@ -110,7 +110,7 @@ mod test {
             atomic::{AtomicU32, Ordering},
             Arc,
         },
-        task::{Context, Poll, Wake},
+        task::{Context, Poll, Waker},
     };
 
     struct MockForeignFuture {
@@ -150,8 +150,7 @@ mod test {
         }
 
         fn poll(&mut self) -> Poll<String> {
-            let waker = Arc::new(NoopWaker).into();
-            let mut context = Context::from_waker(&waker);
+            let mut context = Context::from_waker(Waker::noop());
             self.rust_future
                 .as_mut()
                 .unwrap()
@@ -193,12 +192,6 @@ mod test {
             let flag = unsafe { Arc::from_raw(handle as *mut AtomicU32) };
             flag.fetch_add(1, Ordering::Relaxed);
         }
-    }
-
-    struct NoopWaker;
-
-    impl Wake for NoopWaker {
-        fn wake(self: Arc<Self>) {}
     }
 
     #[test]

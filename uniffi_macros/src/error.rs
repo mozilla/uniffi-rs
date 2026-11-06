@@ -161,6 +161,7 @@ fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> To
 
         #[automatically_derived]
         #type_id_impl_spec {
+            #[allow(clippy::large_const_arrays)]
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_ENUM)
                 .concat_str(module_path!())
                 .concat_str(#name);
