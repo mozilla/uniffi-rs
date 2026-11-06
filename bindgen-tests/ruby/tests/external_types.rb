@@ -7,6 +7,8 @@
 require 'test/unit'
 require 'uri'
 require 'uniffi_bindgen_tests'
+# test that we successfully changed the generated filename
+require 'ext_types_renamed'
 
 class TestExternalTypes < Test::Unit::TestCase
   Ext = ExtTypes
@@ -163,7 +165,7 @@ class TestExternalTypes < Test::Unit::TestCase
     assert_not_nil path, 'uniffi_bindgen_tests_mid_types.rb should be loaded'
     src = File.read(path)
 
-    assert_match(/require ['"]ext_types['"]/, src)
+    assert_match(/require ['"]ext_types_renamed['"]/, src)
     assert_match(/ExtTypes::RustBuffer/, src)
   end
 end

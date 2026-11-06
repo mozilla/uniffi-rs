@@ -160,6 +160,11 @@ pub struct Config {
     /// Default (when unset): UpperCamelCase of the UniFFI namespace.
     #[serde(default)]
     pub(super) module_name: Option<String>,
+    /// Ruby filename to generate
+    ///
+    /// Default (when unset): `[namespace].rb`
+    #[serde(default)]
+    pub(super) file_name: Option<String>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
     #[serde(default)]
@@ -168,6 +173,11 @@ pub struct Config {
     pub(super) rename: toml::Table,
     #[serde(default)]
     pub(super) external_packages: HashMap<String, String>,
+
+    // Map namespaces to the require_path for that namespace, using the `Config::file_name` value.
+    // This doesn't come from the user's config file, it's set once we have the list of all configs.
+    #[serde(skip)]
+    pub(super) ext_require_paths: HashMap<String, String>,
 }
 
 impl Config {
@@ -188,6 +198,16 @@ impl Config {
         self.module_name
             .clone()
             .unwrap_or_else(|| class_name_rb_inner(namespace))
+    }
+
+    pub fn require_path(&self) -> Result<Option<&str>> {
+        match &self.file_name {
+            None => Ok(None),
+            Some(file_name) => match file_name.strip_suffix(".rb") {
+                Some(require_path) => Ok(Some(require_path)),
+                None => bail!("file_name config must end in `.rb` (saw {file_name})"),
+            },
+        }
     }
 
     /// Default `module_name` when the TOML omits it: UpperCamelCase of the namespace.
@@ -358,7 +378,10 @@ impl<'a> RubyWrapper<'a> {
 
             // Single-UDL generation has no crate→namespace map for dependencies.
             let require_path = match self.ci.namespace_for_module_path(module_path) {
-                Ok(ns) => ns.to_owned(),
+                Ok(ns) => match self.config.ext_require_paths.get(ns) {
+                    Some(p) => p.to_owned(),
+                    None => ns.to_owned(),
+                },
                 Err(_) => {
                     return Err(askama_err(anyhow!(
                         "Cannot resolve namespace for external crate `{crate_name}`. \

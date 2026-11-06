@@ -7,6 +7,7 @@ The generated Python modules can be configured using a `uniffi.toml` configurati
 | Configuration name | Default  | Description |
 | ------------------ | -------  |------------ |
 | `cdylib_name`      | `uniffi_{namespace}`[^1] | The name of the compiled Rust library containing the FFI implementation (not needed when using `generate --library`). |
+| `module_name`      | `{namespace}` | The name of the generated Python module. |
 | `custom_types`      | | A map which controls how custom types are exposed to Python. See the [custom types section of the manual](../types/custom_types.md#custom-types-in-the-bindings-code)|
 | `external_packages` | | A map which controls the package name used by external packages. See below for more.
 | `rename`           | | A map to rename types, functions, methods, and their members in the generated Python bindings. See the [renaming section](../renaming.md).
@@ -24,8 +25,7 @@ When looking up crate-name, the following behavior is implemented.
 
 ### Default value
 If no value for the crate is found, it is assumed that you will be packaging up your library
-as a simple Python package, so the statement will be of the form `from .module import Type`,
-where `module` is the namespace specified in that crate.
+as a simple Python package, so the statement will be of the form `from .module import Type`.
 
 Note that this is invalid syntax unless the module lives in a package - attempting to
 use the module as a stand-alone module will fail. UniFFI just generates flat .py files; the
