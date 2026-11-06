@@ -36,7 +36,11 @@ pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> 
                 continue;
             }
         }
-        let rb_file = options.out_dir.join(format!("{}.rb", ci.namespace()));
+        let filename = match config.require_path()? {
+            Some(p) => format!("{p}.rb"),
+            None => format!("{}.rb", ci.namespace()),
+        };
+        let rb_file = options.out_dir.join(&filename);
         fs::write(&rb_file, generate_ruby_bindings(&config, &ci)?)?;
 
         if options.format {
@@ -102,7 +106,7 @@ fn apply_renames(components: &mut Vec<Component<Config>>) -> Result<()> {
         }
     }
 
-    populate_external_packages(components);
+    populate_external_packages(components)?;
     validate_external_package_overrides(components)?;
     Ok(())
 }
@@ -123,13 +127,19 @@ fn apply_renames(components: &mut Vec<Component<Config>>) -> Result<()> {
 /// `ComponentInterface::iter_external_types` via
 /// `RubyWrapper::external_mixin_modules`. Omitting a key therefore does not
 /// mean "do not treat this crate as a direct external".
-fn populate_external_packages(components: &mut [Component<Config>]) {
-    let packages = HashMap::<String, String>::from_iter(components.iter().map(|c| {
-        (
+fn populate_external_packages(components: &mut [Component<Config>]) -> Result<()> {
+    let mut packages = HashMap::new();
+    let mut ext_require_paths = HashMap::new();
+    for c in components.iter() {
+        packages.insert(
             c.ci.crate_name().to_string(),
             c.config.module_name(c.ci.namespace()),
-        )
-    }));
+        );
+        if let Some(require_path) = c.config.require_path()? {
+            ext_require_paths.insert(c.ci.namespace().to_string(), require_path.to_string());
+        }
+    }
+
     for c in components.iter_mut() {
         for (ext_crate, ext_package) in &packages {
             if ext_crate != c.ci.crate_name() && !c.config.external_packages.contains_key(ext_crate)
@@ -139,7 +149,9 @@ fn populate_external_packages(components: &mut [Component<Config>]) {
                     .insert(ext_crate.to_string(), ext_package.clone());
             }
         }
+        c.config.ext_require_paths = ext_require_paths.clone();
     }
+    Ok(())
 }
 
 /// Consumer `external_packages` entries for crates in this library must match
@@ -204,7 +216,7 @@ mod tests {
             component("consumer", consumer_config),
             component("my_crate", defining_config),
         ];
-        populate_external_packages(&mut components);
+        populate_external_packages(&mut components).unwrap();
         validate_external_package_overrides(&components).unwrap();
         assert_eq!(
             components[0]
@@ -222,7 +234,7 @@ mod tests {
             component("consumer", Config::default()),
             component("my_crate", Config::default()),
         ];
-        populate_external_packages(&mut components);
+        populate_external_packages(&mut components).unwrap();
         assert!(components[0]
             .config
             .external_packages
@@ -241,7 +253,7 @@ mod tests {
             component("consumer", Config::default()),
             component("my_crate", defining_config),
         ];
-        populate_external_packages(&mut components);
+        populate_external_packages(&mut components).unwrap();
         validate_external_package_overrides(&components).unwrap();
         assert_eq!(
             components[0]
@@ -267,7 +279,7 @@ mod tests {
             component("consumer", consumer_config),
             component("my_crate", defining_config),
         ];
-        populate_external_packages(&mut components);
+        populate_external_packages(&mut components).unwrap();
         validate_external_package_overrides(&components).unwrap();
         assert_eq!(
             components[0]
@@ -293,7 +305,7 @@ mod tests {
             component("consumer", consumer_config),
             component("my_crate", defining_config),
         ];
-        populate_external_packages(&mut components);
+        populate_external_packages(&mut components).unwrap();
         let err = validate_external_package_overrides(&components).unwrap_err();
         let msg = err.to_string();
         assert!(msg.contains("my_crate"), "{msg}");
@@ -313,7 +325,7 @@ mod tests {
             component("consumer", consumer_config),
             component("my_crate", Config::default()),
         ];
-        populate_external_packages(&mut components);
+        populate_external_packages(&mut components).unwrap();
         validate_external_package_overrides(&components).unwrap();
     }
 

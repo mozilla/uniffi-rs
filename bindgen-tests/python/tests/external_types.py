@@ -1,5 +1,5 @@
 from test_package.uniffi_bindgen_tests import *
-from test_package.ext_types import (ExternalRec, ExternalEnum, ExternalInterface)
+from test_package.ext_types_renamed import (ExternalRec, ExternalEnum, ExternalInterface)
 import unittest
 
 class TestExternalTypes(unittest.TestCase):
