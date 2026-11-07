@@ -22,6 +22,10 @@
   `[bindings.ruby.external_packages]` is auto-filled from each peer's `module_name`; a consumer
   override that does not match is a bindgen error (via [#2980](https://github.com/mozilla/uniffi-rs/pull/2980)).
 - Ruby: Add external types support (via [#2980](https://github.com/mozilla/uniffi-rs/pull/2980)).
+- Kotlin: Calls into Rust no longer allocate a JNA `Structure` for the call status. FFI functions
+  take the status as a pointer into a reusable per-thread buffer, and a `Structure` is only built
+  when the call fails. This removes most of the overhead of a call that passes and returns only
+  primitives or objects (see [#3011](https://github.com/mozilla/uniffi-rs/issues/3011)).
 
 ### What's Fixed
 - `#[derive(Node)]` now emits its `has_descendant_type` checks in field declaration order.
