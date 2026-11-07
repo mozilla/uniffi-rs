@@ -62,3 +62,68 @@ try {
 } catch(e: TestException.Failure2) {
     assert(e.data.contains("unexpected failure"))
 }
+
+// Test calls that re-enter Rust from inside a callback, so several calls are in progress on the
+// same thread at once. An inner call's failure must not become the result of the call it's
+// nested in, and the outer call's own result must still come through after the inner calls.
+class ReentrantCallback : TestReentrantCallback {
+    override fun reenter(depth: UInt): UInt {
+        // A nested call that fails, caught here. The call this is nested in must still succeed.
+        try {
+            funcWithError(0u)
+            throw RuntimeException("Expected TestException.Failure1 to be thrown")
+        } catch(e: TestException.Failure1) {
+            // Expected
+        }
+        if (depth == 0u) {
+            return 0u
+        }
+        return invokeTestReentrantCallback(this, depth - 1u, false)
+    }
+}
+
+val reentrant = ReentrantCallback()
+assert(invokeTestReentrantCallback(reentrant, 0u, false) == 1u)
+// 20 levels of Rust -> Kotlin -> Rust nesting, each with a failed call nested inside it.
+assert(invokeTestReentrantCallback(reentrant, 20u, false) == 21u)
+// The outer call fails after the nested calls (including the failed ones) have finished, and
+// must report its own error.
+try {
+    invokeTestReentrantCallback(reentrant, 5u, true)
+    throw RuntimeException("Expected TestException.Failure3 to be thrown")
+} catch(e: TestException.Failure3) {
+    assert(e.v1 == 5u)
+}
+// The same thread keeps working after the failures above.
+assert(invokeTestReentrantCallback(reentrant, 3u, false) == 4u)
+
+// Several threads making reentrant calls, failing and succeeding, at the same time.
+fun reentrantCalls(t: Int) {
+    for (i in 0 until 200) {
+        val depth = ((t + i) % 4).toUInt()
+        if (i % 3 == 0) {
+            try {
+                invokeTestReentrantCallback(reentrant, depth, true)
+                throw RuntimeException("Expected TestException.Failure3 to be thrown")
+            } catch(e: TestException.Failure3) {
+                assert(e.v1 == depth)
+            }
+        } else {
+            assert(invokeTestReentrantCallback(reentrant, depth, false) == depth + 1u)
+        }
+    }
+}
+
+// Exceptions thrown on those threads are collected and rethrown here.
+val reentrantFailures = java.util.concurrent.ConcurrentLinkedQueue<Throwable>()
+val reentrantThreads = (0 until 8).map { t ->
+    kotlin.concurrent.thread {
+        try {
+            reentrantCalls(t)
+        } catch(e: Throwable) {
+            reentrantFailures.add(e)
+        }
+    }
+}
+reentrantThreads.forEach { it.join() }
+reentrantFailures.peek()?.let { throw it }
