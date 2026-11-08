@@ -563,7 +563,7 @@ impl<UT> TypeId<UT> for () {
 // Implement LowerReturn/LiftReturn for `Result<R, E>`.  This is where we handle exceptions/Err
 // results.
 
-#[cfg(not(all(target_arch = "wasm32", feature = "wasm-unstable-single-threaded")))]
+#[cfg(not(all(target_family = "wasm", feature = "wasm-unstable-single-threaded")))]
 unsafe impl<UT, R, E> LowerReturn<UT> for Result<R, E>
 where
     R: LowerReturn<UT>,
@@ -590,7 +590,7 @@ where
     }
 }
 
-#[cfg(all(target_arch = "wasm32", feature = "wasm-unstable-single-threaded"))]
+#[cfg(all(target_family = "wasm", feature = "wasm-unstable-single-threaded"))]
 unsafe impl<UT, R, E> LowerReturn<UT> for Result<R, E>
 where
     R: LowerReturn<UT>,

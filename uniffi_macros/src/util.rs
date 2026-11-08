@@ -329,7 +329,7 @@ pub(crate) fn wasm_single_threaded_annotation() -> TokenStream {
     #[cfg(feature = "wasm-unstable-single-threaded")]
     {
         quote! {
-            #[cfg(not(target_arch = "wasm32"))]
+            #[cfg(not(target_family = "wasm"))]
         }
     }
     #[cfg(not(feature = "wasm-unstable-single-threaded"))]
@@ -342,8 +342,8 @@ pub(crate) fn async_trait_annotation() -> TokenStream {
     #[cfg(feature = "wasm-unstable-single-threaded")]
     {
         quote! {
-            #[cfg_attr(not(target_arch = "wasm32"), ::async_trait::async_trait)]
-            #[cfg_attr(target_arch = "wasm32", ::async_trait::async_trait(?Send))]
+            #[cfg_attr(not(target_family = "wasm"), ::async_trait::async_trait)]
+            #[cfg_attr(target_family = "wasm", ::async_trait::async_trait(?Send))]
         }
     }
     #[cfg(not(feature = "wasm-unstable-single-threaded"))]
