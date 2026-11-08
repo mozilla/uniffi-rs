@@ -95,7 +95,7 @@ impl BindgenLoader {
                         );
                     };
                     let udl_content = fs::read_to_string(&udl_path)?;
-                    let group = uniffi_udl::parse_udl(&udl_content, &source.package_name)?;
+                    let group = uniffi_udl::parse_udl(&udl_content, &source.crate_name)?;
                     parser.add_udl_metadata(&source.crate_name, group.items, &udl_path)?;
                 }
             }

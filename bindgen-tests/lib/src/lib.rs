@@ -2,6 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#[cfg(feature = "udl")]
+uniffi::include_scaffolding!("uniffi_bindgen_tests");
+
+#[cfg(not(feature = "udl"))]
 uniffi::setup_scaffolding!("uniffi_bindgen_tests");
 
 #[cfg(feature = "bytes")]
@@ -63,3 +67,10 @@ pub mod time;
 
 #[cfg(feature = "trait_interfaces")]
 pub mod trait_interfaces;
+
+#[cfg(feature = "udl")]
+pub mod udl;
+
+// UDL items must be re-exported by the top-level crate
+#[cfg(feature = "udl")]
+pub use udl::*;
