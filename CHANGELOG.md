@@ -39,6 +39,9 @@
   primitives or objects (see [#3011](https://github.com/mozilla/uniffi-rs/issues/3011)).
 
 ### What's Fixed
+- The `wasm-unstable-single-threaded` feature now applies to every WASM target (`target_family = "wasm"`),
+  including `wasm64-unknown-unknown`. Previously it only applied to `wasm32`, so memory64 builds still
+  required `Send` and `Sync`.
 - `#[derive(Node)]` now emits its `has_descendant_type` checks in field declaration order.
   Previously the order came from a `HashSet` and changed on every compile, so `uniffi_bindgen` did
   not build reproducibly (via [#3048](https://github.com/mozilla/uniffi-rs/issues/3048)).

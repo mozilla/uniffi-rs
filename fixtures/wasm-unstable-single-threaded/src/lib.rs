@@ -29,14 +29,14 @@ pub async fn static_future(_old: String, _new: String) {
 }
 
 // We also want to allow objects which has state which might rely on such Futures.
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(target_family = "wasm"))]
 type EventHandlerFut = Pin<Box<dyn Future<Output = ()> + Send>>;
-#[cfg(target_arch = "wasm32")]
+#[cfg(target_family = "wasm")]
 type EventHandlerFut = Pin<Box<dyn Future<Output = ()>>>;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(target_family = "wasm"))]
 type EventHandlerFn = dyn Fn(String, String) -> EventHandlerFut + Send + Sync;
-#[cfg(target_arch = "wasm32")]
+#[cfg(target_family = "wasm")]
 type EventHandlerFn = dyn Fn(String, String) -> EventHandlerFut;
 
 // Here we have a struct which contains async functions.
@@ -61,7 +61,7 @@ impl fmt::Display for SimpleObject {
 }
 
 impl SimpleObject {
-    #[cfg_attr(target_arch = "wasm32", allow(clippy::arc_with_non_send_sync))]
+    #[cfg_attr(target_family = "wasm", allow(clippy::arc_with_non_send_sync))]
     fn new_with_callback(cb: Box<EventHandlerFn>) -> Arc<Self> {
         Arc::new(SimpleObject {
             inner: Mutex::new("key".to_string()),
@@ -129,17 +129,17 @@ pub trait SimpleNoopTrait: Send + Sync {
 
 // NoopObject cannot be used in a return position, so
 // `get_obj` can't be implemented as an async method.
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(target_family = "wasm"))]
 #[uniffi::export(with_foreign)]
 #[allow(clippy::double_must_use)]
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_family = "wasm"), async_trait)]
+#[cfg_attr(target_family = "wasm", async_trait(?Send))]
 pub trait AsyncNoopTrait: Send + Sync {
     async fn return_void(&self);
     async fn return_obj(&self, obj: Arc<NoopObject>);
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(target_family = "wasm")]
 #[uniffi::export(with_foreign)]
 #[allow(clippy::double_must_use)]
 #[async_trait(?Send)]
@@ -157,7 +157,7 @@ pub trait SimpleNoopCbi: Send + Sync {
 
 // NoopObject cannot be used in a return position, so
 // `get_obj` can't be implemented as an async method.
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(target_family = "wasm"))]
 #[uniffi::export(callback_interface)]
 #[allow(clippy::double_must_use)]
 #[async_trait]
@@ -166,7 +166,7 @@ pub trait AsyncNoopCbi: Send + Sync {
     async fn return_obj(&self, obj: Arc<NoopObject>);
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(target_family = "wasm")]
 #[uniffi::export(callback_interface)]
 #[allow(clippy::double_must_use)]
 #[async_trait(?Send)]
@@ -183,7 +183,7 @@ pub trait SimpleTrait: Send + Sync {
     fn get_obj(&self) -> Arc<SimpleObject>;
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(target_family = "wasm"))]
 #[uniffi::export(with_foreign)]
 #[allow(clippy::double_must_use)]
 #[async_trait]
@@ -192,7 +192,7 @@ pub trait AsyncTrait: Send + Sync {
     async fn return_obj(&self, obj: Arc<SimpleObject>);
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(target_family = "wasm")]
 #[uniffi::export(with_foreign)]
 #[allow(clippy::double_must_use)]
 #[async_trait(?Send)]
@@ -208,7 +208,7 @@ pub trait SimpleCbi: Send + Sync {
     fn get_obj(&self) -> Arc<SimpleObject>;
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(target_family = "wasm"))]
 #[uniffi::export(callback_interface)]
 #[allow(clippy::double_must_use)]
 #[async_trait]
@@ -217,7 +217,7 @@ pub trait AsyncSimpleCbi: Send + Sync {
     async fn return_obj(&self, obj: Arc<SimpleObject>);
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(target_family = "wasm")]
 #[uniffi::export(callback_interface)]
 #[allow(clippy::double_must_use)]
 #[async_trait(?Send)]
