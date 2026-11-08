@@ -57,6 +57,7 @@ Other tools we know of which try and solve a similarly shaped problem are:
 * [C# bindings](https://github.com/NordSecurity/uniffi-bindgen-cs)
 * [Dart bindings](https://github.com/NiallBunting/uniffi-rs-dart)
 * [Java bindings](https://github.com/IronCoreLabs/uniffi-bindgen-java)
+* [Lua bindings](https://github.com/sorinirimies/uniffi-bindgen-lua): Lua C modules for Lua 5.1 to 5.5 and LuaJIT, including async functions and callback interfaces.
 * [Node bindings](https://github.com/livekit/uniffi-bindgen-node) (early development)
 * [Node bindings](https://github.com/criccomini/uniffi-bindgen-node-js)
 * [Haskell bindings](https://github.com/mercury/uniffi-bindgen-haskell)
