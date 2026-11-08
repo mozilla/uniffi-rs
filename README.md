@@ -60,6 +60,7 @@ Other tools we know of which try and solve a similarly shaped problem are:
 * [Node bindings](https://github.com/livekit/uniffi-bindgen-node) (early development)
 * [Node bindings](https://github.com/criccomini/uniffi-bindgen-node-js)
 * [Haskell bindings](https://github.com/mercury/uniffi-bindgen-haskell)
+* [Zig bindings](https://github.com/sorinirimies/uniffi-bindgen-zig): Zig 0.17, including async functions and callback interfaces.
 
 ### External resources
 
