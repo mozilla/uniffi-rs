@@ -101,6 +101,17 @@ jobs:
                 --target wasm32-unknown-unknown \
                 --manifest-path "$manifest_path"
             done
+      - run:
+          name: Build WASM crates for wasm64
+          command: |
+            # wasm64 is a tier 3 target: it needs nightly and a std built from source.
+            # RUSTFLAGS is cleared so warnings in that std don't fail the build.
+            rustup toolchain install nightly --profile minimal --component rust-src
+            for manifest_path in $(ls fixtures/wasm-*/Cargo.toml) ; do
+              RUSTFLAGS="" cargo +nightly build -Zbuild-std=std,panic_abort \
+                --target wasm64-unknown-unknown \
+                --manifest-path "$manifest_path"
+            done
       - run: cargo test --features=uniffi/ffi-trace
       - run:
           name: mypy Python typechecks

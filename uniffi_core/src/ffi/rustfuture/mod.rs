@@ -45,7 +45,7 @@ pub struct RustFutureContinuationBoundCallback {
 /// It is _not_ intended to be implemented by library users or bindings
 /// implementers.
 #[doc(hidden)]
-#[cfg(not(all(target_arch = "wasm32", feature = "wasm-unstable-single-threaded")))]
+#[cfg(not(all(target_family = "wasm", feature = "wasm-unstable-single-threaded")))]
 pub trait UniffiCompatibleFuture<T>: Future<Output = T> + Send {}
 
 #[doc(hidden)]
@@ -53,9 +53,9 @@ pub trait FutureLowerReturn<UT>: LowerReturn<UT> {}
 
 /// The `Send` bound is required because the Foreign code may call the
 /// `rust_future_*` methods from different threads.
-#[cfg(not(all(target_arch = "wasm32", feature = "wasm-unstable-single-threaded")))]
+#[cfg(not(all(target_family = "wasm", feature = "wasm-unstable-single-threaded")))]
 impl<T, F> UniffiCompatibleFuture<T> for F where F: Future<Output = T> + Send {}
-#[cfg(not(all(target_arch = "wasm32", feature = "wasm-unstable-single-threaded")))]
+#[cfg(not(all(target_family = "wasm", feature = "wasm-unstable-single-threaded")))]
 impl<UT, LR> FutureLowerReturn<UT> for LR where LR: LowerReturn<UT> + Send {}
 
 /// `Future`'s on WASM32 are typically not `Send` because it's a single threaded environment.
@@ -98,11 +98,11 @@ impl<UT, LR> FutureLowerReturn<UT> for LR where LR: LowerReturn<UT> + Send {}
 /// [webworker]: https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers
 /// [jsfuture]: https://github.com/rustwasm/wasm-bindgen/blob/main/crates/futures/src/lib.rs
 /// [transferable]: (https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects
-#[cfg(all(target_arch = "wasm32", feature = "wasm-unstable-single-threaded"))]
+#[cfg(all(target_family = "wasm", feature = "wasm-unstable-single-threaded"))]
 pub trait UniffiCompatibleFuture<T>: Future<Output = T> {}
-#[cfg(all(target_arch = "wasm32", feature = "wasm-unstable-single-threaded"))]
+#[cfg(all(target_family = "wasm", feature = "wasm-unstable-single-threaded"))]
 impl<T, F> UniffiCompatibleFuture<T> for F where F: Future<Output = T> {}
-#[cfg(all(target_arch = "wasm32", feature = "wasm-unstable-single-threaded"))]
+#[cfg(all(target_family = "wasm", feature = "wasm-unstable-single-threaded"))]
 impl<UT, LR> FutureLowerReturn<UT> for LR where LR: LowerReturn<UT> {}
 
 // === Public FFI API ===
