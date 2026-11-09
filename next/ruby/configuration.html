@@ -2928,6 +2928,11 @@
 <td>The Ruby module name emitted as <code>module …</code> in that crate's generated bindings. Must be a single constant identifier (e.g. <code>UniffiOne</code>), not a nested path (<code>Foo::Bar</code>).</td>
 </tr>
 <tr>
+<td><code>file_name</code></td>
+<td><code>[namespace].rb</code></td>
+<td>The filename for the generated Ruby code</td>
+</tr>
+<tr>
 <td><code>custom_types</code></td>
 <td></td>
 <td>A map which controls how custom types are exposed to Ruby. See the <a href="../types/custom_types.html#custom-types-in-the-bindings-code">custom types section of the manual</a></td>
@@ -2935,7 +2940,7 @@
 <tr>
 <td><code>external_packages</code></td>
 <td></td>
-<td>A map from Rust crate names to Ruby module names for use with <a href="../types/remote_ext_types.html">external types</a>. Keys are crate names, not UniFFI namespaces: the Cargo package name (<code>my-crate</code>) and the underscored Rust crate name (<code>my_crate</code>) are equivalent (<code>uniffi_one</code>, not <code>uniffi_one_ns</code>). This controls how generated code <em>references</em> external modules (e.g. <code>OtherCrate::SomeType</code>). <code>require</code> paths still use each crate's UniFFI namespace (the generated <code>.rb</code> filename). In library mode (<code>generate --library</code>) every peer crate is auto-filled from that crate's <code>module_name</code>; a listed value must match. A mismatch is a bindgen error. Omitting a key does not skip the crate or control mixin / <code>require</code> membership.</td>
+<td>A map from Rust crate names to Ruby module names for use with <a href="../types/remote_ext_types.html">external types</a>. Keys are crate names, not UniFFI namespaces: the Cargo package name (<code>my-crate</code>) and the underscored Rust crate name (<code>my_crate</code>) are equivalent (<code>uniffi_one</code>, not <code>uniffi_one_ns</code>). This controls how generated code <em>references</em> external modules (e.g. <code>OtherCrate::SomeType</code>). Use <code>file_name</code> to change <code>require</code> paths. In library mode (<code>generate --library</code>) every peer crate is auto-filled from that crate's <code>module_name</code>; a listed value must match. A mismatch is a bindgen error. Omitting a key does not skip the crate or control mixin / <code>require</code> membership.</td>
 </tr>
 <tr>
 <td><code>rename</code></td>

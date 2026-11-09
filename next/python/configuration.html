@@ -2952,6 +2952,11 @@
 <td>The name of the compiled Rust library containing the FFI implementation (not needed when using <code>generate --library</code>).</td>
 </tr>
 <tr>
+<td><code>module_name</code></td>
+<td><code>{namespace}</code></td>
+<td>The name of the generated Python module.</td>
+</tr>
+<tr>
 <td><code>custom_types</code></td>
 <td></td>
 <td>A map which controls how custom types are exposed to Python. See the <a href="../types/custom_types.html#custom-types-in-the-bindings-code">custom types section of the manual</a></td>
@@ -2977,8 +2982,7 @@ Python for that crate. The default value is an empty map.</p>
 <p>When looking up crate-name, the following behavior is implemented.</p>
 <h3 id="default-value">Default value</h3>
 <p>If no value for the crate is found, it is assumed that you will be packaging up your library
-as a simple Python package, so the statement will be of the form <code>from .module import Type</code>,
-where <code>module</code> is the namespace specified in that crate.</p>
+as a simple Python package, so the statement will be of the form <code>from .module import Type</code>.</p>
 <p>Note that this is invalid syntax unless the module lives in a package - attempting to
 use the module as a stand-alone module will fail. UniFFI just generates flat .py files; the
 packaging is up to you. Eg, a build process might create a directory, create an <code>__init__.py</code>
