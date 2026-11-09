@@ -55,6 +55,7 @@ Other tools we know of which try and solve a similarly shaped problem are:
 * [Kotlin Multiplatform](https://github.com/UbiqueInnovation/uniffi-kotlin-multiplatform-bindings). A Gradle plugin and bindings generator for Kotlin Multiplatform. It supports multi-module projects, where several Rust crates can be published as individual Kotlin Multiplatform libraries that share common code.
 * [Go bindings](https://github.com/NordSecurity/uniffi-bindgen-go)
 * [C# bindings](https://github.com/NordSecurity/uniffi-bindgen-cs)
+* [C++ bindings](https://github.com/sorinirimies/uniffi-bindgen-cpp): C++17, including async functions and callback interfaces.
 * [Dart bindings](https://github.com/NiallBunting/uniffi-rs-dart)
 * [Java bindings](https://github.com/IronCoreLabs/uniffi-bindgen-java)
 * [Node bindings](https://github.com/livekit/uniffi-bindgen-node) (early development)
