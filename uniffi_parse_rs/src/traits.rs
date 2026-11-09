@@ -145,9 +145,9 @@ impl TraitMethod {
         self_ty: &uniffi_meta::Type,
         index: usize,
     ) -> Result<uniffi_meta::TraitMethodMetadata> {
-        let (return_type, throws) =
-            self.return_type
-                .return_type_and_throws_for_method(ir, cache, module_path, self_ty)?;
+        let (returns_future, return_type, throws) = self
+            .return_type
+            .return_type_and_throws_for_method(ir, cache, module_path, self_ty)?;
         let item_name = self.ident.unraw().to_string();
         let (name, orig_name) = match &self.attrs.name {
             None => (item_name, None),
@@ -161,7 +161,8 @@ impl TraitMethod {
             name,
             orig_name,
             docstring: self.attrs.docstring.clone(),
-            is_async: self.is_async,
+            is_async: self.is_async || returns_future,
+            desugared_async: returns_future,
             takes_self_by_arc: self.self_arg.takes_self_by_arc(ir, cache, module_path)?,
             inputs: self
                 .args

@@ -128,6 +128,10 @@ pub struct Callable {
     pub name: String,
     pub orig_name: String,
     pub async_data: Option<AsyncData>,
+    /// `true` when async-ness came from a hand-written boxed-future return type rather than
+    /// the `async` keyword / `#[async_trait]`. Only meaningful when `async_data.is_some()`;
+    /// used to emit a matching (late-bound) method signature when generating a Rust trait impl.
+    pub desugared_async: bool,
     pub kind: CallableKind,
     pub arguments: Vec<Argument>,
     pub return_type: ReturnType,
