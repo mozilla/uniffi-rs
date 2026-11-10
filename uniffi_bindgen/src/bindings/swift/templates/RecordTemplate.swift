@@ -1,8 +1,8 @@
 {%- let rec = ci.get_record_definition(name).unwrap() %}
 {%- let uniffi_trait_methods = rec.uniffi_trait_methods() %}
 {%- call swift::docstring(rec, 0) %}{% endcall %}
-{%- if config.record_has_conformances(rec, contains_object_references) %}
-public struct {{ type_name }}: {{ config.conformance_list_for_record(rec, contains_object_references) }} {
+{%- if config.record_has_conformances(rec, type_, ci) %}
+public struct {{ type_name }}: {{ config.conformance_list_for_record(rec, type_, ci) }} {
 {%- else %}
 public struct {{ type_name }} {
 {%- endif %}
