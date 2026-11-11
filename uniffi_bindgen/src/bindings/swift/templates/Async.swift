@@ -28,6 +28,9 @@ fileprivate func uniffiRustCallAsync<F, T>(
         // `uniffiCheckCallStatus` turns into a `CancellationError`.  If the future finished first,
         // `completeFunc` returns its result as usual.
         //
+        // Checking `Task.isCancelled` between polls isn't enough: while the Rust future is pending
+        // the task is suspended, and nothing resumes it until the future wakes up by itself.
+        //
         // The Swift runtime calls `onCancel` at most once, and runs it under the task's status
         // record lock.  Leaving `withTaskCancellationHandler` takes that lock to remove the handler,
         // so `cancelFunc` has always returned before the `freeFunc` call in the `defer` above.
