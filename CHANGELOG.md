@@ -34,7 +34,7 @@
   take the status as a pointer into a reusable per-thread buffer, and a `Structure` is only built
   when the call fails. This removes most of the overhead of a call that passes and returns only
   primitives or objects (see [#3011](https://github.com/mozilla/uniffi-rs/issues/3011)).
-- Swift: Add `[bindings.swift.async_cancellable]` to propagate Swift task cancellation to Rust futures.
+- Swift: Add `bindings.swift.async_cancellable` to propagate Swift task cancellation to Rust futures.
   Cancelling the calling task drops the Rust future and the call throws `CancellationError`.
   Listed callables are declared `async throws`; everything else is unchanged.
   See the "Cancelling async code" section of the futures documentation.

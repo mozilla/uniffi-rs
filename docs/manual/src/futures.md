@@ -123,16 +123,12 @@ Rust futures are cancelled by dropping them, so a future has to be safe to drop 
 If yours are, you can list them in `bindings.swift.async_cancellable`:
 
 ```toml
-[bindings.swift.async_cancellable]
-"my_function" = true
-"MyObject.method" = true
-"MyObject.new" = true
-# Non-cancellable is the default, but it can be written explicitly
-"MyObject.other_method" = false
+[bindings.swift]
+async_cancellable = ["my_function", "MyObject.method", "MyObject.new"]
 ```
 
-Keys use the Rust/UDL names (before any `rename` is applied). It's an error to list a name that
-doesn't exist, isn't async, or is a method of a trait that can be implemented in Swift.
+Like `exclude`, the list uses the Rust/UDL names (before any `rename` is applied). It's an error to
+list a name that doesn't exist, isn't async, or is a method of a trait that can be implemented in Swift.
 
 For each cancellable function, method or constructor:
 

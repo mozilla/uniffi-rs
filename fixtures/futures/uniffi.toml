@@ -7,10 +7,12 @@ package_name = "uniffi.fixture.futures"
 # Kotlin doesn't support async constructors
 exclude = ["Megaphone.new", "FallibleMegaphone.new", "TestObject.new", "UdlMegaphone.new", "CancellableObject.new"]
 
-[bindings.swift.async_cancellable]
-use_shared_resource = true
-cancellable_pending = true
-cancellable_blocking_poll = true
-cancellable_sleep = true
-"CancellableObject.new" = true
-"CancellableObject.pending" = true
+[bindings.swift]
+async_cancellable = [
+    "use_shared_resource",
+    "cancellable_pending",
+    "cancellable_blocking_poll",
+    "cancellable_sleep",
+    "CancellableObject.new",
+    "CancellableObject.pending",
+]
