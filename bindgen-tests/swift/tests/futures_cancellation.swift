@@ -122,3 +122,62 @@ do {
         assert(tester.liveCount() == 0)
     }
 }
+
+// Cancelling a call that's awaiting a Swift callback also cancels the task running the callback.
+final class WaitingCallback: TestAsyncCallbackInterface, @unchecked Sendable {
+    private let lock = NSLock()
+    private var started = false
+    private var cancelled = false
+
+    func noop() async {
+        setStarted()
+        do {
+            try await Task.sleep(nanoseconds: 60_000_000_000)
+        } catch {
+            setCancelled()
+        }
+    }
+
+    func getValue() async -> UInt32 { 0 }
+
+    func setValue(value: UInt32) async {}
+
+    func throwIfEqual(numbers: CallbackInterfaceNumbers) async throws -> CallbackInterfaceNumbers {
+        numbers
+    }
+
+    private func setStarted() {
+        lock.lock()
+        defer { lock.unlock() }
+        started = true
+    }
+
+    private func setCancelled() {
+        lock.lock()
+        defer { lock.unlock() }
+        cancelled = true
+    }
+
+    func isStarted() -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return started
+    }
+
+    func isCancelled() -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return cancelled
+    }
+}
+
+do {
+    let callback = WaitingCallback()
+    let task = Task.detached {
+        try await cancellableInvokeTestAsyncCallbackInterfaceNoop(cbi: callback)
+    }
+    await waitUntil("callback to start") { callback.isStarted() }
+    task.cancel()
+    await expectCancellation(task, "cancelled while awaiting a callback")
+    await waitUntil("callback to be cancelled") { callback.isCancelled() }
+}

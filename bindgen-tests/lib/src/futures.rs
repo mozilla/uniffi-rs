@@ -284,3 +284,13 @@ impl Drop for LiveGuard<'_> {
         self.0.fetch_sub(1, Ordering::SeqCst);
     }
 }
+
+/// Like `invoke_test_async_callback_interface_noop`, but listed in
+/// `bindings.swift.async_cancellable`.  Cancelling it drops the callback's future, which should
+/// cancel the foreign task that's running the callback.
+#[uniffi::export]
+pub async fn cancellable_invoke_test_async_callback_interface_noop(
+    cbi: Box<dyn TestAsyncCallbackInterface>,
+) {
+    cbi.noop().await
+}

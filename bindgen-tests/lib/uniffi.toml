@@ -157,4 +157,7 @@ BindingObjectToRename = "RbObject"
 # Async cancellation
 #
 [bindings.swift]
-async_cancellable = ["CancellationTester.run"]
+async_cancellable = [
+    "CancellationTester.run",
+    "cancellable_invoke_test_async_callback_interface_noop",
+]
