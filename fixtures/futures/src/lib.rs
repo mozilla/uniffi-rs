@@ -7,7 +7,7 @@ use std::{
     pin::Pin,
     sync::{
         atomic::{AtomicBool, AtomicU32, Ordering},
-        Arc, Mutex, MutexGuard,
+        Arc, Condvar, Mutex, MutexGuard,
     },
     task::{Context, Poll, Waker},
     thread,
@@ -556,110 +556,122 @@ impl TestObject {
     }
 }
 
-// Cancellation tests.
-//
-// These callables are listed in `bindings.swift.async_cancellable` in `uniffi.toml`, so cancelling
-// the Swift task that awaits them cancels and drops the Rust future.  The counters let the tests
-// check whether the future was polled and dropped.  The Swift tests that use them run one at a
-// time.
-
-static CANCELLABLE_POLL_COUNT: AtomicU32 = AtomicU32::new(0);
-static CANCELLABLE_DROP_COUNT: AtomicU32 = AtomicU32::new(0);
-static CANCELLABLE_LIVE_COUNT: AtomicU32 = AtomicU32::new(0);
-static CANCELLABLE_IN_POLL: AtomicBool = AtomicBool::new(false);
-
-/// Held by a cancellable future while its body runs, so we can see when the future is dropped.
-struct CancellableGuard;
-
-impl CancellableGuard {
-    fn new() -> Self {
-        CANCELLABLE_LIVE_COUNT.fetch_add(1, Ordering::SeqCst);
-        Self
-    }
-}
-
-impl Drop for CancellableGuard {
-    fn drop(&mut self) {
-        CANCELLABLE_LIVE_COUNT.fetch_sub(1, Ordering::SeqCst);
-        CANCELLABLE_DROP_COUNT.fetch_add(1, Ordering::SeqCst);
-    }
-}
-
-/// A future that's never ready and never wakes up, so only cancellation can end it.
-async fn never_ready(block_first_poll: Duration) {
-    let mut first_poll = true;
-    std::future::poll_fn(|_| {
-        CANCELLABLE_POLL_COUNT.fetch_add(1, Ordering::SeqCst);
-        if first_poll {
-            first_poll = false;
-            CANCELLABLE_IN_POLL.store(true, Ordering::SeqCst);
-            thread::sleep(block_first_poll);
-            CANCELLABLE_IN_POLL.store(false, Ordering::SeqCst);
-        }
-        Poll::<()>::Pending
-    })
-    .await
-}
-
-/// Never completes unless cancelled.  It can't fail, but it's cancellable, so Swift declares it
-/// `async throws`.
-#[uniffi::export]
-pub async fn cancellable_pending() -> bool {
-    let _guard = CancellableGuard::new();
-    never_ready(Duration::ZERO).await;
-    true
-}
-
-/// Like `cancellable_pending`, but the first poll blocks the polling thread for `block_ms`, so
-/// the test can cancel while that poll is in progress.
-#[uniffi::export]
-pub async fn cancellable_blocking_poll(block_ms: u16) -> Result<bool, MyError> {
-    let _guard = CancellableGuard::new();
-    never_ready(Duration::from_millis(block_ms.into())).await;
-    Ok(true)
-}
-
-/// Completes after `ms` milliseconds, unless cancelled first.
-#[uniffi::export(async_runtime = "tokio")]
-pub async fn cancellable_sleep(ms: u16) -> bool {
-    let _guard = CancellableGuard::new();
-    tokio::time::sleep(Duration::from_millis(ms.into())).await;
-    true
-}
-
-#[uniffi::export]
-pub fn cancellable_poll_count() -> u32 {
-    CANCELLABLE_POLL_COUNT.load(Ordering::SeqCst)
-}
-
-#[uniffi::export]
-pub fn cancellable_drop_count() -> u32 {
-    CANCELLABLE_DROP_COUNT.load(Ordering::SeqCst)
-}
-
-#[uniffi::export]
-pub fn cancellable_live_count() -> u32 {
-    CANCELLABLE_LIVE_COUNT.load(Ordering::SeqCst)
-}
-
-#[uniffi::export]
-pub fn cancellable_in_poll() -> bool {
-    CANCELLABLE_IN_POLL.load(Ordering::SeqCst)
-}
-
-/// An object with cancellable async methods and constructors.
+/// Tests cancelling an async call.
+///
+/// `run` is listed in `bindings.swift.async_cancellable` in `uniffi.toml`, so cancelling the Swift
+/// task that awaits it cancels and drops the Rust future.  Each instance records what happened to
+/// its own futures, so tests that use separate instances can't interfere with each other.
 #[derive(uniffi::Object)]
-pub struct CancellableObject;
+pub struct CancellationTester {
+    /// Whether the first poll of `run` blocks until `release_poll` is called
+    block_first_poll: bool,
+    /// How long after its first poll `run` completes.  `None` means only cancellation ends it.
+    complete_after: Option<Duration>,
+    poll_count: AtomicU32,
+    /// Number of `run` futures that have started and not been dropped yet
+    live_count: AtomicU32,
+    in_poll: AtomicBool,
+    poll_released: Mutex<bool>,
+    poll_released_cond: Condvar,
+}
 
 #[uniffi::export]
-impl CancellableObject {
+impl CancellationTester {
     #[uniffi::constructor]
-    pub async fn new() -> Arc<Self> {
-        Arc::new(Self)
+    pub fn new(block_first_poll: bool, complete_after_ms: Option<u32>) -> Arc<Self> {
+        Arc::new(Self {
+            block_first_poll,
+            complete_after: complete_after_ms.map(|ms| Duration::from_millis(ms.into())),
+            poll_count: AtomicU32::new(0),
+            live_count: AtomicU32::new(0),
+            in_poll: AtomicBool::new(false),
+            poll_released: Mutex::new(false),
+            poll_released_cond: Condvar::new(),
+        })
     }
 
-    pub async fn pending(&self) -> bool {
-        cancellable_pending().await
+    /// Runs until it completes or is cancelled.
+    ///
+    /// It can't fail, but it's cancellable, so Swift declares it `async throws`.
+    pub async fn run(&self) -> bool {
+        let _live = LiveGuard::new(&self.live_count);
+        let completed = Arc::new(AtomicBool::new(false));
+        let mut first_poll = true;
+        std::future::poll_fn(|cx| {
+            self.poll_count.fetch_add(1, Ordering::SeqCst);
+            if first_poll {
+                first_poll = false;
+                if self.block_first_poll {
+                    self.block_until_released();
+                }
+                if let Some(delay) = self.complete_after {
+                    let completed = Arc::clone(&completed);
+                    let waker = cx.waker().clone();
+                    thread::spawn(move || {
+                        thread::sleep(delay);
+                        completed.store(true, Ordering::SeqCst);
+                        waker.wake();
+                    });
+                }
+            }
+            if completed.load(Ordering::SeqCst) {
+                Poll::Ready(())
+            } else {
+                Poll::Pending
+            }
+        })
+        .await;
+        true
+    }
+
+    /// Let a first poll that's blocked because of `block_first_poll` return
+    pub fn release_poll(&self) {
+        *self.poll_released.lock().unwrap() = true;
+        self.poll_released_cond.notify_all();
+    }
+
+    pub fn poll_count(&self) -> u32 {
+        self.poll_count.load(Ordering::SeqCst)
+    }
+
+    pub fn live_count(&self) -> u32 {
+        self.live_count.load(Ordering::SeqCst)
+    }
+
+    pub fn is_in_poll(&self) -> bool {
+        self.in_poll.load(Ordering::SeqCst)
+    }
+}
+
+impl CancellationTester {
+    fn block_until_released(&self) {
+        self.in_poll.store(true, Ordering::SeqCst);
+        // The timeout stops a failing test from blocking the thread forever
+        let _ = self
+            .poll_released_cond
+            .wait_timeout_while(
+                self.poll_released.lock().unwrap(),
+                Duration::from_secs(10),
+                |released| !*released,
+            )
+            .unwrap();
+        self.in_poll.store(false, Ordering::SeqCst);
+    }
+}
+
+/// Held by a `CancellationTester::run` future while its body runs, to see when it's dropped
+struct LiveGuard<'a>(&'a AtomicU32);
+
+impl<'a> LiveGuard<'a> {
+    fn new(live_count: &'a AtomicU32) -> Self {
+        live_count.fetch_add(1, Ordering::SeqCst);
+        Self(live_count)
+    }
+}
+
+impl Drop for LiveGuard<'_> {
+    fn drop(&mut self) {
+        self.0.fetch_sub(1, Ordering::SeqCst);
     }
 }
 

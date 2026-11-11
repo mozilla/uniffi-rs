@@ -458,73 +458,80 @@ Task {
 	counter.leave()
 }
 
-// Test cancelling the callables listed in `bindings.swift.async_cancellable`.
+// Test cancelling `CancellationTester.run`, which is listed in `bindings.swift.async_cancellable`.
 //
-// These share counters, so they run one after another in a single task.
+// Each case uses its own tester, which counts the polls and live futures of its own calls.
 counter.enter()
 Task {
-	// Cancel before the first poll: the task is already cancelled when the call starts, so the
-	// cancellation handler runs before the Rust future is polled.  Rust never polls the inner
-	// future and the call throws `CancellationError`.
+	// Cancelled before the first poll: the task is already cancelled when the call starts, so the
+	// cancellation handler runs before Swift polls the Rust future.  Rust never polls the inner future.
 	do {
-		let polls = cancellablePollCount()
-		let task = Task { () async throws -> Bool in
+		let tester = CancellationTester(blockFirstPoll: false, completeAfterMs: nil)
+		let task = Task.detached { () async throws -> Bool in
 			withUnsafeCurrentTask { $0!.cancel() }
-			return try await cancellablePending()
+			return try await tester.run()
 		}
-		await expectCancellation(task, "cancel before first poll")
-		assert(cancellablePollCount() == polls)
-		assert(cancellableLiveCount() == 0)
+		await expectCancellation(task, "cancelled before first poll")
+		assert(tester.pollCount() == 0)
+		assert(tester.liveCount() == 0)
 	}
 
-	// Cancel a pending future: Rust is waiting for a wakeup that never comes, so only
-	// cancellation can finish the call.  The Rust future is dropped.
+	// Cancelled while pending: Rust is waiting for a wakeup that never comes, so only the cancellation
+	// can end the call.
 	do {
-		let drops = cancellableDropCount()
-		let task = Task { try await cancellablePending() }
-		await waitUntil("first poll") { cancellableLiveCount() == 1 }
+		let tester = CancellationTester(blockFirstPoll: false, completeAfterMs: nil)
+		let task = Task.detached { try await tester.run() }
+		await waitUntil("first poll") { tester.liveCount() == 1 }
 		task.cancel()
-		await expectCancellation(task, "cancel pending future")
-		assert(cancellableDropCount() == drops + 1)
-		assert(cancellableLiveCount() == 0)
+		await expectCancellation(task, "cancelled while pending")
+		assert(tester.liveCount() == 0)
 	}
 
-	// Cancel during a poll: the first poll blocks for 500ms.  `Task.cancel()` runs the
-	// cancellation handler synchronously, so `rust_future_cancel` runs while Rust is still inside
-	// that poll.  When the poll returns `Pending`, Rust sees that the future was cancelled and
-	// resumes the poll loop with READY.
+	// Cancelled during a poll: `Task.cancel()` runs the cancellation handler synchronously, so
+	// `rust_future_cancel` runs while Rust is still inside the first poll.  When that poll returns
+	// `Pending`, Rust sees the cancellation and finishes the call without polling again.
 	do {
-		let drops = cancellableDropCount()
-		let task = Task { try await cancellableBlockingPoll(blockMs: 500) }
-		await waitUntil("poll in progress") { cancellableInPoll() }
+		let tester = CancellationTester(blockFirstPoll: true, completeAfterMs: nil)
+		let task = Task.detached { try await tester.run() }
+		await waitUntil("poll in progress") { tester.isInPoll() }
 		task.cancel()
-		assert(cancellableInPoll(), "the cancel should land while the poll is still running")
-		await expectCancellation(task, "cancel during poll")
-		assert(cancellableDropCount() == drops + 1)
-		assert(cancellableLiveCount() == 0)
+		assert(tester.isInPoll())
+		tester.releasePoll()
+		await expectCancellation(task, "cancelled during poll")
+		assert(tester.pollCount() == 1)
+		assert(tester.liveCount() == 0)
 	}
 
-	// Repeated cancel: cancelling again, including after the call finished, is harmless.  Swift
-	// runs the cancellation handler at most once, and `rust_future_cancel` is idempotent anyway.
+	// Cancelled repeatedly, including after the call finished.  Swift runs the cancellation handler at
+	// most once and `rust_future_cancel` is idempotent anyway.
 	do {
-		let drops = cancellableDropCount()
-		let task = Task { try await cancellablePending() }
-		await waitUntil("first poll") { cancellableLiveCount() == 1 }
+		let tester = CancellationTester(blockFirstPoll: false, completeAfterMs: nil)
+		let task = Task.detached { try await tester.run() }
+		await waitUntil("first poll") { tester.liveCount() == 1 }
 		task.cancel()
 		task.cancel()
-		await expectCancellation(task, "repeated cancel")
+		await expectCancellation(task, "cancelled repeatedly")
 		task.cancel()
-		assert(cancellableDropCount() == drops + 1)
-		assert(cancellableLiveCount() == 0)
+		assert(tester.liveCount() == 0)
 	}
 
-	// Cancel racing completion and `rust_future_free`: cancel calls that finish around the time
-	// they're cancelled.  Each call must either return its value or throw `CancellationError`,
-	// and every Rust future must be dropped.
+	// Not cancelled: the call returns its value as usual.
 	do {
+		let tester = CancellationTester(blockFirstPoll: false, completeAfterMs: 1)
+		let completed = try! await tester.run()
+		assert(completed)
+		assert(tester.liveCount() == 0)
+	}
+
+	// Cancellation racing completion and `rust_future_free`: cancel calls that complete around the time
+	// they're cancelled.  Each call must either return its value or throw `CancellationError`, and
+	// every Rust future must be dropped.
+	do {
+		let testers = (0..<3).map { CancellationTester(blockFirstPoll: false, completeAfterMs: UInt32($0)) }
 		var tasks: [Task<Bool, Error>] = []
 		for i in 0..<300 {
-			tasks.append(Task { try await cancellableSleep(ms: UInt16(i % 3)) })
+			let tester = testers[i % testers.count]
+			tasks.append(Task.detached { try await tester.run() })
 		}
 		for (i, task) in tasks.enumerated() {
 			if i % 10 == 0 {
@@ -532,31 +539,18 @@ Task {
 			}
 			task.cancel()
 		}
-		var completed = 0
-		var cancelled = 0
 		for task in tasks {
 			do {
-				let value = try await task.value
-				assert(value)
-				completed += 1
+				let completed = try await task.value
+				assert(completed)
 			} catch is CancellationError {
-				cancelled += 1
 			} catch {
-				fatalError("cancel race: unexpected error \(error)")
+				fatalError("cancellation race: unexpected error \(error)")
 			}
 		}
-		assert(completed + cancelled == tasks.count)
-		assert(cancellableLiveCount() == 0)
-	}
-
-	// Cancellable async constructor and method.
-	do {
-		let obj = try await CancellableObject()
-		let task = Task { try await obj.pending() }
-		await waitUntil("first poll") { cancellableLiveCount() == 1 }
-		task.cancel()
-		await expectCancellation(task, "cancellable method")
-		assert(cancellableLiveCount() == 0)
+		for tester in testers {
+			assert(tester.liveCount() == 0)
+		}
 	}
 
 	counter.leave()
