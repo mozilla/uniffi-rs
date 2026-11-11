@@ -1,6 +1,6 @@
 {%- if !callable.is_async %}
 #[unsafe(no_mangle)]
-unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
+unsafe extern "system" fn Java_{{ package.jni_symbol_name() }}_uniffi_Scaffolding_{{ jni_method_name }}(
     uniffi_env: *mut uniffi_jni::JNIEnv,
     _: *mut uniffi_jni::jclass,
     {%- for ffi_arg in callable.ffi_arguments_including_receiver() %}
@@ -30,7 +30,7 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
                     // If we can, downcast the anyhow error the callable error type and throw that.
                     let uniffi_err = uniffi_err.downcast::<{{ throws_type.type_rs }}>()?;
                     let uniffi_err_deconstructed = {{ throws_type.lower_fn_rs() }}(uniffi_env, uniffi_err)?;
-                    let uniffi_err_obj = {{ throws_type.lift_kt_from_rust_var() }}.call_object(
+                    let uniffi_err_obj = {{ package.lift_kt_from_rust_var(throws_type) }}.call_object(
                         uniffi_env,
                         [
                             {%- for (var, ffi_type) in throws_type.ffi_values_rs("uniffi_err_deconstructed") %}
@@ -97,7 +97,7 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
                 uniffi::Result::Ok(v) => v,
                 uniffi::Result::Err(uniffi_err) => {
                     let uniffi_err_deconstructed = {{ throws_type.lower_fn_rs() }}(uniffi_env, uniffi_err)?;
-                    let uniffi_err_obj = {{ throws_type.lift_kt_from_rust_var() }}.call_object(
+                    let uniffi_err_obj = {{ package.lift_kt_from_rust_var(throws_type) }}.call_object(
                         uniffi_env,
                         [
                             {%- for (var, ffi_type) in throws_type.ffi_values_rs("uniffi_err_deconstructed") %}
@@ -121,7 +121,7 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
 
             {%- when ReturnFfi::Deconstruct { type_node, ffi_types } %}
             let uniffi_return_deconstructed = {{ type_node.lower_fn_rs() }}(uniffi_env, uniffi_return)?;
-            let uniffi_return_obj = {{ type_node.lift_kt_from_rust_var() }}.call_object(
+            let uniffi_return_obj = {{ package.lift_kt_from_rust_var(type_node) }}.call_object(
                 uniffi_env,
                 [
                     {%- for ffi_type in ffi_types %}
@@ -141,7 +141,7 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
 
 {% else %}
 #[unsafe(no_mangle)]
-unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
+unsafe extern "system" fn Java_{{ package.jni_symbol_name() }}_uniffi_Scaffolding_{{ jni_method_name }}(
     uniffi_env: *mut uniffi_jni::JNIEnv,
     _: *mut uniffi_jni::jclass,
     {%- for ffi_arg in callable.ffi_arguments_including_receiver() %}
@@ -165,7 +165,7 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ jni_method_name }}(
                     // If we can, downcast the anyhow error the callable error type and throw that.
                     let uniffi_err = uniffi_err.downcast::<{{ throws_type.type_rs }}>()?;
                     let uniffi_err_deconstructed = {{ throws_type.lower_fn_rs() }}(uniffi_env, uniffi_err)?;
-                    let uniffi_err_obj = {{ throws_type.lift_kt_from_rust_var() }}.call_object(
+                    let uniffi_err_obj = {{ package.lift_kt_from_rust_var(throws_type) }}.call_object(
                         uniffi_env,
                         [
                             {%- for (var, ffi_type) in throws_type.ffi_values_rs("uniffi_err_deconstructed") %}

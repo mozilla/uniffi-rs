@@ -1541,9 +1541,9 @@ pub mod tests {
     fn test_udl_types() {
         let mut ir = Ir::new_for_test(&["udl_types", "udl_types_crate2"]);
         let mut cache = LookupCache::default();
-        ir.add_udl_metadata(
-            "udl_types",
-            vec![
+        ir.lookup_root_module_mut("udl_types")
+            .unwrap()
+            .add_udl_metadata(vec![
                 uniffi_meta::RecordMetadata {
                     module_path: "udl_types".into(),
                     name: "UdlRecord".into(),
@@ -1577,9 +1577,7 @@ pub mod tests {
                     docstring: None,
                 }
                 .into(),
-            ],
-        )
-        .unwrap();
+            ]);
 
         assert_eq!(
             run_resolve_uniffi_meta_type(&ir, &mut cache, "udl_types::mod1", "UdlRecord", None),
@@ -1706,18 +1704,16 @@ pub mod tests {
             env.clone(),
         )
         .unwrap();
-        ir.add_udl_metadata(
-            "types",
-            vec![uniffi_meta::CustomTypeMetadata {
+        ir.lookup_root_module_mut("types")
+            .unwrap()
+            .add_udl_metadata(vec![uniffi_meta::CustomTypeMetadata {
                 module_path: "types".into(),
                 name: "Guid".into(),
                 orig_name: None,
                 builtin: uniffi_meta::Type::UInt64,
                 docstring: None,
             }
-            .into()],
-        )
-        .unwrap();
+            .into()]);
         ir.resolve_items().expect("resolve_items failed");
 
         let mut cache = LookupCache::default();
@@ -1896,9 +1892,9 @@ pub mod tests {
     fn test_raw_ident() {
         let mut ir = Ir::new_for_test(&["raw_idents"]);
         let mut cache = LookupCache::default();
-        ir.add_udl_metadata(
-            "raw_idents",
-            vec![uniffi_meta::RecordMetadata {
+        ir.lookup_root_module_mut("raw_idents")
+            .unwrap()
+            .add_udl_metadata(vec![uniffi_meta::RecordMetadata {
                 module_path: "raw_idents".into(),
                 name: "Record".into(),
                 orig_name: None,
@@ -1906,9 +1902,7 @@ pub mod tests {
                 fields: vec![],
                 docstring: None,
             }
-            .into()],
-        )
-        .unwrap();
+            .into()]);
 
         assert_eq!(
             run_resolve_uniffi_meta_type(&ir, &mut cache, "raw_idents", "RecordWrapper", None),

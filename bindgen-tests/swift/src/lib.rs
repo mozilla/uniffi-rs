@@ -119,6 +119,11 @@ mod test {
         run_tests(test_dir(), "tests/rust_traits.swift");
     }
 
+    #[test]
+    fn test_udl() {
+        run_tests(test_dir(), "tests/udl.swift");
+    }
+
     fn test_dir() -> &'static Utf8Path {
         static TEST_TEMPDIR: OnceLock<Utf8PathBuf> = OnceLock::new();
         TEST_TEMPDIR.get_or_init(|| {
@@ -148,7 +153,7 @@ mod test {
         let mut f = fs::File::create(tempdir.join("combined.modulemap")).unwrap();
         let source_filenames = [
             "uniffi_bindgen_testsFFI.modulemap",
-            "uniffi_bindgen_tests_external_types_sourceFFI.modulemap",
+            "ext_types_renamedFFI.modulemap",
             "uniffi_bindgen_tests_mid_typesFFI.modulemap",
         ];
         for filename in source_filenames {
@@ -179,7 +184,7 @@ mod test {
             .arg("-L")
             .arg(tempdir)
             .arg("uniffi_bindgen_tests.swift")
-            .arg("uniffi_bindgen_tests_external_types_source.swift")
+            .arg("ext_types_renamed.swift")
             .arg("uniffi_bindgen_tests_mid_types.swift");
         let status = command
             .spawn()

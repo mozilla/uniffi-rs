@@ -128,6 +128,7 @@ fn record_ffi_converter_impl(
                 ::std::result::Result::Ok(Self { #try_read_fields })
             }
 
+            #[allow(clippy::large_const_arrays)]
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_RECORD)
                 .concat_str(module_path!())
                 .concat_str(#name);

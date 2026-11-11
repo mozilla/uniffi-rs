@@ -1,8 +1,9 @@
-{%- for result in root.kotlin_sync_callable_results() %}
+{%- for package in root.packages %}
+{%- for result in package.kotlin_sync_callable_results() %}
 {%- if let Some(return_type) = result.return_type %}
 {%- if !return_type.lowers_to_primitive() %}
 #[unsafe(no_mangle)]
-unsafe extern "system" fn Java_uniffi_Scaffolding_{{ result.set_callback_return_fn() }}(
+unsafe extern "system" fn Java_{{ package.jni_symbol_name() }}_uniffi_Scaffolding_{{ result.set_callback_return_fn() }}(
     uniffi_env: *mut uniffi_jni::JNIEnv,
     _: *mut uniffi_jni::jclass,
     result_handle: i64,
@@ -36,7 +37,7 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ result.set_callback_return_
 
 {%- if let Some(throws_type) = result.throws_type %}
 #[unsafe(no_mangle)]
-unsafe extern "system" fn Java_uniffi_Scaffolding_{{ result.set_callback_err_fn() }}(
+unsafe extern "system" fn Java_{{ package.jni_symbol_name() }}_uniffi_Scaffolding_{{ result.set_callback_err_fn() }}(
     uniffi_env: *mut uniffi_jni::JNIEnv,
     _: *mut uniffi_jni::jclass,
     result_handle: i64,
@@ -65,4 +66,5 @@ unsafe extern "system" fn Java_uniffi_Scaffolding_{{ result.set_callback_err_fn(
 }
 {%- endif %}
 
+{%- endfor %}
 {%- endfor %}

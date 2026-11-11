@@ -155,6 +155,7 @@ impl TestTraitInterface for TestTraitInterfaceImpl {
 
 /// Async version of `TestTraitInterface`
 #[uniffi::export(with_foreign)]
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 pub trait AsyncTestTraitInterface: Send + Sync {
     /// No-op function, this tests if that we can make calls at all
@@ -208,6 +209,7 @@ pub async fn invoke_async_test_trait_interface_throw_if_equal(
     interface.throw_if_equal(numbers).await
 }
 
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 impl AsyncTestTraitInterface for TestTraitInterfaceImpl {
     async fn noop(&self) {}

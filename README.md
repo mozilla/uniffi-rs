@@ -50,16 +50,24 @@ Other tools we know of which try and solve a similarly shaped problem are:
 
 ## Third-party foreign language bindings
 
-* [Javascript bindings](https://github.com/jhugman/uniffi-bindgen-react-native): running in a web page, targeting WASM; and React Native targeting Android, iOS. The repository contains tooling to generate bindings for [Hermes](https://github.com/facebook/hermes), [creating Turbo Modules](https://reactnative.dev/blog/2024/10/23/the-new-architecture-is-here#new-native-modules), and for creating a [`wasm-bindgen` bindings crate](https://rustwasm.github.io/wasm-bindgen).
-* [Kotlin Multiplatform support (Gobley)](https://github.com/gobley/gobley). The repository contains Kotlin Multiplatform bindings generation for UniFFI, letting you target both JVM and Native.
-* [Kotlin Multiplatform](https://github.com/UbiqueInnovation/uniffi-kotlin-multiplatform-bindings). A Gradle plugin and bindings generator for Kotlin Multiplatform. It supports multi-module projects, where several Rust crates can be published as individual Kotlin Multiplatform libraries that share common code.
-* [Go bindings](https://github.com/NordSecurity/uniffi-bindgen-go)
+* [C bindings](https://github.com/sorinirimies/uniffi-bindgen-c): C11 headers and sources, including async functions and callback interfaces.
 * [C# bindings](https://github.com/NordSecurity/uniffi-bindgen-cs)
+* [C++ bindings](https://github.com/sorinirimies/uniffi-bindgen-cpp): C++17, including async functions and callback interfaces.
 * [Dart bindings](https://github.com/NiallBunting/uniffi-rs-dart)
-* [Java bindings](https://github.com/IronCoreLabs/uniffi-bindgen-java)
-* [Node bindings](https://github.com/livekit/uniffi-bindgen-node) (early development)
-* [Node bindings](https://github.com/criccomini/uniffi-bindgen-node-js)
+* [Go bindings](https://github.com/NordSecurity/uniffi-bindgen-go)
 * [Haskell bindings](https://github.com/mercury/uniffi-bindgen-haskell)
+* [Java bindings](https://github.com/IronCoreLabs/uniffi-bindgen-java)
+* [Kotlin Multiplatform support (Gobley)](https://github.com/gobley/gobley): The repository contains Kotlin Multiplatform bindings generation for UniFFI, letting you target both JVM and Native.
+* [Kotlin Multiplatform](https://github.com/UbiqueInnovation/uniffi-kotlin-multiplatform-bindings). A Gradle plugin and bindings generator for Kotlin Multiplatform. It supports multi-module projects, where several Rust crates can be published as individual Kotlin Multiplatform libraries that share common code.
+* [Lua bindings](https://github.com/sorinirimies/uniffi-bindgen-lua): Lua C modules for Lua 5.1 to 5.5 and LuaJIT, including async functions and callback interfaces.
+* [Zig bindings](https://github.com/sorinirimies/uniffi-bindgen-zig): Zig 0.17, including async functions and callback interfaces.
+
+### JavaScript
+
+* [Desktop Firefox](https://github.com/mozilla-firefox/firefox/tree/main/toolkit/components/uniffi-bindgen-gecko-js)
+* [Javascript WASM/React Native](https://github.com/jhugman/uniffi-bindgen-react-native): running in a web page, targeting WASM; and React Native targeting Android, iOS. The repository contains tooling to generate bindings for [Hermes](https://github.com/facebook/hermes), [creating Turbo Modules](https://reactnative.dev/blog/2024/10/23/the-new-architecture-is-here#new-native-modules), and for creating a [`wasm-bindgen` bindings crate](https://rustwasm.github.io/wasm-bindgen).
+* [Node bindings](https://github.com/criccomini/uniffi-bindgen-node-js): ESM packages via `koffi`.
+* [Node bindings](https://github.com/livekit/uniffi-bindgen-node): (inactive?)
 
 ### External resources
 

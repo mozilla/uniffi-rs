@@ -4,14 +4,16 @@ package {{ package.name }}
 import {{ import }}
 {%- endfor %}
 
+{%- for int in package.interfaces %}
+{% include "Interface.kt" %}
+{%- endfor %}
+
 {%- for type_def in package.type_definitions %}
 {%- match type_def %}
 {%- when TypeDefinition::Record(rec) %}
 {% include "Record.kt" %}
 {%- when TypeDefinition::Enum(en) %}
 {% include "Enum.kt" %}
-{%- when TypeDefinition::Interface(int) %}
-{% include "Interface.kt" %}
 {%- when TypeDefinition::Class(cls) %}
 {% include "Class.kt" %}
 {%- when TypeDefinition::Custom(custom) %}
@@ -22,8 +24,8 @@ import {{ import }}
 {%- when TypeDefinition::Sequence(_) %}
 {%- when TypeDefinition::Map(_) %}
 {%- when TypeDefinition::Set(_) %}
-{%- when TypeDefinition::Duration(_) %}
-{%- when TypeDefinition::Timestamp(_) %}
+{%- when TypeDefinition::Simple(_) %}
+{%- when TypeDefinition::External(_) %}
 {%- endmatch %}
 {%- endfor %}
 

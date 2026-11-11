@@ -262,6 +262,7 @@ fn enum_or_error_ffi_converter_impl(
                 #try_read_impl
             }
 
+            #[allow(clippy::large_const_arrays)]
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(#metadata_type_code)
                 .concat_str(module_path!())
                 .concat_str(#name);

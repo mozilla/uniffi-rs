@@ -208,7 +208,7 @@ impl Object {
     pub fn ffi_init_callback(&self) -> &FfiFunction {
         self.ffi_init_callback
             .as_ref()
-            .unwrap_or_else(|| panic!("No ffi_init_callback set for {}", &self.name))
+            .unwrap_or_else(|| panic!("No ffi_init_callback set for {}", self.name))
     }
 
     pub fn docstring(&self) -> Option<&str> {

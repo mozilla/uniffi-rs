@@ -7,7 +7,7 @@
 
 use anyhow::{Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
-use cargo_metadata::{Dependency, Package};
+use cargo_metadata::Package;
 use std::collections::{HashMap, HashSet};
 
 use crate::{bindgen_paths::SourceCrate, BindgenPathsLayer, CargoMetadataOptions};
@@ -19,6 +19,7 @@ pub struct CrateConfigSupplier {
     /// Map library target names to Package instances
     lib_to_package_map: HashMap<String, Package>,
     options: CargoMetadataOptions,
+    build_script_mode: bool,
 }
 
 impl CrateConfigSupplier {
@@ -59,15 +60,28 @@ impl CrateConfigSupplier {
                 .collect(),
             lib_to_package_map,
             options,
+            build_script_mode: false,
         }
     }
 
     fn get_package(&self, crate_name: &str) -> Option<&Package> {
-        self.package_map.get(&crate_name.replace("-", "_"))
+        self.package_map
+            .get(&crate_name.replace("-", "_"))
+            .inspect(|p| {
+                if self.build_script_mode {
+                    println!("cargo::rerun-if-changed={}", p.manifest_path)
+                }
+            })
     }
 
     fn get_package_by_library_name(&self, library_name: &str) -> Option<&Package> {
-        self.lib_to_package_map.get(&library_name.replace("-", "_"))
+        self.lib_to_package_map
+            .get(&library_name.replace("-", "_"))
+            .inspect(|p| {
+                if self.build_script_mode {
+                    println!("cargo::rerun-if-changed={}", p.manifest_path)
+                }
+            })
     }
 
     fn get_crate_root(&self, crate_name: &str) -> Option<&Utf8Path> {
@@ -111,6 +125,7 @@ impl BindgenPathsLayer for CrateConfigSupplier {
         // Source crates found
         let mut found = vec![];
 
+        let mut exclude = HashSet::new();
         while let Some(crate_name) = todo_stack.pop() {
             if !seen.insert(crate_name) {
                 continue;
@@ -118,15 +133,16 @@ impl BindgenPathsLayer for CrateConfigSupplier {
             let Some(package) = self.get_package(crate_name) else {
                 continue;
             };
-            if should_parse_package(package) {
-                if let Some(src_path) = find_src_lib(package) {
-                    found.push((package.name.to_string(), src_path.clone()));
+            if crate_name == source_crate {
+                exclude = build_exclude(package);
+            }
+            if should_parse_package(package, &exclude) {
+                if let Some((crate_name, src_path)) = find_src_lib(package) {
+                    found.push((package.name.to_string(), crate_name, src_path.clone()));
                 }
             }
 
-            let dependencies = dependencies_to_parse(package);
-
-            for dep in dependencies.iter() {
+            for dep in package.dependencies.iter() {
                 feature_map
                     .entry(dep.name.as_str())
                     .or_default()
@@ -163,7 +179,7 @@ impl BindgenPathsLayer for CrateConfigSupplier {
                 }
             }
 
-            for dep in dependencies.iter() {
+            for dep in package.dependencies.iter() {
                 if dep.uses_default_features {
                     enable_default_features.insert(dep.name.as_str());
                 }
@@ -174,28 +190,33 @@ impl BindgenPathsLayer for CrateConfigSupplier {
         Some(
             found
                 .into_iter()
-                .map(|(name, src_path)| {
+                .map(|(package_name, crate_name, src_path)| {
                     let mut features = vec![];
-                    if let Some(f) = feature_map.get(name.as_str()) {
+                    if let Some(f) = feature_map.get(package_name.as_str()) {
                         features.extend(f.iter().map(|s| s.to_string()));
                     }
-                    if enable_default_features.contains(name.as_str()) {
-                        if let Some(f) = default_feature_map.get(name.as_str()) {
+                    if enable_default_features.contains(package_name.as_str()) {
+                        if let Some(f) = default_feature_map.get(package_name.as_str()) {
                             features.extend(f.iter().map(|s| s.to_string()));
                         }
                     }
                     SourceCrate {
+                        package_name,
+                        crate_name,
                         features,
-                        name,
                         src_path,
                     }
                 })
                 .collect(),
         )
     }
+
+    fn set_build_script_mode(&mut self, mode: bool) {
+        self.build_script_mode = mode;
+    }
 }
 
-fn should_parse_package(package: &Package) -> bool {
+fn should_parse_package(package: &Package, exclude: &HashSet<String>) -> bool {
     let skip_parsing = package
         .metadata
         .pointer("/uniffi/skip_parsing")
@@ -209,39 +230,40 @@ fn should_parse_package(package: &Package) -> bool {
         })
         .unwrap_or_default();
     let depends_on_uniffi = package.dependencies.iter().any(|d| d.name == "uniffi");
+    let excluded = exclude.contains(&package.name.replace("-", "_"));
 
-    depends_on_uniffi && !skip_parsing
+    depends_on_uniffi && !skip_parsing && !excluded
 }
 
-fn dependencies_to_parse(package: &Package) -> Vec<&Dependency> {
-    let mut skip_set = HashSet::new();
-    if let Some(value) = package.metadata.pointer("/uniffi/skip_dependencies") {
+fn build_exclude(package: &Package) -> HashSet<String> {
+    let mut exclude = HashSet::new();
+    if let Some(value) = package.metadata.pointer("/uniffi/exclude_packages") {
         let list = value.as_array().unwrap_or_else(|| {
             panic!(
-                "uniffi::skip_dependencies not a list (package: {})",
+                "uniffi::exclude_packages not a list (package: {})",
                 package.name
             )
         });
         for v in list {
-            skip_set.insert(v.as_str().unwrap_or_else(|| {
-                panic!(
-                    "uniffi::skip_dependencies not a list of strings (package: {})",
-                    package.name
-                )
-            }));
+            exclude.insert(
+                v.as_str()
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "uniffi::exclude_packages not a list of strings (package: {})",
+                            package.name
+                        )
+                    })
+                    .replace("-", "_"),
+            );
         }
     }
-    package
-        .dependencies
-        .iter()
-        .filter(move |d| !skip_set.contains(d.name.as_str()))
-        .collect()
+    exclude
 }
 
-fn find_src_lib(package: &Package) -> Option<Utf8PathBuf> {
+fn find_src_lib(package: &Package) -> Option<(String, Utf8PathBuf)> {
     package
         .targets
         .iter()
         .find(|t| t.is_lib() || t.is_rlib() || t.is_cdylib() || t.is_staticlib())
-        .map(|t| t.src_path.clone())
+        .map(|t| (t.name.clone(), t.src_path.clone()))
 }

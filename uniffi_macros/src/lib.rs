@@ -123,6 +123,13 @@ pub fn export_for_udl(attrs: TokenStream, input: TokenStream) -> TokenStream {
     do_export(attrs, input, false, true)
 }
 
+#[doc(hidden)]
+#[proc_macro_attribute]
+#[cfg(not(feature = "scaffolding"))]
+pub fn export_for_udl(_attrs: TokenStream, _input: TokenStream) -> TokenStream {
+    TokenStream::default()
+}
+
 // This is for attributes on items we also `udl_derive`. It always keeps the input tokens
 // for `udl_derive` to consume (and then discard!)
 #[cfg(feature = "scaffolding")]
@@ -250,6 +257,13 @@ pub fn udl_remote(attrs: TokenStream, input: TokenStream) -> TokenStream {
     .into()
 }
 
+#[doc(hidden)]
+#[proc_macro_attribute]
+#[cfg(not(feature = "scaffolding"))]
+pub fn udl_remote(_attrs: TokenStream, _input: TokenStream) -> TokenStream {
+    TokenStream::default()
+}
+
 /// Derive items for UDL mode
 ///
 /// The Askama templates generate placeholder items wrapped with the `#[udl_derive(<kind>)]`
@@ -269,6 +283,13 @@ pub fn udl_derive(attrs: TokenStream, input: TokenStream) -> TokenStream {
     )
     .unwrap_or_else(syn::Error::into_compile_error)
     .into()
+}
+
+#[doc(hidden)]
+#[proc_macro_attribute]
+#[cfg(not(feature = "scaffolding"))]
+pub fn udl_derive(_attrs: TokenStream, _input: TokenStream) -> TokenStream {
+    TokenStream::default()
 }
 
 /// A helper macro to include generated component scaffolding.

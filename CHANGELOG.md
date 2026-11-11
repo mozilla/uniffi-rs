@@ -6,6 +6,12 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### ⚠️ Breaking Changes ⚠️
+- When the Rust package name and library name differ, foreign bindings now default to using the
+  library name as their module name rather than the package name.  The new default matches the name
+  in `use` statements for Rust.  Use configuration options like `bindings.kotlin.package_name` or
+  the `bindings.python.module_name` to override the default.
+
 ### What's New?
 - Added `uniffi_parse_rs`, which generates metadata by parsing Rust sources directly.
   This allows using the macros syntax to describe your interface, without requiring you to build the
@@ -18,10 +24,16 @@
   See [#2911](https://github.com/mozilla/uniffi-rs/pull/2911).
 - Added support for remote trait interfaces - ie, traits defined in a crate which doesn't use
   UniFFI. Use `#[uniffi::export(remote)]` or `[Trait, Remote]` in UDL. Foreign implementations are not supported, see the docs for more.
+- Python: Added the config value `bindings.python.module_name` to set the generated module name.
+- Ruby: Added the config value `bindings.ruby.file_name` to set the generated filename.
 - Ruby: Add `bindings.ruby.module_name` to set the generated module name. In library mode,
   `[bindings.ruby.external_packages]` is auto-filled from each peer's `module_name`; a consumer
   override that does not match is a bindgen error (via [#2980](https://github.com/mozilla/uniffi-rs/pull/2980)).
 - Ruby: Add external types support (via [#2980](https://github.com/mozilla/uniffi-rs/pull/2980)).
+- Kotlin: Calls into Rust no longer allocate a JNA `Structure` for the call status. FFI functions
+  take the status as a pointer into a reusable per-thread buffer, and a `Structure` is only built
+  when the call fails. This removes most of the overhead of a call that passes and returns only
+  primitives or objects (see [#3011](https://github.com/mozilla/uniffi-rs/issues/3011)).
 - Swift: Add `[bindings.swift.async_cancellable]` to propagate Swift task cancellation to Rust futures.
   Cancelling the calling task drops the Rust future and the call throws `CancellationError`.
   Listed callables are declared `async throws`; everything else is unchanged.

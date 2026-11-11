@@ -5,6 +5,7 @@
 use crate::{run_task, ApiError, Result, TaskRunner};
 use std::sync::Arc;
 
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 #[uniffi::trait_interface]
 pub trait HttpClient: Send + Sync {

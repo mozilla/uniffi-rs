@@ -68,3 +68,59 @@ assert(invokeOptionalTestCallbackInterfaceGetValue(cbi: cbi) == 43);
 callbackRefCountLock.withLock {
     assert(callbackRefCount == 1)
 }
+
+// Calls that re-enter Rust from inside a callback, so several calls are in progress on the same
+// thread at once. An inner call's failure must not become the result of the call it's nested in,
+// and the outer call's own result must still come through after the inner calls.
+final class ReentrantCallback: TestReentrantCallback, @unchecked Sendable {
+    func reenter(depth: UInt32) throws -> UInt32 {
+        // A nested call that fails, caught here. The call this is nested in must still succeed.
+        do {
+            try funcWithError(input: 0)
+            fatalError("Expected TestError.Failure1 to be thrown")
+        } catch TestError.Failure1 {
+            // Expected
+        }
+        if depth == 0 {
+            return 0
+        }
+        return try invokeTestReentrantCallback(cbi: self, depth: depth - 1, fail: false)
+    }
+}
+
+let reentrant = ReentrantCallback()
+assert(try! invokeTestReentrantCallback(cbi: reentrant, depth: 0, fail: false) == 1)
+// 20 levels of Rust -> Swift -> Rust nesting, each with a failed call nested inside it.
+assert(try! invokeTestReentrantCallback(cbi: reentrant, depth: 20, fail: false) == 21)
+// The outer call fails after the nested calls (including the failed ones) have finished, and
+// must report its own error.
+do {
+    _ = try invokeTestReentrantCallback(cbi: reentrant, depth: 5, fail: true)
+    fatalError("Expected TestError.Failure3 to be thrown")
+} catch TestError.Failure3(let code) {
+    assert(code == 5)
+}
+// The same thread keeps working after the failures above.
+assert(try! invokeTestReentrantCallback(cbi: reentrant, depth: 3, fail: false) == 4)
+
+// Several threads making reentrant calls, failing and succeeding, at the same time.
+DispatchQueue.concurrentPerform(iterations: 8) { t in
+    for i in 0..<200 {
+        let depth = UInt32((t + i) % 4)
+        do {
+            if i % 3 == 0 {
+                do {
+                    _ = try invokeTestReentrantCallback(cbi: reentrant, depth: depth, fail: true)
+                    fatalError("Expected TestError.Failure3 to be thrown")
+                } catch TestError.Failure3(let code) {
+                    assert(code == depth)
+                }
+            } else {
+                let value = try invokeTestReentrantCallback(cbi: reentrant, depth: depth, fail: false)
+                assert(value == depth + 1)
+            }
+        } catch {
+            fatalError("Unexpected error from a reentrant call: \(error)")
+        }
+    }
+}

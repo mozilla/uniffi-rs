@@ -404,4 +404,37 @@ impl Type {
             _ => None,
         }
     }
+
+    pub fn has_user_type(&self) -> bool {
+        match self {
+            Self::UInt8
+            | Self::Int8
+            | Self::UInt16
+            | Self::Int16
+            | Self::UInt32
+            | Self::Int32
+            | Self::UInt64
+            | Self::Int64
+            | Self::Float32
+            | Self::Float64
+            | Self::Boolean
+            | Self::String
+            | Self::Bytes
+            | Self::Timestamp
+            | Self::Duration => false,
+            Self::Interface { .. }
+            | Self::Record { .. }
+            | Self::Enum { .. }
+            | Self::CallbackInterface { .. }
+            | Self::Custom { .. } => true,
+            Self::Box { inner_type }
+            | Self::Optional { inner_type }
+            | Self::Sequence { inner_type }
+            | Self::Set { inner_type } => inner_type.has_user_type(),
+            Self::Map {
+                key_type,
+                value_type,
+            } => key_type.has_user_type() || value_type.has_user_type(),
+        }
+    }
 }
