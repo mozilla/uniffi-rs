@@ -6,6 +6,3 @@ exclude = ["Megaphone.new", "FallibleMegaphone.new", "TestObject.new", "UdlMegap
 package_name = "uniffi.fixture.futures"
 # Kotlin doesn't support async constructors
 exclude = ["Megaphone.new", "FallibleMegaphone.new", "TestObject.new", "UdlMegaphone.new"]
-
-[bindings.swift]
-async_cancellable = ["use_shared_resource", "CancellationTester.run"]

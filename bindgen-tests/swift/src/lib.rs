@@ -70,6 +70,11 @@ mod test {
     }
 
     #[test]
+    fn test_futures_cancellation() {
+        run_tests(test_dir(), "tests/futures_cancellation.swift");
+    }
+
+    #[test]
     fn test_trait_interfaces() {
         run_tests(test_dir(), "tests/trait_interfaces.swift");
     }

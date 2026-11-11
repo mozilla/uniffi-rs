@@ -152,3 +152,9 @@ BindingObjectToRename = "RbObject"
 "BindingObjectToRename.new.value" = "rb_value"
 "BindingObjectToRename.method" = "rb_method"
 "BindingObjectToRename.method.arg" = "rb_arg"
+
+#
+# Async cancellation
+#
+[bindings.swift]
+async_cancellable = ["CancellationTester.run"]
