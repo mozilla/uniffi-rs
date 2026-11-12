@@ -2934,6 +2934,18 @@ use <code>Vec&lt;u8&gt;</code> / <code>bytes</code> instead.</p>
   function. Don't store it, don't hand it to a spawned task, and
   don't capture it in async work that outlives the call. If you need
   the data afterwards, copy it (<code>data.to_vec()</code>).</li>
+<li><strong>Aliasing is the caller's responsibility.</strong> Rust borrows the buffer for
+  the duration of the call, so the usual aliasing rules apply across the FFI:<ul>
+<li>Don't mutate or free the buffer from another thread while a Rust
+  function is borrowing it.</li>
+</ul>
+</li>
+<li><strong>The caller must keep the object alive.</strong>
+  Callers are responsible keeping the object alive for the duration of the call,
+  since the Rust code will be referencing data owned by object.
+  On garbage collected languages, if the buffer is not used after the call,
+  use something like <a href="https://docs.oracle.com/en/java/javase/23/docs/api/java.base/java/lang/ref/Reference.html#reachabilityFence(java.lang.Object)">reachabilityFence</a>
+  to ensure that a strong reference remains during the duration of the call.</li>
 </ul>
 <h2 id="foreign-language-types">Foreign-language types</h2>
 <p>Each binding maps <code>[ByRef] bytes</code> to a natural zero-copy type:</p>
@@ -3002,6 +3014,12 @@ the caller's buffer — no copy in or out.</p>
   function is borrowing it.</li>
 </ul>
 </li>
+<li><strong>The caller must keep the object alive.</strong>
+  Callers are responsible keeping the object alive for the duration of the call,
+  since the Rust code will be referencing data owned by object.
+  On garbage collected languages, if the buffer is not used after the call,
+  use something like <a href="https://docs.oracle.com/en/java/javase/23/docs/api/java.base/java/lang/ref/Reference.html#reachabilityFence(java.lang.Object)">reachabilityFence</a>
+  to ensure that a strong reference remains during the duration of the call.</li>
 </ul>
 <p>Each binding maps a mutable argument to a writable type:</p>
 <table>

@@ -2921,9 +2921,9 @@
 <td>When provided, it will enable features in the bindings supported for this version. The build process will fail if an invalid format is used.</td>
 </tr>
 <tr>
-<td><code>disable_java_cleaner</code></td>
+<td><code>java_8_compatible</code></td>
 <td><code>false</code></td>
-<td>Will disable use of <code>java.lang.ref.Cleaner</code> so generated code can be compatible with Java 8.</td>
+<td>Ensures generated code is compatible with Java 8, at the cost of some performance.  Set this on Android if your minSdk is below 28.</td>
 </tr>
 <tr>
 <td><code>omit_checksums</code></td>
