@@ -8,6 +8,7 @@ fileprivate func uniffiRustCallAsync<F, T>(
     pollFunc: (UInt64, @escaping UniffiRustFutureContinuationCallback, UInt64) -> (),
     completeFunc: (UInt64, UnsafeMutablePointer<RustCallStatus>) -> F,
     freeFunc: (UInt64) -> (),
+    cancelFunc: (@Sendable (UInt64) -> ())?,
     liftFunc: (F) throws -> T,
     errorHandler: ((RustBuffer) throws -> Swift.Error)?
 ) async throws -> T {
@@ -18,6 +19,41 @@ fileprivate func uniffiRustCallAsync<F, T>(
     defer {
         freeFunc(rustFuture)
     }
+    if let cancelFunc = cancelFunc {
+        // `cancelFunc` is only set for callables listed in `bindings.swift.async_cancellable`.
+        //
+        // Cancelling the Swift task calls `rust_future_cancel`, which makes Rust invoke the
+        // pending (or next) poll continuation with `UNIFFI_RUST_FUTURE_POLL_READY`.  The poll loop
+        // then exits and `completeFunc` drops the Rust future and reports `CALL_CANCELLED`, which
+        // `uniffiCheckCallStatus` turns into a `CancellationError`.  If the future finished first,
+        // `completeFunc` returns its result as usual.
+        //
+        // Checking `Task.isCancelled` between polls isn't enough: while the Rust future is pending
+        // the task is suspended, and nothing resumes it until the future wakes up by itself.
+        //
+        // The Swift runtime calls `onCancel` at most once, and runs it under the task's status
+        // record lock.  Leaving `withTaskCancellationHandler` takes that lock to remove the handler,
+        // so `cancelFunc` has always returned before the `freeFunc` call in the `defer` above.
+        await withTaskCancellationHandler {
+            await uniffiPollRustFuture(rustFuture, pollFunc: pollFunc)
+        } onCancel: {
+            cancelFunc(rustFuture)
+        }
+    } else {
+        await uniffiPollRustFuture(rustFuture, pollFunc: pollFunc)
+    }
+
+    return try liftFunc(makeRustCall(
+        { completeFunc(rustFuture, $0) },
+        errorHandler: errorHandler
+    ))
+}
+
+// Poll a Rust future until it's ready (or cancelled).
+fileprivate func uniffiPollRustFuture(
+    _ rustFuture: UInt64,
+    pollFunc: (UInt64, @escaping UniffiRustFutureContinuationCallback, UInt64) -> ()
+) async {
     var pollResult: Int8;
     repeat {
         pollResult = await withUnsafeContinuation {
@@ -30,11 +66,6 @@ fileprivate func uniffiRustCallAsync<F, T>(
             )
         }
     } while pollResult != UNIFFI_RUST_FUTURE_POLL_READY
-
-    return try liftFunc(makeRustCall(
-        { completeFunc(rustFuture, $0) },
-        errorHandler: errorHandler
-    ))
 }
 
 // Callback handlers for an async calls.  These are invoked by Rust when the future is ready.  They
