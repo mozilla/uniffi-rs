@@ -110,5 +110,14 @@ class TestCallbackInterfaces(unittest.TestCase):
             thread.join()
         self.assertEqual(failures, [])
 
+class BoolCallbackImpl(TestBoolCallbackInterface):
+    def is_even(self, value):
+        return value % 2 == 0
+
+class TestBoolCallbackInterfaces(unittest.TestCase):
+    def test_bool_return(self):
+        self.assertTrue(invoke_test_bool_callback_interface_is_even(BoolCallbackImpl(), 2))
+        self.assertFalse(invoke_test_bool_callback_interface_is_even(BoolCallbackImpl(), 3))
+
 if __name__ == '__main__':
     unittest.main()

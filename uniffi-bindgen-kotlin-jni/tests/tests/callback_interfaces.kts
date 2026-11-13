@@ -62,3 +62,13 @@ try {
 } catch(e: TestException.Failure2) {
     assert(e.data.contains("unexpected failure"))
 }
+
+// Callback interface method that returns a bool
+class BoolCallbackImpl : TestBoolCallbackInterface {
+    override fun isEven(value: UInt): Boolean {
+        return value % 2u == 0u
+    }
+}
+
+assert(invokeTestBoolCallbackInterfaceIsEven(BoolCallbackImpl(), 2u))
+assert(!invokeTestBoolCallbackInterfaceIsEven(BoolCallbackImpl(), 3u))
