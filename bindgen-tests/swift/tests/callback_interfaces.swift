@@ -124,3 +124,13 @@ DispatchQueue.concurrentPerform(iterations: 8) { t in
         }
     }
 }
+
+// Callback interface method that returns a bool
+final class BoolCallbackImpl: TestBoolCallbackInterface, @unchecked Sendable {
+    func isEven(value: UInt32) -> Bool {
+        return value % 2 == 0
+    }
+}
+
+assert(invokeTestBoolCallbackInterfaceIsEven(cbi: BoolCallbackImpl(), value: 2))
+assert(!invokeTestBoolCallbackInterfaceIsEven(cbi: BoolCallbackImpl(), value: 3))

@@ -127,3 +127,13 @@ val reentrantThreads = (0 until 8).map { t ->
 }
 reentrantThreads.forEach { it.join() }
 reentrantFailures.peek()?.let { throw it }
+
+// Callback interface method that returns a bool
+class BoolCallbackImpl : TestBoolCallbackInterface {
+    override fun isEven(value: UInt): Boolean {
+        return value % 2u == 0u
+    }
+}
+
+assert(invokeTestBoolCallbackInterfaceIsEven(BoolCallbackImpl(), 2u))
+assert(!invokeTestBoolCallbackInterfaceIsEven(BoolCallbackImpl(), 3u))

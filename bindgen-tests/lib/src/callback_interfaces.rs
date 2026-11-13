@@ -99,3 +99,17 @@ pub fn invoke_test_reentrant_callback(
     }
     Ok(value + 1)
 }
+
+/// Callback interface with a method that returns a bool
+#[uniffi::export(callback_interface)]
+pub trait TestBoolCallbackInterface {
+    fn is_even(&self, value: u32) -> bool;
+}
+
+#[uniffi::export]
+pub fn invoke_test_bool_callback_interface_is_even(
+    cbi: Box<dyn TestBoolCallbackInterface>,
+    value: u32,
+) -> bool {
+    cbi.is_even(value)
+}
