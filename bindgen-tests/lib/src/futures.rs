@@ -155,3 +155,49 @@ pub async fn invoke_test_async_callback_interface_throw_if_equal(
 ) -> Result<CallbackInterfaceNumbers, TestError> {
     cbi.throw_if_equal(numbers).await
 }
+
+/// Async callback interface with fallible methods that return primitive, string and optional
+/// values.
+///
+/// This tests the error path for async callback methods whose return type is not a record.
+#[uniffi::export(callback_interface)]
+#[allow(clippy::double_must_use)]
+#[async_trait::async_trait]
+pub trait TestAsyncFallibleCallbackInterface: Send + Sync {
+    async fn get_u64(&self, fail: bool) -> Result<u64, TestError>;
+    async fn get_bool(&self, fail: bool) -> Result<bool, TestError>;
+    async fn get_string(&self, fail: bool) -> Result<String, TestError>;
+    async fn get_optional_string(&self, fail: bool) -> Result<Option<String>, TestError>;
+}
+
+#[uniffi::export]
+pub async fn invoke_test_async_fallible_callback_interface_get_u64(
+    cbi: Box<dyn TestAsyncFallibleCallbackInterface>,
+    fail: bool,
+) -> Result<u64, TestError> {
+    cbi.get_u64(fail).await
+}
+
+#[uniffi::export]
+pub async fn invoke_test_async_fallible_callback_interface_get_bool(
+    cbi: Box<dyn TestAsyncFallibleCallbackInterface>,
+    fail: bool,
+) -> Result<bool, TestError> {
+    cbi.get_bool(fail).await
+}
+
+#[uniffi::export]
+pub async fn invoke_test_async_fallible_callback_interface_get_string(
+    cbi: Box<dyn TestAsyncFallibleCallbackInterface>,
+    fail: bool,
+) -> Result<String, TestError> {
+    cbi.get_string(fail).await
+}
+
+#[uniffi::export]
+pub async fn invoke_test_async_fallible_callback_interface_get_optional_string(
+    cbi: Box<dyn TestAsyncFallibleCallbackInterface>,
+    fail: bool,
+) -> Result<Option<String>, TestError> {
+    cbi.get_optional_string(fail).await
+}
