@@ -85,5 +85,58 @@ class TestFutures(unittest.IsolatedAsyncioTestCase):
         # up and the only remaining reference is for our `cbi` variable.
         self.assertEqual(AsyncCallbackImpl.ref_count, 1)
 
+# Async callback interfaces with fallible methods that return non-record values
+class AsyncFallibleCallbackImpl(TestAsyncFallibleCallbackInterface):
+    async def get_u64(self, fail):
+        if fail:
+            raise TestError.Failure1()
+        return 42
+
+    async def get_bool(self, fail):
+        if fail:
+            raise TestError.Failure1()
+        return True
+
+    async def get_string(self, fail):
+        if fail:
+            raise TestError.Failure1()
+        return "hello"
+
+    async def get_optional_string(self, fail):
+        if fail:
+            raise TestError.Failure1()
+        return None
+
+class TestAsyncFallibleCallbackInterfaces(unittest.IsolatedAsyncioTestCase):
+    async def test_success(self):
+        cbi = AsyncFallibleCallbackImpl()
+        self.assertEqual(
+            await invoke_test_async_fallible_callback_interface_get_u64(cbi, False),
+            42,
+        )
+        self.assertEqual(
+            await invoke_test_async_fallible_callback_interface_get_bool(cbi, False),
+            True,
+        )
+        self.assertEqual(
+            await invoke_test_async_fallible_callback_interface_get_string(cbi, False),
+            "hello",
+        )
+        self.assertEqual(
+            await invoke_test_async_fallible_callback_interface_get_optional_string(cbi, False),
+            None,
+        )
+
+    async def test_error(self):
+        cbi = AsyncFallibleCallbackImpl()
+        with self.assertRaises(TestError.Failure1):
+            await invoke_test_async_fallible_callback_interface_get_u64(cbi, True)
+        with self.assertRaises(TestError.Failure1):
+            await invoke_test_async_fallible_callback_interface_get_bool(cbi, True)
+        with self.assertRaises(TestError.Failure1):
+            await invoke_test_async_fallible_callback_interface_get_string(cbi, True)
+        with self.assertRaises(TestError.Failure1):
+            await invoke_test_async_fallible_callback_interface_get_optional_string(cbi, True)
+
 if __name__ == '__main__':
     unittest.main()
