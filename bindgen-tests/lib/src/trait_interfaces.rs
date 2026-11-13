@@ -329,3 +329,26 @@ pub fn roundtrip_optional_test_trait_interface(
 ) -> Option<Arc<dyn TestTraitInterface>> {
     interface
 }
+
+/// Trait interface with a `Debug` supertrait.
+///
+/// The struct that UniFFI generates for foreign implementations must implement `Debug` as well.
+#[uniffi::export(with_foreign)]
+pub trait TestDebugTraitInterface: Send + Sync + std::fmt::Debug {
+    fn get_value(&self) -> u32;
+}
+
+#[uniffi::export]
+pub fn invoke_test_debug_trait_interface_get_value(
+    interface: Arc<dyn TestDebugTraitInterface>,
+) -> u32 {
+    interface.get_value()
+}
+
+/// Format a `TestDebugTraitInterface` using its `Debug` impl and check that it's non-empty.
+#[uniffi::export]
+pub fn test_debug_trait_interface_has_debug_output(
+    interface: Arc<dyn TestDebugTraitInterface>,
+) -> bool {
+    !format!("{interface:?}").is_empty()
+}
