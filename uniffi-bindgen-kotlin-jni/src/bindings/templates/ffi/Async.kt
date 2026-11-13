@@ -32,8 +32,11 @@ suspend fun {{ rust_result.async_await_future_fn() }}(
                 }
             }
             if (futureReady) {
-                {%- if rust_result.return_type.is_some() %}
-                return completion.value!!
+                {%- if let Some(return_type) = rust_result.return_type %}
+                // `value` is stored as `Any?` because the return type itself may be nullable,
+                // in which case `null` is a valid result.
+                @Suppress("UNCHECKED_CAST")
+                return completion.value as {{ return_type.type_kt }}
                 {%- else %}
                 return
                 {%- endif %}
@@ -46,7 +49,7 @@ suspend fun {{ rust_result.async_await_future_fn() }}(
 
 {%- if let Some(return_type) = rust_result.return_type %}
 class {{ rust_result.async_complete_class() }} {
-    var value: {{ return_type.type_kt }}? = null;
+    var value: Any? = null;
     fun complete(
         {%- for ffi_type in return_type.ffi_types %}
         v{{loop.index0 }}: {{ ffi_type.type_kt() }},
