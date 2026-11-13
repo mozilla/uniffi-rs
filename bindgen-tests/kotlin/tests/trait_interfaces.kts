@@ -238,3 +238,13 @@ fun checkForeignOnlyImpl(impl: TestForeignOnlyTraitInterface) {
 
 checkForeignOnlyImpl(ForeignOnlyImpl())
 checkForeignOnlyImpl(roundtripTestForeignOnlyTrait(ForeignOnlyImpl()))
+
+// Trait interface with a `Debug` supertrait
+class DebugTraitImpl : TestDebugTraitInterface {
+    override fun getValue(): UInt {
+        return 42u
+    }
+}
+
+assert(invokeTestDebugTraitInterfaceGetValue(DebugTraitImpl()) == 42u)
+assert(testDebugTraitInterfaceHasDebugOutput(DebugTraitImpl()))
