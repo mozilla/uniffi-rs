@@ -59,7 +59,7 @@ Each binding maps `[ByRef] bytes` to a natural zero-copy type:
 
 | Binding | Foreign type             | Note                                                          |
 |---------|--------------------------|---------------------------------------------------------------|
-| Kotlin  | `java.nio.ByteBuffer`    | Must be a *direct* buffer (`ByteBuffer.allocateDirect(...)`). |
+| Kotlin  | `java.nio.ByteBuffer`    | Must be a *direct* buffer (`ByteBuffer.allocateDirect(...)`). Rust sees the bytes from `position()` to `limit()`. |
 | Swift   | `Data`                   | The call runs inside `Data.withUnsafeBytes`.                  |
 | Python  | `bytes` or `bytearray`   | Zero-copy either way; the object's stable internal pointer is used in both cases. |
 | Ruby    | `String(BINARY)`         | Uses `String` with `Encoding::BINARY`.                        |
@@ -114,7 +114,7 @@ Each binding maps a mutable argument to a writable type:
 
 | Binding | Foreign type                 | Note                                                |
 |---------|------------------------------|-----------------------------------------------------|
-| Kotlin  | direct `java.nio.ByteBuffer` | The same direct buffer as `[ByRef]`; writes land in it. |
+| Kotlin  | direct `java.nio.ByteBuffer` | The same direct buffer as `[ByRef]`; writes land in it between `position()` and `limit()`. |
 | Swift   | `inout Data`                 | The call runs inside `Data.withUnsafeMutableBytes`. |
 | Python  | `bytearray`                  | `bytes` can't be used as a mutable argument.        |
 
