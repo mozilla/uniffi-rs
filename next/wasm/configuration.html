@@ -2772,7 +2772,7 @@
 <h1 id="wasm">WASM</h1>
 <p>WASM defines a portable binary format for virtual machines running untrusted code in browsers and various other scenarios. Depending on the scenario, the host language may vary.</p>
 <p>As such, <code>uniffi-rs</code> does not come with bindings generators "for WASM". This is the job for external uniffi-bindgen generators. e.g. <a href="https://github.com/jhugman/uniffi-bindgen-react-native">Typescript</a>, <a href="https://github.com/gobley/gobley">Kotlin</a>.</p>
-<p>However, the generated scaffolding needs to be configured for that WASM32 target.</p>
+<p>However, the generated scaffolding needs to be configured for WASM targets.</p>
 <h1 id="configuration">Configuration</h1>
 <p>Configuring the Rust scaffolding ready for WASM binding generators is done by opting into features.</p>
 <p>e.g.</p>
@@ -2783,17 +2783,17 @@
 <h3 id="wasm-unstable-single-threaded"><code>wasm-unstable-single-threaded</code></h3>
 <p>At time of writing, the state of threading in WASM and Rust support is still in flux.</p>
 <p>Much of the ecosystem is built around <a href="https://crates.io/crates/gloo">gloo</a>, <a href="https://docs.rs/web-sys/latest/web_sys/"><code>web-sys</code></a> and <a href="https://github.com/RReverser/wasm-bindgen-rayon"><code>wasm-rayon</code></a>.</p>
-<p>Enabling the <code>wasm-unstable-single-threaded</code> feature opts out of the <code>Send</code> and <code>Sync</code> checks when building for <code>wasm32</code> target architectures.</p>
-<p>This feature only affects the <code>wasm32</code> architecture.</p>
-<p>Hint: running <code>clippy</code> on client code built for <code>wasm32</code> may trigger a clippy <a href="https://rust-lang.github.io/rust-clippy/master/index.html#arc_with_non_send_sync">warning when constructing <code>Arc</code>s</a>.</p>
+<p>Enabling the <code>wasm-unstable-single-threaded</code> feature opts out of the <code>Send</code> and <code>Sync</code> checks when building for WASM targets (<code>target_family = "wasm"</code>, which covers both <code>wasm32</code> and <code>wasm64</code>).</p>
+<p>This feature only affects WASM targets.</p>
+<p>Hint: running <code>clippy</code> on client code built for WASM may trigger a clippy <a href="https://rust-lang.github.io/rust-clippy/master/index.html#arc_with_non_send_sync">warning when constructing <code>Arc</code>s</a>.</p>
 <p>The lint's remedy is either to:
 - make the object to <code>Send</code> and <code>Sync</code>, or
 - change from an <code>Arc</code> to an <code>Rc</code>.</p>
 <p>As we are using this feature:
 - to allow <code>Send</code> and <code>Sync</code>, and
 - we can't use <code>Rc</code> for other targets</p>
-<p>we can disable this warning for <code>wasm32</code> <em>only</em> like so:</p>
-<div class="highlight"><pre><span></span><code><span class="cp">#[cfg_attr(target_arch = </span><span class="s">&quot;wasm32&quot;</span><span class="cp">, allow(clippy::arc_with_non_send_sync))]</span>
+<p>we can disable this warning for WASM <em>only</em> like so:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[cfg_attr(target_family = </span><span class="s">&quot;wasm&quot;</span><span class="cp">, allow(clippy::arc_with_non_send_sync))]</span>
 <span class="k">fn</span><span class="w"> </span><span class="nf">new</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="bp">Self</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="bp">Self</span><span class="w"> </span><span class="p">{})</span>
 <span class="p">}</span>
