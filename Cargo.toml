@@ -96,4 +96,4 @@ members = [
 resolver = "2"
 
 [workspace.dependencies]
-uniffi = { path = "./uniffi", version = "0.32" }
+uniffi = { path = "./uniffi", version = "0.33" }
