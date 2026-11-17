@@ -62,6 +62,10 @@
 - Python: event-loop lookup now prefers the calling thread's running loop, falling back to the one
   passed to `uniffi_set_event_loop`.
 - Python: rename `uniffi_set_event_loop` to `uniffi_set_default_event_loop`
+- Fixed compile errors when exporting ambiguous method names [#2937](https://github.com/mozilla/uniffi-rs/pull/2937)
+- Swift: Fixed more strict concurrency errors
+- Python: Fixed mypy errors
+- Python: Include custom types to the `__all__` attribute.
 - Kotlin and Swift: escape `/*` and `*/` in docstrings, which previously generated code that would not compile
   (via [#2411](https://github.com/mozilla/uniffi-rs/issues/2411)).
 - Kotlin: zero-copy `&[u8]` and `&mut [u8]` arguments now borrow the bytes between the
@@ -125,7 +129,6 @@
 
 - Fixed bug that sometimes prevented renaming items inside a submodule [#2792](https://github.com/mozilla/uniffi-rs/pull/2792)
 - Exempted `UniFfiTag` from `clippy::exhaustive_structs` since downstream projects may depend on it [#2809](https://github.com/mozilla/uniffi-rs/pull/2809)
-- Fixed compile errors when exporting ambiguous method names [#2937](https://github.com/mozilla/uniffi-rs/pull/2937)
 - Ruby: Code for all kinds of enums and custom types is now correctly generated #2880 and #2891
 
 ### ⚠️ Breaking Changes for external bindings authors ⚠️
