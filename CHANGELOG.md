@@ -4,11 +4,11 @@
 
 <!-- next-header -->
 
-## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.33.0...NEXT_HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.33.0...HEAD).
 
-## [[UnreleasedUniFFIVersion]] (backend crates: v0.33.0) - (_2026-11-17_)
+## v0.33.0 (backend crates: v0.33.0) - (_2026-11-20_)
 
 ### ⚠️ Breaking Changes ⚠️
 - When the Rust package name and library name differ, foreign bindings now default to using the
@@ -90,7 +90,7 @@
 
 - `[ByMutRef] bytes` / `&mut [u8]` arguments cross the FFI as the same `ForeignBytes` value as `[ByRef]` / `&[u8]` — the two are ABI-identical. Metadata carries the mutable flag as `FnParamMetadata.by_mut_ref` (read it via `is_borrowed_bytes_mut()`); a generator that wants a writable foreign buffer reads that flag, otherwise the argument acts like a read-only borrow. This bumps the metadata contract version to 31. ([#2940](https://github.com/mozilla/uniffi-rs/pull/2940))
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.2...HEAD).
+[All changes in v0.33.0](https://github.com/mozilla/uniffi-rs/compare/v0.32.2...v0.33.0).
 
 ## v0.32.2 (backend crates: v0.32.2) - (_2026-09-22_)
 
