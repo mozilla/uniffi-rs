@@ -4,7 +4,11 @@
 
 <!-- next-header -->
 
-## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+
+[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.33.0...NEXT_HEAD).
+
+## [[UnreleasedUniFFIVersion]] (backend crates: v0.33.0) - (_2026-11-17_)
 
 ### ⚠️ Breaking Changes ⚠️
 - When the Rust package name and library name differ, foreign bindings now default to using the
