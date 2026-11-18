@@ -65,7 +65,7 @@ Other tools we know of which try and solve a similarly shaped problem are:
 ### JavaScript
 
 * [Desktop Firefox](https://github.com/mozilla-firefox/firefox/tree/main/toolkit/components/uniffi-bindgen-gecko-js)
-* [Javascript WASM/React Native](https://github.com/jhugman/uniffi-bindgen-react-native): running in a web page, targeting WASM; and React Native targeting Android, iOS. The repository contains tooling to generate bindings for [Hermes](https://github.com/facebook/hermes), [creating Turbo Modules](https://reactnative.dev/blog/2024/10/23/the-new-architecture-is-here#new-native-modules), and for creating a [`wasm-bindgen` bindings crate](https://rustwasm.github.io/wasm-bindgen).
+* [Javascript WASM/React Native](https://github.com/jhugman/uniffi-bindgen-react-native): running in a web page, targeting WASM; and React Native targeting Android, iOS. The repository contains tooling to generate bindings for [Hermes](https://github.com/facebook/hermes), [creating Turbo Modules](https://reactnative.dev/blog/2024/10/23/the-new-architecture-is-here#new-native-modules), and for creating a [`wasm-bindgen` bindings crate](https://wasm-bindgen.github.io/wasm-bindgen/).
 * [Node bindings](https://github.com/criccomini/uniffi-bindgen-node-js): ESM packages via `koffi`.
 * [Node bindings](https://github.com/livekit/uniffi-bindgen-node): (inactive?)
 
