@@ -117,14 +117,12 @@ impl Package {
                 &f.callable,
             )
         });
-        let methods = self.classes().flat_map(|c| {
-            c.methods.iter().map(|m| {
-                (
-                    m.jni_method_name.as_str(),
-                    JniMethodKind::Method,
-                    &m.callable,
-                )
-            })
+        let methods = self.methods().map(|m| {
+            (
+                m.jni_method_name.as_str(),
+                JniMethodKind::Method,
+                &m.callable,
+            )
         });
         let constructors = self.classes().flat_map(|c| {
             c.constructors.iter().map(|c| {
@@ -143,6 +141,18 @@ impl Package {
             .chain(methods)
             .chain(constructors)
             .chain(trait_methods)
+    }
+
+    /// Methods for classes, records and enums
+    pub fn methods(&self) -> impl Iterator<Item = &Method> {
+        self.type_definitions
+            .iter()
+            .flat_map(|type_def| match type_def {
+                TypeDefinition::Class(c) => c.methods.as_slice(),
+                TypeDefinition::Record(r) => r.methods.as_slice(),
+                TypeDefinition::Enum(e) => e.methods.as_slice(),
+                _ => &[],
+            })
     }
 
     pub fn classes(&self) -> impl Iterator<Item = &Class> {
