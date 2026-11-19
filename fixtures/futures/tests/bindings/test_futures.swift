@@ -445,4 +445,8 @@ Task {
 	counter.leave()
 }
 
-counter.wait()
+// Wait without blocking the main thread. In Swift 6 language mode, top-level code runs on the
+// main actor and the tasks above inherit it, so a blocking `counter.wait()` would deadlock.
+await withCheckedContinuation { continuation in
+	counter.notify(queue: .global()) { @Sendable in continuation.resume() }
+}
