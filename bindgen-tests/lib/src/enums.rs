@@ -11,6 +11,13 @@ pub enum EnumNoData {
     C,
 }
 
+#[uniffi::export]
+impl EnumNoData {
+    pub fn is_a(&self) -> bool {
+        matches!(self, EnumNoData::A)
+    }
+}
+
 #[derive(uniffi::Enum, Clone)]
 pub enum EnumWithData {
     A { value: u8, value2: u16 },

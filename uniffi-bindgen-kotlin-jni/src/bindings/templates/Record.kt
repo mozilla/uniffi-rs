@@ -9,6 +9,9 @@ data class {{ type_name }} (
     {%- endfor %}
 ){% if rec.uniffi_trait_methods.ord_cmp.is_some() %}: Comparable<{{ type_name }}> {% endif %} {
 
+    {%- let methods = rec.methods %}
+    {% filter indent(4) %}{% include "Methods.kt" %}{% endfilter %}
+
     {%- let uniffi_trait_methods = rec.uniffi_trait_methods %}
     {% filter indent(4) %}{% include "UniffiTraitMethods.kt" %}{% endfilter %}
 
@@ -23,6 +26,9 @@ class {{ type_name }} {
     override fun hashCode(): kotlin.Int {
         return javaClass.hashCode()
     }
+
+    {%- let methods = rec.methods %}
+    {% filter indent(4) %}{% include "Methods.kt" %}{% endfilter %}
 
     companion object
 }

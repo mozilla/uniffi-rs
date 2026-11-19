@@ -53,6 +53,7 @@ pub fn map_enum(input: general::Enum, context: &Context) -> Result<Enum> {
         name: input.name,
         orig_name: input.orig_name,
         base_classes,
+        methods: input.methods.map_node(&context)?,
         uniffi_trait_methods: input.uniffi_trait_methods.map_node(&context)?,
         shape: input.shape,
         non_exhaustive: input.non_exhaustive,
