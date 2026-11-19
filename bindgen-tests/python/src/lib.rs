@@ -81,6 +81,11 @@ mod test {
     }
 
     #[test]
+    fn test_methods() {
+        run_tests(test_dir(), "tests/methods.py");
+    }
+
+    #[test]
     fn test_references() {
         run_tests(test_dir(), "tests/references.py");
     }

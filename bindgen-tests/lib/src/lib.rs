@@ -38,6 +38,9 @@ pub mod futures;
 #[cfg(feature = "interfaces")]
 pub mod interfaces;
 
+#[cfg(feature = "methods")]
+pub mod methods;
+
 #[cfg(feature = "options")]
 pub mod options;
 

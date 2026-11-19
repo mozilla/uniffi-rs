@@ -34,5 +34,4 @@ assert(GappedEnum.THREE.value == 14.toUByte()) // Explicit value again
 
 // Enum methods
 assert(EnumWithData.A(20.toUByte(), 40.toUShort()).roundtrip() == EnumWithData.A(20.toUByte(), 40.toUShort()))
-assert(EnumNoData.A.isA())
-assert(!EnumNoData.B.isA())
+assert(EnumNoData.A.roundtrip() == EnumNoData.A)
