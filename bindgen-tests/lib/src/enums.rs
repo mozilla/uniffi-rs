@@ -4,7 +4,7 @@
 
 use crate::records::SimpleRec;
 
-#[derive(uniffi::Enum)]
+#[derive(uniffi::Enum, Clone)]
 pub enum EnumNoData {
     A,
     B,
@@ -13,8 +13,8 @@ pub enum EnumNoData {
 
 #[uniffi::export]
 impl EnumNoData {
-    pub fn is_a(&self) -> bool {
-        matches!(self, EnumNoData::A)
+    pub fn roundtrip(&self) -> Self {
+        self.clone()
     }
 }
 

@@ -80,6 +80,11 @@ mod test {
     }
 
     #[test]
+    fn test_methods() {
+        run_tests(test_dir(), "tests/methods.swift");
+    }
+
+    #[test]
     fn test_references() {
         run_tests(test_dir(), "tests/references.swift");
     }

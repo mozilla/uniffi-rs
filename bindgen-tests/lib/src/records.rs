@@ -12,12 +12,6 @@ impl SimpleRec {
     pub fn roundtrip(&self) -> Self {
         SimpleRec { a: self.a }
     }
-
-    pub fn add(&self, value: u8) -> Self {
-        SimpleRec {
-            a: self.a.wrapping_add(value),
-        }
-    }
 }
 
 #[derive(uniffi::Record)]
