@@ -1,4 +1,7 @@
-namespace fixture_callbacks {};
+namespace fixture_callbacks {
+  /// Calls `observer` twice from the same Rust thread, which only exits after the second call.
+  void call_twice_from_rust_thread(ForeignThreadObserver observer);
+};
 
 [Error]
 enum SimpleError {
@@ -68,4 +71,11 @@ callback interface StoredForeignStringifier {
 interface RustStringifier {
   constructor(StoredForeignStringifier callback);
   string from_simple_type(i32 value);
+};
+
+/// Implemented by the foreign language and called by Rust from a thread Rust spawned, to test
+/// per-call resources the foreign side ties to the calling thread (such as autorelease pools).
+callback interface ForeignThreadObserver {
+  void first_call();
+  void second_call();
 };
