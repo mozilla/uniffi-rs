@@ -18,6 +18,7 @@ use super::Bindings;
 
 use crate::interface::*;
 
+mod async_cancellable;
 mod callback_interface;
 mod compounds;
 mod custom;
@@ -186,6 +187,14 @@ pub struct Config {
     pub(super) exclude: Vec<String>,
     #[serde(default)]
     pub(super) rename: toml::Table,
+    /// Async functions, methods and constructors that propagate Swift task cancellation to
+    /// their Rust future: `"function"`, `"Type.method"` or `"Type.constructor"`.
+    #[serde(default)]
+    async_cancellable: Vec<String>,
+    /// Scaffolding function names of the callables listed in `async_cancellable`.
+    /// Filled in by [Config::resolve_async_cancellable].
+    #[serde(skip)]
+    async_cancellable_ffi_funcs: HashSet<String>,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -220,6 +229,19 @@ impl CustomTypeConfig {
 }
 
 impl Config {
+    /// Resolve the `async_cancellable` list against the component interface.
+    pub(super) fn resolve_async_cancellable(&mut self, ci: &ComponentInterface) -> Result<()> {
+        self.async_cancellable_ffi_funcs = async_cancellable::resolve(ci, &self.async_cancellable)?;
+        Ok(())
+    }
+
+    /// Whether the async callable with this scaffolding function cancels its Rust future when the
+    /// calling Swift task is cancelled. Such callables are generated as `async throws` and throw
+    /// `CancellationError` when cancelled.
+    pub fn is_async_cancellable(&self, ffi_func_name: &str) -> bool {
+        self.async_cancellable_ffi_funcs.contains(ffi_func_name)
+    }
+
     /// The name of the Swift module containing the high-level foreign-language bindings.
     /// Panics if the module name hasn't been configured.
     pub fn module_name(&self) -> String {

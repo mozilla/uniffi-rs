@@ -226,6 +226,7 @@ fn parse_config(ci: &ComponentInterface, root_toml: toml::Value) -> Result<Confi
     config
         .module_name
         .get_or_insert_with(|| ci.namespace().into());
+    config.resolve_async_cancellable(ci)?;
     Ok(config)
 }
 
