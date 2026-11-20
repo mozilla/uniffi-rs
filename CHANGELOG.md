@@ -6,6 +6,10 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.33.0...HEAD).
+
+## v0.33.0 (backend crates: v0.33.0) - (_2026-11-20_)
+
 ### ⚠️ Breaking Changes ⚠️
 - When the Rust package name and library name differ, foreign bindings now default to using the
   library name as their module name rather than the package name.  The new default matches the name
@@ -62,6 +66,10 @@
 - Python: event-loop lookup now prefers the calling thread's running loop, falling back to the one
   passed to `uniffi_set_event_loop`.
 - Python: rename `uniffi_set_event_loop` to `uniffi_set_default_event_loop`
+- Fixed compile errors when exporting ambiguous method names [#2937](https://github.com/mozilla/uniffi-rs/pull/2937)
+- Swift: Fixed more strict concurrency errors
+- Python: Fixed mypy errors
+- Python: Include custom types to the `__all__` attribute.
 - Kotlin and Swift: escape `/*` and `*/` in docstrings, which previously generated code that would not compile
   (via [#2411](https://github.com/mozilla/uniffi-rs/issues/2411)).
 
@@ -82,7 +90,7 @@
 
 - `[ByMutRef] bytes` / `&mut [u8]` arguments cross the FFI as the same `ForeignBytes` value as `[ByRef]` / `&[u8]` — the two are ABI-identical. Metadata carries the mutable flag as `FnParamMetadata.by_mut_ref` (read it via `is_borrowed_bytes_mut()`); a generator that wants a writable foreign buffer reads that flag, otherwise the argument acts like a read-only borrow. This bumps the metadata contract version to 31. ([#2940](https://github.com/mozilla/uniffi-rs/pull/2940))
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.2...HEAD).
+[All changes in v0.33.0](https://github.com/mozilla/uniffi-rs/compare/v0.32.2...v0.33.0).
 
 ## v0.32.2 (backend crates: v0.32.2) - (_2026-09-22_)
 
@@ -121,7 +129,6 @@
 
 - Fixed bug that sometimes prevented renaming items inside a submodule [#2792](https://github.com/mozilla/uniffi-rs/pull/2792)
 - Exempted `UniFfiTag` from `clippy::exhaustive_structs` since downstream projects may depend on it [#2809](https://github.com/mozilla/uniffi-rs/pull/2809)
-- Fixed compile errors when exporting ambiguous method names [#2937](https://github.com/mozilla/uniffi-rs/pull/2937)
 - Ruby: Code for all kinds of enums and custom types is now correctly generated #2880 and #2891
 
 ### ⚠️ Breaking Changes for external bindings authors ⚠️
