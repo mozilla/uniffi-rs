@@ -1,7 +1,7 @@
 {%- call swift::docstring(e, 0) %}{% endcall %}
 public {% if ci.is_recursive(e.name()) %}indirect {% endif %}
-{%- if config.error_has_additional_conformances(e, contains_object_references) %}
-enum {{ type_name }}: Swift.Error, {{ config.additional_conformance_list_for_error(e, contains_object_references) }} {
+{%- if config.error_has_additional_conformances(e, type_, ci) %}
+enum {{ type_name }}: Swift.Error, {{ config.additional_conformance_list_for_error(e, type_, ci) }} {
 {%- else %}
 enum {{ type_name }}: Swift.Error {
 {%- endif %}
