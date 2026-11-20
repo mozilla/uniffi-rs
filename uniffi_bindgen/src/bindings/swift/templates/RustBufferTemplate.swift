@@ -144,8 +144,14 @@ fileprivate func readInt<T: FixedWidthInteger>(_ reader: inout (data: Data, offs
         reader.offset += 1
         return value as! T
     }
+    // `Data.copyBytes(to:from:)` is a generic `DataProtocol` method that the compiler can't
+    // specialize here, so it costs about 100ns per call. Copying from the raw bytes is a `memcpy`.
     var value: T = 0
-    let _ = withUnsafeMutableBytes(of: &value, { reader.data.copyBytes(to: $0, from: range)})
+    withUnsafeMutableBytes(of: &value) { destination in
+        reader.data.withUnsafeBytes { source in
+            destination.copyMemory(from: UnsafeRawBufferPointer(rebasing: source[range]))
+        }
+    }
     reader.offset = range.upperBound
     return value.bigEndian
 }
@@ -157,10 +163,10 @@ fileprivate func readBytes(_ reader: inout (data: Data, offset: Data.Index), cou
     guard reader.data.count >= range.upperBound else {
         throw UniffiInternalError.bufferOverflow
     }
-    var value = [UInt8](repeating: 0, count: count)
-    value.withUnsafeMutableBufferPointer({ buffer in
-        reader.data.copyBytes(to: buffer, from: range)
-    })
+    // See `readInt` for why this doesn't call `Data.copyBytes(to:from:)`.
+    let value = reader.data.withUnsafeBytes { source in
+        Array(UnsafeRawBufferPointer(rebasing: source[range]))
+    }
     reader.offset = range.upperBound
     return value
 }
