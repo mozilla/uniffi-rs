@@ -4,6 +4,9 @@ from datetime import datetime
 import asyncio
 import futures
 
+# Initialize the Tokio runtime for tests that use async_runtime = "tokio"
+init_tokio_runtime()
+
 def now():
     return datetime.now()
 
@@ -311,6 +314,27 @@ class TestFutures(unittest.TestCase):
         finally:
             futures.uniffi_set_default_event_loop(None)
             first.close()
+
+if __name__ == '__main__':
+    unittest.main()
+
+    def test_block_in_place_works(self):
+        async def test():
+            result = await block_in_place_works()
+            self.assertEqual(result, "ok")
+        asyncio.run(test())
+
+    def test_spawn_works(self):
+        async def test():
+            result = await spawn_works()
+            self.assertEqual(result, "spawned")
+        asyncio.run(test())
+
+    def test_thread_name_works(self):
+        async def test():
+            result = await thread_name_works()
+            self.assertEqual(result, "uniffi-test-tokio")
+        asyncio.run(test())
 
 if __name__ == '__main__':
     unittest.main()
