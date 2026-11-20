@@ -75,7 +75,10 @@ internal object UniffiRustCallStatusBuffer {
         override fun initialValue() = com.sun.jna.Memory(size.toLong()).also { it.clear() }
     }
 
-    fun get(): Pointer = buffer.get()
+    // get() is nullable on some platforms (Android) and not on others (JDK).
+    // `!!` ensures it works in both environments.
+    // `get()` never returns a null value since we implement `initialValue()`.
+    fun get(): Pointer = buffer.get()!!
 
     /** Copy a failed call's status out for the error handlers and reset the buffer to success. */
     fun takeFailure(buffer: Pointer): UniffiRustCallStatus {
