@@ -68,6 +68,8 @@ fillWindow.position(2)
 fillWindow.limit(4)
 fillBytes(fillWindow)
 assert(allBytes(fillWindow) == listOf<Byte>(9, 9, 0, 1, 9))
+assert(fillWindow.position() == 2)
+assert(fillWindow.limit() == 4)
 
 val incWindow = directBufferOf(9, 9, 9, 9, 9)
 incWindow.position(1)
