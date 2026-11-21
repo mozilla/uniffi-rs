@@ -274,3 +274,13 @@ func testForeignOnlyImpl(impl: TestForeignOnlyTraitInterface) {
 
 testForeignOnlyImpl(impl: ForeignOnlyImpl())
 testForeignOnlyImpl(impl: roundtripTestForeignOnlyTrait(interface: ForeignOnlyImpl()))
+
+// Trait interface with a `Debug` supertrait
+class DebugTraitImpl: TestDebugTraitInterface, @unchecked Sendable {
+    func getValue() -> UInt32 {
+        return 42
+    }
+}
+
+assert(invokeTestDebugTraitInterfaceGetValue(interface: DebugTraitImpl()) == 42)
+assert(testDebugTraitInterfaceHasDebugOutput(interface: DebugTraitImpl()))

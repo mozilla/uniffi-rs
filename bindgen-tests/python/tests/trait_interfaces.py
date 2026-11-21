@@ -233,5 +233,14 @@ class TestForeignOnlyTraitInterfaces(unittest.TestCase):
     def test_foreign_only_impl_roundtripped(self):
         self.check_foreign_only_impl(roundtrip_test_foreign_only_trait(ForeignOnlyImpl()))
 
+class DebugTraitImpl(TestDebugTraitInterface):
+    def get_value(self):
+        return 42
+
+class TestDebugTraitInterfaces(unittest.TestCase):
+    def test_debug_supertrait(self):
+        self.assertEqual(invoke_test_debug_trait_interface_get_value(DebugTraitImpl()), 42)
+        self.assertTrue(test_debug_trait_interface_has_debug_output(DebugTraitImpl()))
+
 if __name__ == '__main__':
     unittest.main()

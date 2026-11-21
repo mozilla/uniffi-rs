@@ -164,7 +164,8 @@ impl CallbackMethod {
     pub fn jni_method_call_name(&self) -> &'static str {
         match self.callable.return_type() {
             Some(t) => match t.ffi_types.as_slice() {
-                [FfiType::Int8] | [FfiType::Boolean] => "call_byte",
+                [FfiType::Boolean] => "call_boolean",
+                [FfiType::Int8] => "call_byte",
                 [FfiType::Int16] => "call_short",
                 [FfiType::Int32] => "call_int",
                 [FfiType::Int64] => "call_long",

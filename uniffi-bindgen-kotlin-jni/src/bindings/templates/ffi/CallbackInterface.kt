@@ -116,7 +116,7 @@ fun {{ meth.dispatch_fn_kt }}(
                     {{ var }},
                     {%- endfor %}
                 )
-                return@uniffiCoroutineBlock {{ meth.default_return_kt() }}
+                return@uniffiCoroutineBlock
             }
             {%- endmatch %}
 
