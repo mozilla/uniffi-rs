@@ -64,6 +64,10 @@
 - Python: rename `uniffi_set_event_loop` to `uniffi_set_default_event_loop`
 - Kotlin and Swift: escape `/*` and `*/` in docstrings, which previously generated code that would not compile
   (via [#2411](https://github.com/mozilla/uniffi-rs/issues/2411)).
+- Kotlin: zero-copy `&[u8]` and `&mut [u8]` arguments now borrow the bytes between the
+  `ByteBuffer`'s `position()` and `limit()`. Previously, when `position()` was greater than zero,
+  Rust read from the start of the buffer instead (and `&mut [u8]` writes landed there too)
+  (via [#3043](https://github.com/mozilla/uniffi-rs/issues/3043)).
 
 ### Breaking changes for users of `uniffi-bindgen` as a crate:
 - Removed the previously deprecated library-mode API: `BindgenCrateConfigSupplier`,

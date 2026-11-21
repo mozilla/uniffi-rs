@@ -39,11 +39,12 @@ fun lowerBytes(v: kotlin.ByteArray): kotlin.ByteArray? = v
 
 // Optimized path for passing byte references from Kotlin -> Rust.
 // These are `&[u8]` on Rust and `ByteBuffer` on Kotlin.
+// Pass a `slice()` so Rust sees exactly the bytes in [position, limit).
 fun lowerBytesRef(v: java.nio.ByteBuffer): java.nio.ByteBuffer? {
     if (!v.isDirect()) {
         throw kotlin.IllegalArgumentException("Non-direct byte buffer")
     }
-    return v
+    return v.slice()
 }
 
 fun liftVecByte(value: kotlin.ByteArray?): kotlin.collections.List<kotlin.Byte> = value!!.toList()

@@ -84,6 +84,7 @@ internal open class ForeignBytes : Structure() {
 //
 // The provided `ByteBuffer` MUST be direct — only direct buffers have a
 // stable native address that JNA can expose via `getDirectBufferPointer`.
+// Rust borrows [position, limit); position and limit are not changed.
 // The returned `ForeignBytes.ByValue` is only valid for the duration of
 // the FFI call; the Rust side treats it as a borrow.
 internal object FfiConverterByRefBytes : FfiConverter<java.nio.ByteBuffer, ForeignBytes.ByValue> {
@@ -94,7 +95,8 @@ internal object FfiConverterByRefBytes : FfiConverter<java.nio.ByteBuffer, Forei
         fb.len = remaining
         // Zero-length direct buffers: skip getDirectBufferPointer (platform-variable behavior)
         // and pass null. The Rust side treats (null, 0) as &[].
-        fb.data = if (remaining == 0) null else com.sun.jna.Native.getDirectBufferPointer(value)
+        // getDirectBufferPointer ignores position(), so offset the pointer by it.
+        fb.data = if (remaining == 0) null else com.sun.jna.Native.getDirectBufferPointer(value)?.share(value.position().toLong())
         return fb
     }
 
