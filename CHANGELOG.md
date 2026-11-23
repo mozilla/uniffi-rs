@@ -57,6 +57,9 @@
   producing Swift and Kotlin bindings that failed to compile and Python bindings that referenced a
   nonexistent class (via [#3006](https://github.com/mozilla/uniffi-rs/issues/3006)).
 - Kotlin: Fixed messages for error classes that inherit `Throwable`, but not `Exception`.
+- Kotlin: Passing an object to Rust after `close()`, as an argument or inside a record or
+  collection, now throws `IllegalStateException`, like calling a method on it. Previously the freed handle was cloned, which is undefined behavior
+  on the Rust side (via [#3034](https://github.com/mozilla/uniffi-rs/issues/3034)).
 - Fix UDL remote enums, now allowing `[Enum, Remote] interface { ... }`
   (via [#2823](https://github.com/mozilla/uniffi-rs/issues/2823)).
 - Python: event-loop lookup now prefers the calling thread's running loop, falling back to the one

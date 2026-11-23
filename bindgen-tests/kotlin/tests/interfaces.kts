@@ -27,3 +27,25 @@ testInterface.methodWithMultiWordArg(theArgument="test")
 
 // Other bindgens test that we free references, but that's much harder for Kotlin.
 // For now, we don't test this at all
+
+// Using an object after `close()` throws, both as a receiver and as an argument
+val closedInterface = TestInterface(1u)
+closedInterface.close()
+try {
+    closedInterface.getValue()
+    throw RuntimeException("Expected IllegalStateException to be thrown")
+} catch (e: IllegalStateException) {
+    // Expected
+}
+try {
+    cloneInterface(closedInterface)
+    throw RuntimeException("Expected IllegalStateException to be thrown")
+} catch (e: IllegalStateException) {
+    // Expected
+}
+try {
+    swapTestInterfaces(TwoTestInterfaces(first=closedInterface, second=TestInterface(2u)))
+    throw RuntimeException("Expected IllegalStateException to be thrown")
+} catch (e: IllegalStateException) {
+    // Expected
+}
