@@ -110,5 +110,29 @@ You should build your cancellation in a separate, library specific channel; for 
 
 Cancellation can then be exposed in the API and be mapped to one of the error variants, or None/empty-vec/whatever makes sense.
 There's no builtin way to cancel a future, nor to cause/raise a platform native async cancellation error (eg, a swift `CancellationError`).
+The exception is Swift's opt-in `async_cancellable` configuration, described below.
 
 See also [this github PR](https://github.com/mozilla/uniffi-rs/pull/1768).
+
+### Swift: `async_cancellable`
+
+By default, cancelling the Swift `Task` that awaits a Rust async function has no effect on the Rust
+future: it runs to completion and the call returns its result.
+
+Rust futures are cancelled by dropping them, so a future has to be safe to drop at any `.await` point.
+If yours are, you can list them in `bindings.swift.async_cancellable`:
+
+```toml
+[bindings.swift]
+async_cancellable = ["my_function", "MyObject.method", "MyObject.new"]
+```
+
+Like `exclude`, the list uses the Rust/UDL names (before any `rename` is applied). It's an error to
+list a name that doesn't exist, isn't async, or is a method of a trait that can be implemented in Swift.
+
+For each cancellable function, method or constructor:
+
+- Cancelling the calling Swift task drops the Rust future and the call throws `CancellationError`.
+  If the future finished first, the call returns its result as usual.
+- The Swift declaration is `async throws`, even when the Rust function doesn't return a `Result`,
+  because Swift reports cancellation by throwing `CancellationError`.
