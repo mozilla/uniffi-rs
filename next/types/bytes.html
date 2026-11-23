@@ -2961,7 +2961,7 @@ use <code>Vec&lt;u8&gt;</code> / <code>bytes</code> instead.</p>
 <tr>
 <td>Kotlin</td>
 <td><code>java.nio.ByteBuffer</code></td>
-<td>Must be a <em>direct</em> buffer (<code>ByteBuffer.allocateDirect(...)</code>).</td>
+<td>Must be a <em>direct</em> buffer (<code>ByteBuffer.allocateDirect(...)</code>). Rust sees the bytes from <code>position()</code> to <code>limit()</code>.</td>
 </tr>
 <tr>
 <td>Swift</td>
@@ -3034,7 +3034,7 @@ the caller's buffer — no copy in or out.</p>
 <tr>
 <td>Kotlin</td>
 <td>direct <code>java.nio.ByteBuffer</code></td>
-<td>The same direct buffer as <code>[ByRef]</code>; writes land in it.</td>
+<td>The same direct buffer as <code>[ByRef]</code>; writes land in it between <code>position()</code> and <code>limit()</code>.</td>
 </tr>
 <tr>
 <td>Swift</td>
