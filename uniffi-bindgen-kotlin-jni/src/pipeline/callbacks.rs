@@ -162,6 +162,10 @@ impl CallbackMethod {
     }
 
     pub fn jni_method_call_name(&self) -> &'static str {
+        if self.callable.is_async {
+            // The dispatch function returns void, the result is sent through the oneshot channel
+            return "call_void";
+        }
         match self.callable.return_type() {
             Some(t) => match t.ffi_types.as_slice() {
                 [FfiType::Boolean] => "call_boolean",
