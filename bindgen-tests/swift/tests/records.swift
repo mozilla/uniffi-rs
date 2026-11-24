@@ -7,6 +7,9 @@ import uniffi_bindgen_tests
 assert(roundtripSimpleRec(rec: SimpleRec(a: 42)) == SimpleRec(a: 42))
 assert(UnitRec() == UnitRec())
 assert(
+  roundtripRecWithUnitField(rec: RecWithUnitField(unit: UnitRec(), a: 42))
+    == RecWithUnitField(unit: UnitRec(), a: 42))
+assert(
   roundtripComplexRec(
     rec: ComplexRec(
       fieldU8: 0,

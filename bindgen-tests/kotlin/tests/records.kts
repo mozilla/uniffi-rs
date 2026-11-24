@@ -3,6 +3,10 @@ import uniffi.uniffi_bindgen_tests.*
 assert(roundtripSimpleRec(SimpleRec(a=42.toUByte())) == SimpleRec(a=42.toUByte()))
 assert(UnitRec() == UnitRec())
 assert(
+  roundtripRecWithUnitField(RecWithUnitField(unit=UnitRec(), a=42.toUByte()))
+    == RecWithUnitField(unit=UnitRec(), a=42.toUByte())
+)
+assert(
   roundtripComplexRec(
     ComplexRec(
       fieldU8=0.toUByte(),

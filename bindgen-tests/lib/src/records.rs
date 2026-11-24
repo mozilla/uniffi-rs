@@ -17,6 +17,13 @@ impl SimpleRec {
 #[derive(uniffi::Record)]
 pub struct UnitRec;
 
+// Record where the first field has no data
+#[derive(uniffi::Record)]
+pub struct RecWithUnitField {
+    pub unit: UnitRec,
+    pub a: u8,
+}
+
 // Note: tuple-style records are currently not supported
 
 #[derive(uniffi::Record)]
@@ -42,5 +49,10 @@ pub fn roundtrip_simple_rec(rec: SimpleRec) -> SimpleRec {
 
 #[uniffi::export]
 pub fn roundtrip_complex_rec(rec: ComplexRec) -> ComplexRec {
+    rec
+}
+
+#[uniffi::export]
+pub fn roundtrip_rec_with_unit_field(rec: RecWithUnitField) -> RecWithUnitField {
     rec
 }

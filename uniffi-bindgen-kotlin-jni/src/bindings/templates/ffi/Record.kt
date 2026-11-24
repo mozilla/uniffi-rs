@@ -17,7 +17,12 @@ fun {{ rec.self_type.lower_fn_kt() }}(rec: {{ type_name }}): {{ rec.self_type.lo
     {%- endfor %}
 
     {%- if rec.self_type.lowers_to_primitive() %}
-    return uniffiFieldLowered0
+    {#- Return the one FFI value, which may not come from the first field #}
+    {%- for field in rec.fields %}
+    {%- for (var, _) in field.ty.ffi_values_kt(format!("uniffiFieldLowered{}", field.index)) %}
+    return {{ var }}
+    {%- endfor %}
+    {%- endfor %}
     {%- else %}
     return {{ rec.self_type.lowered_type_kt() }}(
         {%- for field in rec.fields %}

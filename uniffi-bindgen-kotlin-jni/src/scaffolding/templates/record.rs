@@ -10,7 +10,12 @@ unsafe fn {{ rec.self_type.lower_fn_rs() }}(
         {%- endfor %}
 
         {%- if rec.self_type.lowers_to_primitive() %}
-        uniffi::Result::Ok(uniffi_field_lowered_0)
+        {#- Return the one FFI value, which may not come from the first field #}
+        {%- for field in rec.fields %}
+        {%- for (var, _) in field.ty.ffi_values_rs(format!("uniffi_field_lowered_{}", field.index)) %}
+        uniffi::Result::Ok({{ var }})
+        {%- endfor %}
+        {%- endfor %}
         {%- else %}
         uniffi::Result::Ok((
             {%- for field in rec.fields %}
