@@ -42,3 +42,13 @@ assert(
 )
 // methods
 assert(SimpleRec(a: 42).roundtrip() == SimpleRec(a: 42))
+
+// large records
+let largeRec = createLargeRec()
+assert(largeRec.a.fieldString == "test10")
+assert(largeRec.c.fieldRec == SimpleRec(a: 30))
+assert(roundtripLargeRec(rec: largeRec) == largeRec)
+assert(largeRec.roundtrip() == largeRec)
+let nestedLargeRec = createNestedLargeRec()
+assert(nestedLargeRec.f == largeRec)
+assert(roundtripNestedLargeRec(rec: nestedLargeRec) == nestedLargeRec)

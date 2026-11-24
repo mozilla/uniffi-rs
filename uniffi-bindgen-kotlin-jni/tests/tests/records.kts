@@ -40,3 +40,13 @@ assert(
 
 // methods
 assert(SimpleRec(a=42.toUByte()).roundtrip() == SimpleRec(a=42.toUByte()))
+
+// large records
+val largeRec = createLargeRec()
+assert(largeRec.a.fieldString == "test10")
+assert(largeRec.c.fieldRec == SimpleRec(a=30.toUByte()))
+assert(roundtripLargeRec(largeRec) == largeRec)
+assert(largeRec.roundtrip() == largeRec)
+val nestedLargeRec = createNestedLargeRec()
+assert(nestedLargeRec.f == largeRec)
+assert(roundtripNestedLargeRec(nestedLargeRec) == nestedLargeRec)

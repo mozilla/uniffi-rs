@@ -41,3 +41,15 @@ assert(GappedEnum.three.rawValue == 14); // Explicit value again
 // Enum methods
 assert(EnumWithData.a(value: 20, value2: 40).roundtrip() == EnumWithData.a(value: 20, value2: 40))
 assert(EnumNoData.a.roundtrip() == EnumNoData.a)
+
+// large enums
+let largeRec = createLargeRec()
+let largeEnums = [
+    LargeEnum.a(a: largeRec.a, b: largeRec.b, c: largeRec.c),
+    LargeEnum.b(largeRec),
+    LargeEnum.c,
+]
+for largeEnum in largeEnums {
+    assert(roundtripLargeEnum(en: largeEnum) == largeEnum)
+    assert(largeEnum.roundtrip() == largeEnum)
+}

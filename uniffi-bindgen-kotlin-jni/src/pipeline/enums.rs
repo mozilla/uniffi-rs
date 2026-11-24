@@ -28,6 +28,8 @@ pub fn map_enum(input: general::Enum, context: &Context) -> Result<Enum> {
         }
     };
 
+    let passed_as_buffer = context.ffi_type_oracle.is_passed_as_buffer(&self_type.ty);
+    let buffer_size = context.layout_oracle.get(&self_type.ty)?.size();
     let ffi_types = context.ffi_type_oracle.get_ffi_types(&self_type.ty)?;
     let ffi_fields: Vec<FfiField> = ffi_types
         .iter()
@@ -39,7 +41,7 @@ pub fn map_enum(input: general::Enum, context: &Context) -> Result<Enum> {
     let variants = input
         .variants
         .into_iter()
-        .map(|v| map_variant(v, &input.name, &ffi_fields, &context))
+        .map(|v| map_variant(v, &input.name, &ffi_fields, passed_as_buffer, &context))
         .collect::<Result<Vec<_>>>()?;
 
     Ok(Enum {
@@ -60,6 +62,8 @@ pub fn map_enum(input: general::Enum, context: &Context) -> Result<Enum> {
         docstring: input.docstring,
         recursive: input.recursive,
         ffi_fields,
+        passed_as_buffer,
+        buffer_size,
     })
 }
 
@@ -67,11 +71,12 @@ pub fn map_variant(
     input: general::Variant,
     enum_name: &str,
     enum_ffi_fields: &[FfiField],
+    passed_as_buffer: bool,
     context: &Context,
 ) -> Result<Variant> {
     let name_kt = variant_name_kt(&input, context)?;
     let mut field_alloc = VariantFieldAllocator::new(enum_name, enum_ffi_fields);
-    let fields = map_fields(input.fields, &mut field_alloc, context)?;
+    let fields = map_fields(input.fields, &mut field_alloc, passed_as_buffer, context)?;
 
     Ok(Variant {
         name_kt,
@@ -88,6 +93,7 @@ pub fn map_variant(
 fn map_fields(
     input: Vec<general::Field>,
     field_alloc: &mut VariantFieldAllocator,
+    passed_as_buffer: bool,
     context: &Context,
 ) -> Result<Vec<Field>> {
     let mut layout_builder = FfiBufferLayoutBuilder::new();
@@ -97,11 +103,15 @@ fn map_fields(
         .enumerate()
         .map(|(index, input)| {
             let ty = input.ty.map_node(context)?;
-            let ffi_fields = ty
-                .ffi_types
-                .iter()
-                .map(|ffi_type| field_alloc.alloc(ffi_type))
-                .collect::<Result<Vec<_>>>()?;
+            let ffi_fields = if passed_as_buffer {
+                // The only FFI field is the buffer, so there's nothing to allocate
+                vec![]
+            } else {
+                ty.ffi_types
+                    .iter()
+                    .map(|ffi_type| field_alloc.alloc(ffi_type))
+                    .collect::<Result<Vec<_>>>()?
+            };
             let offset = layout_builder.extend(&ty.ty, context)?;
 
             Ok(Field {

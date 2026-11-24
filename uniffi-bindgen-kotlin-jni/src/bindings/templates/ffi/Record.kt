@@ -1,5 +1,24 @@
 {%- let type_name = rec.self_type.type_kt %}
 
+{%- if rec.passed_as_buffer %}
+// {{ rec.name }} deconstructs into too many FFI values, so it's passed as a FFI buffer
+@JvmName("{{ rec.self_type.lower_fn_kt() }}")
+fun {{ rec.self_type.lower_fn_kt() }}(rec: {{ type_name }}): java.nio.ByteBuffer {
+    val buf = uniffi.Scaffolding.ffiBufferAlloc({{ rec.buffer_size }}).order(java.nio.ByteOrder.nativeOrder())
+    {{ rec.self_type.write_fn_kt() }}(buf, 0, rec)
+    return buf
+}
+
+@JvmName("{{ rec.self_type.lift_fn_kt() }}")
+fun {{ rec.self_type.lift_fn_kt() }}(buf: java.nio.ByteBuffer?): {{ type_name }} {
+    val buf = buf!!.order(java.nio.ByteOrder.nativeOrder())
+    try {
+        return {{ rec.self_type.read_fn_kt() }}(buf, 0)
+    } finally {
+        uniffi.Scaffolding.ffiBufferFree(buf)
+    }
+}
+{%- else %}
 {%- if !rec.self_type.lowers_to_primitive() %}
 // Deconstructed version of {{ rec.name }}
 class {{ rec.self_type.lowered_type_kt() }}(
@@ -45,6 +64,7 @@ fun {{ rec.self_type.lift_fn_kt() }}(
         {%- endfor %}
     )
 }
+{%- endif %}
 
 fun {{ rec.self_type.write_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int, value: {{ type_name }}) {
     {%- for f in rec.fields %}

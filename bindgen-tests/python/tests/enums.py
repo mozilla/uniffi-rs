@@ -53,5 +53,16 @@ class TestEnums(unittest.TestCase):
         self.assertEqual(EnumWithData.A(1, 0).roundtrip(), EnumWithData.A(1, 0))
         self.assertEqual(EnumNoData.A.roundtrip(), EnumNoData.A)
 
+    def test_large_enums(self):
+        large_rec = create_large_rec()
+        large_enums = [
+            LargeEnum.A(a=large_rec.a, b=large_rec.b, c=large_rec.c),
+            LargeEnum.B(large_rec),
+            LargeEnum.C(),
+        ]
+        for large_enum in large_enums:
+            self.assertEqual(roundtrip_large_enum(large_enum), large_enum)
+            self.assertEqual(large_enum.roundtrip(), large_enum)
+
 if __name__ == '__main__':
     unittest.main()

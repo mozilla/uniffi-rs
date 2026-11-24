@@ -1,6 +1,32 @@
 {%- let type_name = en.self_type.type_rs %}
 
 {%- if !en.is_flat_error() %}
+{%- if en.passed_as_buffer %}
+// {{ en.name }} deconstructs into too many FFI values, so it's passed as a FFI buffer
+unsafe fn {{ en.self_type.lower_fn_rs() }}(
+    uniffi_env: *mut uniffi_jni::JNIEnv,
+    uniffi_value: {{ type_name }},
+) -> uniffi::Result<uniffi_jni::jobject> {
+    unsafe {
+        let capacity = {{ en.buffer_size }};
+        let ptr = uniffi::ffibuffer::alloc(capacity)?;
+        {{ en.self_type.write_fn_rs() }}(ptr, uniffi_value)?;
+        uniffi_jni::lower_buffer(uniffi_env, ptr, capacity)
+    }
+}
+
+unsafe fn {{ en.self_type.lift_fn_rs() }}(
+    uniffi_env: *mut uniffi_jni::JNIEnv,
+    byte_buffer: uniffi_jni::jobject,
+) -> uniffi::Result<{{ type_name }}> {
+    unsafe {
+        let (ptr, capacity) = uniffi_jni::lift_buffer(uniffi_env, byte_buffer)?;
+        let result = {{ en.self_type.read_fn_rs() }}(ptr);
+        uniffi::ffibuffer::free(ptr, capacity);
+        result
+    }
+}
+{%- else %}
 unsafe fn {{ en.self_type.lower_fn_rs() }}(
     uniffi_env: *mut uniffi_jni::JNIEnv,
     uniffi_value: {{ type_name }},
@@ -103,6 +129,7 @@ unsafe fn {{ en.self_type.lift_fn_rs() }}(
         }
     }
 }
+{%- endif %}
 
 unsafe fn {{ en.self_type.write_fn_rs() }}(
     ptr: *mut ::std::primitive::u8,

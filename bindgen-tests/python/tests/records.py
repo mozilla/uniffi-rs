@@ -48,5 +48,15 @@ class TestRecords(unittest.TestCase):
     def test_methods(self):
         self.assertEqual(SimpleRec(a=42).roundtrip(), SimpleRec(a=42))
 
+    def test_large_record(self):
+        large_rec = create_large_rec()
+        self.assertEqual(large_rec.a.field_string, "test10")
+        self.assertEqual(large_rec.c.field_rec, SimpleRec(a=30))
+        self.assertEqual(roundtrip_large_rec(large_rec), large_rec)
+        self.assertEqual(large_rec.roundtrip(), large_rec)
+        nested_large_rec = create_nested_large_rec()
+        self.assertEqual(nested_large_rec.f, large_rec)
+        self.assertEqual(roundtrip_nested_large_rec(nested_large_rec), nested_large_rec)
+
 if __name__ == '__main__':
     unittest.main()

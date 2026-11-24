@@ -85,6 +85,10 @@ pub struct Record {
     pub uniffi_trait_methods: UniffiTraitMethods,
     pub docstring: Option<String>,
     pub recursive: bool,
+    // Is this passed as a FFI buffer, rather than being deconstructed
+    pub passed_as_buffer: bool,
+    // Size of the record, when packed in a FFI buffer
+    pub buffer_size: usize,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -108,6 +112,10 @@ pub struct Enum {
     pub docstring: Option<String>,
     pub recursive: bool,
     pub ffi_fields: Vec<FfiField>,
+    // Is this passed as a FFI buffer, rather than being deconstructed
+    pub passed_as_buffer: bool,
+    // Size of the enum, when packed in a FFI buffer
+    pub buffer_size: usize,
 }
 
 /// Kotlin class for an exported interface
