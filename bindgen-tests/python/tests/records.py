@@ -8,6 +8,10 @@ class TestRecords(unittest.TestCase):
     def test_unit_record(self):
         self.assertEqual(UnitRec(), UnitRec())
 
+    def test_record_with_unit_field(self):
+        rec = RecWithUnitField(unit=UnitRec(), a=42)
+        self.assertEqual(roundtrip_rec_with_unit_field(rec), rec)
+
     def test_complex_record(self):
         self.assertEqual(
           roundtrip_complex_rec(
