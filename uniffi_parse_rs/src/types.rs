@@ -85,10 +85,12 @@ pub enum Type {
     Vec(Box<Type>),
     Arc(Box<Type>),
     Box(Box<Type>),
-    /// A boxed future (`Pin<Box<dyn Future<Output = T>>>` or an alias of it), carrying the
-    /// resolved `Output` type. A function returning this is treated as async, with `T` as
-    /// its effective return type. Only valid as a return type; unwrapped in
-    /// [`RPath::resolve_return_type`].
+    /// `Pin<T>`
+    Pin(Box<Type>),
+    /// `dyn Future<Output = T>`, carrying the resolved `Output` type.
+    ///
+    /// Only meaningful as part of a `Pin<Box<dyn Future<Output = T>>>` return type, which
+    /// [`RPath::resolve_return_type`] treats as an async function returning `T`.
     Future(Box<Type>),
     Slice(Box<Type>),
     HashMap(Box<Type>, Box<Type>),
@@ -118,6 +120,20 @@ pub enum Type {
 impl Type {
     pub fn is_self(&self) -> bool {
         matches!(self, Self::SelfTy)
+    }
+
+    /// If this is `Pin<Box<dyn Future<Output = T>>>`, return `T`
+    pub fn pinned_boxed_future_output(&self) -> Option<&Type> {
+        let Self::Pin(pinned) = self else {
+            return None;
+        };
+        let Self::Box(boxed) = pinned.as_ref() else {
+            return None;
+        };
+        match boxed.as_ref() {
+            Self::Future(output) => Some(output),
+            _ => None,
+        }
     }
 
     pub fn try_into_uniffi_meta(
@@ -343,15 +359,14 @@ impl<'ir> RPath<'ir> {
         syn_ty: &syn::Type,
         self_ty: Option<&uniffi_meta::Type>,
     ) -> Result<ReturnType> {
-        let mut resolved = self.resolve_type(ir, cache, syn_ty)?;
-        // A boxed future (`Pin<Box<dyn Future<Output = T>>>`, or an alias of it) marks the
-        // function async. Unwrap it and continue with `T` as the effective return type —
-        // matching how a real `async fn` presents its `Output` to the rest of the pipeline.
-        let is_async = if let Type::Future(inner) = resolved {
-            resolved = *inner;
-            true
-        } else {
-            false
+        // A `Pin<Box<dyn Future<Output = T>>>` return type (or an alias of it) marks the function
+        // async. Unwrap it and continue with `T` as the effective return type — matching how a
+        // real `async fn` presents its `Output` to the rest of the pipeline. Other shapes, like
+        // `Pin<T>` or `Box<dyn Future<…>>` on their own, are left as-is and rejected below.
+        let resolved = self.resolve_type(ir, cache, syn_ty)?;
+        let (resolved, is_async) = match resolved.pinned_boxed_future_output() {
+            Some(output) => (output.clone(), true),
+            None => (resolved, false),
         };
         Ok(match resolved {
             Type::Unit => ReturnType {
@@ -523,18 +538,12 @@ impl<'ir> RPath<'ir> {
                             }
                             BuiltinItem::Box => {
                                 let inner = generics.resolve1(ir, cache, self)?;
-                                // A boxed future stays a future; the `Box` is transparent so
-                                // that `Pin<Box<dyn Future<Output = T>>>` collapses to
-                                // `Type::Future(T)`.
-                                match inner {
-                                    Type::Future(_) => inner,
-                                    inner => Type::Box(Box::new(inner)),
-                                }
+                                Type::Box(Box::new(inner))
                             }
-                            // `Pin` is transparent for our purposes: we only care about it
-                            // wrapping a boxed future. Resolve the inner type and let the
-                            // `Box`/`Future` handling collapse it to `Type::Future`.
-                            BuiltinItem::Pin => generics.resolve1(ir, cache, self)?,
+                            BuiltinItem::Pin => {
+                                let inner = generics.resolve1(ir, cache, self)?;
+                                Type::Pin(Box::new(inner))
+                            }
                             BuiltinItem::HashMap => {
                                 let (key, value) = generics.resolve2(ir, cache, self)?;
                                 Type::HashMap(Box::new(key), Box::new(value))
@@ -2065,7 +2074,7 @@ pub mod tests {
             })
         );
 
-        // A plain `Box<T>` (no future) is not async and stays a box.
+        // A plain return type is not async.
         assert_eq!(
             run_resolve_return_type(&ir, &mut cache, "types", "u8", None),
             Ok(ReturnType {
@@ -2073,6 +2082,62 @@ pub mod tests {
                 err: None,
                 is_async: false,
             })
+        );
+
+        // Only the exact `Pin<Box<dyn Future<…>>>` shape is async. Other uses of `Pin`, or a
+        // boxed future that isn't pinned, aren't supported return types.
+        for ty in [
+            "::std::pin::Pin<TestRecord>",
+            "::std::pin::Pin<Box<TestRecord>>",
+            "Box<dyn ::std::future::Future<Output = u8> + Send>",
+        ] {
+            assert_eq!(
+                run_resolve_return_type(&ir, &mut cache, "types", ty, None),
+                Err(ErrorKind::InvalidType),
+                "{ty}",
+            );
+        }
+    }
+
+    #[test]
+    fn test_resolve_boxed_future_type() {
+        let ir = Ir::new_for_test(&["types"]);
+        let mut cache = LookupCache::default();
+
+        // `Pin` and `Box` are kept in the resolved type, rather than being collapsed into the
+        // future.
+        assert_eq!(
+            run_resolve_type(
+                &ir,
+                &mut cache,
+                "types",
+                "::std::pin::Pin<Box<dyn ::std::future::Future<Output = u8> + Send>>",
+            ),
+            Ok(Type::Pin(Box::new(Type::Box(Box::new(Type::Future(
+                Box::new(Type::UInt8)
+            )))))),
+        );
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types", "::std::pin::Pin<TestRecord>"),
+            Ok(Type::Pin(Box::new(Type::Record {
+                module_path: "types".into(),
+                name: "TestRecord".into(),
+            }))),
+        );
+    }
+
+    #[test]
+    fn test_resolve_boxed_future_return_type_aliases() {
+        let ir = Ir::new_for_test(&["type_aliases"]);
+        let mut cache = LookupCache::default();
+
+        assert_eq!(
+            run_resolve_return_type(&ir, &mut cache, "type_aliases", "U8Future", None),
+            Ok(ReturnType {
+                ok: Some(uniffi_meta::Type::UInt8),
+                err: None,
+                is_async: true,
+            }),
         );
     }
 }

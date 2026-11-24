@@ -28,6 +28,9 @@ pub type FileResult<T> = Result<T, FileError>;
 pub type FileResult2<T, E = FileError> = Result<T, E>;
 pub type FileResult3 = Result<u32, FileError>;
 
+// Alias for a boxed future, the shape `#[async_trait]` expands `async fn` into
+pub type U8Future = std::pin::Pin<Box<dyn std::future::Future<Output = u8> + Send>>;
+
 // Type aliases that form a circular reference
 pub type CircularAlias = CircularAlias2;
 pub type CircularAlias2 = CircularAlias;
