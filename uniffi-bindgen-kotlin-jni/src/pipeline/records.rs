@@ -63,6 +63,16 @@ impl Record {
     pub fn ffi_types(&self) -> impl Iterator<Item = &FfiType> {
         self.fields.iter().flat_map(Field::ffi_types)
     }
+
+    /// Index of the field that the FFI value comes from
+    ///
+    /// Only valid for records that lower to a primitive, where all other fields have no FFI values.
+    pub fn primitive_field_index(&self) -> usize {
+        self.fields
+            .iter()
+            .position(Field::lowers_to_primitive)
+            .unwrap()
+    }
 }
 
 impl Field {
