@@ -2,18 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use super::*;
 
 #[derive(Default, Clone)]
 pub struct Context {
     pub cdylib: Option<String>,
-    pub current_config: Option<PythonConfig>,
     pub module_namespace: Option<String>,
     pub recursive_type_names: HashSet<String>,
     pub builtin_types: Option<BuiltinTypes>,
     pub checksum_mode: Option<ChecksumMode>,
+    pub configs: HashMap<String, PythonConfig>,
 }
 
 impl Context {
@@ -21,14 +21,21 @@ impl Context {
         self.cdylib = root.cdylib.clone();
         self.checksum_mode = Some(root.checksum_mode.clone());
         self.builtin_types = Some(root.builtin_types.clone().map_node(self)?);
+        self.configs = root
+            .namespaces
+            .values()
+            .map(|namespace| {
+                let config = match &namespace.config_toml {
+                    Some(toml) => PythonConfig::from_uniffi_toml(toml)?,
+                    None => PythonConfig::default(),
+                };
+                Ok((namespace.name.clone(), config))
+            })
+            .collect::<Result<_>>()?;
         Ok(())
     }
 
     pub fn update_from_namespace(&mut self, namespace: &general::Namespace) -> Result<()> {
-        self.current_config = Some(match &namespace.config_toml {
-            Some(toml) => PythonConfig::from_uniffi_toml(toml)?,
-            None => PythonConfig::default(),
-        });
         self.module_namespace = Some(namespace.name.clone());
         let mut recursive_type_names = HashSet::new();
         namespace.visit(|e: &general::Enum| {
@@ -61,10 +68,23 @@ impl Context {
             .ok_or_else(|| anyhow!("Context.module_namespace not set"))
     }
 
+    /// Get the Python module name for a namespace
+    pub fn module_name<'a>(&'a self, namespace: &'a str) -> Result<&'a str> {
+        Ok(self
+            .config_for_namespace(namespace)?
+            .module_name
+            .as_deref()
+            .unwrap_or(namespace))
+    }
+
     pub fn config(&self) -> Result<&PythonConfig> {
-        self.current_config
-            .as_ref()
-            .ok_or_else(|| anyhow!("Context.config not set"))
+        self.config_for_namespace(self.module_namespace()?)
+    }
+
+    pub fn config_for_namespace(&self, namespace: &str) -> Result<&PythonConfig> {
+        self.configs
+            .get(namespace)
+            .ok_or_else(|| anyhow!("config map missing entry for {namespace}"))
     }
 
     pub fn cdylib(&self) -> Result<String> {
@@ -91,8 +111,10 @@ impl Context {
         let config = self.config()?;
 
         Ok(Some(match config.external_packages.get(namespace) {
-            None => namespace.to_string(),
-            Some(package_name) if package_name.is_empty() => namespace.to_string(),
+            None => self.module_name(namespace)?.to_string(),
+            Some(package_name) if package_name.is_empty() => {
+                self.module_name(namespace)?.to_string()
+            }
             Some(package_name) => package_name.clone(),
         }))
     }

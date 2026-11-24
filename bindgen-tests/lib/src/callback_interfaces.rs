@@ -62,6 +62,13 @@ pub fn invoke_test_callback_interface_echo(
     cbi.echo(s)
 }
 
+#[uniffi::export]
+pub fn invoke_optional_test_callback_interface_get_value(
+    cbi: Option<Box<dyn TestCallbackInterface>>,
+) -> Option<u32> {
+    cbi.map(|cbi| cbi.get_value())
+}
+
 impl From<uniffi::UnexpectedUniFFICallbackError> for TestError {
     fn from(e: uniffi::UnexpectedUniFFICallbackError) -> Self {
         Self::Failure2 { data: e.reason }
@@ -88,4 +95,44 @@ pub async fn invoke_boxed_future_trait(
     who: String,
 ) -> String {
     cbi.reply(ms, who).await
+}
+
+/// Callback interface for testing calls that re-enter Rust from inside a callback.
+///
+/// Rust calls `reenter` and the foreign implementation calls back into Rust before it returns,
+/// so several calls are in progress on the same thread at once.
+#[uniffi::export(callback_interface)]
+pub trait TestReentrantCallback {
+    fn reenter(&self, depth: u32) -> Result<u32, TestError>;
+}
+
+/// Call `cbi.reenter(depth)` and return its result plus one.
+///
+/// If `fail` is set, fail with `TestError::Failure3(depth)` after the callback has returned, so
+/// the outer call reports an error after the calls nested inside it have finished.
+#[uniffi::export]
+pub fn invoke_test_reentrant_callback(
+    cbi: Box<dyn TestReentrantCallback>,
+    depth: u32,
+    fail: bool,
+) -> Result<u32, TestError> {
+    let value = cbi.reenter(depth)?;
+    if fail {
+        return Err(TestError::Failure3(depth));
+    }
+    Ok(value + 1)
+}
+
+/// Callback interface with a method that returns a bool
+#[uniffi::export(callback_interface)]
+pub trait TestBoolCallbackInterface {
+    fn is_even(&self, value: u32) -> bool;
+}
+
+#[uniffi::export]
+pub fn invoke_test_bool_callback_interface_is_even(
+    cbi: Box<dyn TestBoolCallbackInterface>,
+    value: u32,
+) -> bool {
+    cbi.is_even(value)
 }

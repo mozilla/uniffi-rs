@@ -83,6 +83,60 @@ runBlocking {
     ) == CallbackInterfaceNumbers(a=10u, b=11u))
 }
 
+// Async callback interfaces with fallible methods that return non-record values
+class AsyncFallibleCallbackImpl : TestAsyncFallibleCallbackInterface {
+    override suspend fun getU64(fail: Boolean): ULong {
+        if (fail) {
+            throw TestException.Failure1()
+        }
+        return 42uL
+    }
+
+    override suspend fun getBool(fail: Boolean): Boolean {
+        if (fail) {
+            throw TestException.Failure1()
+        }
+        return true
+    }
+
+    override suspend fun getString(fail: Boolean): String {
+        if (fail) {
+            throw TestException.Failure1()
+        }
+        return "hello"
+    }
+
+    override suspend fun getOptionalString(fail: Boolean): String? {
+        if (fail) {
+            throw TestException.Failure1()
+        }
+        return null
+    }
+}
+
+suspend fun assertThrowsFailure1(block: suspend () -> Unit) {
+    try {
+        block()
+        throw RuntimeException("Expected TestException.Failure1")
+    } catch (e: TestException.Failure1) {
+        // expected
+    }
+}
+
+runBlocking {
+    val cbi = AsyncFallibleCallbackImpl()
+
+    assert(invokeTestAsyncFallibleCallbackInterfaceGetU64(cbi, false) == 42uL)
+    assert(invokeTestAsyncFallibleCallbackInterfaceGetBool(cbi, false))
+    assert(invokeTestAsyncFallibleCallbackInterfaceGetString(cbi, false) == "hello")
+    assert(invokeTestAsyncFallibleCallbackInterfaceGetOptionalString(cbi, false) == null)
+
+    assertThrowsFailure1 { invokeTestAsyncFallibleCallbackInterfaceGetU64(cbi, true) }
+    assertThrowsFailure1 { invokeTestAsyncFallibleCallbackInterfaceGetBool(cbi, true) }
+    assertThrowsFailure1 { invokeTestAsyncFallibleCallbackInterfaceGetString(cbi, true) }
+    assertThrowsFailure1 { invokeTestAsyncFallibleCallbackInterfaceGetOptionalString(cbi, true) }
+}
+
 // Callback interface whose async method is a hand-written boxed future (no `#[async_trait]`).
 // It should be exposed as a `suspend fun` and behave like any other async callback method.
 class BoxedFutureCallbackImpl : BoxedFutureTrait {

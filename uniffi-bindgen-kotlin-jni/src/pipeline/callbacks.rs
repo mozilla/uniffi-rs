@@ -13,6 +13,7 @@ pub fn map_callback_interface(
         methods: map_methods(&self_type, input.vtable, context)?,
         module_path: context.rust_module_path_for_type(&self_type.ty)?,
         self_type,
+        package_name: context.current_package_name()?.to_string(),
         name: input.name,
         orig_name: input.orig_name,
         docstring: input.docstring,
@@ -38,6 +39,7 @@ pub fn map_trait_interface(
             context,
         )?,
         self_type,
+        package_name: context.current_package_name()?.to_string(),
         name: input.name,
         orig_name: input.orig_name,
         module_path: context.normalize_rust_module_path(&input.module_path)?,
@@ -95,6 +97,10 @@ impl CallbackInterface {
 
     pub fn name_rs(&self) -> String {
         names::escape_rust(&self.orig_name)
+    }
+
+    pub fn package_jni_path(&self) -> String {
+        self.package_name.replace(".", "/")
     }
 
     pub fn has_async_method(&self) -> bool {
@@ -170,7 +176,8 @@ impl CallbackMethod {
     pub fn jni_method_call_name(&self) -> &'static str {
         match self.callable.return_type() {
             Some(t) => match t.ffi_types.as_slice() {
-                [FfiType::Int8] | [FfiType::Boolean] => "call_byte",
+                [FfiType::Boolean] => "call_boolean",
+                [FfiType::Int8] => "call_byte",
                 [FfiType::Int16] => "call_short",
                 [FfiType::Int32] => "call_int",
                 [FfiType::Int64] => "call_long",

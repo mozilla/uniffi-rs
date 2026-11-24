@@ -144,7 +144,8 @@
     {%- for arg in func.arguments() %}
         {{- arg.name()|var_name }}: {{ arg.type_().borrow()|ffi_type_name_by_value(ci) -}},
     {%- endfor %}
-    {%- if func.has_rust_call_status_arg() %}uniffi_out_err: UniffiRustCallStatus, {% endif %}
+    {#- A plain pointer rather than a `UniffiRustCallStatus` Structure, see `UniffiRustCallStatusBuffer` #}
+    {%- if func.has_rust_call_status_arg() %}uniffi_out_err: Pointer, {% endif %}
 {%- endmacro -%}
 
 {% macro field_name(field, field_num) %}

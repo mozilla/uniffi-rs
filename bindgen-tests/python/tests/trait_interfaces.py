@@ -107,6 +107,17 @@ class TestTraitInterfaces(unittest.TestCase):
         del impl
         self.assertEqual(TraitImpl.ref_count, 0)
 
+    def test_rust_impl_roundtripped_optional(self):
+        self.assertIsNone(roundtrip_optional_test_trait_interface(None))
+        impl = roundtrip_optional_test_trait_interface(create_test_trait_interface(42))
+        self.check_rust_impl(impl)
+
+    def test_py_impl_roundtripped_optional(self):
+        impl = roundtrip_optional_test_trait_interface(TraitImpl(42))
+        self.check_py_impl(impl)
+        del impl
+        self.assertEqual(TraitImpl.ref_count, 0)
+
 class AsyncTraitImpl(AsyncTestTraitInterface):
     ref_count = 0
 
@@ -221,6 +232,15 @@ class TestForeignOnlyTraitInterfaces(unittest.TestCase):
 
     def test_foreign_only_impl_roundtripped(self):
         self.check_foreign_only_impl(roundtrip_test_foreign_only_trait(ForeignOnlyImpl()))
+
+class DebugTraitImpl(TestDebugTraitInterface):
+    def get_value(self):
+        return 42
+
+class TestDebugTraitInterfaces(unittest.TestCase):
+    def test_debug_supertrait(self):
+        self.assertEqual(invoke_test_debug_trait_interface_get_value(DebugTraitImpl()), 42)
+        self.assertTrue(test_debug_trait_interface_has_debug_output(DebugTraitImpl()))
 
 if __name__ == '__main__':
     unittest.main()

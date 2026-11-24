@@ -81,6 +81,11 @@ mod test {
     }
 
     #[test]
+    fn test_methods() {
+        run_tests(test_dir(), "tests/methods.py");
+    }
+
+    #[test]
     fn test_references() {
         run_tests(test_dir(), "tests/references.py");
     }
@@ -118,6 +123,11 @@ mod test {
     #[test]
     fn test_rust_traits() {
         run_tests(test_dir(), "tests/rust_traits.py");
+    }
+
+    #[test]
+    fn test_udl() {
+        run_tests(test_dir(), "tests/udl.py");
     }
 
     fn test_dir() -> &'static Utf8Path {

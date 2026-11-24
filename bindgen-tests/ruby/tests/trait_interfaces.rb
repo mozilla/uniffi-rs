@@ -155,6 +155,29 @@ class TestTraitInterfaces < Test::Unit::TestCase
 
     assert_equal 0, TraitImpl.ref_count
   end
+
+  def test_rust_impl_roundtripped_optional
+    assert_nil UniffiBindgenTests.roundtrip_optional_test_trait_interface(nil)
+
+    check_rust_impl(
+      UniffiBindgenTests.roundtrip_optional_test_trait_interface(
+        UniffiBindgenTests.create_test_trait_interface(42)
+      )
+    )
+  end
+
+  def test_rb_impl_roundtripped_optional
+    assert_nil UniffiBindgenTests.roundtrip_optional_test_trait_interface(nil)
+
+    impl = UniffiBindgenTests.roundtrip_optional_test_trait_interface(TraitImpl.new(42))
+    check_rb_impl(impl)
+    # rubocop:disable Lint/UselessAssignment
+    impl = nil
+    # rubocop:enable Lint/UselessAssignment
+    GC.start
+
+    assert_equal 0, TraitImpl.ref_count
+  end
 end
 
 class TestAsyncTraitInterfaces < Test::Unit::TestCase

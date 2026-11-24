@@ -46,11 +46,12 @@
 //!   * Error messages and general developer experience leave a lot to be desired.
 
 use std::{
-    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
+    collections::{BTreeMap, BTreeSet, HashSet},
     iter,
 };
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
+use indexmap::{IndexMap, IndexSet};
 
 pub mod universe;
 pub use uniffi_meta::{AsType, EnumShape, ObjectImpl, TraitKind, Type};
@@ -81,9 +82,9 @@ pub use ffi::{
 };
 pub use uniffi_meta::Radix;
 use uniffi_meta::{
-    ConstructorMetadata, DefaultValueMetadata, LiteralMetadata, MethodMetadata, NamespaceMetadata,
-    ObjectMetadata, ObjectTraitImplMetadata, TraitMethodMetadata, UniffiTraitMetadata,
-    UNIFFI_CONTRACT_VERSION,
+    crate_name, ConstructorMetadata, DefaultValueMetadata, LiteralMetadata, MethodMetadata,
+    NamespaceMetadata, ObjectMetadata, ObjectTraitImplMetadata, TraitMethodMetadata,
+    UniffiTraitMetadata, UNIFFI_CONTRACT_VERSION,
 };
 pub type Literal = LiteralMetadata;
 pub type DefaultValue = DefaultValueMetadata;
@@ -388,11 +389,7 @@ impl ComponentInterface {
 
     pub fn namespace_for_module_path(&self, module_path: &str) -> Result<&str> {
         // Need the `replace()` call to handle items from `uniffi_udl`
-        let crate_name = module_path
-            .split("::")
-            .next()
-            .unwrap_or(module_path)
-            .replace("-", "_");
+        let crate_name = crate_name(module_path).replace("-", "_");
         self.crate_to_namespace
             .get(&crate_name)
             .map(|n| n.name.as_ref())
@@ -469,9 +466,10 @@ impl ComponentInterface {
     }
 
     pub fn find_component_interface(&self, module_path: &str) -> Option<&ComponentInterface> {
+        let crate_name = crate_name(module_path);
         self.all_component_interfaces
             .iter()
-            .find(|ci| ci.crate_name() == module_path)
+            .find(|ci| ci.crate_name() == crate_name)
     }
 
     // The namespace to use in crate-level FFI function definitions. Not used as the ffi
@@ -1243,9 +1241,9 @@ impl ComponentInterface {
     /// Both enums and records are nodes. Edges point from a type to every
     /// other enum or record name directly reachable through its fields
     /// (unwrapping `Optional`/`Sequence`/`Map` wrappers).
-    fn type_dep_graph(&self) -> HashMap<String, HashSet<String>> {
+    fn type_dep_graph(&self) -> IndexMap<String, IndexSet<String>> {
         let enum_entries = self.enums.iter().map(|e| {
-            let deps: HashSet<String> = e
+            let deps: IndexSet<String> = e
                 .variants()
                 .iter()
                 .flat_map(|v| v.fields())
@@ -1254,7 +1252,7 @@ impl ComponentInterface {
             (e.name().to_string(), deps)
         });
         let record_entries = self.records.iter().map(|r| {
-            let deps: HashSet<String> = r
+            let deps: IndexSet<String> = r
                 .fields()
                 .iter()
                 .flat_map(|f| type_names_in_type(&f.as_type()))
@@ -1329,11 +1327,9 @@ impl<'a> RecursiveTypeIterator<'a> {
             }
             | Type::CallbackInterface {
                 module_path, name, ..
-            } => {
-                if !self.seen.contains(&(module_path.as_str(), name.as_str())) {
-                    self.pending.push(type_);
-                    self.seen.insert((module_path.as_str(), name.as_str()));
-                }
+            } if !self.seen.contains(&(module_path.as_str(), name.as_str())) => {
+                self.pending.push(type_);
+                self.seen.insert((module_path.as_str(), name.as_str()));
             }
             _ => (),
         }
@@ -1430,9 +1426,12 @@ fn throws_name(throws: &Option<Type>) -> Option<&str> {
 /// Unwraps `Optional`/`Sequence`/`Map` wrappers but does not cross type
 /// definition boundaries — both `Enum` and `Record` references are returned
 /// as-is rather than recursed into, because they are nodes in their own right.
+///
+/// Custom types are followed through to their builtin type.
 fn type_names_in_type(ty: &Type) -> Vec<String> {
     match ty {
         Type::Enum { name, .. } | Type::Record { name, .. } => vec![name.clone()],
+        Type::Custom { builtin, .. } => type_names_in_type(builtin),
         Type::Box { inner_type }
         | Type::Optional { inner_type }
         | Type::Sequence { inner_type }
@@ -1759,7 +1758,7 @@ new definition: Enum {
         )
         .unwrap();
         let graph = ci.type_dep_graph();
-        assert_eq!(graph["Quine"], HashSet::from(["Quine".to_string()]));
+        assert_eq!(graph["Quine"], IndexSet::from(["Quine".to_string()]));
     }
 
     #[test]
@@ -1779,7 +1778,7 @@ new definition: Enum {
         )
         .unwrap();
         let graph = ci.type_dep_graph();
-        assert_eq!(graph["Socks"], HashSet::from(["Sock".to_string()]));
+        assert_eq!(graph["Socks"], IndexSet::from(["Sock".to_string()]));
     }
 
     #[test]
@@ -1797,7 +1796,7 @@ new definition: Enum {
         )
         .unwrap();
         let graph = ci.type_dep_graph();
-        assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
+        assert_eq!(graph["Outer"], IndexSet::from(["Inner".to_string()]));
     }
 
     #[test]
@@ -1815,7 +1814,7 @@ new definition: Enum {
         )
         .unwrap();
         let graph = ci.type_dep_graph();
-        assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
+        assert_eq!(graph["Outer"], IndexSet::from(["Inner".to_string()]));
     }
 
     #[test]
@@ -1833,7 +1832,7 @@ new definition: Enum {
         )
         .unwrap();
         let graph = ci.type_dep_graph();
-        assert_eq!(graph["Outer"], HashSet::from(["Inner".to_string()]));
+        assert_eq!(graph["Outer"], IndexSet::from(["Inner".to_string()]));
     }
 
     #[test]
@@ -1875,6 +1874,32 @@ new definition: Enum {
         .unwrap();
         let graph = ci.type_dep_graph();
         assert!(graph["Verdict"].is_empty());
+    }
+
+    #[test]
+    fn dep_graph_custom_type_propagates_dep() {
+        // Node -> Wrapped (a custom type over Inner) -> Inner -> Node is a cycle.
+        let ci = ComponentInterface::from_webidl(
+            r#"
+            namespace test {};
+            dictionary Inner {
+                Node? next;
+            };
+            [Custom]
+            typedef Inner Wrapped;
+            [Enum]
+            interface Node {
+                W(Wrapped wrapped);
+                Leaf();
+            };
+            "#,
+            "crate",
+        )
+        .unwrap();
+        let graph = ci.type_dep_graph();
+        assert_eq!(graph["Node"], IndexSet::from(["Inner".to_string()]));
+        assert!(ci.is_recursive("Node"));
+        assert!(ci.is_recursive("Inner"));
     }
 
     #[test]

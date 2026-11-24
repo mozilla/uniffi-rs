@@ -27,6 +27,8 @@ pub struct BindingsConfig {
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct PythonConfig {
     pub(super) cdylib_name: Option<String>,
+    /// Name of the generated Python module (defaults to the namespace name)
+    pub module_name: Option<String>,
     #[serde(default)]
     pub custom_types: IndexMap<String, CustomTypeConfig>,
     #[serde(default)]

@@ -68,20 +68,33 @@ fun {{ opt.self_type.lift_fn_kt() }}(handle: kotlin.Long): {{ type_name }} {
     }
 }
 
+{%- else if opt.inner.is_callback_interface() %}
+
+@JvmName("{{ opt.self_type.lower_fn_kt() }}")
+fun {{ opt.self_type.lower_fn_kt() }}(value: {{ type_name }}): kotlin.Long {
+    if (value == null) {
+        return 0
+    } else {
+        return {{ opt.inner.lower_fn_kt() }}(value)
+    }
+}
+
 {%- endif %}
 
 fun {{ opt.self_type.write_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int, value: {{ type_name }}) {
     if (value == null) {
-        writeBoolean(buf, offset, false)
+        writeByte(buf, offset, 0.toByte())
     } else {
-        writeBoolean(buf, offset, true)
+        writeByte(buf, offset, 1.toByte())
         {{ opt.inner.write_fn_kt() }}(buf, offset + {{ opt.some_offset }}, value)
     }
 }
 
+{%- if !opt.inner.is_callback_interface() %}
 fun {{ opt.self_type.read_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int): {{ type_name }} {
-    return when (readBoolean(buf, offset)) {
-        false -> null
-        true -> {{ opt.inner.read_fn_kt() }}(buf, offset + {{ opt.some_offset }})
+    return when (readByte(buf, offset)) {
+        0.toByte() -> null
+        else -> {{ opt.inner.read_fn_kt() }}(buf, offset + {{ opt.some_offset }})
     }
 }
+{%- endif %}

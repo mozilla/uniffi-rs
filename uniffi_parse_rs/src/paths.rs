@@ -19,6 +19,7 @@ use crate::{
 
 // For tests only, print tracing info.
 // This makes it easier to debug errors in path resolution
+#[macro_export]
 macro_rules! trace {
     ($($tt:tt)*) => {
         #[cfg(test)]
@@ -107,6 +108,18 @@ impl<'ir> RPath<'ir> {
         self.module().expect("file_id failed").source
     }
 
+    pub fn syn_path(&self) -> syn::Path {
+        syn::Path {
+            leading_colon: None,
+            segments: self
+                .items
+                .iter()
+                .filter_map(|i| i.ident())
+                .map(syn::PathSegment::from)
+                .collect(),
+        }
+    }
+
     pub fn path_string(&self) -> String {
         let mut path = String::new();
         for (i, item) in self.items.iter().enumerate() {
@@ -147,6 +160,8 @@ impl<'ir> RPath<'ir> {
                     BuiltinItem::UnexpectedUniFFICallbackError => {
                         path.push_str("UnexpectedUniFFICallbackError")
                     }
+                    BuiltinItem::CfgSelectMacro => path.push_str("cfg_select"),
+                    BuiltinItem::CfgIfMacro => path.push_str("cfg_if"),
                 }
             } else {
                 path.push_str(&item.name());
@@ -337,12 +352,6 @@ impl<'ir> RPath<'ir> {
         namespace: Namespace,
     ) -> Result<ChildItem<'ir>> {
         let ident = ident.unraw();
-        if let Some(path) = self.child_udl_item(module, &ident, namespace)? {
-            return Ok(ChildItem {
-                path,
-                vis: Visibility::Public,
-            });
-        }
         if let Some(child) = self.child_special_item(ir, cache, module, &ident, namespace)? {
             return Ok(child);
         }
@@ -353,10 +362,15 @@ impl<'ir> RPath<'ir> {
             return Ok(child);
         }
         if let Some(child) = self.child_glob_use(ir, cache, &ident, use_globs, namespace)? {
-            Ok(child)
-        } else {
-            Err(Error::new(self.file_id(), ident.span(), NotFound))
+            return Ok(child);
         }
+        if let Some(path) = self.child_udl_item(module, &ident, namespace)? {
+            return Ok(ChildItem {
+                path,
+                vis: Visibility::Public,
+            });
+        }
+        Err(Error::new(self.file_id(), ident.span(), NotFound))
     }
 
     /// Try to find a UDL item for [Self::child]
@@ -568,6 +582,26 @@ impl<'ir> RPath<'ir> {
             })),
         }
     }
+
+    /// Try to resolve a syn path to a builtin item
+    ///
+    /// Returns an option instead of a result, since the main use-case for this is finding if a
+    /// macro call came from a builtin macro.  If there's an error, we just ignore the call.
+    pub fn resolve_builtin(
+        &self,
+        ir: &'ir Ir,
+        cache: &mut LookupCache<'ir>,
+        path: &Path,
+        namespace: Namespace,
+    ) -> Option<BuiltinItem> {
+        match self.resolve(ir, cache, path, namespace) {
+            Err(_) => None,
+            Ok(rpath) => match rpath.item() {
+                Ok(Item::Builtin(b)) => Some(*b),
+                _ => None,
+            },
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -588,8 +622,8 @@ impl Visibility {
     }
 }
 
-impl From<syn::Visibility> for Visibility {
-    fn from(vis: syn::Visibility) -> Self {
+impl From<&syn::Visibility> for Visibility {
+    fn from(vis: &syn::Visibility) -> Self {
         match vis {
             syn::Visibility::Public(_) => Self::Public,
             _ => Self::Private,
@@ -619,10 +653,14 @@ impl Namespace {
                 | Item::CustomType(_)
                 | Item::Udl(_)
                 | Item::Type(_)
-                | Item::UseRemoteType(_) => true,
+                | Item::UseRemoteType(_)
+                | Item::NonUniffi(_, _) => true,
                 Item::Builtin(builtin) => !matches!(
                     builtin,
-                    BuiltinItem::UniffiMacro(_) | BuiltinItem::UniffiDerive(_)
+                    BuiltinItem::UniffiMacro(_)
+                        | BuiltinItem::UniffiDerive(_)
+                        | BuiltinItem::CfgSelectMacro
+                        | BuiltinItem::CfgIfMacro
                 ),
                 _ => false,
             },
@@ -631,12 +669,17 @@ impl Namespace {
                 Item::Builtin(builtin) => {
                     matches!(
                         builtin,
-                        BuiltinItem::UniffiMacro(_) | BuiltinItem::UniffiDerive(_)
+                        BuiltinItem::UniffiMacro(_)
+                            | BuiltinItem::UniffiDerive(_)
+                            | BuiltinItem::CfgSelectMacro
+                            | BuiltinItem::CfgIfMacro
                     )
                 }
                 _ => true,
             },
-            Self::NonUniffiType => matches!(item, Item::NonUniffi(_, _)),
+            Self::NonUniffiType => {
+                matches!(item, Item::NonUniffi(_, _) | Item::Type(_))
+            }
         }
     }
 }
@@ -733,6 +776,10 @@ fn get_builtin_item(path: &Path) -> Option<&'static Item> {
         "std::sync::Arc" => Some(&Item::Builtin(BuiltinItem::Arc)),
         "std::time::SystemTime" => Some(&Item::Builtin(BuiltinItem::SystemTime)),
         "std::time::Duration" => Some(&Item::Builtin(BuiltinItem::Duration)),
+        "cfg_select" | "std::cfg_select" | "core::cfg_select" => {
+            Some(&Item::Builtin(BuiltinItem::CfgSelectMacro))
+        }
+        "cfg_if::cfg_if" => Some(&Item::Builtin(BuiltinItem::CfgIfMacro)),
         "uniffi::custom_type" => Some(&Item::Builtin(BuiltinItem::UniffiMacro("custom_type"))),
         "uniffi::custom_newtype" => {
             Some(&Item::Builtin(BuiltinItem::UniffiMacro("custom_newtype")))
@@ -761,7 +808,7 @@ pub mod tests {
 
     use super::*;
 
-    fn run_resolve_item<'ir>(
+    pub fn run_resolve_item<'ir>(
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
         module_path: &str,
@@ -1092,9 +1139,9 @@ pub mod tests {
         let mut ir = Ir::new_for_test(&["raw_idents"]);
         let mut cache = LookupCache::default();
 
-        ir.add_udl_metadata(
-            "raw_idents",
-            vec![uniffi_meta::RecordMetadata {
+        ir.lookup_root_module_mut("raw_idents")
+            .unwrap()
+            .add_udl_metadata(vec![uniffi_meta::RecordMetadata {
                 module_path: "raw_idents".into(),
                 name: "Record".into(),
                 orig_name: None,
@@ -1102,9 +1149,7 @@ pub mod tests {
                 fields: vec![],
                 docstring: None,
             }
-            .into()],
-        )
-        .unwrap();
+            .into()]);
         assert_eq!(
             run_resolve_item(&ir, &mut cache, "raw_idents", "r#Record"),
             Ok("raw_idents::Record".to_string()),

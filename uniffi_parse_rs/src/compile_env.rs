@@ -34,6 +34,10 @@ impl CompileEnv {
         self.parse_attrs(attrs).map(|m| m.is_some())
     }
 
+    pub fn should_process_non_uniffi(&self, attrs: &[Attribute]) -> bool {
+        matches!(self.parse_attrs(attrs), Ok(Some(_)))
+    }
+
     /// Parse attributes, taking into account the `#[cfg]` and `#[cfg_attr]` logic.
     ///
     /// Returns None if a `#[cfg]` attribute fails to match.
@@ -66,7 +70,7 @@ impl CompileEnv {
     }
 
     #[allow(clippy::match_like_matches_macro)]
-    fn check(&self, meta: &Meta) -> syn::Result<bool> {
+    pub fn check(&self, meta: &Meta) -> syn::Result<bool> {
         let mut matched;
         let path = meta.path();
         if path.is_ident("all") {
@@ -118,7 +122,6 @@ impl CompileEnv {
                 Err(_) => false,
             };
         } else {
-            path.is_ident("test");
             matched = false;
         }
         Ok(matched)

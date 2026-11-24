@@ -127,6 +127,7 @@ pub fn create_metadata_items(
     });
 
     quote! {
+        #[allow(clippy::large_const_arrays)]
         const #const_ident: ::uniffi::MetadataBuffer = #metadata_expr;
         #[unsafe(no_mangle)]
         #[doc(hidden)]
@@ -150,7 +151,7 @@ pub fn orig_name_metadata(name_from_attrs: bool, ident: &Ident) -> TokenStream {
     }
 }
 
-pub fn try_metadata_value_from_usize(value: usize, error_message: &str) -> syn::Result<u8> {
+pub fn try_metadata_value_from_usize(value: usize, error_message: &str) -> syn::Result<u32> {
     value
         .try_into()
         .map_err(|_| syn::Error::new(Span::call_site(), error_message))
@@ -329,7 +330,7 @@ pub(crate) fn wasm_single_threaded_annotation() -> TokenStream {
     #[cfg(feature = "wasm-unstable-single-threaded")]
     {
         quote! {
-            #[cfg(not(target_arch = "wasm32"))]
+            #[cfg(not(target_family = "wasm"))]
         }
     }
     #[cfg(not(feature = "wasm-unstable-single-threaded"))]
@@ -342,13 +343,16 @@ pub(crate) fn async_trait_annotation() -> TokenStream {
     #[cfg(feature = "wasm-unstable-single-threaded")]
     {
         quote! {
-            #[cfg_attr(not(target_arch = "wasm32"), ::async_trait::async_trait)]
-            #[cfg_attr(target_arch = "wasm32", ::async_trait::async_trait(?Send))]
+            #[cfg_attr(not(target_family = "wasm"), ::async_trait::async_trait)]
+            #[cfg_attr(target_family = "wasm", ::async_trait::async_trait(?Send))]
         }
     }
     #[cfg(not(feature = "wasm-unstable-single-threaded"))]
     {
+        // Note: double_must_use is needed until we update async-trait to 0.1.92 or so, but we're
+        // currently holding that back because it requires upgrading to syn v3.
         quote! {
+            #[allow(clippy::double_must_use)]
             #[::async_trait::async_trait]
         }
     }

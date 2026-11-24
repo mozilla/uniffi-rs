@@ -13,6 +13,9 @@ enum class {{ type_name }} {
     {{ v.name_kt }}{% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
 
+    {%- let methods = en.methods %}
+    {% filter indent(4) %}{% include "Methods.kt" %}{% endfilter %}
+
     companion object
 }
 
@@ -21,6 +24,9 @@ enum class {{ type_name }}(val value: {{ en.discr_type.type_kt }}) {
     {% for v in en.variants -%}
     {{ v.name_kt }}({{ v.discr.lit_kt }}){% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
+
+    {%- let methods = en.methods %}
+    {% filter indent(4) %}{% include "Methods.kt" %}{% endfilter %}
 
     companion object
 }
@@ -48,6 +54,9 @@ sealed class {{ type_name }}
     ) : {{ type_name }}()
     {%- endif %}
     {% endfor %}
+
+    {%- let methods = en.methods %}
+    {% filter indent(4) %}{% include "Methods.kt" %}{% endfilter %}
 
     {%- let uniffi_trait_methods = en.uniffi_trait_methods %}
     {% filter indent(4) %}{% include "UniffiTraitMethods.kt" %}{% endfilter %}

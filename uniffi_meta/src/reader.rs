@@ -464,7 +464,7 @@ impl<'a> MetadataReader<'a> {
     }
 
     fn read_fields(&mut self) -> Result<Vec<FieldMetadata>> {
-        let len = self.read_u8()?;
+        let len = self.read_u32()?;
         (0..len)
             .map(|_| {
                 let name = self.read_string()?;
@@ -483,7 +483,7 @@ impl<'a> MetadataReader<'a> {
     }
 
     fn read_variants(&mut self) -> Result<Vec<VariantMetadata>> {
-        let len = self.read_u8()?;
+        let len = self.read_u32()?;
         (0..len)
             .map(|_| {
                 Ok(VariantMetadata {
@@ -498,7 +498,7 @@ impl<'a> MetadataReader<'a> {
     }
 
     fn read_flat_variants(&mut self) -> Result<Vec<VariantMetadata>> {
-        let len = self.read_u8()?;
+        let len = self.read_u32()?;
         (0..len)
             .map(|_| {
                 Ok(VariantMetadata {
@@ -513,7 +513,7 @@ impl<'a> MetadataReader<'a> {
     }
 
     fn read_inputs(&mut self) -> Result<Vec<FnParamMetadata>> {
-        let len = self.read_u8()?;
+        let len = self.read_u32()?;
         (0..len)
             .map(|_| {
                 let name = self.read_string()?;
@@ -536,7 +536,7 @@ impl<'a> MetadataReader<'a> {
         let by_mut_ref = self.read_bool()?;
         Ok(match (by_ref, by_mut_ref) {
             (false, false) => PassBy::Value,
-            (true, false) => PassBy::Ref,
+            (true, false) => PassBy::ref_(),
             (true, true) => PassBy::MutRef,
             (false, true) => bail!("Invalid pass_by combination: by_ref=false and by_mut_ref=true"),
         })

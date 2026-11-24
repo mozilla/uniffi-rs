@@ -10,15 +10,9 @@ use syn::{ext::IdentExt, Ident};
 use uniffi_meta::MetadataGroup;
 
 use crate::{
-    attrs::{
-        EnumAttributes, FunctionAttributes, ImplAttributes, ObjectAttributes, RecordAttributes,
-        TraitAttributes,
-    },
-    macros::maybe_resolve_macro,
-    paths::LookupCache,
-    CompileEnv, Enum, Error,
-    ErrorKind::*,
-    Function, Impl, Item, MetadataGroupMap, Module, Object, RPath, Record, Result, Trait,
+    cfg_select::resolve_cfg_select_macros, items::resolve_simple_items,
+    macros::resolve_uniffi_macros, paths::LookupCache, trait_impls::resolve_trait_items,
+    CompileEnv, Error, ErrorKind::*, Item, MetadataGroupMap, Module, RPath, Result,
 };
 
 /// Intermediate representation of the interface
@@ -36,7 +30,7 @@ pub struct CrateRoot {
     /// This is an `Item::Module` because of `RPath`.
     /// That type wants to store a `Vec<&Item>` for each component of the path.
     module: Item,
-    compile_env: CompileEnv,
+    pub compile_env: CompileEnv,
 }
 
 impl Ir {
@@ -52,7 +46,7 @@ impl Ir {
         crate_name: &str,
         file_path: &Utf8Path,
         compile_env: CompileEnv,
-    ) -> Result<&Module> {
+    ) -> Result<()> {
         let crate_name = crate_name.replace("-", "_");
         let ident = format_ident!("{crate_name}");
         let module = Module::new_crate_root(ident.clone(), file_path, &compile_env)?;
@@ -63,73 +57,12 @@ impl Ir {
                 compile_env,
             },
         );
-        match self
-            .crate_roots
-            .get(&ident)
-            .map(|crate_root| &crate_root.module)
-        {
-            Some(Item::Module(m)) => Ok(m),
-            _ => unreachable!(),
-        }
+        Ok(())
     }
 
-    pub fn add_udl_metadata(
-        &mut self,
-        crate_name: &str,
-        items: impl IntoIterator<Item = uniffi_meta::Metadata>,
-    ) -> Result<()> {
-        let module = match self
-            .crate_roots_mut()
+    pub fn lookup_root_module_mut(&mut self, crate_name: &str) -> Option<&mut Module> {
+        self.crate_roots_mut()
             .find(|c| c.ident == crate_name.replace("-", "_"))
-        {
-            Some(m) => m,
-            None => {
-                return Err(Error::new_without_location(AddUdlMetadataError(format!(
-                    "Invalid crate: {crate_name}"
-                ))))
-            }
-        };
-        for i in items {
-            match &i {
-                uniffi_meta::Metadata::Enum(e) => {
-                    module.items.push(Item::Udl(uniffi_meta::Type::Enum {
-                        module_path: e.module_path.clone(),
-                        name: e.name.clone(),
-                    }));
-                }
-                uniffi_meta::Metadata::Record(r) => {
-                    module.items.push(Item::Udl(uniffi_meta::Type::Record {
-                        module_path: r.module_path.clone(),
-                        name: r.name.clone(),
-                    }));
-                }
-                uniffi_meta::Metadata::Object(o) => {
-                    module.items.push(Item::Udl(uniffi_meta::Type::Object {
-                        module_path: o.module_path.clone(),
-                        name: o.name.clone(),
-                        imp: o.imp,
-                    }));
-                }
-                uniffi_meta::Metadata::CallbackInterface(c) => {
-                    module
-                        .items
-                        .push(Item::Udl(uniffi_meta::Type::CallbackInterface {
-                            module_path: c.module_path.clone(),
-                            name: c.name.clone(),
-                        }));
-                }
-                uniffi_meta::Metadata::CustomType(c) => {
-                    module.items.push(Item::Udl(uniffi_meta::Type::Custom {
-                        module_path: c.module_path.clone(),
-                        name: c.name.clone(),
-                        builtin: Box::new(c.builtin.clone()),
-                    }));
-                }
-                _ => (),
-            }
-            module.metadata_from_udl.push(i);
-        }
-        Ok(())
     }
 
     pub fn crate_root(&self, ident: &Ident) -> Option<&Module> {
@@ -168,124 +101,93 @@ impl Ir {
             .collect()
     }
 
-    /// Resolve Item::Unresolved to more specific items like Item::UseRemoteType
+    /// Resolve syn items into `Item` instances and add them to the IR
     ///
     /// This needs to run after adding all crates parsing, since it requires looking up module paths.
-    pub fn resolve_items(&mut self) -> syn::Result<()> {
-        // Find and remove unresolved items from all modules
-        let mut unresolved_map = HashMap::new();
-        for crate_root in self.crate_roots.values_mut() {
-            crate_root.visit_modules_mut(|module| {
-                unresolved_map.insert(module.id, module.remove_unresolved_items());
-            });
-        }
+    pub fn resolve_items(&mut self) -> Result<()> {
+        // cfg_select! macros first, since they can generate other items
+        resolve_cfg_select_macros(self)?;
+        // Simple items next
+        resolve_simple_items(self)?;
+        // UniFFI macros next.
+        //
+        // We need to lookup the Rust type for `custom_type!` calls, which is handled by `resolve_simple_items`
+        resolve_uniffi_macros(self)?;
+        // Last is trait impls
+        //
+        // We need to look up which type the trait was implemented for,
+        // which is handled by the previous items
+        resolve_trait_items(self)?;
+        Ok(())
+    }
 
-        // Resolve the items
-        let mut resolved_map = HashMap::new();
-        let mut cache = LookupCache::default();
+    /// Visit modules and their unresolved items
+    ///
+    /// Calls the visitor with (crate_root, module, module_path, unresolved_item) tuples.
+    ///
+    /// If visitors handle the unresolved_item, they should return `VisitUnresolvedItem::Remove` to
+    /// remove it from the list.
+    pub fn visit_unresolved_items<'ir>(
+        &'ir self,
+        mut visitor: impl FnMut(&CrateRoot, &'ir Module, &RPath<'ir>, &syn::Item) -> VisitUnresolvedItem,
+    ) {
+        self.try_visit_unresolved_items(|crate_root, module, path, unresolved| {
+            Ok(visitor(crate_root, module, path, unresolved))
+        })
+        .unwrap()
+    }
+
+    /// Failable version of `visit_unresolved_items`
+    pub fn try_visit_unresolved_items<'ir>(
+        &'ir self,
+        mut visitor: impl FnMut(
+            &CrateRoot,
+            &'ir Module,
+            &RPath<'ir>,
+            &syn::Item,
+        ) -> Result<VisitUnresolvedItem>,
+    ) -> Result<()> {
         for crate_root in self.crate_roots.values() {
-            crate_root.try_visit_modules_and_paths(|module, rpath| {
-                let Some(unresolved) = unresolved_map.remove(&module.id) else {
-                    return Ok(());
-                };
+            let mut stack = vec![(crate_root.module(), RPath::new(&crate_root.module))];
+            while let Some((module, path)) = stack.pop() {
+                // take the unresolved items so we can process them
+                let mut unresolved = module.unresolved_items.take();
+                let mut err = None;
+                unresolved.retain(|unresolved_item| {
+                    if err.is_some() {
+                        return true;
+                    }
+                    match visitor(crate_root, module, &path, unresolved_item) {
+                        Ok(VisitUnresolvedItem::Keep) => true,
+                        Ok(VisitUnresolvedItem::Remove) => false,
+                        Err(e) => {
+                            // visit failed, keep the rest of the items
+                            err = Some(e);
+                            true
+                        }
+                    }
+                });
+                module.extend_unresolved_items(unresolved);
 
-                let mut resolved_items = vec![];
-                for item in unresolved {
-                    if let Some(item) =
-                        self.resolve_item(&mut cache, rpath, &crate_root.compile_env, item)?
-                    {
-                        resolved_items.push(item);
+                // Return errors now
+                if let Some(e) = err {
+                    return Err(e);
+                }
+
+                // find child modules to visit
+                for item in module.items.iter() {
+                    if let Item::Module(m) = item {
+                        stack.push((m, path.append_child(item)));
                     }
                 }
-                resolved_map.insert(module.id, resolved_items);
-                Ok(())
-            })?;
-        }
-
-        // Add resolved items to the modules
-        for crate_root in self.crate_roots.values_mut() {
-            crate_root.visit_modules_mut(|module| {
-                if let Some(resolved) = resolved_map.remove(&module.id) {
-                    module.items.extend(resolved);
-                }
-            });
+            }
         }
         Ok(())
     }
 
-    /// Resolve an unresolved item
-    fn resolve_item<'ir>(
-        &'ir self,
-        cache: &mut LookupCache<'ir>,
-        module_path: &RPath<'ir>,
-        env: &CompileEnv,
-        item: syn::Item,
-    ) -> syn::Result<Option<Item>> {
-        Ok(match item {
-            syn::Item::Fn(func) => {
-                if let Some(attrs) =
-                    FunctionAttributes::parse(self, cache, module_path, env, &func.attrs)?
-                {
-                    Some(Item::Fn(Function::parse(attrs, func.clone())?))
-                } else {
-                    None
-                }
-            }
-            syn::Item::Struct(st) => {
-                if let Some(attrs) =
-                    RecordAttributes::parse(self, cache, module_path, env, &st.attrs)?
-                {
-                    let r = Record::parse(env, attrs, st)?;
-                    Some(Item::Record(r))
-                } else if let Some(attrs) =
-                    ObjectAttributes::parse(self, cache, module_path, env, &st.attrs)?
-                {
-                    Some(Item::Object(Object::parse(attrs, st.ident, st.vis)?))
-                } else {
-                    Some(Item::NonUniffi(st.vis.into(), st.ident))
-                }
-            }
-            syn::Item::Enum(en) => {
-                if let Some(attrs) =
-                    ObjectAttributes::parse(self, cache, module_path, env, &en.attrs)?
-                {
-                    Some(Item::Object(Object::parse(attrs, en.ident, en.vis)?))
-                } else if let Some(attrs) =
-                    EnumAttributes::parse(self, cache, module_path, env, &en.attrs)?
-                {
-                    Some(Item::Enum(Enum::parse(env, attrs, en)?))
-                } else {
-                    Some(Item::NonUniffi(en.vis.into(), en.ident))
-                }
-            }
-            syn::Item::Trait(tr) => {
-                if let Some(attrs) =
-                    TraitAttributes::parse(self, cache, module_path, env, &tr.attrs)?
-                {
-                    Some(Item::Trait(Trait::parse(env, attrs, tr)?))
-                } else {
-                    None
-                }
-            }
-            syn::Item::Impl(imp) => {
-                if let Some(attrs) =
-                    ImplAttributes::parse(self, cache, module_path, env, &imp.attrs)?
-                {
-                    Some(Item::Impl(Impl::parse(env, attrs, imp)?))
-                } else {
-                    Some(Item::UnresolvedImpl(imp))
-                }
-            }
-            syn::Item::Macro(mac) => maybe_resolve_macro(self, cache, module_path, &mac)?,
-            _ => None,
-        })
-    }
-
     #[cfg(test)]
     pub fn new_for_test(test_sources: &[&str]) -> Self {
-        let mut ir = Self::new_for_test_with_env(test_sources, CompileEnv::new_for_test());
-        ir.resolve_items().expect("resolve_items failed");
-        ir
+        Self::new_for_test_with_env(test_sources, CompileEnv::new_for_test())
     }
 
     #[cfg(test)]
@@ -302,6 +204,13 @@ impl Ir {
         ir.resolve_items().expect("resolve_items failed");
         ir
     }
+}
+
+pub enum VisitUnresolvedItem {
+    /// Keep the unresolved item for a later pass
+    Keep,
+    /// Remove the unresolved item after resolving it
+    Remove,
 }
 
 impl CrateRoot {
@@ -323,36 +232,88 @@ impl CrateRoot {
         }
     }
 
-    // Couple of helper modules for `Ir::resolve_items`
-    //
-    // There's more combinations that could be implemented, but no need yet.
+    pub fn udl_name(&self) -> Result<Option<String>> {
+        // The UDL name could be set by any module, visit them all
+        let mut todo = vec![self.module()];
+        let mut udl_names = vec![];
+        while let Some(module) = todo.pop() {
+            if let Some(udl_name) = &module.udl_name {
+                udl_names.push(udl_name);
+            }
 
-    fn try_visit_modules_and_paths<'ir>(
-        &'ir self,
-        mut visitor: impl FnMut(&'ir Module, &RPath<'ir>) -> syn::Result<()>,
-    ) -> syn::Result<()> {
-        let mut stack = vec![(self.module(), RPath::new(&self.module))];
-        while let Some((module, path)) = stack.pop() {
-            visitor(module, &path)?;
+            // find child modules to visit
             for item in module.items.iter() {
                 if let Item::Module(m) = item {
-                    stack.push((m, path.append_child(item)));
+                    todo.push(m);
+                }
+            }
+        }
+        match udl_names.as_slice() {
+            [] => Ok(None),
+            [udl_name] => Ok(Some(udl_name.to_string())),
+            _ => Err(Error::new_without_location(MultipleUdlIncludes(
+                udl_names.into_iter().cloned().collect(),
+            ))),
+        }
+    }
+}
+
+/// Set of IR changes that we can apply later
+///
+/// The main use for this is to collect a bunch of changes inside a `try_visit_unresolved_items`
+/// closure where we have a shared reference to the IR, then apply those changes later when we can
+/// take a mutable reference.
+#[derive(Default)]
+pub struct IrChanges {
+    // Map module ids to items to add
+    items: HashMap<usize, Vec<Item>>,
+    // Map module ids to syn items
+    syn_items: HashMap<usize, Vec<syn::Item>>,
+}
+
+impl IrChanges {
+    pub fn add(&mut self, module_id: usize, item: Item) {
+        self.items.entry(module_id).or_default().push(item);
+    }
+
+    pub fn extend(&mut self, module_id: usize, items: impl IntoIterator<Item = Item>) {
+        self.items.entry(module_id).or_default().extend(items);
+    }
+
+    pub fn add_syn(&mut self, module_id: usize, item: syn::Item) {
+        self.syn_items.entry(module_id).or_default().push(item);
+    }
+
+    pub fn extend_syn_items(
+        &mut self,
+        module_id: usize,
+        items: impl IntoIterator<Item = syn::Item>,
+    ) {
+        self.syn_items.entry(module_id).or_default().extend(items);
+    }
+
+    pub fn apply(mut self, ir: &mut Ir) -> Result<()> {
+        for crate_root in ir.crate_roots.values_mut() {
+            let mut stack = vec![];
+            match &mut crate_root.module {
+                Item::Module(module) => stack.push(module),
+                item => panic!("crate_root.module is not Item::Module ({item:?})"),
+            }
+            while let Some(module) = stack.pop() {
+                if let Some(items) = self.items.remove(&module.id) {
+                    module.items.extend(items);
+                }
+                if let Some(unresolved_items) = self.syn_items.remove(&module.id) {
+                    module.add_items(&crate_root.compile_env, unresolved_items)?;
+                }
+                for item in module.items.iter_mut() {
+                    if let Item::Module(m) = item {
+                        stack.push(m);
+                    }
                 }
             }
         }
         Ok(())
-    }
-
-    fn visit_modules_mut(&mut self, mut visitor: impl FnMut(&mut Module)) {
-        let mut stack = vec![self.module_mut()];
-        while let Some(module) = stack.pop() {
-            visitor(module);
-            for item in module.items.iter_mut() {
-                if let Item::Module(m) = item {
-                    stack.push(m);
-                }
-            }
-        }
     }
 }
 
@@ -479,7 +440,11 @@ mod test {
     #[test]
     fn test_udl_path() {
         let ir = Ir::new_for_test(&["udl_include"]);
-        let module = ir.crate_roots().find(|m| m.ident == "udl_include").unwrap();
-        assert_eq!(module.udl_name, Some("test_udl_name".into()));
+        let crate_root = ir
+            .crate_roots
+            .values()
+            .find(|cr| cr.module().ident == "udl_include")
+            .unwrap();
+        assert_eq!(crate_root.udl_name().unwrap(), Some("test_udl_name".into()));
     }
 }

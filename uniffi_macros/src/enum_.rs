@@ -262,6 +262,7 @@ fn enum_or_error_ffi_converter_impl(
                 #try_read_impl
             }
 
+            #[allow(clippy::large_const_arrays)]
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(#metadata_type_code)
                 .concat_str(module_path!())
                 .concat_str(#name);
@@ -352,13 +353,15 @@ fn variant_value(v: &Variant) -> syn::Result<TokenStream> {
 
 pub fn variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
     let enum_ = item.enum_();
-    let variants_len =
-        try_metadata_value_from_usize(enum_.variants.len(), "UniFFI limits enums to 256 variants")?;
-    std::iter::once(Ok(quote! { .concat_value(#variants_len) }))
+    let variants_len = try_metadata_value_from_usize(
+        enum_.variants.len(),
+        "UniFFI limits enums to u32::MAX variants",
+    )?;
+    std::iter::once(Ok(quote! { .concat_u32(#variants_len) }))
         .chain(enum_.variants.iter().map(|v| {
             let fields_len = try_metadata_value_from_usize(
                 v.fields.len(),
-                "UniFFI limits enum variants to 256 fields",
+                "UniFFI limits enum variants to u32::MAX fields",
             )?;
 
             let field_metadata = v
@@ -403,7 +406,7 @@ pub fn variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
                 .concat_str(#name)
                 #variant_orig_name
                 #value_tokens
-                .concat_value(#fields_len)
+                .concat_u32(#fields_len)
                     #(#field_metadata)*
                 .concat_long_str(#docstring)
             })

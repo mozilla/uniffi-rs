@@ -35,7 +35,7 @@ pub fn main() -> anyhow::Result<()> {
             filter_type,
             filter_name,
         } => {
-            let initial_root = load_initial_root(&args)?;
+            let initial_root = load_initial_root(&args, false)?;
             let opts = PrintOptions {
                 pass,
                 no_diff,
@@ -48,7 +48,10 @@ pub fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn load_initial_root(args: &cli::StandardArgs) -> Result<pipeline::InitialRoot> {
+fn load_initial_root(
+    args: &cli::StandardArgs,
+    build_script_mode: bool,
+) -> Result<pipeline::InitialRoot> {
     let mut paths = uniffi_bindgen::BindgenPaths::default();
     #[cfg(feature = "cargo-metadata")]
     paths.add_cargo_metadata_layer(uniffi_bindgen::CargoMetadataOptions {
@@ -57,6 +60,9 @@ fn load_initial_root(args: &cli::StandardArgs) -> Result<pipeline::InitialRoot> 
         all_features: args.all_features,
         features: args.features.clone(),
     })?;
+    if build_script_mode {
+        paths.set_build_script_mode(true);
+    }
     let global_config = if let Some(path) = &args.config {
         let (config, crate_roots_layer) = GlobalConfig::from_file(path)?;
         if let Some(layer) = crate_roots_layer {
@@ -81,7 +87,7 @@ pub fn generate_bindings(source: &str, out_dir: &Utf8Path) -> Result<()> {
 }
 
 pub fn generate_bindings_from_args(args: cli::StandardArgs, out_dir: &Utf8Path) -> Result<()> {
-    let initial_root = load_initial_root(&args)?;
+    let initial_root = load_initial_root(&args, false)?;
     bindings::generate(initial_root, out_dir, args.crate_filter.clone())
 }
 
@@ -98,6 +104,7 @@ fn _generate_scaffolding() -> Result<()> {
     let features = env::var("CARGO_CFG_FEATURE").context("CARGO_CFG_FEATURE env not set")?;
     let target = env::var("TARGET").context("TARGET env not set")?;
     let out_dir = env::var("OUT_DIR").context("OUT_DIR env not set")?;
+    uniffi_parse_rs::set_build_script_mode();
 
     let args = cli::StandardArgs {
         source: Utf8PathBuf::from(format!("src:{pkg_name}")),
@@ -109,6 +116,6 @@ fn _generate_scaffolding() -> Result<()> {
         config: None,
         metadata_no_deps: false,
     };
-    let initial_root = load_initial_root(&args)?;
+    let initial_root = load_initial_root(&args, true)?;
     scaffolding::generate(initial_root, pkg_name, &Utf8PathBuf::from(out_dir))
 }

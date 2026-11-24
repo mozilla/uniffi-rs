@@ -29,7 +29,7 @@ pub fn parse_use(use_item: ItemUse) -> syn::Result<Vec<Item>> {
         segments: Punctuated::new(),
     };
     let mut items = vec![];
-    parse_use_recurse(use_item.vis.into(), &path, use_item.tree, &mut items)?;
+    parse_use_recurse((&use_item.vis).into(), &path, use_item.tree, &mut items)?;
     Ok(items)
 }
 

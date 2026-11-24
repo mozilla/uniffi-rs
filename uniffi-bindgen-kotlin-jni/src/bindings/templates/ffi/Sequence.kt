@@ -3,7 +3,7 @@
 {%- let lower_to_buffer = "lowerToBuffer{}"|format(seq.self_type.id) %}
 
 fun {{ lower_to_buffer }}(value: {{ type_name }}): java.nio.ByteBuffer {
-    val buf = Scaffolding.ffiBufferAlloc(value.size * {{ seq.item_size }}).order(java.nio.ByteOrder.nativeOrder())
+    val buf = uniffi.Scaffolding.ffiBufferAlloc(value.size * {{ seq.item_size }}).order(java.nio.ByteOrder.nativeOrder())
     var offset = 0
     value.forEach {
         {{ seq.inner.write_fn_kt() }}(buf, offset, it)
@@ -24,7 +24,7 @@ fun {{ lift_from_buffer }}(buf: java.nio.ByteBuffer?): {{ type_name }} {
             }
         }
     } finally {
-        Scaffolding.ffiBufferFree(buf)
+        uniffi.Scaffolding.ffiBufferFree(buf)
     }
 }
 
@@ -44,10 +44,10 @@ fun {{ seq.self_type.lift_fn_kt() }}(buf: java.nio.ByteBuffer?): {{ type_name }}
 
 fun {{ seq.self_type.write_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int, value: {{ type_name }}) {
     val childBuf = {{ lower_to_buffer }}(value)
-    writeBuffer(buf, offset, childBuf)
+    uniffi.writeBuffer(buf, offset, childBuf)
 }
 
 fun {{ seq.self_type.read_fn_kt() }}(buf: java.nio.ByteBuffer, offset: kotlin.Int): {{ type_name }} {
-    val childBuf = readBuffer(buf, offset)
+    val childBuf = uniffi.readBuffer(buf, offset)
     return {{ lift_from_buffer }}(childBuf)
 }

@@ -1,1 +1,3 @@
-uniffi::include_scaffolding!("test_udl_name");
+pub mod mod1 {
+    uniffi::include_scaffolding!("test_udl_name");
+}

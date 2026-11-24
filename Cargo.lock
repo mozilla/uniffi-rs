@@ -316,9 +316,9 @@ checksum = "ecc7ab41815b3c653ccd2978ec3255c81349336702dfdf62ee6f7069b12a3aae"
 
 [[package]]
 name = "async-trait"
-version = "0.1.74"
+version = "0.1.89"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a66537f1bb974b254c98ed142ff995236e81b9d0fe4db0575f46612cb15eb0f9"
+checksum = "9035ad2d096bed7955a320ee7e2230574d28fd3c3a0f186cbea1ff3c7eed5dbb"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1829,7 +1829,7 @@ checksum = "b4ac048d71ede7ee76d585517add45da530660ef4390e49b098733c6e897f254"
 
 [[package]]
 name = "uniffi"
-version = "0.32.0"
+version = "0.32.2"
 dependencies = [
  "anyhow",
  "camino",
@@ -1852,7 +1852,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi-bindgen-kotlin-jni"
-version = "0.31.1"
+version = "0.32.2"
 dependencies = [
  "anyhow",
  "askama 0.14.0",
@@ -1865,12 +1865,13 @@ dependencies = [
  "serde",
  "toml",
  "uniffi_bindgen",
+ "uniffi_parse_rs",
  "uniffi_pipeline",
 ]
 
 [[package]]
 name = "uniffi-bindgen-kotlin-jni-runtime"
-version = "0.31.1"
+version = "0.32.1"
 dependencies = [
  "anyhow",
  "jni-sys",
@@ -1887,6 +1888,7 @@ dependencies = [
  "uniffi-bindgen-kotlin-jni-runtime",
  "uniffi-bindgen-tests",
  "uniffi-bindgen-tests-external-types-source",
+ "uniffi-bindgen-tests-mid-types",
  "uniffi_bindgen",
 ]
 
@@ -1900,6 +1902,7 @@ dependencies = [
  "thiserror",
  "uniffi",
  "uniffi-bindgen-tests-external-types-source",
+ "uniffi-bindgen-tests-mid-types",
  "url",
 ]
 
@@ -1923,6 +1926,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-bindgen-tests-mid-types"
+version = "0.31.0"
+dependencies = [
+ "uniffi",
+ "uniffi-bindgen-tests-external-types-source",
+]
+
+[[package]]
 name = "uniffi-bindgen-tests-python"
 version = "0.31.0"
 dependencies = [
@@ -1941,6 +1952,7 @@ dependencies = [
  "glob",
  "uniffi",
  "uniffi-bindgen-tests",
+ "uniffi-bindgen-tests-mid-types",
  "uniffi_bindgen",
 ]
 
@@ -2469,7 +2481,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_bindgen"
-version = "0.32.0"
+version = "0.32.2"
 dependencies = [
  "anyhow",
  "askama 0.16.0",
@@ -2495,7 +2507,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_build"
-version = "0.32.0"
+version = "0.32.2"
 dependencies = [
  "anyhow",
  "camino",
@@ -2504,7 +2516,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_core"
-version = "0.32.0"
+version = "0.32.2"
 dependencies = [
  "anyhow",
  "async-compat",
@@ -2516,7 +2528,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_internal_macros"
-version = "0.32.0"
+version = "0.32.2"
 dependencies = [
  "anyhow",
  "indexmap",
@@ -2527,7 +2539,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_macros"
-version = "0.32.0"
+version = "0.32.2"
 dependencies = [
  "camino",
  "fs-err",
@@ -2543,7 +2555,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_meta"
-version = "0.32.0"
+version = "0.32.2"
 dependencies = [
  "anyhow",
  "siphasher",
@@ -2553,7 +2565,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_parse_rs"
-version = "0.32.0"
+version = "0.32.2"
 dependencies = [
  "anyhow",
  "camino",
@@ -2571,7 +2583,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_pipeline"
-version = "0.32.0"
+version = "0.32.2"
 dependencies = [
  "anyhow",
  "heck",
@@ -2582,7 +2594,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_testing"
-version = "0.32.0"
+version = "0.32.2"
 dependencies = [
  "anyhow",
  "camino",
@@ -2593,7 +2605,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_udl"
-version = "0.32.0"
+version = "0.32.2"
 dependencies = [
  "anyhow",
  "textwrap",

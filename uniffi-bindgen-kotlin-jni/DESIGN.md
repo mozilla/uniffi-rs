@@ -41,6 +41,7 @@ we optimize passing the values in certain cases:
 * Interfaces handles are passed without an `clone` call.
 * `&[u8]` values are passed from Kotlin -> Rust by inputting a `java.nio.ByteBuffer`.
   This allows us to implement a zero-copy strategy.
+  Kotlin passes a `slice()`, so Rust sees the bytes from `position()` to `limit()`.
 
 ## Deconstructable types
 

@@ -3,6 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 extern crate uniffi_bindgen_tests;
+// Mid-types scaffolding lives in that crate. A transitive dependency is not
+// enough for the generated Ruby to call it.
+extern crate uniffi_bindgen_tests_mid_types;
 
 #[cfg(test)]
 mod test {
@@ -112,6 +115,16 @@ mod test {
     #[test]
     fn test_futures() {
         run_tests(test_dir(), "tests/futures.rb");
+    }
+
+    #[test]
+    fn test_external_types() {
+        run_tests(test_dir(), "tests/external_types.rb");
+    }
+
+    #[test]
+    fn test_udl() {
+        run_tests(test_dir(), "tests/udl.rb");
     }
 
     fn test_dir() -> &'static Utf8Path {

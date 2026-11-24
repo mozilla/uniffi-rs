@@ -52,6 +52,16 @@ For example:
 
 `cargo run -p [bindgen-binary-crate] bindings src:[top-level-library-crate] [out-dir]`
 
+## File layout
+
+`uniffi_bindgen_kotlin_jni` generates source code that looks like this:
+
+* `uniffi/Uniffi.kt` -- shared FFI code
+* For each package:
+    * `path/to/package/Uniffi.kt` -- Generated user-facing code.  Import from this package.
+    * `path/to/package/uniffi/Uniffi.kt` -- Generated FFI code. 
+      This is public so that other generated code can use it, but it's not intended for end-users.
+
 ## Differences from `uniffi-bindgen`
 
 Records and enums that store objects no longer implement the `Disposable` interface.
@@ -60,7 +70,6 @@ See ADR-0008 for the reasoning.
 
 ## Extra requirements compared to the normal macro code
 
-* All exported items must be `pub`. This includes types, fields, functions, etc.
-  Furthermore, types must be publicly reachable (there must be a path that other crates can import).
-* The top-level Rust crate must directly depend on all UniFFI crates
 * The top-level Rust crate must depend on `uniffi-bindgen-kotlin-jni-runtime`
+* All the requirements from ../uniffi_parse_rs/README.md
+* Recursive types defined in UDL are not supported because we need to know which type is boxed in Rust.

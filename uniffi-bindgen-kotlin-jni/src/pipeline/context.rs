@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use uniffi_bindgen::pipeline::general::sort::sort_type_definitions;
-
 use super::*;
 
 #[derive(Default, Clone)]
@@ -15,19 +13,23 @@ pub struct Context {
     pub crate_map: HashMap<String, String>,
     // Map namespace names to Config values
     pub config_map: HashMap<String, Config>,
+    // Map custom type ids to the TypeNode for their builtin
+    pub custom_type_map: HashMap<u64, TypeNode>,
+    // Map type IDs to the JVM class that stores their FFI functions
+    pub ffi_class_map: HashMap<u64, String>,
     pub type_module_path_map: HashMap<Type, String>,
     pub package_map: HashMap<String, String>,
     pub ffi_type_oracle: FfiTypeOracle,
     pub layout_oracle: ffi_buffer::FfiBufferLayoutOracle,
     pub current_enum: Option<general::Enum>,
     pub types_used_as_error: HashSet<Type>,
+    pub builtin_types: Option<BuiltinTypes>,
 }
 
 impl Context {
     pub fn update_from_root(&mut self, root: &general::Root) -> Result<()> {
         self.populate_type_module_path_map(root);
-        self.populate_fields_from_type_definitions(root)?;
-        self.populate_types_used_as_error(root);
+        self.builtin_types = Some(root.builtin_types.clone().map_node(self)?);
 
         for namespace in root.namespaces.values() {
             let config = Config::from_toml(namespace.config_toml.as_deref())?;
@@ -41,6 +43,9 @@ impl Context {
             self.crate_map
                 .insert(namespace.name.clone(), namespace.crate_name.clone());
         }
+
+        self.populate_fields_from_type_definitions(root)?;
+        self.populate_types_used_as_error(root);
         Ok(())
     }
 
@@ -85,23 +90,24 @@ impl Context {
     fn populate_fields_from_type_definitions(&mut self, root: &general::Root) -> Result<()> {
         use anyhow::Context;
 
-        // Get type definitions for all packages and sort them.
-        // This makes it so that dependencies come before their dependant types,
-        // which simplifies the logic for the functions we're going to call.
-        //
-        // Note: recursive types can't be ordered in this manner and
-        // the following functions should take that into account.
-        let sorted_type_definitions = sort_type_definitions(
-            root.namespaces
-                .values()
-                .flat_map(|n| n.type_definitions.iter().cloned()),
-        );
-        self.ffi_type_oracle
-            .add_type_definitions(&sorted_type_definitions)
-            .context("while building the type ffi oracle")?;
-        self.layout_oracle
-            .add_type_definitions(&sorted_type_definitions)
-            .context("while building the ffi buffer layout oracle")?;
+        // Note: namespaces and type definitions are already sorted in the general pipeline and at
+        // the top of map_root.  This is needed to make `add_type_definitions` work.
+        for n in root.namespaces.values() {
+            self.ffi_type_oracle
+                .add_type_definitions(&n.type_definitions)
+                .context("while building the type ffi oracle")?;
+            self.layout_oracle
+                .add_type_definitions(&n.type_definitions)
+                .context("while building the ffi buffer layout oracle")?;
+
+            for type_def in &n.type_definitions {
+                if let general::TypeDefinition::Custom(c) = type_def {
+                    self.custom_type_map
+                        .insert(c.self_type.id, c.builtin.clone().map_node(self)?);
+                }
+            }
+        }
+
         Ok(())
     }
 
@@ -112,6 +118,12 @@ impl Context {
 
     pub fn update_from_enum(&mut self, en: &general::Enum) {
         self.current_enum = Some(en.clone());
+    }
+
+    pub fn builtin_types(&self) -> Result<&BuiltinTypes> {
+        self.builtin_types
+            .as_ref()
+            .ok_or_else(|| anyhow!("builtin_types not set"))
     }
 
     pub fn current_crate_name(&self) -> Result<&str> {
@@ -166,6 +178,12 @@ impl Context {
         self.config_map
             .get(namespace_name)
             .ok_or_else(|| anyhow!("config not found: {namespace_name}"))
+    }
+
+    pub fn get_custom_type_config(&self, namespace: &str, name: &str) -> Option<&CustomTypeConfig> {
+        self.config_map
+            .get(namespace)
+            .and_then(|config| config.custom_types.get(name))
     }
 
     pub fn current_package_name(&self) -> Result<&str> {

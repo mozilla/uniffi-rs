@@ -121,6 +121,84 @@ let returnedNumbers = try! await invokeTestAsyncCallbackInterfaceThrowIfEqual(
 )
 assert(returnedNumbers == CallbackInterfaceNumbers(a: 10, b: 11))
 
+// Async callback interfaces with fallible methods that return non-record values
+final class AsyncFallibleCallbackImpl: TestAsyncFallibleCallbackInterface, @unchecked Sendable {
+    func getU64(fail: Bool) async throws -> UInt64 {
+        if fail {
+            throw TestError.Failure1
+        }
+        return 42
+    }
+
+    func getBool(fail: Bool) async throws -> Bool {
+        if fail {
+            throw TestError.Failure1
+        }
+        return true
+    }
+
+    func getString(fail: Bool) async throws -> String {
+        if fail {
+            throw TestError.Failure1
+        }
+        return "hello"
+    }
+
+    func getOptionalString(fail: Bool) async throws -> String? {
+        if fail {
+            throw TestError.Failure1
+        }
+        return nil
+    }
+}
+
+func assertThrowsFailure1<T>(_ block: () async throws -> T) async {
+    do {
+        let _ = try await block()
+        fatalError("expected TestError.Failure1")
+    } catch TestError.Failure1 {
+        // expected
+    } catch {
+        fatalError("unexpected error \(error)")
+    }
+}
+
+let fallibleCbi = AsyncFallibleCallbackImpl()
+
+let fallibleU64 = try! await invokeTestAsyncFallibleCallbackInterfaceGetU64(
+    cbi: fallibleCbi,
+    fail: false
+)
+assert(fallibleU64 == 42)
+let fallibleBool = try! await invokeTestAsyncFallibleCallbackInterfaceGetBool(
+    cbi: fallibleCbi,
+    fail: false
+)
+assert(fallibleBool)
+let fallibleString = try! await invokeTestAsyncFallibleCallbackInterfaceGetString(
+    cbi: fallibleCbi,
+    fail: false
+)
+assert(fallibleString == "hello")
+let fallibleOptionalString = try! await invokeTestAsyncFallibleCallbackInterfaceGetOptionalString(
+    cbi: fallibleCbi,
+    fail: false
+)
+assert(fallibleOptionalString == nil)
+
+await assertThrowsFailure1 {
+    try await invokeTestAsyncFallibleCallbackInterfaceGetU64(cbi: fallibleCbi, fail: true)
+}
+await assertThrowsFailure1 {
+    try await invokeTestAsyncFallibleCallbackInterfaceGetBool(cbi: fallibleCbi, fail: true)
+}
+await assertThrowsFailure1 {
+    try await invokeTestAsyncFallibleCallbackInterfaceGetString(cbi: fallibleCbi, fail: true)
+}
+await assertThrowsFailure1 {
+    try await invokeTestAsyncFallibleCallbackInterfaceGetOptionalString(cbi: fallibleCbi, fail: true)
+}
+
 // Callback interface whose async method is a hand-written boxed future (no `#[async_trait]`).
 // It is exposed as an `async` method and invoked from Rust via `invokeBoxedFutureTrait`.
 class BoxedFutureTraitImpl: BoxedFutureTrait, @unchecked Sendable {
@@ -132,3 +210,4 @@ class BoxedFutureTraitImpl: BoxedFutureTrait, @unchecked Sendable {
 let boxedFutureCallback = BoxedFutureTraitImpl()
 let boxedFutureResult = await invokeBoxedFutureTrait(cbi: boxedFutureCallback, ms: 1234, who: "Alice")
 assert(boxedFutureResult == "Alice replied at 1234")
+

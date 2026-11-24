@@ -82,6 +82,9 @@ testRustImpl(traitImpl: createTestTraitInterface(value: 42))
 testRustImpl(traitImpl: roundtripTestTraitInterface(interface: createTestTraitInterface(value: 42)))
 testRustImpl(traitImpl: roundtripTestTraitInterfaceList(interfaces: [createTestTraitInterface(value: 42)])[0])
 
+assert(roundtripOptionalTestTraitInterface(interface: nil) == nil)
+testRustImpl(traitImpl: roundtripOptionalTestTraitInterface(interface: createTestTraitInterface(value: 42))!)
+
 // Test calling the Swift impl by roundtripping it through a Rust function
 func testSwiftImpl(traitImpl: TestTraitInterface) {
     invokeTestTraitInterfaceNoop(interface: traitImpl)
@@ -118,6 +121,7 @@ func testSwiftImpl(traitImpl: TestTraitInterface) {
 testSwiftImpl(traitImpl: TraitImpl(value: 42))
 testSwiftImpl(traitImpl: roundtripTestTraitInterface(interface: TraitImpl(value: 42)))
 testSwiftImpl(traitImpl: roundtripTestTraitInterfaceList(interfaces: [TraitImpl(value: 42)])[0])
+testSwiftImpl(traitImpl: roundtripOptionalTestTraitInterface(interface: TraitImpl(value: 42))!)
 
 // We want to mutate asyncTraitRefCount from async swift code.
 // The simplest way to do that seems to be to mark it `nonisolated(unsafe)`.
@@ -270,3 +274,13 @@ func testForeignOnlyImpl(impl: TestForeignOnlyTraitInterface) {
 
 testForeignOnlyImpl(impl: ForeignOnlyImpl())
 testForeignOnlyImpl(impl: roundtripTestForeignOnlyTrait(interface: ForeignOnlyImpl()))
+
+// Trait interface with a `Debug` supertrait
+class DebugTraitImpl: TestDebugTraitInterface, @unchecked Sendable {
+    func getValue() -> UInt32 {
+        return 42
+    }
+}
+
+assert(invokeTestDebugTraitInterfaceGetValue(interface: DebugTraitImpl()) == 42)
+assert(testDebugTraitInterfaceHasDebugOutput(interface: DebugTraitImpl()))

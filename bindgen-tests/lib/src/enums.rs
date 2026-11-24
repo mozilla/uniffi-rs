@@ -4,11 +4,18 @@
 
 use crate::records::SimpleRec;
 
-#[derive(uniffi::Enum)]
+#[derive(uniffi::Enum, Clone)]
 pub enum EnumNoData {
     A,
     B,
     C,
+}
+
+#[uniffi::export]
+impl EnumNoData {
+    pub fn roundtrip(&self) -> Self {
+        self.clone()
+    }
 }
 
 #[derive(uniffi::Enum, Clone)]
@@ -25,7 +32,9 @@ impl EnumWithData {
     }
 }
 
+// Complex enum testing corner cases, including the `non_exhaustive` attribute.
 #[derive(uniffi::Enum)]
+#[non_exhaustive]
 pub enum ComplexEnum {
     A { value: EnumNoData },
     B { value: EnumWithData },

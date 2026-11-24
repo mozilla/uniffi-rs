@@ -83,7 +83,7 @@ mod tests {
                 .map(|v| v.to_string())
                 .collect::<Vec::<_>>(),
             "docstrings not found in {}",
-            &sources[0]
+            sources[0]
         );
     }
 

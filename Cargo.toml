@@ -31,6 +31,7 @@ members = [
 
   "bindgen-tests/external-types",
   "bindgen-tests/lib",
+  "bindgen-tests/mid-types",
   "bindgen-tests/kotlin",
   "bindgen-tests/kotlin/experimental-unsigned-types",
   "bindgen-tests/kotlin/enum-payload-clash",

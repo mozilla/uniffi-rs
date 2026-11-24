@@ -1,0 +1,16 @@
+namespace uniffi_bindgen_tests {
+  double udl_sum_fields([ByRef] UdlType udl_type);
+  UdlType udl_make_type(double a, double b);
+  double udl_remote_sum_fields(UdlRemoteType remote_type);
+};
+
+dictionary UdlType {
+  double a;
+  double b;
+};
+
+[Remote]
+dictionary UdlRemoteType {
+  double a;
+  double b;
+};

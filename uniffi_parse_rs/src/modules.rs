@@ -2,7 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::{
+    cell::Cell,
+    sync::atomic::{AtomicUsize, Ordering},
+};
 
 use camino::{Utf8Path, Utf8PathBuf};
 use syn::{ext::IdentExt, Ident};
@@ -15,10 +18,9 @@ use crate::{
     paths::LookupCache,
     CompileEnv, Error,
     ErrorKind::*,
-    Ir, Item, RPath, Result, TraitImpl, Visibility,
+    Ir, Item, RPath, Result, Visibility,
 };
 
-#[derive(Debug)]
 pub struct Module {
     pub source: FileId,
     pub vis: Visibility,
@@ -30,6 +32,13 @@ pub struct Module {
     pub ident: Ident,
     pub docstring: Option<String>,
     pub items: Vec<Item>,
+    /// syn items that we haven't resolved yet.
+    ///
+    /// Wrapped in a Cell.
+    /// This allows us to do mutate the value from a shared reference.
+    /// The drawback is that we can't get a reference inside the cell, but we don't need that.
+    /// See [Ir::try_visit_unresolved_items] for how this is used.
+    pub unresolved_items: Cell<Vec<syn::Item>>,
     pub id: usize,
     pub udl_name: Option<String>,
     pub metadata_from_udl: Vec<uniffi_meta::Metadata>,
@@ -42,9 +51,10 @@ impl Module {
             .ok_or_else(|| Error::new_without_location(InvalidPath(file_path.to_path_buf())))?
             .to_path_buf();
         let (file_id, content) = read_to_string(file_path)?;
-        let file = parse_file(file_id, content)?;
+        let file = parse_file(file_id, content, file_path)?;
         let mut module = Self::empty(ident, file_id, Visibility::Public, vec![], crate_root)?;
-        module.add_items(file.attrs, file.items, env)?;
+        module.set_docstring(file.attrs);
+        module.add_items(env, file.items)?;
         Ok(module)
     }
 
@@ -62,7 +72,8 @@ impl Module {
         let mut module_names = self.module_names.clone();
         module_names.push(ident.to_string());
         let mut module = Self::empty(ident, source, vis, module_names, crate_root)?;
-        module.add_items(attrs, items, env)?;
+        module.set_docstring(attrs);
+        module.add_items(env, items)?;
         Ok(module)
     }
 
@@ -83,6 +94,7 @@ impl Module {
             ident,
             docstring: None,
             items: vec![],
+            unresolved_items: Cell::new(vec![]),
             id: ID_GENERATOR.fetch_add(1, Ordering::Relaxed),
             udl_name: None,
             metadata_from_udl: vec![],
@@ -101,18 +113,16 @@ impl Module {
         candidates.into_iter().find(|p| p.exists())
     }
 
-    fn add_items(
-        &mut self,
-        attrs: Vec<syn::Attribute>,
-        syn_items: Vec<syn::Item>,
-        env: &CompileEnv,
-    ) -> Result<()> {
+    fn set_docstring(&mut self, attrs: Vec<syn::Attribute>) {
         // Ignore errors in `extract_docstring`, maybe the module is using a macro or something to
         // generate the docstring.  This is only needed for modules, since we parse every all
         // of them unlike types which are only parsed if they have a UniFFI derive.
         for a in attrs.iter().filter(|a| a.path().is_ident("doc")) {
             extract_docstring(&mut self.docstring, &a.meta);
         }
+    }
+
+    pub fn add_items(&mut self, env: &CompileEnv, syn_items: Vec<syn::Item>) -> Result<()> {
         for item in syn_items {
             match item {
                 syn::Item::Mod(submod)
@@ -127,11 +137,11 @@ impl Module {
                             // file.
                             if let Some(path) = self.child_module_path(&ident) {
                                 let (file_id, content) = read_to_string(&path)?;
-                                let file = parse_file(file_id, content)?;
+                                let file = parse_file(file_id, content, &path)?;
                                 self.items.push(Item::Module(self.new_child(
                                     file_id,
                                     ident.clone(),
-                                    submod.vis.into(),
+                                    (&submod.vis).into(),
                                     self.crate_root.clone(),
                                     file.attrs,
                                     file.items,
@@ -143,7 +153,7 @@ impl Module {
                             self.items.push(Item::Module(self.new_child(
                                 self.source,
                                 ident.clone(),
-                                submod.vis.into(),
+                                (&submod.vis).into(),
                                 self.crate_root.clone(),
                                 submod.attrs,
                                 items,
@@ -161,19 +171,55 @@ impl Module {
         Ok(())
     }
 
-    pub fn remove_unresolved_items(&mut self) -> Vec<syn::Item> {
-        let mut unparsed = vec![];
-        self.items = std::mem::take(&mut self.items)
-            .into_iter()
-            .filter_map(|item| match item {
-                Item::Unresolved(i) => {
-                    unparsed.push(i);
-                    None
+    pub fn add_udl_metadata(&mut self, items: impl IntoIterator<Item = uniffi_meta::Metadata>) {
+        for i in items {
+            match &i {
+                uniffi_meta::Metadata::Enum(e) => {
+                    self.items.push(Item::Udl(uniffi_meta::Type::Enum {
+                        module_path: e.module_path.clone(),
+                        name: e.name.clone(),
+                    }));
                 }
-                _ => Some(item),
-            })
-            .collect();
-        unparsed
+                uniffi_meta::Metadata::Record(r) => {
+                    self.items.push(Item::Udl(uniffi_meta::Type::Record {
+                        module_path: r.module_path.clone(),
+                        name: r.name.clone(),
+                    }));
+                }
+                uniffi_meta::Metadata::Object(o) => {
+                    self.items.push(Item::Udl(uniffi_meta::Type::Object {
+                        module_path: o.module_path.clone(),
+                        name: o.name.clone(),
+                        imp: o.imp,
+                    }));
+                }
+                uniffi_meta::Metadata::CallbackInterface(c) => {
+                    self.items
+                        .push(Item::Udl(uniffi_meta::Type::CallbackInterface {
+                            module_path: c.module_path.clone(),
+                            name: c.name.clone(),
+                        }));
+                }
+                uniffi_meta::Metadata::CustomType(c) => {
+                    self.items.push(Item::Udl(uniffi_meta::Type::Custom {
+                        module_path: c.module_path.clone(),
+                        name: c.name.clone(),
+                        builtin: Box::new(c.builtin.clone()),
+                    }));
+                }
+                _ => (),
+            }
+            self.metadata_from_udl.push(i);
+        }
+    }
+
+    /// Extend `unresolved_items` with new syn items
+    ///
+    /// Note that this can be called from a shared reference.
+    pub fn extend_unresolved_items(&self, new_items: impl IntoIterator<Item = syn::Item>) {
+        let mut unresolved_items = self.unresolved_items.take();
+        unresolved_items.extend(new_items);
+        self.unresolved_items.set(unresolved_items);
     }
 
     fn parse_non_module_item(&mut self, item: syn::Item) -> syn::Result<()> {
@@ -182,12 +228,12 @@ impl Module {
             | syn::Item::Struct(_)
             | syn::Item::Enum(_)
             | syn::Item::Trait(_)
-            | syn::Item::Impl(_) => self.items.push(Item::Unresolved(item)),
+            | syn::Item::Impl(_) => self.unresolved_items.get_mut().push(item),
             syn::Item::Macro(ref item_macro) => {
                 if let Some(udl_name) = macros::parse_include_scaffolding(&item_macro.mac)? {
                     self.udl_name = Some(udl_name.value());
                 } else {
-                    self.items.push(Item::Unresolved(item));
+                    self.unresolved_items.get_mut().push(item);
                 }
             }
             syn::Item::Type(ty) => self.items.push(Item::Type(ty)),
@@ -299,15 +345,11 @@ impl Module {
                     submod.create_metadata(ir, cache, module_path, metadata)?;
                     module_path.pop();
                 }
-                Item::UnresolvedImpl(imp) => {
-                    if let Ok(Some(TraitImpl::FromUnexpectedUniffiCallbackError { ty })) =
-                        module_path.resolve_trait_impl(ir, cache, imp)
-                    {
-                        metadata.items.insert(
-                            uniffi_meta::FromUnexpectedCallbackErrorImplMetadata { ty: ty.clone() }
-                                .into(),
-                        );
-                    }
+                Item::FromUnexpectedUniffiCallbackError(ty) => {
+                    metadata.items.insert(
+                        uniffi_meta::FromUnexpectedCallbackErrorImplMetadata { ty: ty.clone() }
+                            .into(),
+                    );
                 }
                 _ => (),
             }
@@ -317,6 +359,7 @@ impl Module {
     }
 }
 
-fn parse_file(file_id: FileId, content: &str) -> Result<syn::File> {
+fn parse_file(file_id: FileId, content: &str, path: &Utf8Path) -> Result<syn::File> {
+    crate::note_source_file(path);
     syn::parse_file(content).map_err(|e| Error::new(file_id, e.span(), SynError(e.to_string())))
 }

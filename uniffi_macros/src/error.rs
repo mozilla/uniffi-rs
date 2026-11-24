@@ -161,6 +161,7 @@ fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> To
 
         #[automatically_derived]
         #type_id_impl_spec {
+            #[allow(clippy::large_const_arrays)]
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_ENUM)
                 .concat_str(module_path!())
                 .concat_str(#name);
@@ -199,9 +200,11 @@ pub(crate) fn error_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream>
 
 pub fn flat_error_variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
     let enum_ = item.enum_();
-    let variants_len =
-        try_metadata_value_from_usize(enum_.variants.len(), "UniFFI limits enums to 256 variants")?;
-    std::iter::once(Ok(quote! { .concat_value(#variants_len) }))
+    let variants_len = try_metadata_value_from_usize(
+        enum_.variants.len(),
+        "UniFFI limits enums to u32::MAX variants",
+    )?;
+    std::iter::once(Ok(quote! { .concat_u32(#variants_len) }))
         .chain(enum_.variants.iter().map(|v| {
             let attrs = v.attrs.parse_uniffi_attr_args::<VariantAttr>()?;
             let orig_name = orig_name_metadata(attrs.name.is_some(), &v.ident);

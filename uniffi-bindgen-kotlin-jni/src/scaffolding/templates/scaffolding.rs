@@ -12,17 +12,22 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
     use ::uniffi_bindgen_kotlin_jni_runtime::uniffi;
     use ::uniffi_bindgen_kotlin_jni_runtime::JniResultExt;
 
-    {%- filter indent(4) %}{% include "async.rs" %}{% endfilter %}
+    {%- filter indent(4) %}{% include "async_shared.rs" %}{% endfilter %}
     {%- filter indent(4) %}{% include "callback_interface_shared.rs" %}{% endfilter %}
     {%- filter indent(4) %}{% include "ffi_buffer.rs" %}{% endfilter %}
     {%- filter indent(4) %}{% include "jni_support.rs" %}{% endfilter %}
-    {%- filter indent(4) %}{% include "lift_lower.rs" %}{% endfilter %}
 
-    {%- for (jni_method_name, jni_method_kind, callable) in root.jni_methods() %}
+
+    {%- for package in root.packages %}
+    {%- for (jni_method_name, jni_method_kind, callable) in package.jni_methods() %}
     {%- filter indent(4) %}{% include "jni_method.rs" %}{% endfilter %}
     {%- endfor %}
+    {%- include "async.rs" %}
+    {%- include "type_definitions.rs" %}
+    {%- filter indent(4) %}{% include "lift_lower.rs" %}{% endfilter %}
+    {%- endfor %}
 
-    {%- for type_def in root.ffi_type_definitions() %}
+    {%- for type_def in root.unique_type_definitions() %}
     {%- match type_def %}
     {%- when TypeDefinition::Record(rec) %}
     {%- filter indent(4) %}{% include "record.rs" %}{% endfilter %}
@@ -47,11 +52,16 @@ mod uniffi_bindgen_kotlin_jni_scaffolding {
     {%- filter indent(4) %}{% include "map.rs" %}{% endfilter %}
     {%- when TypeDefinition::Set(set) %}
     {%- filter indent(4) %}{% include "set.rs" %}{% endfilter %}
-    {%- when TypeDefinition::Timestamp(type_node) %}
+    {%- when TypeDefinition::Simple(type_node) %}
+    {%- match type_node.ty %}
+    {%- when Type::Timestamp %}
     {%- filter indent(4) %}{% include "timestamp.rs" %}{% endfilter %}
-    {%- when TypeDefinition::Duration(type_node) %}
+    {%- when Type::Duration %}
     {%- filter indent(4) %}{% include "duration.rs" %}{% endfilter %}
-    {%- when TypeDefinition::Interface(_) %}
+    {%- else %}
+    {%- endmatch %}
+    {%- when TypeDefinition::External(type_node) %}
+    {# No scaffolding code needed #}
     {%- endmatch %}
     {%- endfor %}
 }

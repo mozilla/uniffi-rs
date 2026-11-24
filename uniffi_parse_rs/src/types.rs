@@ -98,7 +98,7 @@ pub enum Type {
     Custom {
         module_path: String,
         name: String,
-        builtin: Box<Type>,
+        bridge_type: Box<Type>,
     },
     Ref {
         mutable: bool,
@@ -106,6 +106,12 @@ pub enum Type {
     },
     SelfTy,
     UnexpectedUniFFICallbackError,
+    NonUniffi {
+        // NonUniffi is currently only used for resolving custom types and there, module_id is
+        // more useful than module_path
+        module_id: usize,
+        ident: Ident,
+    },
     Udl(uniffi_meta::Type),
 }
 
@@ -196,11 +202,12 @@ impl Type {
             Type::Custom {
                 module_path,
                 name,
-                builtin,
+                bridge_type,
+                ..
             } => Ok(uniffi_meta::Type::Custom {
                 module_path,
                 name,
-                builtin: Box::new((*builtin).try_into_uniffi_meta(source, span, self_ty)?),
+                builtin: Box::new((*bridge_type).try_into_uniffi_meta(source, span, self_ty)?),
             }),
             Type::SelfTy => {
                 if let Some(self_ty) = self_ty {
@@ -265,7 +272,7 @@ impl<'ir> RPath<'ir> {
             .try_into_uniffi_meta(self.file_id(), ty.span(), self_ty)
     }
 
-    fn resolve_type(
+    pub fn resolve_type(
         &self,
         ir: &'ir Ir,
         cache: &mut LookupCache<'ir>,
@@ -286,7 +293,7 @@ impl<'ir> RPath<'ir> {
             Type::Ref { mutable, ty } => match *ty {
                 Type::Str => ArgType {
                     ty: uniffi_meta::Type::String,
-                    pass_by: uniffi_meta::PassBy::Ref,
+                    pass_by: uniffi_meta::PassBy::Ref { is_arc: false },
                 },
                 Type::Trait {
                     module_path,
@@ -294,7 +301,7 @@ impl<'ir> RPath<'ir> {
                     export_ty,
                 } => ArgType {
                     ty: trait_to_uniffi_meta(module_path, name, export_ty),
-                    pass_by: uniffi_meta::PassBy::Ref,
+                    pass_by: uniffi_meta::PassBy::Ref { is_arc: false },
                 },
                 Type::Slice(inner) => {
                     let ty = Type::Vec(inner).try_into_uniffi_meta(
@@ -309,13 +316,17 @@ impl<'ir> RPath<'ir> {
                     let pass_by = if by_mut_ref {
                         uniffi_meta::PassBy::MutRef
                     } else {
-                        uniffi_meta::PassBy::Ref
+                        uniffi_meta::PassBy::Ref { is_arc: false }
                     };
                     ArgType { ty, pass_by }
                 }
+                Type::Arc { .. } => ArgType {
+                    ty: ty.try_into_uniffi_meta(self.file_id(), syn_ty.span(), self_ty)?,
+                    pass_by: uniffi_meta::PassBy::Ref { is_arc: true },
+                },
                 ty => ArgType {
                     ty: ty.try_into_uniffi_meta(self.file_id(), syn_ty.span(), self_ty)?,
-                    pass_by: uniffi_meta::PassBy::Ref,
+                    pass_by: uniffi_meta::PassBy::Ref { is_arc: false },
                 },
             },
             ty => ArgType {
@@ -544,15 +555,29 @@ impl<'ir> RPath<'ir> {
                     }
                     Item::CustomType(custom_type) => {
                         let module_path = path_to_type.parent()?;
-                        let builtin =
-                            module_path._resolve_type(ir, cache, &custom_type.builtin, context)?;
+                        let bridge_type_module_path = path_to_type.crate_root()?.resolve(
+                            ir,
+                            cache,
+                            &custom_type.macro_call_module_path,
+                            Namespace::Type,
+                        )?;
+                        let bridge_type = Box::new(bridge_type_module_path.resolve_type(
+                            ir,
+                            cache,
+                            &custom_type.macro_call.bridge_type,
+                        )?);
+
                         Ok(Type::Custom {
                             module_path: module_path.path_string(),
-                            name: custom_type.ident.unraw().to_string(),
-                            builtin: Box::new(builtin),
+                            name: custom_type.macro_call.ident.unraw().to_string(),
+                            bridge_type,
                         })
                     }
                     Item::Udl(ty) => Ok(Type::Udl(ty.clone())),
+                    Item::NonUniffi(_vis, ident) => Ok(Type::NonUniffi {
+                        module_id: path_to_type.module()?.id,
+                        ident: ident.clone(),
+                    }),
                     _ => Err(Error::new(self.file_id(), ty.span(), InvalidType)),
                 }
             }
@@ -836,7 +861,7 @@ impl<'a> GenericArgs<'a> {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::{paths::tests::path_for_module, ErrorKind};
+    use crate::{paths::tests::path_for_module, CompileEnv, ErrorKind};
     use uniffi_meta::{ObjectImpl, TraitKind};
 
     fn run_resolve_type<'ir>(
@@ -1044,7 +1069,7 @@ pub mod tests {
             Ok(Type::Custom {
                 module_path: "types".into(),
                 name: "JsonObject".into(),
-                builtin: Box::new(Type::String),
+                bridge_type: Box::new(Type::String),
             })
         );
         // Builtin is a user type and also that type is not reachable from the
@@ -1054,7 +1079,7 @@ pub mod tests {
             Ok(Type::Custom {
                 module_path: "types".into(),
                 name: "CustomRecord".into(),
-                builtin: Box::new(Type::Record {
+                bridge_type: Box::new(Type::Record {
                     module_path: "types".into(),
                     name: "TestRecord".into(),
                 }),
@@ -1067,7 +1092,7 @@ pub mod tests {
             Ok(Type::Custom {
                 module_path: "types".into(),
                 name: "Guid".into(),
-                builtin: Box::new(Type::UInt64),
+                bridge_type: Box::new(Type::UInt64),
             })
         );
 
@@ -1078,7 +1103,103 @@ pub mod tests {
             Ok(Type::Custom {
                 module_path: "types::mod1".into(),
                 name: "Handle".into(),
-                builtin: Box::new(Type::UInt64),
+                bridge_type: Box::new(Type::UInt64),
+            })
+        );
+    }
+
+    #[test]
+    fn test_custom_types_in_different_modules() {
+        let ir = Ir::new_for_test(&["types"]);
+        let mut cache = LookupCache::default();
+
+        // Test referencing CustomRecord from the module with the `custom_type!` macro
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types::mod1", "CustomRecord2"),
+            Ok(Type::Custom {
+                // When the `custom_type!` macro is called from a different module than the Rust
+                // type, what should the module path be?
+                //
+                // For now, we use the module path of the Rust type, maybe we should use the other
+                // one.
+                module_path: "types".into(),
+                name: "CustomRecord2".into(),
+                bridge_type: Box::new(Type::UInt64),
+            })
+        );
+        // Test referencing CustomRecord from it's source module
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types", "CustomRecord2"),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                name: "CustomRecord2".into(),
+                bridge_type: Box::new(Type::UInt64),
+            })
+        );
+        // Test an import from a third module
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types::mod2", "CustomRecord2"),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                name: "CustomRecord2".into(),
+                bridge_type: Box::new(Type::UInt64),
+            })
+        );
+
+        // Test a bridge type defined in one module and the custom type in a different module
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types", "CustomRecord3"),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                name: "CustomRecord3".into(),
+                bridge_type: Box::new(Type::Record {
+                    module_path: "types::mod1".into(),
+                    name: "CustomRecord3BridgeType".into(),
+                }),
+            })
+        );
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types::mod1", "CustomRecord3"),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                name: "CustomRecord3".into(),
+                bridge_type: Box::new(Type::Record {
+                    module_path: "types::mod1".into(),
+                    name: "CustomRecord3BridgeType".into(),
+                }),
+            })
+        );
+    }
+
+    #[test]
+    fn test_custom_types_with_type_aliases() {
+        let ir = Ir::new_for_test(&["types"]);
+        let mut cache = LookupCache::default();
+
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types::mod1", "CustomRecord4Alias"),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                name: "CustomRecord4Alias".into(),
+                bridge_type: Box::new(Type::UInt64),
+            })
+        );
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types", "CustomRecord4"),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                // The custom type name is always the alias name
+                name: "CustomRecord4Alias".into(),
+                bridge_type: Box::new(Type::UInt64),
+            })
+        );
+        // Test an import from a third module
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types::mod2", "CustomRecord4AliasAlias"),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                name: "CustomRecord4Alias".into(),
+                bridge_type: Box::new(Type::UInt64),
             })
         );
     }
@@ -1491,9 +1612,9 @@ pub mod tests {
     fn test_udl_types() {
         let mut ir = Ir::new_for_test(&["udl_types", "udl_types_crate2"]);
         let mut cache = LookupCache::default();
-        ir.add_udl_metadata(
-            "udl_types",
-            vec![
+        ir.lookup_root_module_mut("udl_types")
+            .unwrap()
+            .add_udl_metadata(vec![
                 uniffi_meta::RecordMetadata {
                     module_path: "udl_types".into(),
                     name: "UdlRecord".into(),
@@ -1527,9 +1648,7 @@ pub mod tests {
                     docstring: None,
                 }
                 .into(),
-            ],
-        )
-        .unwrap();
+            ]);
 
         assert_eq!(
             run_resolve_uniffi_meta_type(&ir, &mut cache, "udl_types::mod1", "UdlRecord", None),
@@ -1646,6 +1765,43 @@ pub mod tests {
         );
     }
 
+    // Custom types in UDL requires special handling because the presence of the UDL item
+    // interferes with finding the actual type.
+    #[test]
+    fn test_udl_custom_types() {
+        // Construct the Ir manually so we can run through the worst-case scenario: the UDL items
+        // are present before we resolve items
+        let env = CompileEnv::new_for_test();
+        let mut ir = Ir::default();
+        ir.add_crate_root(
+            "types",
+            &camino::Utf8PathBuf::from("src/test_src/types.rs"),
+            env.clone(),
+        )
+        .unwrap();
+        ir.lookup_root_module_mut("types")
+            .unwrap()
+            .add_udl_metadata(vec![uniffi_meta::CustomTypeMetadata {
+                module_path: "types".into(),
+                name: "Guid".into(),
+                orig_name: None,
+                builtin: uniffi_meta::Type::UInt64,
+                docstring: None,
+            }
+            .into()]);
+        ir.resolve_items().expect("resolve_items failed");
+
+        let mut cache = LookupCache::default();
+        assert_eq!(
+            run_resolve_type(&ir, &mut cache, "types", "Guid",),
+            Ok(Type::Custom {
+                module_path: "types".into(),
+                name: "Guid".into(),
+                bridge_type: Box::new(Type::UInt64),
+            })
+        );
+    }
+
     #[test]
     fn test_result_uniffi_meta() {
         let ir = Ir::new_for_test(&["types"]);
@@ -1732,7 +1888,24 @@ pub mod tests {
                     module_path: "types".into(),
                     name: "TestRecord".into(),
                 },
-                pass_by: uniffi_meta::PassBy::Ref,
+                pass_by: uniffi_meta::PassBy::Ref { is_arc: false },
+            }),
+        );
+        assert_eq!(
+            run_resolve_arg(
+                &ir,
+                &mut cache,
+                "types",
+                "&::std::sync::Arc<TestInterface>",
+                None
+            ),
+            Ok(ArgType {
+                ty: uniffi_meta::Type::Object {
+                    module_path: "types".into(),
+                    name: "TestInterface".into(),
+                    imp: ObjectImpl::Struct,
+                },
+                pass_by: uniffi_meta::PassBy::Ref { is_arc: true },
             }),
         );
         assert_eq!(
@@ -1743,7 +1916,7 @@ pub mod tests {
                     name: "TraitInterface".into(),
                     imp: ObjectImpl::Trait(TraitKind::RustOnly),
                 },
-                pass_by: uniffi_meta::PassBy::Ref,
+                pass_by: uniffi_meta::PassBy::Ref { is_arc: false },
             }),
         );
         assert_eq!(
@@ -1755,7 +1928,7 @@ pub mod tests {
                         name: "TestRecord".into(),
                     }),
                 },
-                pass_by: uniffi_meta::PassBy::Ref,
+                pass_by: uniffi_meta::PassBy::Ref { is_arc: false },
             }),
         );
         // A `&mut [T]` slice of non-u8 elements is copied by value, so `&mut`
@@ -1769,7 +1942,7 @@ pub mod tests {
                         name: "TestRecord".into(),
                     }),
                 },
-                pass_by: uniffi_meta::PassBy::Ref,
+                pass_by: uniffi_meta::PassBy::Ref { is_arc: false },
             }),
         );
         // `&[u8]` is zero-copy bytes, by-ref but not mutable.
@@ -1777,7 +1950,7 @@ pub mod tests {
             run_resolve_arg(&ir, &mut cache, "types", "&[u8]", None),
             Ok(ArgType {
                 ty: uniffi_meta::Type::Bytes,
-                pass_by: uniffi_meta::PassBy::Ref,
+                pass_by: uniffi_meta::PassBy::Ref { is_arc: false },
             }),
         );
         // `&mut [u8]` is zero-copy mutable bytes.
@@ -1794,9 +1967,9 @@ pub mod tests {
     fn test_raw_ident() {
         let mut ir = Ir::new_for_test(&["raw_idents"]);
         let mut cache = LookupCache::default();
-        ir.add_udl_metadata(
-            "raw_idents",
-            vec![uniffi_meta::RecordMetadata {
+        ir.lookup_root_module_mut("raw_idents")
+            .unwrap()
+            .add_udl_metadata(vec![uniffi_meta::RecordMetadata {
                 module_path: "raw_idents".into(),
                 name: "Record".into(),
                 orig_name: None,
@@ -1804,9 +1977,7 @@ pub mod tests {
                 fields: vec![],
                 docstring: None,
             }
-            .into()],
-        )
-        .unwrap();
+            .into()]);
 
         assert_eq!(
             run_resolve_uniffi_meta_type(&ir, &mut cache, "raw_idents", "RecordWrapper", None),

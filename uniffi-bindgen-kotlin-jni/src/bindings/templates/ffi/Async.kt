@@ -1,12 +1,4 @@
-const val UNIFFI_RUST_FUTURE_PENDING = 0
-const val UNIFFI_RUST_FUTURE_CANCELLED = 1
-const val UNIFFI_RUST_FUTURE_COMPLETE = 2
-
-fun uniffiContinuationResume(continuation: kotlin.coroutines.Continuation<kotlin.Boolean>) {
-    continuation.resumeWith(Result.success(false))
-}
-
-{%- for rust_result in root.rust_async_callable_results() %}
+{%- for rust_result in package.rust_async_callable_results() %}
 suspend fun {{ rust_result.async_await_future_fn() }}(
     rustFuture: kotlin.Long,
 ){%- if let Some(return_type) = rust_result.return_type %} : {{ return_type.type_kt }}{% endif %}
@@ -25,13 +17,13 @@ suspend fun {{ rust_result.async_await_future_fn() }}(
                     {%- endif %}
             )
                 when (pollResult) {
-                    UNIFFI_RUST_FUTURE_PENDING -> {
+                    uniffi.UNIFFI_RUST_FUTURE_PENDING -> {
                         // Don't do anything at this point.
                         // The contiunation will be resumed when the Rust waker is called
                         // and Rust calls the `uniffiContinuationResume`
                     }
-                    UNIFFI_RUST_FUTURE_COMPLETE -> continuation.resumeWith(Result.success(true))
-                    UNIFFI_RUST_FUTURE_CANCELLED -> continuation.resumeWith(
+                    uniffi.UNIFFI_RUST_FUTURE_COMPLETE -> continuation.resumeWith(Result.success(true))
+                    uniffi.UNIFFI_RUST_FUTURE_CANCELLED -> continuation.resumeWith(
                         Result.failure(kotlin.coroutines.cancellation.CancellationException())
                     )
                     else -> continuation.resumeWith(
@@ -40,8 +32,11 @@ suspend fun {{ rust_result.async_await_future_fn() }}(
                 }
             }
             if (futureReady) {
-                {%- if rust_result.return_type.is_some() %}
-                return completion.value!!
+                {%- if let Some(return_type) = rust_result.return_type %}
+                // `value` is stored as `Any?` because the return type itself may be nullable,
+                // in which case `null` is a valid result.
+                @Suppress("UNCHECKED_CAST")
+                return completion.value as {{ return_type.type_kt }}
                 {%- else %}
                 return
                 {%- endif %}
@@ -54,7 +49,7 @@ suspend fun {{ rust_result.async_await_future_fn() }}(
 
 {%- if let Some(return_type) = rust_result.return_type %}
 class {{ rust_result.async_complete_class() }} {
-    var value: {{ return_type.type_kt }}? = null;
+    var value: Any? = null;
     fun complete(
         {%- for ffi_type in return_type.ffi_types %}
         v{{loop.index0 }}: {{ ffi_type.type_kt() }},

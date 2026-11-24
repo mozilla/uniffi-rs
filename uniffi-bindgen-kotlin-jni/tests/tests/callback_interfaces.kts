@@ -52,6 +52,9 @@ try {
     // Expected
 }
 
+assert(invokeOptionalTestCallbackInterfaceGetValue(null) == null)
+assert(invokeOptionalTestCallbackInterfaceGetValue(cbi) == 43u)
+
 // Test unexpected errors
 try {
     invokeTestCallbackInterfaceThrowIfEqual(cbi, CallbackInterfaceNumbers(6u, 7u))
@@ -59,3 +62,13 @@ try {
 } catch(e: TestException.Failure2) {
     assert(e.data.contains("unexpected failure"))
 }
+
+// Callback interface method that returns a bool
+class BoolCallbackImpl : TestBoolCallbackInterface {
+    override fun isEven(value: UInt): Boolean {
+        return value % 2u == 0u
+    }
+}
+
+assert(invokeTestBoolCallbackInterfaceIsEven(BoolCallbackImpl(), 2u))
+assert(!invokeTestBoolCallbackInterfaceIsEven(BoolCallbackImpl(), 3u))

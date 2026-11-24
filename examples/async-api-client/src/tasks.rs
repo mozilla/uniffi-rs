@@ -4,6 +4,7 @@
 
 use std::sync::{Arc, Mutex};
 
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 #[uniffi::trait_interface]
 pub trait TaskRunner: Send + Sync {

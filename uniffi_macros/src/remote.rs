@@ -53,6 +53,7 @@ pub fn expand_remote_type(args: RemoteTypeArgs) -> TokenStream {
                 <#ty as ::uniffi::FfiConverter<#existing_tag>>::try_read(buf)
             }
 
+            #[allow(clippy::large_const_arrays)]
             const TYPE_ID_META: ::uniffi::MetadataBuffer =
                 <#ty as ::uniffi::FfiConverter<#existing_tag>>::TYPE_ID_META;
         }

@@ -22,11 +22,16 @@ class TestReferences < Test::Unit::TestCase
 
     double_result2 = UniffiBindgenTests.call_double_value interface, 3
     assert_equal 6, double_result2
+
+    double_result3 = UniffiBindgenTests.call_double_value_ref_arc interface, 3
+    assert_equal 6, double_result3
   end
 
   def test_trait_interface_ref
     trait_interface = UniffiBindgenTests.create_reference_test_trait_interface
     triple_result = UniffiBindgenTests.call_triple_value_trait_interface trait_interface, 10
     assert_equal 30, triple_result
+    triple_result2 = UniffiBindgenTests.call_triple_value_trait_interface_ref_arc trait_interface, 10
+    assert_equal 30, triple_result2
   end
 end

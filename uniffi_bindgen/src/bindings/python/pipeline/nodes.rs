@@ -212,7 +212,7 @@ impl Argument {
             PassBy::MutRef if matches!(self.ty.ty, Type::Bytes) => {
                 "_UniffiFfiConverterByMutRefBytes".to_string()
             }
-            PassBy::Ref if matches!(self.ty.ty, Type::Bytes) => {
+            PassBy::Ref { .. } if matches!(self.ty.ty, Type::Bytes) => {
                 "_UniffiFfiConverterByRefBytes".to_string()
             }
             _ => self.ty.ffi_converter_name.clone(),
@@ -226,7 +226,7 @@ impl Argument {
     pub fn param_type_name(&self) -> String {
         match self.pass_by {
             PassBy::MutRef if matches!(self.ty.ty, Type::Bytes) => "bytearray".to_string(),
-            PassBy::Ref if matches!(self.ty.ty, Type::Bytes) => {
+            PassBy::Ref { .. } if matches!(self.ty.ty, Type::Bytes) => {
                 "typing.Union[bytes, bytearray]".to_string()
             }
             _ => self.ty.type_name.clone(),

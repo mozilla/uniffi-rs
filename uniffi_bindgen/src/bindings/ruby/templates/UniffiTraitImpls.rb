@@ -6,22 +6,22 @@
 {%- if let Some(display_fmt) = trait_methods.display_fmt %}
 # The Rust `Display::fmt` implementation.
 def to_s
-  result = ::{{ ci.namespace()|class_name_rb }}.rust_call(
+  result = ::{{ self.module_name() }}.rust_call(
     :{{ display_fmt.ffi_func().name() }},
-    {{ display_fmt|lower_method_self_rb(config) }}
+    {{ display_fmt|lower_method_self_rb(self) }}
   )
-  {{ "result"|lift_rb(display_fmt.return_type().unwrap(), config) }}
+  {{ self.lift_rb("result", display_fmt.return_type().unwrap())? }}
 end
 {%- endif %}
 
 {%- if let Some(debug_fmt) = trait_methods.debug_fmt %}
 # The Rust `Debug::fmt` implementation.
 def inspect
-  result = ::{{ ci.namespace()|class_name_rb }}.rust_call(
+  result = ::{{ self.module_name() }}.rust_call(
     :{{ debug_fmt.ffi_func().name() }},
-    {{ debug_fmt|lower_method_self_rb(config) }}
+    {{ debug_fmt|lower_method_self_rb(self) }}
   )
-  {{ "result"|lift_rb(debug_fmt.return_type().unwrap(), config) }}
+  {{ self.lift_rb("result", debug_fmt.return_type().unwrap())? }}
 end
 {%- endif %}
 
@@ -29,23 +29,23 @@ end
 # The Rust `Eq::eq` implementation.
 def ==(other)
   return false unless other.is_a?(self.class)
-  result = ::{{ ci.namespace()|class_name_rb }}.rust_call(
+  result = ::{{ self.module_name() }}.rust_call(
     :{{ eq.ffi_func().name() }},
-    {{ eq|lower_method_self_rb(config) }},
-    {{ "other"|lower_rb(eq.arguments()[0].as_type().borrow(), config) }}
+    {{ eq|lower_method_self_rb(self) }},
+    {{ self.lower_rb("other", eq.arguments()[0].as_type().borrow())? }}
   )
-  {{ "result"|lift_rb(eq.return_type().unwrap(), config) }}
+  {{ self.lift_rb("result", eq.return_type().unwrap())? }}
 end
 {%- endif %}
 
 {%- if let Some(hash) = trait_methods.hash_hash %}
 # The Rust `Hash::hash` implementation.
 def hash
-  result = ::{{ ci.namespace()|class_name_rb }}.rust_call(
+  result = ::{{ self.module_name() }}.rust_call(
     :{{ hash.ffi_func().name() }},
-    {{ hash|lower_method_self_rb(config) }}
+    {{ hash|lower_method_self_rb(self) }}
   )
-  {{ "result"|lift_rb(hash.return_type().unwrap(), config) }}
+  {{ self.lift_rb("result", hash.return_type().unwrap())? }}
 end
 
 def eql?(other)
@@ -60,12 +60,12 @@ include Comparable
 def <=>(other)
   # do we need this?
   # return nil unless other.is_a?(self.class)
-  result = ::{{ ci.namespace()|class_name_rb }}.rust_call(
+  result = ::{{ self.module_name() }}.rust_call(
     :{{ cmp.ffi_func().name() }},
-    {{ cmp|lower_method_self_rb(config) }},
-    {{ "other"|lower_rb(cmp.arguments()[0].as_type().borrow(), config) }}
+    {{ cmp|lower_method_self_rb(self) }},
+    {{ self.lower_rb("other", cmp.arguments()[0].as_type().borrow())? }}
   )
-  {{ "result"|lift_rb(cmp.return_type().unwrap(), config) }}
+  {{ self.lift_rb("result", cmp.return_type().unwrap())? }}
 rescue
   nil
 end

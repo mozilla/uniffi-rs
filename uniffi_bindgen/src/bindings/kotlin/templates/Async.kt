@@ -15,7 +15,8 @@ internal object uniffiRustFutureContinuationCallbackImpl: UniffiRustFutureContin
 internal suspend fun<T, F, E: kotlin.Exception> uniffiRustCallAsync(
     rustFuture: Long,
     pollFunc: (Long, UniffiRustFutureContinuationCallback, Long) -> Unit,
-    completeFunc: (Long, UniffiRustCallStatus) -> F,
+    // Takes a pointer to the call status, see `UniffiRustCallStatusBuffer`.
+    completeFunc: (Long, Pointer) -> F,
     freeFunc: (Long) -> Unit,
     liftFunc: (F) -> T,
     errorHandler: UniffiRustCallStatusErrorHandler<E>
@@ -31,6 +32,9 @@ internal suspend fun<T, F, E: kotlin.Exception> uniffiRustCallAsync(
             }
         } while (pollResult != UNIFFI_RUST_FUTURE_POLL_READY);
 
+        // Polling takes no call status. Completing does, and runs on whichever thread resumed
+        // this coroutine. That's fine: the call doesn't suspend, so it acquires and releases a
+        // status buffer of that thread around a single synchronous FFI call.
         return liftFunc(
             uniffiRustCallWithError(errorHandler, { status -> completeFunc(rustFuture, status) })
         )

@@ -4,6 +4,7 @@ use url::Url;
 struct RemoteRecord { }
 
 uniffi::custom_type!(Url, String, {
-    into: |url| url.to_string(),
-    try_from: |s| Url::parse(s),
+    remote,
+    lower: |url| url.to_string(),
+    try_lift: |s| Url::parse(s),
 });

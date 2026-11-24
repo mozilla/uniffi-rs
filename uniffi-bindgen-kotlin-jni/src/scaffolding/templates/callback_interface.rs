@@ -1,6 +1,7 @@
 {%- let type_name = cbi.self_type.type_rs %}
 {%- let trait_name = "{}::{}"|format(cbi.module_path, cbi.name_rs()) %}
 
+#[derive(Debug)]
 struct {{ cbi.impl_struct_rs() }} {
     handle: i64,
 }
@@ -15,7 +16,7 @@ impl {{ trait_name }} for {{ cbi.impl_struct_rs() }} {
         declared with `async` are implemented via `#[async_trait]` as `async fn`. #}
     {%- if meth.callable.desugared_async %}
     fn {{ meth.callable.name_rs() }}(
-        {%- if receiver.by_ref %}
+        {%- if receiver.pass_by.is_borrowed() %}
         &self,
         {%- else %}
         self: ::std::sync::Arc<Self>,
@@ -23,11 +24,11 @@ impl {{ trait_name }} for {{ cbi.impl_struct_rs() }} {
         {%- for a in meth.callable.arguments %}
         {{ a.name_rs() }}: {{ a.ty.type_rs }},
         {%- endfor %}
-    ) -> ::std::pin::Pin<::std::boxed::Box<dyn ::std::future::Future<Output = {{ meth.callable.result.return_type_rs() }}> + ::std::marker::Send + {% if receiver.by_ref %}'_{% else %}'static{% endif %}>> {
+    ) -> ::std::pin::Pin<::std::boxed::Box<dyn ::std::future::Future<Output = {{ meth.callable.result.return_type_rs() }}> + ::std::marker::Send + {% if receiver.pass_by.is_borrowed() %}'_{% else %}'static{% endif %}>> {
         ::std::boxed::Box::pin(async move {
     {%- else %}
     {% if meth.callable.is_async %}async {% endif %}fn {{ meth.callable.name_rs() }}(
-        {%- if receiver.by_ref %}
+        {%- if receiver.pass_by.is_borrowed() %}
         &self,
         {%- else %}
         self: ::std::sync::Arc<Self>,
@@ -81,7 +82,7 @@ unsafe fn {{ meth.dispatch_fn_rs }}(
     {%- endfor %}
 ) -> uniffi::Result<{{ meth.callable.result.return_type_rs() }}> {
     static METHOD: uniffi_jni::CachedStaticMethod = uniffi_jni::CachedStaticMethod::new(
-        c"uniffi/UniffiKt",
+        c"{{ cbi.package_jni_path() }}/uniffi/UniffiKt",
         c"{{ meth.dispatch_fn_kt }}",
         c"{{ meth.jni_signature() }}",
     );
@@ -163,7 +164,7 @@ async unsafe fn {{ meth.dispatch_fn_rs }}(
     {%- endfor %}
 ) -> uniffi::Result<{{ meth.callable.result.return_type_rs() }}> {
     static METHOD: uniffi_jni::CachedStaticMethod = uniffi_jni::CachedStaticMethod::new(
-        c"uniffi/UniffiKt",
+        c"{{ cbi.package_jni_path() }}/uniffi/UniffiKt",
         c"{{ meth.dispatch_fn_kt }}",
         c"{{ meth.jni_signature() }}",
     );
@@ -199,7 +200,7 @@ async unsafe fn {{ meth.dispatch_fn_rs }}(
 impl Drop for {{ cbi.impl_struct_rs() }} {
     fn drop(&mut self) {
         static METHOD: uniffi_jni::CachedStaticMethod = uniffi_jni::CachedStaticMethod::new(
-            c"uniffi/UniffiKt",
+            c"{{ cbi.package_jni_path() }}/uniffi/UniffiKt",
             c"{{ cbi.free_fn_kt() }}",
             c"(J)V",
         );

@@ -85,6 +85,12 @@ This normally means types from other crates in your workspace.
 
 Proc-macros typically use external types automatically, but UDL needs them described.
 
+Bindings-level internal errors (`InternalError` / `InternalException`) are defined by the crate that owns the type — Ruby mixins and Python/Kotlin converters raise that crate's class, not the consumer's.
+
+## Proc-macros
+
+Proc-macro-based code can use external types automatically, without any extra code.
+
 ## UDL
 
 Suppose you depend on the `DemoDict` type from another UniFFIed crate in your workspace.
@@ -165,3 +171,33 @@ rust-crate-name = "kotlin.package.name"
 For Swift, you must compile all generated `.swift` files together in a single
 module since the generate code expects that it can access external types
 without importing them.
+
+### Ruby
+
+For Ruby, external types are supported in library mode
+(`generate --library [path-to-cdylib]`). Single-UDL generation (`generate [udl-path]`)
+is not supported for external types, as the generator cannot resolve types from
+other crates without their compiled scaffolding metadata; bindgen errors rather
+than emitting incomplete bindings. Library mode generates
+all bindings files together and uses `require` to pull in external modules at runtime.
+
+The defining crate's Ruby `module` name defaults to the UniFFI namespace converted
+to UpperCamelCase. Set `[bindings.ruby.module_name]` on that crate to change it.
+Library mode copies each peer's `module_name` into the consumer's
+`[bindings.ruby.external_packages]` map. A consumer-side entry is optional and
+must match; a mismatch is a bindgen error. `require` paths still use the
+namespace / `.rb` filename (references only):
+
+```
+# defining crate
+[bindings.ruby]
+module_name = "RubyModuleName"
+
+# consumer (optional in library mode; must match the defining crate)
+[bindings.ruby.external_packages]
+# Map crate names from [External={name}] / Cargo.toml into Ruby module names.
+# `rust-crate-name` and `rust_crate_name` are the same key.
+rust-crate-name = "RubyModuleName"
+```
+
+See the [Ruby configuration](../ruby/configuration.md) page for more details.

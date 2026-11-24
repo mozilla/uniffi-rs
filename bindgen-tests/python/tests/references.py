@@ -9,10 +9,12 @@ class TestReferences(unittest.TestCase):
         interface = ReferenceTestInterface()
         self.assertEqual(interface.double_value(2), 4)
         self.assertEqual(call_double_value(interface, 3), 6)
+        self.assertEqual(call_double_value_ref_arc(interface, 3), 6)
 
     def test_trait_interface_ref(self):
         trait_interface = create_reference_test_trait_interface()
         self.assertEqual(call_triple_value_trait_interface(trait_interface, 10), 30)
+        self.assertEqual(call_triple_value_trait_interface_ref_arc(trait_interface, 10), 30)
 
 if __name__ == '__main__':
     unittest.main()

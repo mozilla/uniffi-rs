@@ -155,6 +155,7 @@ impl TestTraitInterface for TestTraitInterfaceImpl {
 
 /// Async version of `TestTraitInterface`
 #[uniffi::export(with_foreign)]
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 pub trait AsyncTestTraitInterface: Send + Sync {
     /// No-op function, this tests if that we can make calls at all
@@ -208,6 +209,7 @@ pub async fn invoke_async_test_trait_interface_throw_if_equal(
     interface.throw_if_equal(numbers).await
 }
 
+#[allow(clippy::double_must_use)]
 #[async_trait::async_trait]
 impl AsyncTestTraitInterface for TestTraitInterfaceImpl {
     async fn noop(&self) {}
@@ -319,4 +321,34 @@ pub fn roundtrip_async_test_trait_interface_list(
     interfaces: Vec<Arc<dyn AsyncTestTraitInterface>>,
 ) -> Vec<Arc<dyn AsyncTestTraitInterface>> {
     interfaces
+}
+
+#[uniffi::export]
+pub fn roundtrip_optional_test_trait_interface(
+    interface: Option<Arc<dyn TestTraitInterface>>,
+) -> Option<Arc<dyn TestTraitInterface>> {
+    interface
+}
+
+/// Trait interface with a `Debug` supertrait.
+///
+/// The struct that UniFFI generates for foreign implementations must implement `Debug` as well.
+#[uniffi::export(with_foreign)]
+pub trait TestDebugTraitInterface: Send + Sync + std::fmt::Debug {
+    fn get_value(&self) -> u32;
+}
+
+#[uniffi::export]
+pub fn invoke_test_debug_trait_interface_get_value(
+    interface: Arc<dyn TestDebugTraitInterface>,
+) -> u32 {
+    interface.get_value()
+}
+
+/// Format a `TestDebugTraitInterface` using its `Debug` impl and check that it's non-empty.
+#[uniffi::export]
+pub fn test_debug_trait_interface_has_debug_output(
+    interface: Arc<dyn TestDebugTraitInterface>,
+) -> bool {
+    !format!("{interface:?}").is_empty()
 }

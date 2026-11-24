@@ -20,7 +20,15 @@ require 'set'
 require 'monitor'
 {%- endif %}
 
-module {{ ci.namespace()|class_name_rb }}
+{%- for ext in self.external_mixin_modules()? %}
+require '{{ ext.require_path }}'
+{%- endfor %}
+
+{%- for import_name in self.external_custom_type_imports() %}
+require '{{ import_name }}'
+{%- endfor %}
+
+module {{ self.module_name() }}
   {% include "Helpers.rb" %}
 
   {%- if ci.has_callback_definitions() %}
@@ -49,22 +57,7 @@ module {{ ci.namespace()|class_name_rb }}
   {%- for type_ in ci.iter_local_types() -%}
   {%- match type_ -%}
   {%- when Type::Custom { name, builtin, .. } -%}
-  {%- if !ci.is_external(type_) %}
   {% include "CustomTypeTemplate.rb" %}
-  {%- else -%}
-  {%- match config.custom_types.get(name.as_str()) %}
-  {%- when Some(cfg) %}
-  {%- match cfg.imports %}
-  {%- when Some(imports) %}
-  # External custom type `{{ name }}`: importing configured dependencies.
-  {%- for import_name in imports %}
-  require '{{ import_name }}'
-  {%- endfor %}
-  {%- when None %}
-  {%- endmatch %}
-  {%- when None %}
-  {%- endmatch %}
-  {%- endif %}
   {%- else -%}
   {%- endmatch %}
   {%- endfor %}
@@ -93,6 +86,7 @@ module {{ ci.namespace()|class_name_rb }}
   {%- let name = cbi.name() %}
   {% include "CallbackInterfaceTemplate.rb" %}
   {% endfor %}
+
 end
 
 {% import "macros.rb" as rb %}

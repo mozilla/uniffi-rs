@@ -18,6 +18,25 @@ uniffi_pipeline::use_prev_node!(general::Type);
 pub struct Root {
     pub cdylib: Option<String>,
     pub packages: Vec<Package>,
+    /// The lift/lower code for these lives in the `uniffi.Uniffi` module
+    /// and is shared by all other uniffi modules.
+    pub non_user_type_definitions: Vec<TypeDefinition>,
+}
+
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::BuiltinTypes))]
+pub struct BuiltinTypes {
+    pub u8: TypeNode,
+    pub i8: TypeNode,
+    pub u16: TypeNode,
+    pub i16: TypeNode,
+    pub u32: TypeNode,
+    pub i32: TypeNode,
+    pub u64: TypeNode,
+    pub i64: TypeNode,
+    pub f32: TypeNode,
+    pub f64: TypeNode,
+    pub string: TypeNode,
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -28,16 +47,18 @@ pub struct Package {
     pub crate_name: String,
     pub config: Config,
     pub functions: Vec<Function>,
+    pub interfaces: Vec<Interface>,
     pub type_definitions: Vec<TypeDefinition>,
     pub imports: IndexSet<String>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, MapNode, Node)]
+#[map_node(from(general::TypeDefinition))]
 #[allow(clippy::large_enum_variant)]
 pub enum TypeDefinition {
     Record(Record),
     Enum(Enum),
-    Interface(Interface),
+    #[map_node(from(Interface))]
     Class(Class),
     CallbackInterface(CallbackInterface),
     Custom(CustomType),
@@ -46,8 +67,8 @@ pub enum TypeDefinition {
     Sequence(SequenceType),
     Map(MapType),
     Set(SetType),
-    Timestamp(TypeNode),
-    Duration(TypeNode),
+    Simple(TypeNode),
+    External(ExternalType),
 }
 
 #[derive(Debug, Clone, Node, MapNode)]
@@ -60,6 +81,7 @@ pub struct Record {
     pub orig_name: String,
     pub fields_kind: FieldsKind,
     pub fields: Vec<Field>,
+    pub methods: Vec<Method>,
     pub uniffi_trait_methods: UniffiTraitMethods,
     pub docstring: Option<String>,
     pub recursive: bool,
@@ -78,9 +100,11 @@ pub struct Enum {
     pub name: String,
     pub orig_name: String,
     pub base_classes: Vec<String>,
+    pub methods: Vec<Method>,
     pub uniffi_trait_methods: UniffiTraitMethods,
     pub shape: EnumShape,
     pub kotlin_kind: KotlinEnumKind,
+    pub non_exhaustive: bool,
     pub docstring: Option<String>,
     pub recursive: bool,
     pub ffi_fields: Vec<FfiField>,
@@ -131,6 +155,7 @@ pub struct CallbackInterface {
     pub name: String,
     pub orig_name: String,
     pub module_path: String,
+    pub package_name: String,
     pub docstring: Option<String>,
     pub methods: Vec<CallbackMethod>,
     pub crate_name: String,
@@ -282,7 +307,7 @@ pub struct Argument {
     pub orig_name: String,
     pub index: usize,
     pub ty: TypeNode,
-    pub by_ref: bool,
+    pub pass_by: PassBy,
     pub optional: bool,
     pub ffi: ArgumentFfi,
     pub default: Option<DefaultValueNode>,
@@ -357,6 +382,14 @@ pub struct SetType {
     pub item_size: usize,
 }
 
+#[derive(Debug, Clone, Node, MapNode)]
+#[map_node(from(general::ExternalType))]
+#[map_node(types::map_external_type)]
+pub struct ExternalType {
+    pub package_name: String,
+    pub self_type: TypeNode,
+}
+
 /// Wrap `Type` so that we can add extra fields that are set for all variants.
 #[derive(Debug, Clone, Node, MapNode)]
 #[map_node(from(general::TypeNode))]
@@ -367,6 +400,10 @@ pub struct TypeNode {
     pub ty: Type,
     pub type_rs: String,
     pub type_kt: String,
+    /// JNI signature for this type.
+    /// This is used to determine the JNI signature for the lift function return.
+    /// All other cases use [FfiType::jni_signature()]
+    pub jni_signature: String,
     pub is_used_as_error: bool,
     pub ffi_types: Vec<FfiType>,
 }

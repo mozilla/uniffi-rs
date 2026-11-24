@@ -110,6 +110,9 @@ pub fn map_type(mut ty: Type, context: &Context) -> Result<Type> {
         Type::Set { inner_type } => Type::Set {
             inner_type: Box::new(map_type(*inner_type, context)?),
         },
+        Type::Box { inner_type } => Type::Box {
+            inner_type: Box::new(map_type(*inner_type, context)?),
+        },
         // All other types can be returned unchanged
         _ => ty,
     })
@@ -158,4 +161,64 @@ pub fn type_for_custom_type(custom: &initial::CustomType, context: &Context) -> 
         orig_name: custom.orig_name.clone(),
         builtin: Box::new(custom.builtin.clone()),
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn record(namespace: &str, orig_name: &str, name: &str) -> Type {
+        Type::Record {
+            namespace: namespace.to_string(),
+            name: name.to_string(),
+            orig_name: orig_name.to_string(),
+        }
+    }
+
+    fn context_with_rename(namespace: &str, from: &str, to: &str) -> Context {
+        let mut context = Context::new("test");
+        let renames: toml::Table = toml::from_str(&format!("{from} = \"{to}\"")).unwrap();
+        context.rename_tables.insert(namespace.to_string(), renames);
+        context
+    }
+
+    #[test]
+    fn map_type_renames_through_box() {
+        // A boxed record's name should be mapped the same way an unboxed one
+        // would be: `Box<T>` must not hide `T` from renaming.
+        let context = context_with_rename("test_ns", "Leaf", "PyLeaf");
+        let ty = Type::Box {
+            inner_type: Box::new(record("test_ns", "Leaf", "Leaf")),
+        };
+        let mapped = map_type(ty, &context).unwrap();
+        assert_eq!(
+            mapped,
+            Type::Box {
+                // `orig_name` (the original Rust-side name) is untouched;
+                // only the bindings-facing `name` is renamed.
+                inner_type: Box::new(record("test_ns", "Leaf", "PyLeaf"))
+            }
+        );
+    }
+
+    #[test]
+    fn map_type_renames_through_optional_box() {
+        // `Option<Box<T>>` composes both wrappers; the rename still needs to
+        // reach the innermost record.
+        let context = context_with_rename("test_ns", "Leaf", "PyLeaf");
+        let ty = Type::Optional {
+            inner_type: Box::new(Type::Box {
+                inner_type: Box::new(record("test_ns", "Leaf", "Leaf")),
+            }),
+        };
+        let mapped = map_type(ty, &context).unwrap();
+        assert_eq!(
+            mapped,
+            Type::Optional {
+                inner_type: Box::new(Type::Box {
+                    inner_type: Box::new(record("test_ns", "Leaf", "PyLeaf"))
+                })
+            }
+        );
+    }
 }

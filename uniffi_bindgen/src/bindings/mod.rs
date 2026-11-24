@@ -101,9 +101,9 @@ pub struct GenerateOptions {
     pub source: Utf8PathBuf,
     /// Features to enable when generating from Rust sources
     pub features: Vec<String>,
-    /// Enable all features
+    /// Enable all features when generated from Rust sources
     pub all_features: bool,
-    /// Don't auto-enable default features
+    /// Don't auto-enable default features when generated from Rust sources
     pub no_default_features: bool,
     /// Target triple to use when generating from Rust sources
     pub target: Option<String>,

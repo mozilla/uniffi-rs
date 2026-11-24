@@ -18,7 +18,7 @@
 /// For the types that involve memory allocation, we make a distinction between
 /// "owned" types (the recipient must free it, or pass it to someone else) and
 /// "borrowed" types (the sender must keep it alive for the duration of the call).
-use uniffi_meta::Type;
+use uniffi_meta::{crate_name, Type};
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum FfiType {
@@ -168,7 +168,7 @@ pub struct ExternalFfiMetadata {
 
 impl ExternalFfiMetadata {
     pub fn crate_name(&self) -> &str {
-        self.module_path.split("::").next().unwrap()
+        crate_name(&self.module_path)
     }
 }
 

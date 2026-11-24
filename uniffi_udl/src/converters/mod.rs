@@ -225,7 +225,7 @@ fn make_uniffi_traits(
                         vec![FnParamMetadata {
                             name: "other".to_string(),
                             ty: other.clone(),
-                            pass_by: PassBy::Ref,
+                            pass_by: PassBy::ref_(),
                             default: None,
                             optional: false,
                         }],
@@ -236,7 +236,7 @@ fn make_uniffi_traits(
                         vec![FnParamMetadata {
                             name: "other".to_string(),
                             ty: other.clone(),
-                            pass_by: PassBy::Ref,
+                            pass_by: PassBy::ref_(),
                             default: None,
                             optional: false,
                         }],
@@ -252,7 +252,7 @@ fn make_uniffi_traits(
                         vec![FnParamMetadata {
                             name: "other".to_string(),
                             ty: other.clone(),
-                            pass_by: PassBy::Ref,
+                            pass_by: PassBy::ref_(),
                             default: None,
                             optional: false,
                         }],

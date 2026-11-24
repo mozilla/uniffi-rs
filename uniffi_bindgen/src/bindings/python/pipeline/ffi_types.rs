@@ -47,10 +47,13 @@ pub fn ffi_default_value(return_type: &general::ReturnType, context: &Context) -
             | FfiType::Int64
             | FfiType::Handle(_) => "0".to_string(),
             FfiType::Float32 | FfiType::Float64 => "0.0".to_string(),
-            FfiType::RustBuffer(Some(namespace)) if *namespace != context.module_namespace()? => {
-                format!("{namespace}._UniffiRustBuffer.default()")
+            FfiType::RustBuffer(Some(namespace)) => {
+                match context.external_package_name(namespace)? {
+                    None => "_UniffiRustBuffer.default()".to_string(),
+                    Some(package) => format!("{package}._UniffiRustBuffer.default()"),
+                }
             }
-            FfiType::RustBuffer(_) => "_UniffiRustBuffer.default()".to_string(),
+            FfiType::RustBuffer(None) => "_UniffiRustBuffer.default()".to_string(),
             ffi_type => bail!("Invalid VTable return type: {ffi_type:?}"),
         },
         // When we need to use a value for void returns, we use a `u8` placeholder and `0` as

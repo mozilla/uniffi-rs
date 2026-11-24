@@ -114,7 +114,11 @@ checkKtImpl(
     roundtripTestTraitInterfaceList(listOf(TraitImpl(42u)))[0]
 )
 
-
+// Optional variants: check that a null interface roundtrips as null and that a non-null one still
+// works after being lifted/lowered through an `Option`.
+assert(roundtripOptionalTestTraitInterface(null) == null)
+checkRustImpl(roundtripOptionalTestTraitInterface(createTestTraitInterface(42u))!!)
+checkKtImpl(roundtripOptionalTestTraitInterface(TraitImpl(42u))!!)
 
 class AsyncTraitImpl(var value: UInt) : AsyncTestTraitInterface {
     override suspend fun noop() { }
@@ -234,3 +238,13 @@ fun checkForeignOnlyImpl(impl: TestForeignOnlyTraitInterface) {
 
 checkForeignOnlyImpl(ForeignOnlyImpl())
 checkForeignOnlyImpl(roundtripTestForeignOnlyTrait(ForeignOnlyImpl()))
+
+// Trait interface with a `Debug` supertrait
+class DebugTraitImpl : TestDebugTraitInterface {
+    override fun getValue(): UInt {
+        return 42u
+    }
+}
+
+assert(invokeTestDebugTraitInterfaceGetValue(DebugTraitImpl()) == 42u)
+assert(testDebugTraitInterfaceHasDebugOutput(DebugTraitImpl()))

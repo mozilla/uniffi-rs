@@ -24,7 +24,7 @@ commands:
   # Our minimum supported rust version is specified here.
   prepare-rust-min-version:
     steps:
-      - run: rustup override set 1.90.0
+      - run: rustup override set 1.95.0
       - run: rustup update
   build-api-docs:
     steps:
@@ -41,7 +41,7 @@ orbs:
 jobs:
   Check Rust formatting:
     docker:
-      - image: cimg/rust:1.90
+      - image: cimg/rust:1.95
     resource_class: small
     steps:
       - checkout
@@ -51,7 +51,7 @@ jobs:
       - run: cargo fmt -- --check
   Lint Rust with clippy:
     docker:
-      - image: cimg/rust:1.90
+      - image: cimg/rust:1.95
     resource_class: large
     steps:
       - checkout
@@ -68,7 +68,7 @@ jobs:
             done
   Lint Rust Docs:
     docker:
-      - image: cimg/rust:1.90
+      - image: cimg/rust:1.95
     resource_class: small
     steps:
       - checkout
@@ -99,6 +99,17 @@ jobs:
             for manifest_path in $(ls fixtures/wasm-*/Cargo.toml) ; do
               cargo build \
                 --target wasm32-unknown-unknown \
+                --manifest-path "$manifest_path"
+            done
+      - run:
+          name: Build WASM crates for wasm64
+          command: |
+            # wasm64 is a tier 3 target: it needs nightly and a std built from source.
+            # RUSTFLAGS is cleared so warnings in that std don't fail the build.
+            rustup toolchain install nightly --profile minimal --component rust-src
+            for manifest_path in $(ls fixtures/wasm-*/Cargo.toml) ; do
+              RUSTFLAGS="" cargo +nightly build -Zbuild-std=std,panic_abort \
+                --target wasm64-unknown-unknown \
                 --manifest-path "$manifest_path"
             done
       - run: cargo test --features=uniffi/ffi-trace
@@ -132,7 +143,7 @@ jobs:
       - run: cargo test -- --skip trybuild_ui_tests
   Deploy website:
     docker:
-      - image: cimg/rust:1.90
+      - image: cimg/rust:1.95
     resource_class: small
     steps:
       - checkout

@@ -79,6 +79,11 @@ mod test {
     }
 
     #[test]
+    fn test_methods() {
+        run_tests(test_dir(), "tests/methods.kts");
+    }
+
+    #[test]
     fn test_references() {
         run_tests(test_dir(), "tests/references.kts");
     }
@@ -111,6 +116,11 @@ mod test {
     #[test]
     fn test_rust_traits() {
         run_tests(test_dir(), "tests/rust_traits.kts");
+    }
+
+    #[test]
+    fn test_udl() {
+        run_tests(test_dir(), "tests/udl.kts");
     }
 
     fn test_dir() -> &'static Utf8Path {

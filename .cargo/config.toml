@@ -6,6 +6,7 @@ release-backend-crates = [
     "--no-publish",
     "-p", "uniffi_core",
     "-p", "uniffi_bindgen",
+    "-p", "uniffi-bindgen-kotlin-jni-runtime",
     "-p", "uniffi-bindgen-kotlin-jni",
     "-p", "uniffi_build",
     "-p", "uniffi_checksum_derive",

@@ -148,8 +148,8 @@ uniffi::custom_type!(
     /// Custom type docstring
     CustomType, String,
     {
-        into: |custom| custom.into(),
-        try_from: |s| s.try_from(),
+        lower: |custom| custom.into(),
+        try_lift: |s| s.try_from(),
     }
 );
 
@@ -161,6 +161,14 @@ pub struct CustomType(String);
 // on it.
 impl std::convert::From<uniffi::UnexpectedUniFFICallbackError> for Error {
     fn from(e: uniffi::UnexpectedUniFFICallbackError) -> Self {
+        Self
+    }
+}
+
+// Implement some other traits to test that we ignore them
+impl other_crate::Trait for Error { }
+impl std::convert::From<anyhow::Error> for Error {
+    fn from(e: anyhow::Error) -> Self {
         Self
     }
 }

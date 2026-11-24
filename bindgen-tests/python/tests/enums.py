@@ -51,6 +51,7 @@ class TestEnums(unittest.TestCase):
 
     def test_methods(self):
         self.assertEqual(EnumWithData.A(1, 0).roundtrip(), EnumWithData.A(1, 0))
+        self.assertEqual(EnumNoData.A.roundtrip(), EnumNoData.A)
 
 if __name__ == '__main__':
     unittest.main()

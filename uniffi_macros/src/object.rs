@@ -224,6 +224,7 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
                 #try_lift_arc(::uniffi::ffi::Handle::from_raw_unchecked(::uniffi::deps::bytes::Buf::get_u64(buf)))
             }
 
+            #[allow(clippy::large_const_arrays)]
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)
                 .concat_str(module_path!())
                 .concat_str(#name);
@@ -248,6 +249,7 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
         }
 
         #type_id_impl_spec {
+            #[allow(clippy::large_const_arrays)]
             const TYPE_ID_META: ::uniffi::MetadataBuffer = #type_id_meta_arc;
         }
     }

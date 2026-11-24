@@ -84,7 +84,7 @@ pub fn map_record(input: uniffi_meta::RecordMetadata, context: &Context) -> Resu
         methods: context.methods_for_type(&input.module_path, &input.name)?,
         uniffi_traits: context.uniffi_traits_for_type(&input.module_path, &input.name)?,
         orig_name: input.orig_name.unwrap_or_else(|| input.name.clone()),
-        module_path: input.module_path,
+        module_path: normalize_module_path(input.module_path),
         name: input.name,
         fields: input.fields.map_node(context)?,
         docstring: input.docstring,
@@ -97,11 +97,12 @@ pub fn map_enum(input: uniffi_meta::EnumMetadata, context: &Context) -> Result<E
         methods: context.methods_for_type(&input.module_path, &input.name)?,
         uniffi_traits: context.uniffi_traits_for_type(&input.module_path, &input.name)?,
         orig_name: input.orig_name.unwrap_or_else(|| input.name.clone()),
-        module_path: input.module_path,
+        module_path: normalize_module_path(input.module_path),
         name: input.name,
         shape: input.shape,
         variants: input.variants.map_node(context)?,
         discr_type: input.discr_type.map_node(context)?,
+        non_exhaustive: input.non_exhaustive,
         docstring: input.docstring,
     })
 }
@@ -113,7 +114,7 @@ pub fn map_interface(input: uniffi_meta::ObjectMetadata, context: &Context) -> R
         uniffi_traits: context.uniffi_traits_for_type(&input.module_path, &input.name)?,
         trait_impls: context.trait_impls_for_type(&input.module_path, &input.name)?,
         orig_name: input.orig_name.unwrap_or_else(|| input.name.clone()),
-        module_path: input.module_path,
+        module_path: normalize_module_path(input.module_path),
         name: input.name,
         docstring: input.docstring,
         imp: input.imp,
@@ -127,7 +128,7 @@ pub fn map_callback_interface(
     Ok(CallbackInterface {
         methods: context.methods_for_type(&input.module_path, &input.name)?,
         // Renaming callback interfaces is not supported yet -- just copy name.
-        module_path: input.module_path,
+        module_path: normalize_module_path(input.module_path),
         orig_name: input.name.clone(),
         name: input.name,
         docstring: input.docstring,
@@ -139,7 +140,7 @@ pub fn map_custom_type(
     context: &Context,
 ) -> Result<CustomType> {
     Ok(CustomType {
-        module_path: input.module_path,
+        module_path: normalize_module_path(input.module_path),
         orig_name: input.orig_name.unwrap_or(input.name.clone()),
         name: input.name,
         builtin: input.builtin.map_node(context)?,
@@ -165,4 +166,8 @@ pub fn map_field(input: uniffi_meta::FieldMetadata, context: &Context) -> Result
         default: input.default.map_node(context)?,
         docstring: input.docstring,
     })
+}
+
+fn normalize_module_path(module_path: String) -> String {
+    module_path.replace("-", "_")
 }

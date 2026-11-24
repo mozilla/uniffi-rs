@@ -50,6 +50,7 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
         ///
         /// See `uniffi_bindgen::macro_metadata` for how this is used.
 
+        #[allow(clippy::large_const_arrays)]
         const #namespace_const_ident: ::uniffi::MetadataBuffer =
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::NAMESPACE)
                 .concat_str(#module_path)

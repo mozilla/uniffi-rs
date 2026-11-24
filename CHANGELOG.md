@@ -6,6 +6,15 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### ⚠️ Breaking Changes ⚠️
+- When the Rust package name and library name differ, foreign bindings now default to using the
+  library name as their module name rather than the package name.  The new default matches the name
+  in `use` statements for Rust.  Use configuration options like `bindings.kotlin.package_name` or
+  the `bindings.python.module_name` to override the default.
+
+- Kotlin: `disable_java_cleaner` was renamed to `java_8_compatible`.
+  It now controls multiple features that require Java 9 (minSdk 28 on Android)
+
 ### What's New?
 - Added `uniffi_parse_rs`, which generates metadata by parsing Rust sources directly.
   This allows using the macros syntax to describe your interface, without requiring you to build the
@@ -18,8 +27,35 @@
   See [#2911](https://github.com/mozilla/uniffi-rs/pull/2911).
 - Added support for remote trait interfaces - ie, traits defined in a crate which doesn't use
   UniFFI. Use `#[uniffi::export(remote)]` or `[Trait, Remote]` in UDL. Foreign implementations are not supported, see the docs for more.
+- Python: Added the config value `bindings.python.module_name` to set the generated module name.
+- Ruby: Added the config value `bindings.ruby.file_name` to set the generated filename.
+- Ruby: Add `bindings.ruby.module_name` to set the generated module name. In library mode,
+  `[bindings.ruby.external_packages]` is auto-filled from each peer's `module_name`; a consumer
+  override that does not match is a bindgen error (via [#2980](https://github.com/mozilla/uniffi-rs/pull/2980)).
+- Ruby: Add external types support (via [#2980](https://github.com/mozilla/uniffi-rs/pull/2980)).
+- Kotlin: Calls into Rust no longer allocate a JNA `Structure` for the call status. FFI functions
+  take the status as a pointer into a reusable per-thread buffer, and a `Structure` is only built
+  when the call fails. This removes most of the overhead of a call that passes and returns only
+  primitives or objects (see [#3011](https://github.com/mozilla/uniffi-rs/issues/3011)).
 
 ### What's Fixed
+- The `wasm-unstable-single-threaded` feature now applies to every WASM target (`target_family = "wasm"`),
+  including `wasm64-unknown-unknown`. Previously it only applied to `wasm32`, so memory64 builds still
+  required `Send` and `Sync`.
+- `#[derive(Node)]` now emits its `has_descendant_type` checks in field declaration order.
+  Previously the order came from a `HashSet` and changed on every compile, so `uniffi_bindgen` did
+  not build reproducibly (via [#3048](https://github.com/mozilla/uniffi-rs/issues/3048)).
+- Recursive enums and records are now detected when the cycle passes through a custom type.
+  Previously these types were not marked `recursive`, so the Swift bindings were missing `indirect`
+  and failed to compile (via [#3005](https://github.com/mozilla/uniffi-rs/issues/3005)).
+- Detection of recursive enums and records is now deterministic. Previously, when cycles overlapped,
+  which types were marked `recursive` depended on hash map iteration order and could differ between
+  builds, although the generated bindings still compiled
+  (via [#3005](https://github.com/mozilla/uniffi-rs/issues/3005)).
+- `[bindings.<language>.rename]` is now applied through `Box<T>` and `Option<Box<T>>` fields, not
+  just the type definition itself. Previously the field kept referring to the pre-rename name,
+  producing Swift and Kotlin bindings that failed to compile and Python bindings that referenced a
+  nonexistent class (via [#3006](https://github.com/mozilla/uniffi-rs/issues/3006)).
 - Kotlin: Fixed messages for error classes that inherit `Throwable`, but not `Exception`.
 - Fix UDL remote enums, now allowing `[Enum, Remote] interface { ... }`
   (via [#2823](https://github.com/mozilla/uniffi-rs/issues/2823)).
@@ -28,14 +64,19 @@
 - Python: rename `uniffi_set_event_loop` to `uniffi_set_default_event_loop`
 - Kotlin and Swift: escape `/*` and `*/` in docstrings, which previously generated code that would not compile
   (via [#2411](https://github.com/mozilla/uniffi-rs/issues/2411)).
+- Kotlin: zero-copy `&[u8]` and `&mut [u8]` arguments now borrow the bytes between the
+  `ByteBuffer`'s `position()` and `limit()`. Previously, when `position()` was greater than zero,
+  Rust read from the start of the buffer instead (and `&mut [u8]` writes landed there too)
+  (via [#3043](https://github.com/mozilla/uniffi-rs/issues/3043)).
 
 ### Breaking changes for users of `uniffi-bindgen` as a crate:
 - Removed the previously deprecated library-mode API: `BindgenCrateConfigSupplier`,
  `EmptyCrateConfigSupplier`, `BindingGenerator`, `GenerationSettings`, `generate_external_bindings`,
  `generate_bindings`, `find_components`, the `library_mode` module, and the
  `uniffi::generate_bindings_library_mode` re-export. Use `BindgenLoader` instead.
-
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.0...HEAD).
+- Added several new fields to `bindings::GenerateOptions`
+  (currently only used by `uniffi_parse_rs`).
+  Use `..GenerateOptions::default()` if you're not using `uniffi_parse_rs`.
 
 ### What's New?
 
@@ -44,6 +85,22 @@
 ### What's New for external bindings authors
 
 - `[ByMutRef] bytes` / `&mut [u8]` arguments cross the FFI as the same `ForeignBytes` value as `[ByRef]` / `&[u8]` — the two are ABI-identical. Metadata carries the mutable flag as `FnParamMetadata.by_mut_ref` (read it via `is_borrowed_bytes_mut()`); a generator that wants a writable foreign buffer reads that flag, otherwise the argument acts like a read-only borrow. This bumps the metadata contract version to 31. ([#2940](https://github.com/mozilla/uniffi-rs/pull/2940))
+
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.32.2...HEAD).
+
+## v0.32.2 (backend crates: v0.32.2) - (_2026-09-22_)
+
+### What's Fixed
+- Kotlin: prevent compiler warnings in generated code ([#2949](https://github.com/mozilla/uniffi-rs/pull/2949))
+
+[All changes in v0.32.2](https://github.com/mozilla/uniffi-rs/compare/v0.32.1...v0.32.2).
+
+## v0.32.1 (backend crates: v0.32.1) - (_2026-09-08_)
+
+### What's Fixed
+- Kotlin: Fixed checksum failure on aarch64 ([#2935](https://github.com/mozilla/uniffi-rs/pull/2935/))
+
+[All changes in v0.32.1](https://github.com/mozilla/uniffi-rs/compare/v0.32.0...v0.32.1).
 
 ## v0.32.0 (backend crates: v0.32.0) - (_2026-06-30_)
 

@@ -66,6 +66,15 @@ pub unsafe fn lift_buffer(env: *mut JNIEnv, buf: jobject) -> Result<(*mut u8, us
     Ok((ptr.cast(), capacity as usize))
 }
 
+/// Lift a FFI Buffer pointer only
+///
+/// # Safety
+/// env must point to a valid JNIEnv
+pub unsafe fn lift_pointer(env: *mut JNIEnv, buf: jobject) -> Result<*mut u8> {
+    let ptr = ((**env).v1_4.GetDirectBufferAddress)(env, buf);
+    Ok(ptr.cast())
+}
+
 /// Lower a FFI Buffer
 ///
 /// # Safety
