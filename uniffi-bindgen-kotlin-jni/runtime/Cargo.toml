@@ -1,6 +1,6 @@
 [package]
 name = "uniffi-bindgen-kotlin-jni-runtime"
-version = "0.32.1"
+version = "0.33.0"
 description = "a multi-language bindings generator for rust (codegen and cli tooling)"
 documentation = "https://mozilla.github.io/uniffi-rs"
 homepage = "https://mozilla.github.io/uniffi-rs"
@@ -13,7 +13,7 @@ keywords = ["ffi", "bindgen"]
 anyhow = "1"
 jni-sys = "0.4.1"
 simd_cesu8 = "1.1.1"
-uniffi = { path = "../../uniffi", default-features = false }
+uniffi = { path = "../../uniffi", version = "=0.33.0", default-features = false }
 
 [package.metadata.uniffi]
 skip_parsing = true
