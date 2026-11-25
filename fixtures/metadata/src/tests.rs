@@ -590,6 +590,7 @@ mod test_metadata {
                 name: "state_method_renamed".into(),
                 orig_name: Some("state_method".into()),
                 is_async: false,
+                desugared_async: false,
                 inputs: vec![],
                 return_type: None,
                 throws: None,
@@ -1002,6 +1003,7 @@ mod test_function_metadata {
                 name: "add".into(),
                 orig_name: None,
                 is_async: false,
+                desugared_async: false,
                 inputs: vec![
                     FnParamMetadata::simple("a", Type::UInt8),
                     FnParamMetadata::simple("b", Type::UInt8),
@@ -1128,6 +1130,7 @@ mod test_function_metadata {
                 name: "async_sub".into(),
                 orig_name: None,
                 is_async: true,
+                desugared_async: false,
                 inputs: vec![
                     FnParamMetadata::simple("a", Type::UInt8),
                     FnParamMetadata::simple("b", Type::UInt8),
@@ -1190,6 +1193,7 @@ mod test_function_metadata {
                 name: "get_display".into(),
                 orig_name: None,
                 is_async: false,
+                desugared_async: false,
                 inputs: vec![],
                 throws: None,
                 takes_self_by_arc: false,
@@ -1213,6 +1217,7 @@ mod test_function_metadata {
                 name: "display_result_renamed".into(),
                 orig_name: Some("display_result".into()),
                 is_async: false,
+                desugared_async: false,
                 inputs: vec![
                     FnParamMetadata::simple("val", Type::String),
                 ],
@@ -1278,6 +1283,7 @@ mod test_function_metadata {
                 name: "log".into(),
                 orig_name: None,
                 is_async: false,
+                desugared_async: false,
                 inputs: vec![FnParamMetadata::simple("message", Type::String)],
                 return_type: None,
                 throws: None,

@@ -558,6 +558,7 @@
             name: "meth1",
             orig_name: None,
             is_async: false,
+            desugared_async: false,
             inputs: [],
             return_type: Some(
                 String,
@@ -584,6 +585,7 @@
                 "meth2",
             ),
             is_async: false,
+            desugared_async: false,
             inputs: [
                 FnParamMetadata {
                     name: "a",
@@ -622,6 +624,7 @@
             name: "meth3",
             orig_name: None,
             is_async: false,
+            desugared_async: false,
             inputs: [
                 FnParamMetadata {
                     name: "s",
@@ -653,6 +656,7 @@
             name: "method",
             orig_name: None,
             is_async: false,
+            desugared_async: false,
             inputs: [
                 FnParamMetadata {
                     name: "a",
@@ -688,6 +692,7 @@
             name: "method",
             orig_name: None,
             is_async: false,
+            desugared_async: false,
             inputs: [],
             return_type: Some(
                 UInt8,
@@ -711,6 +716,7 @@
             name: "method",
             orig_name: None,
             is_async: false,
+            desugared_async: false,
             inputs: [
                 FnParamMetadata {
                     name: "a",
@@ -753,6 +759,7 @@
                 name: "uniffi_trait_debug",
                 orig_name: None,
                 is_async: false,
+                desugared_async: false,
                 inputs: [],
                 return_type: Some(
                     String,
@@ -772,6 +779,7 @@
                 name: "uniffi_trait_display",
                 orig_name: None,
                 is_async: false,
+                desugared_async: false,
                 inputs: [],
                 return_type: Some(
                     String,
@@ -791,6 +799,7 @@
                 name: "uniffi_trait_eq_eq",
                 orig_name: None,
                 is_async: false,
+                desugared_async: false,
                 inputs: [
                     FnParamMetadata {
                         name: "other",
@@ -820,6 +829,7 @@
                 name: "uniffi_trait_eq_ne",
                 orig_name: None,
                 is_async: false,
+                desugared_async: false,
                 inputs: [
                     FnParamMetadata {
                         name: "other",
@@ -853,6 +863,7 @@
                 name: "uniffi_trait_hash",
                 orig_name: None,
                 is_async: false,
+                desugared_async: false,
                 inputs: [],
                 return_type: Some(
                     UInt64,
@@ -872,6 +883,7 @@
                 name: "uniffi_trait_ord_cmp",
                 orig_name: None,
                 is_async: false,
+                desugared_async: false,
                 inputs: [
                     FnParamMetadata {
                         name: "other",
