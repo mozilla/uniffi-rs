@@ -36,6 +36,17 @@ mod submod {
 
 pub use submod::Enum;
 
+#[uniffi::export]
+impl Record {
+    pub fn by_ref(&self) -> u32 {
+        todo!()
+    }
+
+    pub fn by_value(self) -> u32 {
+        todo!()
+    }
+}
+
 #[derive(uniffi::Enum)]
 #[repr(u8)]
 pub enum U8Enum {

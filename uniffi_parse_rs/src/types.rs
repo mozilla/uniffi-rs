@@ -351,6 +351,10 @@ impl<'ir> RPath<'ir> {
             Type::Arc(ty) if ty.is_self() => Ok(SelfType {
                 takes_self_by_arc: true,
             }),
+            // Records and enums can also take `self` by value, since they're lifted by value
+            ty if ty.is_self() => Ok(SelfType {
+                takes_self_by_arc: false,
+            }),
             _ => Err(Error::new(self.file_id(), syn_ty.span(), InvalidSelfType)),
         }
     }
