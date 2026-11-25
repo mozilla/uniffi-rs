@@ -50,17 +50,17 @@
 // block if called incorrectly seems to meet that bar.
 //
 // So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
-// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// the number of in-flight handle clones, and an `AtomicBoolean` flag to indicate whether `destroy`
 // has been called. These are updated according to the following rules:
 //
-//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//    * The initial value of the counter is 1, indicating a live object with no in-flight clones.
 //      The initial value for the flag is false.
 //
-//    * At the start of each method call, we atomically check the counter.
-//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
-//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//    * Before each handle clone, we atomically check the flag and the counter.
+//      If the flag is set or the counter is 0, the object has been destroyed and the clone is refused.
+//      Otherwise we atomically increment the counter by 1 and proceed with the clone.
 //
-//    * At the end of each method call, we atomically decrement and check the counter.
+//    * After the clone, we atomically decrement and check the counter.
 //      If it has reached zero then we destroy the underlying Rust struct.
 //
 //    * When `destroy` is called, we atomically flip the flag from false to true.
@@ -72,7 +72,7 @@
 // and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
 //
 // The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
-// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// called *and* all in-flight clones have completed, avoiding violating any of the expectations
 // of the underlying Rust code.
 //
 // This makes a cleaner a better alternative to _not_ calling `destroy()` as
@@ -183,26 +183,8 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
     }
 
     internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
-        // Check and increment the call counter, to keep the object alive.
-        // This needs a compare-and-set retry loop in case of concurrent updates.
-        do {
-            val c = this.callCounter.get()
-            if (c == 0L) {
-                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
-            }
-            if (c == Long.MAX_VALUE) {
-                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
-            }
-        } while (! this.callCounter.compareAndSet(c, c + 1L))
-        // Now we can safely do the method call without the handle being freed concurrently.
-        try {
-            return block(this.uniffiCloneHandle())
-        } finally {
-            // This decrement always matches the increment we performed above.
-            if (this.callCounter.decrementAndGet() == 0L) {
-                cleanable?.clean()
-            }
-        }
+        // Rust owns the cloned handle, so `destroy()` during the call can't free it.
+        return block(this.uniffiCloneHandle())
     }
 
     // Use a static inner class instead of a closure so as not to accidentally
@@ -226,6 +208,26 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         if (handle == 0.toLong()) {
             throw InternalException("uniffiCloneHandle() called on NoHandle object");
         }
+        do {
+            val c = this.callCounter.get()
+            // The counter can stay nonzero after `destroy()`, so check the flag too.
+            if (c == 0L || this.wasDestroyed.get()) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        try {
+            return uniffiCloneHandleUnchecked()
+        } finally {
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable?.clean()
+            }
+        }
+    }
+
+    private fun uniffiCloneHandleUnchecked(): Long {
         return uniffiRustCall() { status ->
             UniffiLib.{{ obj.ffi_object_clone().name() }}(handle, status).also {
                 {%- if !config.java_8_compatible %}
