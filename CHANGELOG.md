@@ -37,6 +37,10 @@
   take the status as a pointer into a reusable per-thread buffer, and a `Structure` is only built
   when the call fails. This removes most of the overhead of a call that passes and returns only
   primitives or objects (see [#3011](https://github.com/mozilla/uniffi-rs/issues/3011)).
+- Swift: Reading a value out of a `RustBuffer` no longer calls `Data.copyBytes(to:from:)` for
+  each integer, float and string. That call is a generic `DataProtocol` method which is not
+  specialized in the generated code and costs about 100ns. The bytes are now copied directly,
+  which makes returning a list of 10,000 records with 22 fields each about 10 times faster.
 
 ### What's Fixed
 - The `wasm-unstable-single-threaded` feature now applies to every WASM target (`target_family = "wasm"`),
