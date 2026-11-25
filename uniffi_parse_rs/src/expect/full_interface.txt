@@ -645,6 +645,40 @@
             docstring: None,
         },
     ),
+    Method(
+        MethodMetadata {
+            module_path: "full_interface",
+            self_name: "RecordRenamed",
+            name: "by_ref",
+            orig_name: None,
+            is_async: false,
+            inputs: [],
+            return_type: Some(
+                UInt32,
+            ),
+            throws: None,
+            takes_self_by_arc: false,
+            checksum: None,
+            docstring: None,
+        },
+    ),
+    Method(
+        MethodMetadata {
+            module_path: "full_interface",
+            self_name: "RecordRenamed",
+            name: "by_value",
+            orig_name: None,
+            is_async: false,
+            inputs: [],
+            return_type: Some(
+                UInt32,
+            ),
+            throws: None,
+            takes_self_by_arc: false,
+            checksum: None,
+            docstring: None,
+        },
+    ),
     TraitMethod(
         TraitMethodMetadata {
             module_path: "full_interface",
