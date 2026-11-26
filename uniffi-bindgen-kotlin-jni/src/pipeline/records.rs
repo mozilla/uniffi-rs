@@ -5,6 +5,10 @@
 use super::*;
 
 pub fn map_record(input: general::Record, context: &Context) -> Result<Record> {
+    let passed_as_buffer = context
+        .ffi_type_oracle
+        .is_passed_as_buffer(&input.self_type.ty);
+    let buffer_size = context.layout_oracle.get(&input.self_type.ty)?.size();
     Ok(Record {
         self_type: input.self_type.map_node(context)?,
         immutable: context.config()?.record_is_immutable(&input.name),
@@ -16,6 +20,8 @@ pub fn map_record(input: general::Record, context: &Context) -> Result<Record> {
         uniffi_trait_methods: input.uniffi_trait_methods.map_node(context)?,
         docstring: input.docstring,
         recursive: input.recursive,
+        passed_as_buffer,
+        buffer_size,
     })
 }
 

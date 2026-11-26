@@ -34,3 +34,15 @@ assert(GappedEnum.THREE.value == 14.toUByte()) // Explicit value again
 // Enum methods
 assert(EnumWithData.A(20.toUByte(), 40.toUShort()).roundtrip() == EnumWithData.A(20.toUByte(), 40.toUShort()))
 assert(EnumNoData.A.roundtrip() == EnumNoData.A)
+
+// large enums
+val largeRec = createLargeRec()
+val largeEnums = listOf(
+    LargeEnum.A(a=largeRec.a, b=largeRec.b, c=largeRec.c),
+    LargeEnum.B(largeRec),
+    LargeEnum.C,
+)
+for (largeEnum in largeEnums) {
+    assert(roundtripLargeEnum(largeEnum) == largeEnum)
+    assert(largeEnum.roundtrip() == largeEnum)
+}

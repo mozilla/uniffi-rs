@@ -154,6 +154,24 @@ pub fn map_callable(
 
     let arguments = map_arguments(input.arguments, &mut allocator, context)?;
 
+    let mut parameter_slots = ffi_types::jvm_parameter_slots(
+        receiver
+            .iter()
+            .chain(&arguments)
+            .flat_map(|a| a.ffi_args())
+            .map(|ffi_arg| &ffi_arg.ty),
+    );
+    if matches!(kind, CallableKind::VTableMethod { .. }) {
+        // Callback methods can also input a return pointer or a oneshot handle
+        parameter_slots += FfiType::Int64.jvm_parameter_slots();
+    }
+    if parameter_slots > ffi_types::MAX_JVM_PARAMETER_SLOTS {
+        bail!(
+            "{fully_qualified_name_rs} needs {parameter_slots} JVM parameter slots for its arguments, the maximum is {}",
+            ffi_types::MAX_JVM_PARAMETER_SLOTS,
+        );
+    }
+
     Ok(Callable {
         fully_qualified_name_rs,
         kind,

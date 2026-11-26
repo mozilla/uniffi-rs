@@ -68,14 +68,46 @@ pub fn standard_ffi_type_mapping(ty: &Type) -> Option<Vec<FfiType>> {
     }
 }
 
+/// Maximum number of JVM parameter slots a method can have.
+///
+/// See <https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-4.html#jvms-4.3.3>
+pub const MAX_JVM_PARAMETER_SLOTS: usize = 255;
+
+/// Maximum number of JVM parameter slots that a record or enum can be deconstructed into.
+///
+/// Types that would need more slots than this are passed as a FFI buffer instead.
+/// Without this limit, large types can go over [MAX_JVM_PARAMETER_SLOTS],
+/// which makes the JVM refuse to load the generated class.
+pub const MAX_DECONSTRUCTED_SLOTS: usize = 32;
+
 /// Knows the FFI types for each type
 #[derive(Default, Clone)]
 pub struct FfiTypeOracle {
     // Map user types to their FFI types
     user_type_map: HashMap<Type, Vec<FfiType>>,
+    // Records and enums that are passed as a FFI buffer, rather than being deconstructed
+    buffer_types: HashSet<Type>,
 }
 
 impl FfiTypeOracle {
+    /// Is this type passed as a FFI buffer, rather than being deconstructed?
+    pub fn is_passed_as_buffer(&self, ty: &Type) -> bool {
+        self.buffer_types.contains(ty)
+    }
+
+    /// Add the FFI types for a record or enum
+    ///
+    /// This falls back to a FFI buffer if deconstructing the type would take too many slots.
+    fn insert_deconstructable(&mut self, ty: &Type, ffi_types: Vec<FfiType>) {
+        if jvm_parameter_slots(&ffi_types) > MAX_DECONSTRUCTED_SLOTS {
+            self.buffer_types.insert(ty.clone());
+            self.user_type_map
+                .insert(ty.clone(), vec![FfiType::ByteBuffer]);
+        } else {
+            self.user_type_map.insert(ty.clone(), ffi_types);
+        }
+    }
+
     pub fn get_ffi_types(&self, ty: &Type) -> Result<Vec<FfiType>> {
         Ok(if let Some(ffi_types) = standard_ffi_type_mapping(ty) {
             ffi_types
@@ -104,8 +136,7 @@ impl FfiTypeOracle {
                 for f in rec.fields.iter() {
                     ffi_types.extend(self.get_ffi_types(&f.ty.ty)?)
                 }
-                self.user_type_map
-                    .insert(rec.self_type.ty.clone(), ffi_types);
+                self.insert_deconstructable(&rec.self_type.ty, ffi_types);
             }
             general::TypeDefinition::Enum(en) => {
                 if matches!(en.shape, EnumShape::Error { flat: true }) {
@@ -134,8 +165,7 @@ impl FfiTypeOracle {
                         }
                     }
                 }
-                self.user_type_map
-                    .insert(en.self_type.ty.clone(), all_ffi_types);
+                self.insert_deconstructable(&en.self_type.ty, all_ffi_types);
             }
             general::TypeDefinition::Optional(opt) => {
                 if standard_ffi_type_mapping(&opt.self_type.ty).is_none() {
@@ -156,7 +186,23 @@ impl FfiTypeOracle {
     }
 }
 
+/// Number of JVM parameter slots needed to pass a list of FFI types
+pub fn jvm_parameter_slots<'a>(ffi_types: impl IntoIterator<Item = &'a FfiType>) -> usize {
+    ffi_types
+        .into_iter()
+        .map(FfiType::jvm_parameter_slots)
+        .sum()
+}
+
 impl FfiType {
+    /// Number of JVM parameter slots this type takes (`long` and `double` take 2)
+    pub fn jvm_parameter_slots(&self) -> usize {
+        match self {
+            Self::Int64 | Self::Float64 => 2,
+            _ => 1,
+        }
+    }
+
     pub fn type_kt(&self) -> &'static str {
         match self {
             Self::Int8 => "Byte",

@@ -62,6 +62,13 @@ then we deconstruct the type into multiple FFI values and pass those.
 * `Option<T>` that can't be passed as a primitive is passed as
   `bool` plus the FFI types for `T`.
 
+Deconstructing is limited by the JVM, which allows at most 255 parameter slots per method
+(`long` and `double` take 2 slots each).
+Since nested records and enums add up, a type can easily need more than that.
+To avoid this, records and enums that would deconstruct into more than 32 slots
+are passed as a FFI buffer instead, see "FFI buffers" below.
+If the arguments of a function still need more than 255 slots, then bindings generation fails.
+
 Returning deconstructable types requires special handling that varies by the call type.
 See notes on "Returning deconstructed types" below for details.
 
@@ -69,7 +76,8 @@ Note: if a type deconstructs to exactly 1 FFI type, then we simply return it as 
 
 ## FFI buffers
 
-As described above, Vecs, HashMaps, and HashSets get passed as a nio ByteBuffer.
+As described above, Vecs, HashMaps, HashSets, and records/enums that are too large to deconstruct
+get passed as a nio ByteBuffer.
 Here's how values are packed into those buffers.
 
 * Primitive values are packed using native-endian.

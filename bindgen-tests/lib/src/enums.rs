@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::records::SimpleRec;
+use crate::records::{ComplexRec, LargeRec, SimpleRec};
 
 #[derive(uniffi::Enum, Clone)]
 pub enum EnumNoData {
@@ -41,6 +41,25 @@ pub enum ComplexEnum {
     C { value: SimpleRec },
 }
 
+// Enum with a large number of fields, see `LargeRec`
+#[derive(uniffi::Enum, Clone)]
+pub enum LargeEnum {
+    A {
+        a: ComplexRec,
+        b: ComplexRec,
+        c: ComplexRec,
+    },
+    B(LargeRec),
+    C,
+}
+
+#[uniffi::export]
+impl LargeEnum {
+    pub fn roundtrip(&self) -> Self {
+        self.clone()
+    }
+}
+
 // Test enum with explicit discriminant values and gaps
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, uniffi::Enum)]
@@ -74,5 +93,10 @@ pub fn roundtrip_enum_with_data(en: EnumWithData) -> EnumWithData {
 
 #[uniffi::export]
 pub fn roundtrip_complex_enum(en: ComplexEnum) -> ComplexEnum {
+    en
+}
+
+#[uniffi::export]
+pub fn roundtrip_large_enum(en: LargeEnum) -> LargeEnum {
     en
 }
