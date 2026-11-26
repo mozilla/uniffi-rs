@@ -420,16 +420,22 @@ Task {
 counter.enter()
 Task {
 	let task = Task {
-	    try! await useSharedResource(options: SharedResourceOptions(releaseAfterMs: 100, timeoutMs: 1000))
+	    do {
+	        try await useSharedResource(options: SharedResourceOptions(releaseAfterMs: 100, timeoutMs: 1000))
+	        return false
+	    } catch is CancellationError {
+	        return true
+	    } catch {
+	        return false
+	    }
 	}
 
 	// Wait some time to ensure the task has locked the shared resource
 	try await Task.sleep(nanoseconds: 50_000_000)
-	// Cancel the job task the shared resource has been released.
-	//
-	// FIXME: this test currently passes because `test.cancel()` doesn't actually cancel the
-	// operation.  We need to rework the Swift async handling to handle this properly.
+	// Cancelling the task must cancel the Rust future and release the resource.
 	task.cancel()
+	let wasCancelled = await task.value
+	assert(wasCancelled)
 
 	// Try accessing the shared resource again.  The initial task should release the shared resource
 	// before the timeout expires.
