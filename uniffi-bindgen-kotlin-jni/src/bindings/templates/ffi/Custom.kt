@@ -1,5 +1,10 @@
 {%- let type_name = custom.self_type.type_kt %}
 
+{#- Consumers in other packages name the lowered type after the custom type (see External.kt) #}
+{%- if !custom.builtin.lowers_to_primitive() %}
+typealias {{ custom.self_type.lowered_type_kt() }} = {{ custom.builtin.lowered_type_kt() }}
+{%- endif %}
+
 @JvmName("{{ custom.self_type.lower_fn_kt() }}")
 fun {{ custom.self_type.lower_fn_kt() }}(value: {{ type_name }}): {{ custom.builtin.lowered_type_kt() }} {
     {%- if let Some(config) = custom.config %}

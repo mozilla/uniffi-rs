@@ -61,6 +61,11 @@ pub struct NestedExternalRec(pub ExternalRec);
 
 uniffi::custom_newtype!(NestedExternalRec, ExternalRec);
 
+/// Like `NestedExternalRec`, but its builtin lowers to more than one FFI value
+pub struct WrappedExternalNestedRec(pub ExternalNestedRec);
+
+uniffi::custom_newtype!(WrappedExternalNestedRec, ExternalNestedRec);
+
 pub struct NestedExternalInterface(pub Arc<ExternalInterface>);
 
 uniffi::custom_newtype!(NestedExternalInterface, Arc<ExternalInterface>);

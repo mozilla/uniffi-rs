@@ -4,7 +4,7 @@
 
 use ext_types::{
     ExternalCustomType, ExternalEnum, ExternalError, ExternalInterface, ExternalNestedRec,
-    ExternalRec, ExternalUrl, NestedExternalInterface, NestedExternalRec,
+    ExternalRec, ExternalUrl, NestedExternalInterface, NestedExternalRec, WrappedExternalNestedRec,
 };
 use std::sync::Arc;
 use uniffi_bindgen_tests_mid_types::MidRec;
@@ -41,6 +41,11 @@ pub fn roundtrip_ext_nested_rec(rec: ExternalNestedRec) -> ExternalNestedRec {
 
 #[uniffi::export]
 pub fn roundtrip_nested_ext_rec(rec: NestedExternalRec) -> NestedExternalRec {
+    rec
+}
+
+#[uniffi::export]
+pub fn roundtrip_wrapped_ext_nested_rec(rec: WrappedExternalNestedRec) -> WrappedExternalNestedRec {
     rec
 }
 
