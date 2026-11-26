@@ -12,9 +12,9 @@ readme = "../README.md"
 
 [dependencies]
 anyhow = "1"
-askama = { version = "0.14", default-features = false, features = ["config", "derive", "alloc"] }
+askama = { version = "0.16.0", default-features = false, features = ["config", "derive", "alloc"] }
 camino = "1"
-cargo_metadata = { version = "0.19", optional = true }
+cargo_metadata = { version = "0.23.1", optional = true }
 clap = { version = "4", default-features = false, features = [ "cargo", "derive", "error-context", "help", "suggestions", "std", "usage" ] }
 glob = { version = "0.3", optional = true }
 heck = "0.5"
