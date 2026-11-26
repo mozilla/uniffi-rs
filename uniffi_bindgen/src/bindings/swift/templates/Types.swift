@@ -8,7 +8,6 @@
 {%- let type_name = type_|type_name %}
 {%- let ffi_converter_name = type_|ffi_converter_name %}
 {%- let canonical_type_name = type_|canonical_name %}
-{%- let contains_object_references = ci.item_contains_object_references(type_) %}
 
 {#
  # Map `Type` instances to an include statement for that type.

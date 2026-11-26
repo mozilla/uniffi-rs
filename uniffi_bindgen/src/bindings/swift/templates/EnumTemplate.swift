@@ -3,8 +3,8 @@
 {% match e.variant_discr_type() %}
 {% when None %}
 public {% if ci.is_recursive(e.name()) %}indirect {% endif %}
-{%- if config.enum_has_conformances(e, contains_object_references) -%}
-enum {{ type_name }}: {{ config.conformance_list_for_enum(e, contains_object_references) }} {
+{%- if config.enum_has_conformances(e, type_, ci) -%}
+enum {{ type_name }}: {{ config.conformance_list_for_enum(e, type_, ci) }} {
 {%- else -%}
 enum {{ type_name }} {
 {%- endif %}
@@ -16,7 +16,7 @@ enum {{ type_name }} {
     {% endfor %}
 {% when Some(variant_discr_type) %}
 public {% if ci.is_recursive(e.name()) %}indirect {% endif -%}
-enum {{ type_name }}: {{ variant_discr_type|type_name }}, {{ config.conformance_list_for_enum(e, contains_object_references) }} {
+enum {{ type_name }}: {{ variant_discr_type|type_name }}, {{ config.conformance_list_for_enum(e, type_, ci) }} {
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}{% endcall %}
     case {{ variant.name()|enum_variant_swift_quoted }} = {{ e|variant_discr_literal(loop.index0) }}{% if variant.fields().len() > 0 %}(
